@@ -20,6 +20,16 @@ GolapApiClient class >> random [
 ]
 
 { #category : #'instance cretion' }
+GolapApiClient class >> url: aStringOrUrl query: aString authenticateBlock: aBlock [
+
+	^ self new
+		  url: aStringOrUrl;
+		  query: aString;
+		  authenticateBlock: aBlock;
+		  yourself
+]
+
+{ #category : #'instance cretion' }
 GolapApiClient class >> url: aStringOrUrl query: aString serverConfig: configDictionary itemFieldQuerySpec: aDictionary authenticateBlock: aBlock [
 	^ self new
 		url: aStringOrUrl;
@@ -100,7 +110,14 @@ GolapApiClient >> imageUrl [
 
 { #category : #accessing }
 GolapApiClient >> itemFieldQuerySpec [
-	^ itemFieldQuerySpec ifNil: [ Dictionary new ]
+
+	^ itemFieldQuerySpec ifNil: [ 
+		  itemFieldQuerySpec := serverConfig
+			                        ifNotNil: [ :config | 
+			                        config
+				                        at: 'statsFunc'
+				                        ifAbsent: [ Dictionary new ] ]
+			                        ifNil: [ Dictionary new ] ]
 ]
 
 { #category : #accessing }
@@ -178,12 +195,37 @@ GolapApiClient >> readStream [
 
 { #category : #accessing }
 GolapApiClient >> serverConfig [
-	^ serverConfig
+
+	^ serverConfig ifNil: [ 
+		  [ 
+		  serverConfig := (GolapHttpClient
+			                   post: self url
+			                   data: (ZnEntity json: '{"control":"config"}')
+			                   timeout: self timeout
+			                   authenticateBlock: self authenticateBlock) in: [ 
+			                  :response | 
+			                  response code = 200 ifFalse: [ ^ nil ].
+			                  response entity readStream in: [ :stream | 
+				                  | status |
+				                  status := (stream upTo: Character lf) 
+					                            substrings: ':'.
+				                  status size = 2 ifFalse: [ ^ nil ].
+				                  status second trim = '0' ifFalse: [ ^ nil ].
+				                  (NeoJSONReader on: stream)
+					                  mapClass: OrderedDictionary;
+					                  next ] ] ]
+			  on: NetworkError , ZnParseError
+			  do: [ :ex | ^ nil ] ]
 ]
 
 { #category : #accessing }
 GolapApiClient >> serverConfig: aDictionary [
 	serverConfig := aDictionary
+]
+
+{ #category : #accessing }
+GolapApiClient >> timeout [
+	^ 3
 ]
 
 { #category : #accessing }

@@ -41,7 +41,8 @@ Class {
 		'itemNotebook',
 		'snapshotDirectory',
 		'snapshotEnabled',
-		'snapshotProcess'
+		'snapshotProcess',
+		'resentQueryButton'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -91,6 +92,7 @@ Golap class >> defaultSpec [
 				   add: (SpBoxLayout newVertical
 						    add: #saveAsButton height: self buttonHeight;
 						    add: #saveAsSvgButton height: self buttonHeight;
+						    add: #resentQueryButton height: self buttonHeight;
 						    add: #queryViewTree height: 200;
 						    add: #itemNotebook))
 ]
@@ -458,11 +460,20 @@ Golap >> copyFromQueryViewTree [
 Golap >> createSnapshotDirectory [
 
 	^ url ifNotNil: [ 
-		  (self golapDirectory / 'snapshots'
-		   / (url host asString , '--' , DateAndTime now printString , '--'
-			    ,
-			    ((SharedRandom globalGenerator nextInteger: 1000000) - 1)
-				    printString)) ensureCreateDirectory ]
+		  | ref |
+		  ref := (self golapDirectory / 'snapshots'
+		          /
+			          (url host asString , '--' , DateAndTime now printString
+			           , '--'
+			           ,
+			           ((SharedRandom globalGenerator nextInteger: 1000000) - 1)
+				           printString)) ensureCreateDirectory.
+		  ref / 'createdTime' writeStreamDo: [ :stream | 
+			  | now |
+			  now := DateAndTime now.
+			  stream nextPutAll:
+				  now asDate printString , ' ' , now asTime print24 ].
+		  ref ]
 ]
 
 { #category : #'accessing-colors' }
@@ -855,6 +866,10 @@ Golap >> initializePresenters [
 		                   label: 'save as SVG...';
 		                   action: [ self saveAsSVG ];
 		                   yourself.
+	resentQueryButton := self newButton
+		                     label: 'resend query';
+		                     action: [ self resendQuery ];
+		                     yourself.
 	queryViewTree := self newTreeTable
 		                 addColumn:
 			                 (SpStringTableColumn evaluated: [ :assoc | 
@@ -1164,44 +1179,9 @@ Golap >> query [
 
 { #category : #accessing }
 Golap >> query: aDictionary [
-	query := aDictionary.
-	self snapshotQuery.
-	self window
-		title:
-			'gOLAP overview'
-				,
-					((String
-						streamContents: [ :stream | 
-							query
-								at: 'query'
-								ifPresent: [ :q | 
-									q
-										at: 'traFilter'
-										ifPresent: [ :traFilter | 
-											stream
-												nextPutAll: 'traFilter:';
-												nextPutAll: traFilter;
-												nextPutAll: ', ' ].
-									q
-										at: 'itemFilter'
-										ifPresent: [ :itemFilter | 
-											stream
-												nextPutAll: 'itemFilter:';
-												nextPutAll: itemFilter;
-												nextPutAll: ', ' ].
-									q
-										at: 'dimensions'
-										ifPresent: [ :ds | 
-											stream
-												nextPutAll: 'dimensions:';
-												nextPutAll: ds;
-												nextPutAll: ', ' ] ] ])
-						ifNotEmpty: [ :str | ' - ' , (str copyFrom: 1 to: str size - 2) ]).
-	queryViewTree
-		roots:
-			(query keys asSortedCollection
-				collect: [ :key | key -> (query at: key) ]).
-	itemView ifNotNil: [ itemView query: aDictionary ]
+
+	self setQuery: aDictionary.
+	self snapshotQuery
 ]
 
 { #category : #menu }
@@ -1372,6 +1352,28 @@ Golap >> renderer [
 	^ self perform: rendererSelector
 ]
 
+{ #category : #operations }
+Golap >> resendQuery [
+
+	| client overview |
+	client := GolapApiClient
+		          url: self url
+		          query: (NeoJSONWriter toString: self query)
+		          authenticateBlock: self authenticateBlock.
+	overview := Golap new
+		            url: self url;
+		            yourself.
+	self snapshotDirectory copyAllTo:
+		overview snapshotDirectory ensureDeleteAll.
+	overview snapshotDirectory / 'createdTime' writeStreamDo: [ :stream | 
+		| now |
+		now := DateAndTime now.
+		stream nextPutAll: now asDate printString , ' ' , now asTime print24 ].
+	overview openWithSpec title: overview snapshotDirectory basename.
+	overview snapshotData: client readStream do: [ :readStream |  ].
+	overview restoreSnapshot: overview snapshotDirectory
+]
+
 { #category : #private }
 Golap >> resetVisibleEdgeThresholds [
 	edgesAppearancePresenter resetVisibleEdgeThresholds 
@@ -1485,7 +1487,7 @@ Golap >> restoreQuery [
 				(json at: 'url' ifAbsent: [ nil ]) ifNotNil: [ :string | 
 					url := string asUrl ].
 				(json at: 'query' ifAbsent: [ nil ]) ifNotNil: [ :dictionary | 
-					query := dictionary ] ] ] ]
+					self setQuery: dictionary ] ] ] ]
 ]
 
 { #category : #snapshot }
@@ -1653,6 +1655,47 @@ Golap >> setOverviewRenderer [
 			overviewRendererButton state: true ]
 		layout: (self vertices anySatisfy: [ :v | v asPoint isNil ]).
 	self snapshotSelections
+]
+
+{ #category : #accessing }
+Golap >> setQuery: aDictionary [
+	query := aDictionary.
+	self window
+		title:
+			'gOLAP overview'
+				,
+					((String
+						streamContents: [ :stream | 
+							query
+								at: 'query'
+								ifPresent: [ :q | 
+									q
+										at: 'traFilter'
+										ifPresent: [ :traFilter | 
+											stream
+												nextPutAll: 'traFilter:';
+												nextPutAll: traFilter;
+												nextPutAll: ', ' ].
+									q
+										at: 'itemFilter'
+										ifPresent: [ :itemFilter | 
+											stream
+												nextPutAll: 'itemFilter:';
+												nextPutAll: itemFilter;
+												nextPutAll: ', ' ].
+									q
+										at: 'dimensions'
+										ifPresent: [ :ds | 
+											stream
+												nextPutAll: 'dimensions:';
+												nextPutAll: ds;
+												nextPutAll: ', ' ] ] ])
+						ifNotEmpty: [ :str | ' - ' , (str copyFrom: 1 to: str size - 2) ]).
+	queryViewTree
+		roots:
+			(query keys asSortedCollection
+				collect: [ :key | key -> (query at: key) ]).
+	itemView ifNotNil: [ itemView query: aDictionary ]
 ]
 
 { #category : #operations }

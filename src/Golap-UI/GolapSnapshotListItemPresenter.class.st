@@ -72,7 +72,15 @@ GolapSnapshotListItemPresenter >> getCreatedTime [
 		  | ref |
 		  ref := self snapshotDirectory / name.
 		  ref isDirectory
-			  ifTrue: [ ref creationTime printString ]
+			  ifTrue: [ 
+				  | timeRef |
+				  timeRef := ref / 'createdTime'.
+				  timeRef isFile
+					  ifTrue: [ timeRef contents ]
+					  ifFalse: [ 
+						  | time |
+						  time := ref creationTime.
+						  time asDate printString , ' ' , time asTime print24 ] ]
 			  ifFalse: [ '' ] ]
 ]
 
@@ -96,7 +104,10 @@ GolapSnapshotListItemPresenter >> getModifiedTime [
 		  | ref |
 		  ref := self snapshotDirectory / name.
 		  ref isDirectory
-			  ifTrue: [ ref modificationTime printString ]
+			  ifTrue: [ 
+				  | time |
+				  time := (ref files collect: #modificationTime) max.
+				  time asDate printString , ' ' , time asTime print24 ]
 			  ifFalse: [ '' ] ]
 ]
 
