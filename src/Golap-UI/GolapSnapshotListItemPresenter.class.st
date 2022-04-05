@@ -11,8 +11,8 @@ Class {
 	#category : #'Golap-UI-Snapshot'
 }
 
-{ #category : #specs }
-GolapSnapshotListItemPresenter class >> defaultSpec [
+{ #category : #layout }
+GolapSnapshotListItemPresenter class >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newVertical
@@ -143,7 +143,7 @@ GolapSnapshotListItemPresenter >> launchSnapshot [
 
 	| golap |
 	golap := Golap new.
-	golap openWithSpec title: self getName.
+	golap open title: self getName.
 	golap restoreSnapshot: self snapshotDirectory / snapshotName
 ]
 

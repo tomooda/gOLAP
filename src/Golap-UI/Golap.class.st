@@ -60,8 +60,8 @@ Golap class >> defaultFont: aFont [
 	^ StandardFonts defaultFont: aFont
 ]
 
-{ #category : #specs }
-Golap class >> defaultSpec [
+{ #category : #layout }
+Golap class >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newHorizontal
@@ -1206,7 +1206,9 @@ Golap >> readDimensionFrom: aReadStream [
 	line := aReadStream upTo: Character lf.
 	index := line indexOf: $:.
 	index = 0 ifTrue: [ ^ nil ].
-	(line beginsWithEmpty: 'status:' caseSensitive: false)
+	('status:'
+		 ifEmpty: [ true ]
+		 ifNotEmpty: [ line beginsWith: 'status:' caseSensitive: false ])
 		ifTrue: [ name := 'no dimensions' ]
 		ifFalse: [ 
 			name := line.

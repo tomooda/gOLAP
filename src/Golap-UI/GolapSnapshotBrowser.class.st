@@ -15,8 +15,8 @@ Class {
 	#category : #'Golap-UI-Snapshot'
 }
 
-{ #category : #specs }
-GolapSnapshotBrowser class >> defaultSpec [
+{ #category : #layout }
+GolapSnapshotBrowser class >> defaultLayout [
 
 	^ SpBoxLayout newVertical
 		  add: #availableSnapshotList;
@@ -36,7 +36,7 @@ GolapSnapshotBrowser class >> defaultSpec [
 GolapSnapshotBrowser class >> open [
 
 	<script: 'GolapSnapshotBrowser open'>
-	^ self new openWithSpec
+	^ self new open
 ]
 
 { #category : #operations }

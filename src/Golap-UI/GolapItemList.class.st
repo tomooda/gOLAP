@@ -18,8 +18,8 @@ Class {
 	#category : #'Golap-UI-Graph'
 }
 
-{ #category : #specs }
-GolapItemList class >> defaultSpec [
+{ #category : #layout }
+GolapItemList class >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newVertical
@@ -194,7 +194,7 @@ GolapItemList >> initializePresenters [
 				                  (Color blue -> '').
 				                  (#addMarkerColor -> '') };
 		                  display: [ :assoc | '' ];
-		                  iconBlock: [ :assoc | 
+		                  displayIcon: [ :assoc | 
 			                  assoc key
 				                  ifNotNil: [ :c | 
 					                  c isSymbol

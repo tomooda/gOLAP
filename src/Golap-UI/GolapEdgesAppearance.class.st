@@ -64,8 +64,8 @@ GolapEdgesAppearance class >> colorNames [
 	^ self colorMap keys
 ]
 
-{ #category : #specs }
-GolapEdgesAppearance class >> defaultSpec [
+{ #category : #layout }
+GolapEdgesAppearance class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newVertical
 		add: #edgeWidthSlider height: self buttonHeight;
