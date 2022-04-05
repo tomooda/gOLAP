@@ -217,6 +217,13 @@ GolapHttpClient >> getAuthParams [
 				-> (def copyFrom: index + 2 to: def size - 1) ]) asDictionary
 ]
 
+{ #category : #initialization }
+GolapHttpClient >> initialize [
+
+	super initialize.
+	self maximumEntitySize: 256 * 1024 * 1024
+]
+
 { #category : #private }
 GolapHttpClient >> md5Hash: aString [
 	^ (MD5 new
