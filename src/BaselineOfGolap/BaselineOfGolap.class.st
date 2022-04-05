@@ -17,7 +17,7 @@ BaselineOfGolap >> baseline: spec [
 				with: [ spec repository: 'github://kursjan/petitparser2/' ].
 			spec
 				baseline: 'Xenq'
-				with: [ spec repository: 'github://tomooda/Xenq/src' ].
+				with: [ spec repository: 'github://tomooda/Xenq:main/src' ].
 			spec
 				package: 'Golap-Networking'
 				with: [ spec requires: #('DataFrame') ].
