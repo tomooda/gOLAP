@@ -703,12 +703,18 @@ Golap >> globalImagePane [
 ]
 
 { #category : #operations }
+Golap >> globalMapMouseClick: anEvent [
+
+	anEvent wasHandled: true
+]
+
+{ #category : #operations }
 Golap >> globalMapMouseMove: anEvent [
-	anEvent anyButtonPressed
-		ifFalse: [ ^ self ].
-	self
-		updateGlobalImageAfter: [ self renderer moveMapOffset: anEvent startPoint - anEvent endPoint.
-			anEvent wasHandled: true ]
+
+	anEvent anyButtonPressed ifFalse: [ ^ self ].
+	anEvent wasHandled: true.
+	self updateGlobalImageAfter: [ 
+		self renderer moveMapOffset: anEvent startPoint - anEvent endPoint ]
 ]
 
 { #category : #'accessing-widgets' }
@@ -798,6 +804,12 @@ Golap >> initializePresenters [
 			                 globalMapPane adapter widget
 				                 on: #mouseMove
 				                 send: #globalMapMouseMove:
+				                 to: self;
+				                   on: #mouseUp
+				                   send: #globalMapMouseClick:
+				                   to: self;
+				                 on: #mouseWheel
+				                 send: #globalImageMouseWheel:
 				                 to: self ];
 		                 bindKeyCombination: Character arrowUp
 		                 toAction: [ self zoomIn ];

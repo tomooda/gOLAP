@@ -7,7 +7,11 @@ Class {
 		'mapOffset',
 		'viewScale',
 		'viewOffset',
-		'labelBoxes'
+		'labelBoxes',
+		'activeImage',
+		'inactiveImage',
+		'activeMap',
+		'inactiveMap'
 	],
 	#category : #'Golap-UI-Graph'
 }
@@ -346,7 +350,10 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas [
 GolapOverviewRenderer >> globalImage [
 
 	| form |
-	form := Form extent: self globalImageExtent depth: 32.
+	form := (inactiveImage notNil and: [ 
+		         inactiveImage extent = self globalImageExtent ])
+		        ifTrue: [ inactiveImage ]
+		        ifFalse: [ Form extent: self globalImageExtent depth: 32 ].
 	self updateVisibleEdgeThresholds.
 	self modelDo: [ :model | 
 		form getCanvas in: [ :canvas | 
@@ -355,13 +362,18 @@ GolapOverviewRenderer >> globalImage [
 			self drawEdgesOn: canvas.
 			self drawSelectionsOn: canvas.
 			self drawPinsOn: canvas ] ].
-	^ form
+	inactiveImage := activeImage.
+	^ activeImage := form
 ]
 
 { #category : #drawing }
 GolapOverviewRenderer >> globalMap [
+
 	| form canvas vs min max |
-	form := Form extent: self globalMapExtent depth: 32.
+	form := (inactiveMap notNil and: [ 
+		         inactiveMap extent = self globalMapExtent ])
+		        ifTrue: [ inactiveMap ]
+		        ifFalse: [ Form extent: self globalMapExtent depth: 32 ].
 	canvas := form getCanvas.
 	canvas fillColor: (Color gray: 0.95).
 	canvas
@@ -384,7 +396,8 @@ GolapOverviewRenderer >> globalMap [
 			line: edge vertex1 asPoint - mapOffset * mapScale
 			to: edge vertex2 asPoint - mapOffset * mapScale
 			color: Color black ].
-	^ form
+	inactiveMap := activeMap.
+	^ activeMap := form
 ]
 
 { #category : #initialization }

@@ -26,8 +26,8 @@ Class {
 	#category : #'Golap-UI-Graph'
 }
 
-{ #category : #specs }
-GolapItemView class >> defaultSpec [
+{ #category : #layout }
+GolapItemView class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newVertical
 		add: #serverUrlField height: self buttonHeight;
