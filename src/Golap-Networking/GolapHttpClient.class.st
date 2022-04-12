@@ -127,22 +127,20 @@ GolapHttpClient >> a2ForUrl: url method: method [
 
 { #category : #private }
 GolapHttpClient >> authenticate [
-	self authenticateBlock
-		value: [ :username :password | 
-			| params result |
-			params := self getAuthParams ifNil: [ ^ nil ].
-			request headers
-				at: 'Authorization'
-				put:
-					(self
-						authorizationForUsername: username
-						password: password
-						params: params).
-			response := nil.
-			self prepareRequest.
-			self withProgressDo: [ result := self executeWithTimeout ].
-			self prepareNextRequest.
-			^ result ].
+
+	self authenticateBlock value: [ :username :password | 
+		| params result |
+		params := self getAuthParams ifNil: [ ^ nil ].
+		request headers at: 'Authorization' put: (self
+				 authorizationForUsername: username
+				 password: password
+				 params: params).
+		response := nil.
+		self prepareRequest.
+		self signalProgress: true.
+		result := self executeWithTimeout.
+		self prepareNextRequest.
+		^ result ].
 	^ nil
 ]
 

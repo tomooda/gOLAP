@@ -369,7 +369,23 @@ Golap >> applyMergesToModel: aGolapModel [
 
 { #category : #accessing }
 Golap >> authenticateBlock [
-	^ authenticateBlock
+
+	^ authenticateBlock ifNil: [ 
+		  | username password |
+		  username := nil.
+		  password := nil.
+		  ^ authenticateBlock := [ :auth | 
+		                         username ifNil: [ 
+			                         username := UIManager default request:
+				                                     'username' ].
+		                         username ifNotNil: [ 
+			                         password ifNil: [ 
+				                         password := UIManager default 
+					                                     requestPassword: 'password' ].
+			                         password
+				                         ifNotNil: [ 
+				                         auth value: username value: password ]
+				                         ifNil: [ username := nil ] ] ] ]
 ]
 
 { #category : #accessing }
