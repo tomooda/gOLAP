@@ -7,8 +7,8 @@ Class {
 	#category : #'Golap-UI-Query'
 }
 
-{ #category : #specs }
-GolapTransactionFilterPresenter class >> defaultSpec [
+{ #category : #layout }
+GolapTransactionFilterPresenter class >> defaultLayout [
 	<script: 'GolapTransactionFilterPresenter forCurrent openWithSpec'>
 	<spec>
 	^ SpBoxLayout newHorizontal

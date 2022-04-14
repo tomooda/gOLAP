@@ -438,7 +438,16 @@ GolapOverviewRenderer >> moveImageOffset: aPoint [
 
 { #category : #'view manipulation' }
 GolapOverviewRenderer >> moveMapOffset: aPoint [
-	self moveImageOffset: aPoint * 100.0 / mapScale
+
+	activeImage ifNil: [ ^ self ].
+	activeMap ifNil: [ ^ self ].
+	"viewOffset := aPoint x / activeImage extent x asFloat
+	              * activeMap extent x asFloat + viewOffset x
+	              @
+		              (aPoint y / activeImage extent y asFloat
+		               * activeMap extent y asFloat + viewOffset y)."
+	viewOffset := aPoint * 2.0 + viewOffset.
+	self snapshotLazy
 ]
 
 { #category : #accessing }

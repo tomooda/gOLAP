@@ -27,8 +27,8 @@ Class {
 	#category : #'Golap-UI-Query'
 }
 
-{ #category : #specs }
-GolapQueryPresenter class >> defaultSpec [
+{ #category : #layout }
+GolapQueryPresenter class >> defaultLayout [
 
 	<script: 'GolapQueryPresenter new openWithSpec'>
 	<spec>

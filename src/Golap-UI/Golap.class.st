@@ -42,7 +42,8 @@ Class {
 		'snapshotDirectory',
 		'snapshotEnabled',
 		'snapshotProcess',
-		'resentQueryButton'
+		'resentQueryButton',
+		'lastZoomTimestamp'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -208,7 +209,7 @@ Golap class >> openClient [
 	<script: 'GolapOverview openClient'>
 	| overview |
 	overview := Golap new.
-	overview openWithSpec maximize.
+	overview open maximize.
 	GolapNetworkClientPresenter
 		openDialogIfAccepted: [ :client | 
 			[ 
@@ -766,13 +767,15 @@ Golap >> includesSelection: aGolapVertex [
 
 { #category : #initialization }
 Golap >> initialize [
+
 	super initialize.
 	pins := Set new.
 	selections := Set new.
 	dimensions := OrderedDictionary new.
 	merges := OrderedCollection new.
 	rendererSelector := #overviewRenderer.
-	snapshotEnabled := true
+	snapshotEnabled := true.
+	lastZoomTimestamp := DateAndTime now
 ]
 
 { #category : #initialization }
@@ -1399,7 +1402,7 @@ Golap >> resendQuery [
 		| now |
 		now := DateAndTime now.
 		stream nextPutAll: now asDate printString , ' ' , now asTime print24 ].
-	overview openWithSpec title: overview snapshotDirectory basename.
+	overview open title: overview snapshotDirectory basename.
 	overview snapshotData: client readStream do: [ :readStream |  ].
 	overview restoreSnapshot: overview snapshotDirectory
 ]
@@ -2166,20 +2169,40 @@ Golap >> writePresetQueries: anArrayOfString [
 
 { #category : #operations }
 Golap >> zoomIn [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomIn ]
 ]
 
 { #category : #operations }
 Golap >> zoomInCenter [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomInCenter ]
 ]
 
 { #category : #operations }
 Golap >> zoomOut [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomOut ]
 ]
 
 { #category : #operations }
 Golap >> zoomOutCenter [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomOutCenter ]
 ]

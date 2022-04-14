@@ -320,7 +320,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                       minimum: 0.8;
 		                       maximum: 1.0;
 		                       number: 1.0;
-		                       whenSubmitDo: [ 
+		                       whenSubmitDo: [ :txt | 
 			                       positivePolishSlider value:
 					                       positivePolishField number.
 			                       self polish.
@@ -344,7 +344,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                       minimum: 0.0;
 		                       maximum: 0.2;
 		                       number: 0.0;
-		                       whenSubmitDo: [ 
+		                       whenSubmitDo: [ :txt | 
 			                       negativePolishSlider value:
 					                       negativePolishField number.
 			                       self polish.
@@ -354,7 +354,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                             placeholder: 'min edges';
 		                             minimum: 1;
 		                             number: 3;
-		                             whenSubmitDo: [ 
+		                             whenSubmitDo: [ :txt | 
 			                             self polish.
 			                             self snapshot ].
 	minimalSpanningTreeButton := self newButton.
@@ -373,7 +373,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                minimum: 1;
 		                number: 5;
 		                autoAccept: true;
-		                whenSubmitDo: [ 
+		                whenSubmitDo: [ :txt | 
 			                self updateGlobalImageAfter: [ self friendsGraph ] ].
 	frequencyButton := self newButton
 		                   state: false;

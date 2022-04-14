@@ -214,7 +214,7 @@ GolapItemList >> initializePresenters [
 							                  self updateGlobalImage ] ] ];
 		                  yourself.
 	lastSelectedMarkerIndex := 0.
-	queryField := self newTextInput whenSubmitDo: [ 
+	queryField := self newTextInput whenSubmitDo: [ :txt | 
 		              | text |
 		              text := queryField text asString trim.
 		              self updateGlobalImageAfter: [ 
