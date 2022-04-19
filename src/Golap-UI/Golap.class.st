@@ -1001,35 +1001,38 @@ Golap >> maxScale [
 
 { #category : #menu }
 Golap >> mergeMenu [
+
 	| menu |
 	menu := self newMenu.
-	menu
-		addGroup: [ :group | 
-			selections size > 1
-				ifTrue: [ group
-						addItem: [ :item | 
-							item
-								name: 'selections';
-								action: [ self mergeSelectedVertices ] ] ].
-			itemList markerDropList listItems
-				do: [ :listItem | 
-					| color ids |
-					color := listItem key.
-					ids := itemList markers at: color ifAbsent: [ #() ].
-					ids size > 1
-						ifTrue: [ group
-								addItem: [ :menuItem | 
-									menuItem
-										name: '';
-										icon: (self iconForCircleColor: color);
-										action: [ self mergeVertices: ids copy ] ] ] ] ].
+	menu addGroup: [ :group | 
+		selections size > 1 ifTrue: [ 
+			group addItem: [ :item | 
+				item
+					name: 'selections';
+					action: [ self mergeSelectedVertices ] ] ].
+		itemList markerDropList listItems do: [ :listItem | 
+			| color ids |
+			color := listItem key.
+			ids := itemList markers at: color ifAbsent: [ #(  ) ].
+			ids size > 1 ifTrue: [ 
+				group addItem: [ :menuItem | 
+					menuItem
+						name: '';
+						icon: (self iconForCircleColor: color);
+						action: [ 
+							(self mergeVertices: ids copy) ifNotNil: [ :newId | 
+									itemList markerDropList items do: [ :item | 
+											item key = color ifTrue: [ item value: item value, ',',newId ] ].
+									(itemList markers at: color) add: newId.
+									itemList currentMarker: color.
+									itemList updateVertexList ] ] ] ] ] ].
 	^ menu
 ]
 
 { #category : #merging }
 Golap >> mergeSelectedVertices [
-	^ selections
-		ifNotEmpty: [ self mergeVertices: selections copy ]
+	^ self selections
+		ifNotEmpty: [:vs | (self mergeVertices: (vs collect: #data)) ifNotNil: [ :newId | self select: (model vertexAt: newId) ] ]
 		ifEmpty: [ nil ]
 ]
 
@@ -1050,7 +1053,8 @@ Golap >> mergeVertices: aCollectionOfIds [
 					  merges add: nodeName -> aCollectionOfIds copy.
 					  self snapshotMerges.
 					  self updateModel.
-					  itemList updateVertexList ] ] ]
+					  itemList updateVertexList.
+					  nodeName ] ] ]
 ]
 
 { #category : #private }
