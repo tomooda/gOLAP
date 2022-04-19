@@ -35,7 +35,7 @@ Class {
 		'edgesAppearancePresenter',
 		'colorsAppearancePresenter',
 		'lastSelectedMarkerItem',
-		'saveAsSvgButton',
+		'saveAsPngButton',
 		'appearanceNotebook',
 		'itemList',
 		'itemNotebook',
@@ -43,7 +43,8 @@ Class {
 		'snapshotEnabled',
 		'snapshotProcess',
 		'resentQueryButton',
-		'lastZoomTimestamp'
+		'lastZoomTimestamp',
+		'saveAsSvgButton'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -93,6 +94,7 @@ Golap class >> defaultLayout [
 				   add: (SpBoxLayout newVertical
 						    add: #saveAsButton height: self buttonHeight;
 						    add: #saveAsSvgButton height: self buttonHeight;
+						    add: #saveAsPngButton height: self buttonHeight;
 						    add: #resentQueryButton height: self buttonHeight;
 						    add: #queryViewTree height: 200;
 						    add: #itemNotebook))
@@ -808,9 +810,9 @@ Golap >> initializePresenters [
 				                 on: #mouseMove
 				                 send: #globalMapMouseMove:
 				                 to: self;
-				                   on: #mouseUp
-				                   send: #globalMapMouseClick:
-				                   to: self;
+				                 on: #mouseUp
+				                 send: #globalMapMouseClick:
+				                 to: self;
 				                 on: #mouseWheel
 				                 send: #globalImageMouseWheel:
 				                 to: self ];
@@ -893,6 +895,10 @@ Golap >> initializePresenters [
 		                label: 'save...';
 		                action: [ self dumpToFile ];
 		                yourself.
+	saveAsPngButton := self newButton
+		                   label: 'save as PNG...';
+		                   action: [ self saveFullImage ];
+		                   yourself.
 	saveAsSvgButton := self newButton
 		                   label: 'save as SVG...';
 		                   action: [ self saveAsSVG ];
@@ -1583,6 +1589,18 @@ Golap >> saveAsSVG [
 		ifNotNil: [ :fileReference | 
 			fileReference
 				writeStreamDo: [ :stream | self renderer svg printWithPrologOn: stream ] ]
+]
+
+{ #category : #operations }
+Golap >> saveFullImage [
+
+	(UIManager default
+		 chooseForSaveFileReference: 'Save as a PNG file'
+		 extensions: #( 'png' )
+		 path: self golapDirectory) ifNotNil: [ :fileReference | 
+		fileReference binaryWriteStreamDo: [ :stream | 
+			Cursor wait showWhile: [ 
+				PNGReadWriter putForm: self renderer fullImage onStream: stream ] ] ]
 ]
 
 { #category : #'accessing-selection' }

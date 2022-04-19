@@ -350,7 +350,8 @@ GolapQueryPresenter >> networkClient: aGolapNetworkClientPresenter [
 
 { #category : #operations }
 GolapQueryPresenter >> openLowerBoundsDialog [
-	^ lowerBoundsPresenter openDialogWithSpec
+
+	^ lowerBoundsPresenter openDialog
 ]
 
 { #category : #'accessing-query' }

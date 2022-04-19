@@ -16,8 +16,8 @@ Class {
 	#category : #'Golap-UI-Graph'
 }
 
-{ #category : #specs }
-GolapItemsAppearance class >> defaultSpec [
+{ #category : #layout }
+GolapItemsAppearance class >> defaultLayout [
 	<spec>
 	^ SpPanedLayout newHorizontal
 		add:
