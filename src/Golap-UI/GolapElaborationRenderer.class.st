@@ -2,11 +2,11 @@ Class {
 	#name : #GolapElaborationRenderer,
 	#superclass : #GolapRenderer,
 	#instVars : [
-		'offset',
 		'imageScale',
 		'mapScale',
 		'roots',
-		'associates'
+		'associates',
+		'imageOffset'
 	],
 	#category : #'Golap-UI-Graph'
 }
@@ -14,6 +14,11 @@ Class {
 { #category : #drawing }
 GolapElaborationRenderer >> associateX [
 	^ self globalImageExtent x * 0.4 + self baseX
+]
+
+{ #category : #drawing }
+GolapElaborationRenderer >> associateX: extent [
+	^ extent x * 0.4 + self baseX
 ]
 
 { #category : #drawing }
@@ -102,43 +107,39 @@ GolapElaborationRenderer >> defaultImageScale [
 ]
 
 { #category : #drawing }
-GolapElaborationRenderer >> drawEdgesOn: aCanvas [
-	| maxScore scale rootIndices |
+GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset: offset [
+
+	| maxScore scoreScale rootIndices |
 	associates ifEmpty: [ ^ self ].
 	maxScore := 0.0.
-	associates
-		do:
-			[ :vertex | vertex scoresDo: [ :score | maxScore := maxScore max: score ] ].
-	scale := maxScore <= 1.0e-8
-		ifTrue: [ 0.0 ]
-		ifFalse: [ 1.0 / maxScore * self edgeScale ].
+	associates do: [ :vertex | 
+		vertex scoresDo: [ :score | maxScore := maxScore max: score ] ].
+	scoreScale := maxScore <= 1.0e-8
+		              ifTrue: [ 0.0 ]
+		              ifFalse: [ 1.0 / maxScore * self edgeScale ].
 	rootIndices := IdentityDictionary new: roots size.
-	roots
-		doWithIndex: [ :vertex :index | rootIndices at: vertex put: index ].
-	associates
-		doWithIndex: [ :vertex2 :index2 | 
-			vertex2
-				verticesAndScoresDo: [ :vertex1 :score | 
-					| point1 point2 selected |
-					point1 := (self rootX + vertex1 label width) ceiling
-						@
-							(((rootIndices at: vertex1) - offset) * imageScale
-								+ (vertex1 label height * 0.5)).
-					point2 := self associateX
-						@ ((index2 - offset) * imageScale + (vertex2 label height * 0.5)).
-					selected := (golap includesSelection: vertex1)
-						or: [ golap includesSelection: vertex2 ].
-					aCanvas
-						line: point1
-						to: point2
-						width:
-							(selected
-								ifTrue: [ 2 ]
-								ifFalse: [ 1 ])
-						color:
-							(selected
-								ifTrue: [ Color black ]
-								ifFalse: [ Color black alpha: (score * scale max: 0.1) ]) ] ]
+	roots doWithIndex: [ :vertex :index | 
+		rootIndices at: vertex put: index ].
+	associates doWithIndex: [ :vertex2 :index2 | 
+		vertex2 verticesAndScoresDo: [ :vertex1 :score | 
+			| point1 point2 selected |
+			point1 := (self rootX + vertex1 label width) ceiling
+			          @ ((rootIndices at: vertex1) - offset * scale
+				           + (vertex1 label height * 0.5)).
+			point2 := (self associateX: extent)
+			          @
+			          (index2 - offset * scale + (vertex2 label height * 0.5)).
+			selected := (golap includesSelection: vertex1) or: [ 
+				            golap includesSelection: vertex2 ].
+			aCanvas
+				line: point1
+				to: point2
+				width: (selected
+						 ifTrue: [ 2 ]
+						 ifFalse: [ 1 ])
+				color: (selected
+						 ifTrue: [ Color black ]
+						 ifFalse: [ Color black alpha: (score * scoreScale max: 0.1) ]) ] ]
 ]
 
 { #category : #drawing }
@@ -158,59 +159,101 @@ GolapElaborationRenderer >> drawLabelForVertex: aGolapVertex on: aCanvas at: aPo
 ]
 
 { #category : #drawing }
-GolapElaborationRenderer >> drawVerticesOn: aCanvas [
-	| font form x point bounds |
-	form := aCanvas form.
+GolapElaborationRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale offset: offset [
+
+	| font x point bounds |
 	x := self rootX.
 	font := TextStyle defaultFont.
-	(1 max: offset floor) to: (roots size min: (form height / imageScale + offset) ceiling + 1)
-	do: [ :index | 
-		(roots at: index ifAbsent: [ nil ])
-			ifNotNil: [ :vertex | 
-				| string |
-				point := x @ ((index asFloat - offset) * imageScale) rounded.
-				bounds := point
-					extent: (self labelExtentForVertex: vertex) - (1 @ 1).
-				string := golap simpleStringFor: (golap model valueAtVertex: vertex).
-				aCanvas drawString: string at: (point x - (font widthOfString: string) - 5 )@point y font: font color: Color gray.
-				self drawLabelForVertex: vertex on: aCanvas at: point.
-				(golap includesSelection: vertex)
-					ifTrue: [ aCanvas frameRectangle: bounds width: 2 color: Color black ].
-				golap
-					markersAndVerticesDo: [ :color :vs | 
-						color
-							ifNotNil: [ (vs includes: vertex)
-									ifTrue: [ bounds := bounds expandBy: 4 @ 4.
-										aCanvas frameRectangle: bounds width: 4 color: color ] ] ] ] ].
-	x := self associateX.
-	(1 max: offset floor) to: (associates size min: (form height / imageScale + offset) ceiling + 1)
-	do: [ :index | 
-		(associates at: index ifAbsent: [ nil ])
-			ifNotNil: [ :vertex | 
-				point := x @ ((index asFloat - offset) * imageScale) rounded.
-				bounds := (point x + self barWidth @ point y)
-					extent: (vertex label extent) - (self barWidth @ 0).
-				aCanvas paintImage: vertex label at: point.
-				(golap includesSelection: vertex)
-					ifTrue: [ aCanvas frameRectangle: bounds width: 2 color: Color black ].
-				golap
-					markersAndVerticesDo: [ :color :vs | 
-						color
-							ifNotNil: [ (vs includes: vertex)
-									ifTrue: [ bounds := bounds expandBy: 4 @ 4.
-										aCanvas frameRectangle: bounds width: 4 color: color ] ] ] ] ]
+	(1 max: offset floor) to:
+		(roots size min: (extent y / scale + offset) ceiling + 1) do: [ 
+		:index | 
+		(roots at: index ifAbsent: [ nil ]) ifNotNil: [ :vertex | 
+			| string |
+			point := x @ (index asFloat - offset * scale) rounded.
+			bounds := point extent:
+				          (self labelExtentForVertex: vertex) - (1 @ 1).
+			string := golap simpleStringFor:
+				          (golap model valueAtVertex: vertex).
+			aCanvas
+				drawString: string
+				at: point x - (font widthOfString: string) - 5 @ point y
+				font: font
+				color: Color gray.
+			self drawLabelForVertex: vertex on: aCanvas at: point.
+			(golap includesSelection: vertex) ifTrue: [ 
+				aCanvas frameRectangle: bounds width: 2 color: Color black ].
+			golap markersAndVerticesDo: [ :color :vs | 
+				color ifNotNil: [ 
+					(vs includes: vertex) ifTrue: [ 
+						bounds := bounds expandBy: 4 @ 4.
+						aCanvas frameRectangle: bounds width: 4 color: color ] ] ] ] ].
+	x := self associateX: extent.
+	(1 max: offset floor) to:
+		(associates size min: (extent y / scale + offset) ceiling + 1) do: [ 
+		:index | 
+		(associates at: index ifAbsent: [ nil ]) ifNotNil: [ :vertex | 
+			point := x @ (index asFloat - offset * scale) rounded.
+			bounds := point x + self barWidth @ point y extent:
+				          vertex label extent - (self barWidth @ 0).
+			aCanvas paintImage: vertex label at: point.
+			(golap includesSelection: vertex) ifTrue: [ 
+				aCanvas frameRectangle: bounds width: 2 color: Color black ].
+			golap markersAndVerticesDo: [ :color :vs | 
+				color ifNotNil: [ 
+					(vs includes: vertex) ifTrue: [ 
+						bounds := bounds expandBy: 4 @ 4.
+						aCanvas frameRectangle: bounds width: 4 color: color ] ] ] ] ]
+]
+
+{ #category : #drawing }
+GolapElaborationRenderer >> fullBoundsWithMargin: aNumber [
+
+	^ 0 @ 0 extent:
+		  aNumber * 2.0 + 1200
+		  @ ((roots size max: associates size) * imageScale
+			   + TextStyle defaultFont height + (aNumber * 2.0))
+]
+
+{ #category : #drawing }
+GolapElaborationRenderer >> fullImage [
+
+	| bounds form canvas |
+	bounds := self fullBoundsWithMargin: 50.0.
+	form := Form extent: bounds extent depth: 32.
+	self updateVisibleEdgeThresholds.
+	canvas := form getCanvas.
+	canvas fillColor: Color white.
+	self
+		drawEdgesOn: canvas
+		extent: bounds extent
+		scale: imageScale
+		offset: 0.0;
+		drawVerticesOn: canvas
+		extent: bounds extent
+		scale: imageScale
+		offset: 0.0;
+		yourself.
+	canvas flush.
+	^ form
 ]
 
 { #category : #drawing }
 GolapElaborationRenderer >> globalImage [
+
 	| form canvas |
 	form := Form extent: self globalImageExtent depth: 32.
 	self updateVisibleEdgeThresholds.
 	canvas := form getCanvas.
 	canvas fillColor: Color white.
 	self
-		drawEdgesOn: canvas;
-		drawVerticesOn: canvas;
+		drawEdgesOn: canvas
+		extent: form extent
+		scale: imageScale
+		offset: imageOffset;
+		drawVerticesOn: canvas
+		extent: form extent
+		scale: imageScale
+		offset: imageOffset;
 		yourself.
 	canvas flush.
 	^ form
@@ -231,8 +274,8 @@ GolapElaborationRenderer >> globalMap [
 	height := self globalImageExtent y asFloat / imageScale.
 	canvas
 		frameRectangle:
-			(10 @ (offset * mapScale) floor
-				corner: (form width - 10) @ ((offset + height) * mapScale) ceiling)
+			(10 @ (imageOffset * mapScale) floor
+				corner: (form width - 10) @ ((imageOffset + height) * mapScale) ceiling)
 		color: Color red.
 	x := 50.
 	1 to: roots size do: [ :index | 
@@ -259,7 +302,7 @@ GolapElaborationRenderer >> initialize [
 	super initialize.
 	mapScale := 1.0.
 	imageScale := 1.0.
-	offset := 0.0
+	imageOffset := 0.0
 ]
 
 { #category : #drawing }
@@ -279,13 +322,13 @@ GolapElaborationRenderer >> layout [
 
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> moveImageOffset: aPoint [
-	offset := aPoint y negated / imageScale + offset.
+	imageOffset := aPoint y negated / imageScale + imageOffset.
 	self snapshotLazy
 ]
 
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> moveMapOffset: aPoint [
-	offset := aPoint y negated / mapScale + offset.
+	imageOffset := aPoint y negated / mapScale + imageOffset.
 	self snapshotLazy
 ]
 
@@ -304,7 +347,7 @@ GolapElaborationRenderer >> resetZoom [
 GolapElaborationRenderer >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next
-		at: 'offset' ifPresent: [ :float | offset := float ];
+		at: 'offset' ifPresent: [ :float | imageOffset := float ];
 		at: 'scale' ifPresent: [ :float | imageScale := float ]
 ]
 
@@ -317,7 +360,7 @@ GolapElaborationRenderer >> rootX [
 GolapElaborationRenderer >> snapshotInto: aStream [
 
 	(NeoJSONWriter on: aStream) nextPut: { 
-			('offset' -> offset).
+			('offset' -> imageOffset).
 			('scale' -> imageScale) } asOrderedDictionary
 ]
 
@@ -329,14 +372,22 @@ GolapElaborationRenderer >> snapshotStreamDo: aBlock [
 
 { #category : #drawing }
 GolapElaborationRenderer >> svg [
-	| svg canvas |
-	svg := XenqSVG extent: self globalImageExtent.
+
+	| bounds svg canvas |
+	bounds := self fullBoundsWithMargin: 50.
+	svg := XenqSVG extent: bounds.
 	self updateVisibleEdgeThresholds.
 	canvas := svg getCanvas.
 	canvas fillColor: Color white.
 	self
-		drawEdgesOn: canvas;
-		drawVerticesOn: canvas;
+		drawEdgesOn: canvas
+		extent: bounds extent
+		scale: imageScale
+		offset: 50.0;
+		drawVerticesOn: canvas
+		extent: bounds extent
+		scale: imageScale
+		offset: 50.0;
 		yourself.
 	canvas flush.
 	^ svg
@@ -380,12 +431,12 @@ GolapElaborationRenderer >> updateRootsAndAssociates [
 { #category : #accessing }
 GolapElaborationRenderer >> vertexAtPoint: aPoint [
 	| index |
-	index := (aPoint y / imageScale + offset) floor.
+	index := (aPoint y / imageScale + imageOffset) floor.
 	self associateX <= aPoint x
 		ifTrue: [ | vertex |
 			vertex := associates at: index ifAbsent: [ ^ nil ].
 			vertex label ifNil: [ ^ nil ].
-			^ ((aPoint y - ((index - offset) * imageScale)
+			^ ((aPoint y - ((index - imageOffset) * imageScale)
 				between: 0.0
 				and: vertex label height)
 				and: [ aPoint x
@@ -396,7 +447,7 @@ GolapElaborationRenderer >> vertexAtPoint: aPoint [
 		ifFalse: [ | vertex |
 			vertex := roots at: index ifAbsent: [ ^ nil ].
 			vertex label ifNil: [ ^ nil ].
-			^ ((aPoint y - ((index - offset) * imageScale)
+			^ ((aPoint y - ((index - imageOffset) * imageScale)
 				between: 0.0
 				and: vertex label height)
 				and: [ aPoint x between: self rootX and: self rootX + vertex label width ])
@@ -410,18 +461,18 @@ GolapElaborationRenderer >> zoom: aNumber [
 	handPosition := self currentHand position.
 	oldCenterIndex := (golap globalMapPane adapter widget bounds
 		containsPoint: handPosition)
-		ifTrue: [ self globalImageExtent y / imageScale * 0.5 + offset ]
+		ifTrue: [ self globalImageExtent y / imageScale * 0.5 + imageOffset ]
 		ifFalse: [ (handPosition y - golap globalImagePane adapter widget bounds top)
-				/ imageScale + 1 + offset ].
+				/ imageScale + 1 + imageOffset ].
 	imageScale := imageScale * aNumber
 		min: self globalImageExtent y - 10
 		max: 10.0.
 	newCenterIndex := (golap globalMapPane adapter widget bounds
 		containsPoint: handPosition)
-		ifTrue: [ self globalImageExtent y / imageScale * 0.5 + offset ]
+		ifTrue: [ self globalImageExtent y / imageScale * 0.5 + imageOffset ]
 		ifFalse: [ (handPosition y - golap globalImagePane adapter widget bounds top)
-				/ imageScale + 1 + offset ].
-	offset := oldCenterIndex - newCenterIndex + offset.
+				/ imageScale + 1 + imageOffset ].
+	imageOffset := oldCenterIndex - newCenterIndex + imageOffset.
 	self snapshotLazy
 ]
 

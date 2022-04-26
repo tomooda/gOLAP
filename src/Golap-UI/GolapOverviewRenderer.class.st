@@ -270,10 +270,10 @@ GolapOverviewRenderer >> drawVertexLabelFor: aGolapVertex at: aPoint color: aCol
 ]
 
 { #category : #drawing }
-GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale offset: offset [
+GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale offset: offset numLabels: numLabels [
 
 	self modelDo: [ :model | 
-		| freqScale labelOffset numLabels labelVertices |
+		| freqScale labelOffset labelVertices |
 		freqScale := 30.0
 		             /
 			             ((self vertices collect: [ :v | 
@@ -281,7 +281,6 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 				              ifEmpty: [ 1 ]
 				              ifNotEmpty: #max).
 		labelOffset := 15 @ (self font height * -0.5).
-		numLabels := (50.0 ** golap numLabels) truncated.
 		labelVertices := SortedCollection sortBlock: [ :more :less | 
 			                 less value <= more value ].
 		reallyVisibleVertices do: [ :vertex | 
@@ -305,8 +304,8 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 									width: 4
 									color: color ] ] ].
 					labelVertices add: vertex -> (model valueAtVertex: vertex).
-					labelVertices size > numLabels ifTrue: [ 
-						labelVertices removeLast ] ] ] ].
+					(numLabels notNil and: [ labelVertices size > numLabels ]) 
+						ifTrue: [ labelVertices removeLast ] ] ] ].
 		labelVertices do: [ :assoc | 
 			| vertex |
 			vertex := assoc key.
@@ -359,7 +358,8 @@ GolapOverviewRenderer >> fullImage [
 				drawVerticesOn: canvas
 				extent: extent
 				scale: scale
-				offset: offset.
+				offset: offset
+				numLabels: nil.
 			self
 				drawEdgesOn: canvas
 				extent: extent
@@ -394,7 +394,8 @@ GolapOverviewRenderer >> globalImage [
 				drawVerticesOn: canvas
 				extent: form extent
 				scale: self scale
-				offset: viewOffset.
+				offset: viewOffset
+				numLabels: (50.0 ** golap numLabels) truncated.
 			self
 				drawEdgesOn: canvas
 				extent: form extent
@@ -588,7 +589,8 @@ GolapOverviewRenderer >> svg [
 				drawVerticesOn: canvas
 				extent: extent
 				scale: scale
-				offset: offset.
+				offset: offset
+				numLabels: nil.
 			self
 				drawEdgesOn: canvas
 				extent: extent
