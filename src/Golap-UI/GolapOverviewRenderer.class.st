@@ -273,7 +273,7 @@ GolapOverviewRenderer >> drawVertexLabelFor: aGolapVertex at: aPoint color: aCol
 GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale offset: offset numLabels: numLabels [
 
 	self modelDo: [ :model | 
-		| freqScale labelOffset labelVertices |
+		| freqScale labelOffset labelVertices markersAndVertices |
 		freqScale := 30.0
 		             /
 			             ((self vertices collect: [ :v | 
@@ -283,6 +283,10 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 		labelOffset := 15 @ (self font height * -0.5).
 		labelVertices := SortedCollection sortBlock: [ :more :less | 
 			                 less value <= more value ].
+		markersAndVertices := Array streamContents: [ :stream | 
+			                      golap markersAndVerticesDo: [ :color :vs | 
+				                      color ifNotNil: [ 
+					                      stream nextPut: color -> vs asIdentitySet ] ] ].
 		reallyVisibleVertices do: [ :vertex | 
 			| p |
 			(self colorForVertex: vertex) ifNotNil: [ :c | 
@@ -295,14 +299,13 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 					aCanvas
 						fillOval: (Rectangle center: p extent: r asPoint)
 						color: c.
-					golap markersAndVerticesDo: [ :color :vs | 
-						color ifNotNil: [ 
-							(vs includes: vertex) ifTrue: [ 
-								r := r + 8.
-								aCanvas
-									frameOval: (Rectangle center: p extent: r asPoint)
-									width: 4
-									color: color ] ] ].
+					markersAndVertices do: [ :colorAndVs | 
+						(colorAndVs value  includes: vertex) ifTrue: [ 
+							r := r + 8.
+							aCanvas
+								frameOval: (Rectangle center: p extent: r asPoint)
+								width: 4
+								color: colorAndVs key ] ].
 					labelVertices add: vertex -> (model valueAtVertex: vertex).
 					(numLabels notNil and: [ labelVertices size > numLabels ]) 
 						ifTrue: [ labelVertices removeLast ] ] ] ].
@@ -345,7 +348,7 @@ GolapOverviewRenderer >> fullImage [
 
 	| bounds extent form offset scale |
 	self updateVisibleEdgeThresholds.
-	bounds := self fullBoundsWithMargin: 200@50.
+	bounds := self fullBoundsWithMargin: 200 @ 50.
 	extent := bounds extent.
 	offset := bounds origin negated.
 	scale := self scale.
