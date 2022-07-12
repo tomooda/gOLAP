@@ -23,8 +23,7 @@ Class {
 		'negativePolishField',
 		'negativePolishSlider',
 		'polishMinDenominatorField',
-		'polishIterationCheckbox',
-		'snapshotProcess'
+		'polishIterationCheckbox'
 	],
 	#classVars : [
 		'NamedColors'
@@ -132,8 +131,7 @@ GolapEdgesAppearance >> averageMode [
 			sumButton state: false.
 			averageButton state: true.
 			degreeButton state: false.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #operations }
@@ -146,8 +144,7 @@ GolapEdgesAppearance >> degreeMode [
 			sumButton state: false.
 			averageButton state: false.
 			degreeButton state: true.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #accessing }
@@ -158,8 +155,7 @@ GolapEdgesAppearance >> edgeScale [
 { #category : #accessing }
 GolapEdgesAppearance >> edgeScale: aNumber [
 
-	self updateGlobalImageAfter: [ edgeScale := aNumber ].
-	self snapshotLazy
+	self updateGlobalImageAfter: [ edgeScale := aNumber ]
 ]
 
 { #category : #operations }
@@ -172,8 +168,7 @@ GolapEdgesAppearance >> freqMode [
 			sumButton state: false.
 			averageButton state: false.
 			degreeButton state: false.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #operations }
@@ -189,8 +184,7 @@ GolapEdgesAppearance >> frequencyMode [
 			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #accessing }
@@ -206,8 +200,7 @@ GolapEdgesAppearance >> friendsGraph [
 	self updateGlobalImageAfter: [ 
 		fullGraphButton state: false.
 		minimalSpanningTreeButton state: false.
-		golap flushVisibleEdges ].
-	self snapshot
+		golap flushVisibleEdges ]
 ]
 
 { #category : #operations }
@@ -217,8 +210,7 @@ GolapEdgesAppearance >> fullGraph [
 		fullGraphButton state: true.
 		minimalSpanningTreeButton state: false.
 		golap flushVisibleEdges.
-		golap model ifNotNil: [ :model | model setFullGraphMode ] ].
-	self snapshot
+		golap model ifNotNil: [ :model | model setFullGraphMode ] ]
 ]
 
 { #category : #accessing }
@@ -279,8 +271,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                            value: 0.0;
 		                            quantum: 0.05;
 		                            whenValueChangedDo: [ 
-			                            self updateGlobalImageAfter: [  ].
-			                            self snapshotLazy ];
+			                            self updateGlobalImageAfter: [  ] ];
 		                            borderWidth: 0;
 		                            yourself.
 	visibleEdgeMaxPercentile := self newSlider
@@ -290,16 +281,13 @@ GolapEdgesAppearance >> initializePresenters [
 		                            value: 1.0;
 		                            quantum: 0.05;
 		                            whenValueChangedDo: [ 
-			                            self updateGlobalImageAfter: [  ].
-			                            self snapshotLazy ];
+			                            self updateGlobalImageAfter: [  ] ];
 		                            borderWidth: 0;
 		                            yourself.
 	polishIterationCheckbox := self newCheckBox
 		                           label: '繰り返し';
 		                           state: false;
-		                           whenChangedDo: [ 
-			                           self polish.
-			                           self snapshot ];
+		                           whenChangedDo: [ self polish ];
 		                           yourself.
 	positivePolishSlider := self newSlider
 		                        label: '+研磨';
@@ -310,8 +298,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                        whenValueChangedDo: [ 
 			                        positivePolishField number:
 					                        positivePolishSlider value.
-			                        self polish.
-			                        self snapshotLazy ];
+			                        self polish ];
 		                        borderWidth: 0;
 		                        yourself.
 	positivePolishField := self newNumberInput
@@ -323,8 +310,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                       whenSubmitDo: [ :txt | 
 			                       positivePolishSlider value:
 					                       positivePolishField number.
-			                       self polish.
-			                       self snapshot ].
+			                       self polish ].
 	negativePolishSlider := self newSlider
 		                        label: '-研磨';
 		                        min: 0.0;
@@ -334,8 +320,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                        whenValueChangedDo: [ 
 			                        negativePolishField number:
 					                        negativePolishSlider value.
-			                        self polish.
-			                        self snapshotLazy ];
+			                        self polish ];
 		                        borderWidth: 0;
 		                        yourself.
 	negativePolishField := self newNumberInput
@@ -347,19 +332,16 @@ GolapEdgesAppearance >> initializePresenters [
 		                       whenSubmitDo: [ :txt | 
 			                       negativePolishSlider value:
 					                       negativePolishField number.
-			                       self polish.
-			                       self snapshot ].
+			                       self polish ].
 	polishMinDenominatorField := self newNumberInput
 		                             beInteger;
 		                             placeholder: 'min edges';
 		                             minimum: 1;
 		                             number: 3;
-		                             whenSubmitDo: [ :txt | 
-			                             self polish.
-			                             self snapshot ].
+		                             whenSubmitDo: [ :txt | self polish ].
 	minimalSpanningTreeButton := self newButton.
 	minimalSpanningTreeButton
-		state: true;
+		state: false;
 		label: 'minimum spanning tree';
 		action: [ self minimalSpanningTree ].
 	fullGraphButton := self newButton.
@@ -441,8 +423,7 @@ GolapEdgesAppearance >> jaccardMode [
 			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #operations }
@@ -458,8 +439,7 @@ GolapEdgesAppearance >> liftMode [
 			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #operations }
@@ -472,8 +452,7 @@ GolapEdgesAppearance >> maxMode [
 			sumButton state: false.
 			averageButton state: false.
 			degreeButton state: false.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #operations }
@@ -483,8 +462,7 @@ GolapEdgesAppearance >> minimalSpanningTree [
 		fullGraphButton state: false.
 		minimalSpanningTreeButton state: true.
 		golap flushVisibleEdges.
-		golap model ifNotNil: [ :model | model setTreeMode ].
-		self snapshot ]
+		golap model ifNotNil: [ :model | model setTreeMode ] ]
 ]
 
 { #category : #accessing }
@@ -517,8 +495,7 @@ GolapEdgesAppearance >> pmiMode [
 			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #operations }
@@ -651,9 +628,6 @@ GolapEdgesAppearance >> setModelToSumMode [
 { #category : #snapshot }
 GolapEdgesAppearance >> snapshot [
 
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
 	golap snapshotEdgesAppearance: [ :stream | self snapshotInto: stream ]
 ]
 
@@ -688,20 +662,6 @@ GolapEdgesAppearance >> snapshotInto: aStream [
 	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
-{ #category : #snapshot }
-GolapEdgesAppearance >> snapshotLazy [
-
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
-	snapshotProcess := [ 
-	                   1 seconds wait.
-	                   snapshotProcess := nil.
-	                   golap snapshotEdgesAppearance: [ :stream | 
-		                   self snapshotInto: stream ] ] forkAt:
-		                   Processor userBackgroundPriority
-]
-
 { #category : #operations }
 GolapEdgesAppearance >> sumMode [
 
@@ -712,8 +672,7 @@ GolapEdgesAppearance >> sumMode [
 			sumButton state: true.
 			averageButton state: false.
 			degreeButton state: false.
-			golap updateQuery ].
-		self snapshot ]
+			golap updateQuery ] ]
 ]
 
 { #category : #operations }

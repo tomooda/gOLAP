@@ -41,10 +41,10 @@ Class {
 		'itemNotebook',
 		'snapshotDirectory',
 		'snapshotEnabled',
-		'snapshotProcess',
 		'resentQueryButton',
 		'lastZoomTimestamp',
-		'saveAsSvgButton'
+		'saveAsSvgButton',
+		'saveSnapshotButton'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -92,7 +92,7 @@ Golap class >> defaultLayout [
 				   positionOfSlider: 0.75;
 				   add: #globalImagePane;
 				   add: (SpBoxLayout newVertical
-						    add: #saveAsButton height: self buttonHeight;
+						    add: #saveSnapshotButton height: self buttonHeight;
 						    add: #saveAsSvgButton height: self buttonHeight;
 						    add: #saveAsPngButton height: self buttonHeight;
 						    add: #resentQueryButton height: self buttonHeight;
@@ -476,11 +476,11 @@ Golap >> copyFromQueryViewTree [
 ]
 
 { #category : #snapshot }
-Golap >> createSnapshotDirectory [
+Golap >> createTemporarySnapshotDirectory [
 
 	^ url ifNotNil: [ 
 		  | ref |
-		  ref := (self golapDirectory / 'snapshots'
+		  ref := (self golapDirectory / self temporaryDirectoryName
 		          /
 			          (url host asString , '--' , DateAndTime now printString
 			           , '--'
@@ -907,6 +907,10 @@ Golap >> initializePresenters [
 		                     label: 'resend query';
 		                     action: [ self resendQuery ];
 		                     yourself.
+	saveSnapshotButton := self newButton
+		                      label: 'save snapshot...';
+		                      action: [ self saveSnapshot ];
+		                      yourself.
 	queryViewTree := self newTreeTable
 		                 addColumn:
 			                 (SpStringTableColumn evaluated: [ :assoc | 
@@ -948,8 +952,15 @@ Golap >> initializePresenters [
 Golap >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter
-		title: 'gOLAP overview';
+		title: self title;
 		initialExtent: World extent
+]
+
+{ #category : #snapshot }
+Golap >> isTemporarySnapshot [
+
+	^ self snapshotDirectory parent basename
+	  = self temporaryDirectoryName
 ]
 
 { #category : #accessing }
@@ -1051,7 +1062,6 @@ Golap >> mergeVertices: aCollectionOfIds [
 					  nil ]
 				  ifFalse: [ 
 					  merges add: nodeName -> aCollectionOfIds copy.
-					  self snapshotMerges.
 					  self updateModel.
 					  itemList updateVertexList.
 					  nodeName ] ] ]
@@ -1221,8 +1231,7 @@ Golap >> query [
 { #category : #accessing }
 Golap >> query: aDictionary [
 
-	self setQuery: aDictionary.
-	self snapshotQuery
+	self setQuery: aDictionary
 ]
 
 { #category : #menu }
@@ -1558,6 +1567,7 @@ Golap >> restoreSelections [
 { #category : #snapshot }
 Golap >> restoreSnapshot: aFileReference [
 
+	self window ifNotNil: [ :w | w title: aFileReference basename ].
 	snapshotDirectory := aFileReference.
 	self disableSnapshotWhile: [ 
 		self
@@ -1607,14 +1617,45 @@ Golap >> saveFullImage [
 				PNGReadWriter putForm: self renderer fullImage onStream: stream ] ] ]
 ]
 
+{ #category : #snapshot }
+Golap >> saveSnapshot [
+
+	| newSnapshotRef |
+	newSnapshotRef := self snapshotBaseDirectory / ((UIManager default
+		                    request: 'スナップショット名'
+		                    initialAnswer: (self isTemporarySnapshot
+				                     ifTrue: [ '' ]
+				                     ifFalse: [ self snapshotDirectory basename ])) 
+		                   ifNil: [ ^ self ]).
+	newSnapshotRef ~= self snapshotDirectory ifTrue: [ 
+		newSnapshotRef exists ifTrue: [ 
+			(UIManager confirm: newSnapshotRef basename , 'は既に存在しています。上書きしますか？')
+				ifTrue: [ newSnapshotRef ensureDeleteAll ]
+				ifFalse: [ ^ self ] ].
+		self snapshotDirectory copyAllTo: newSnapshotRef.
+		(self isTemporarySnapshot or: [ 
+			 UIManager confirm: self snapshotDirectory basename , 'を削除しますか？' ]) 
+			ifTrue: [ self snapshotDirectory ensureDeleteAll ].
+		snapshotDirectory := newSnapshotRef ].
+	self snapshotGlobalImage.
+	self snapshotMerges.
+	self snapshotSelections.
+	colorsAppearancePresenter snapshot.
+	edgesAppearancePresenter snapshot.
+	itemsAppearancePresenter snapshot.
+	itemList snapshot.
+	itemView snapshot.
+	elaborationRenderer ifNotNil: #snapshot.
+	overviewRenderer ifNotNil: #snapshot
+]
+
 { #category : #'accessing-selection' }
 Golap >> select: aGolapVertex [
 
 	self updateGlobalImageAfter: [ 
 		aGolapVertex dataDo: [ :data | selections add: data ].
 		selectedEdges := nil.
-		self showItemView: aGolapVertex ].
-	self snapshotSelections
+		self showItemView: aGolapVertex ]
 ]
 
 { #category : #'accessing-dimensions' }
@@ -1639,7 +1680,6 @@ Golap >> selectedFrontDimension [
 { #category : #'accessing-dimensions' }
 Golap >> selectedModel [
 
-	self snapshotSelections.
 	^ (self selectedFrontDimension ifNil: [ nil ] ifNotNil: [ :front | 
 		   self selectedBaseDimension ifNil: [ front ] ifNotNil: [ :base | 
 			   self
@@ -1676,8 +1716,7 @@ Golap >> selectionsAdd: aGolapVertex [
 
 	self updateGlobalImageAfter: [ 
 		aGolapVertex dataDo: [ :data | selections add: data ].
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-selection' }
@@ -1686,8 +1725,7 @@ Golap >> selectionsAddAll: aCollectionOfGolapVertex [
 	self updateGlobalImageAfter: [ 
 		aCollectionOfGolapVertex do: [ :vertex | 
 			vertex dataDo: [ :data | selections add: data ] ].
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-renderer' }
@@ -1696,8 +1734,7 @@ Golap >> setElaborationRenderer [
 	self updateGlobalImageAfter: [ 
 		rendererSelector := #elaborationRenderer.
 		elaborationRendererButton state: true.
-		overviewRendererButton state: false ].
-	self snapshotSelections
+		overviewRendererButton state: false ]
 ]
 
 { #category : #'accessing-renderer' }
@@ -1708,48 +1745,17 @@ Golap >> setOverviewRenderer [
 			rendererSelector := #overviewRenderer.
 			elaborationRendererButton state: false.
 			overviewRendererButton state: true ]
-		layout: (self vertices anySatisfy: [ :v | v asPoint isNil ]).
-	self snapshotSelections
+		layout: (self vertices anySatisfy: [ :v | v asPoint isNil ])
 ]
 
 { #category : #accessing }
 Golap >> setQuery: aDictionary [
+
 	query := aDictionary.
-	self window
-		title:
-			'gOLAP overview'
-				,
-					((String
-						streamContents: [ :stream | 
-							query
-								at: 'query'
-								ifPresent: [ :q | 
-									q
-										at: 'traFilter'
-										ifPresent: [ :traFilter | 
-											stream
-												nextPutAll: 'traFilter:';
-												nextPutAll: traFilter;
-												nextPutAll: ', ' ].
-									q
-										at: 'itemFilter'
-										ifPresent: [ :itemFilter | 
-											stream
-												nextPutAll: 'itemFilter:';
-												nextPutAll: itemFilter;
-												nextPutAll: ', ' ].
-									q
-										at: 'dimensions'
-										ifPresent: [ :ds | 
-											stream
-												nextPutAll: 'dimensions:';
-												nextPutAll: ds;
-												nextPutAll: ', ' ] ] ])
-						ifNotEmpty: [ :str | ' - ' , (str copyFrom: 1 to: str size - 2) ]).
-	queryViewTree
-		roots:
-			(query keys asSortedCollection
-				collect: [ :key | key -> (query at: key) ]).
+
+	queryViewTree roots:
+		(query keys asSortedCollection collect: [ :key | 
+			 key -> (query at: key) ]).
 	itemView ifNotNil: [ itemView query: aDictionary ]
 ]
 
@@ -1797,6 +1803,20 @@ Golap >> simpleStringFor: aNumber [
 ]
 
 { #category : #snapshot }
+Golap >> snapshotBaseDirectory [
+
+	^ (self golapDirectory / self snapshotBaseDirectoryName)
+		  ensureCreateDirectory;
+		  yourself
+]
+
+{ #category : #snapshot }
+Golap >> snapshotBaseDirectoryName [
+
+	^ 'snapshots'
+]
+
+{ #category : #snapshot }
 Golap >> snapshotColorsAppearance: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -1807,6 +1827,8 @@ Golap >> snapshotColorsAppearance: aBlock [
 
 { #category : #snapshot }
 Golap >> snapshotData: aReadStream do: aBlock [
+
+	self snapshotQuery.
 	aReadStream
 		ifNotNil: [ 
 			self snapshotDirectory
@@ -1831,7 +1853,7 @@ Golap >> snapshotData: aReadStream do: aBlock [
 Golap >> snapshotDirectory [
 
 	^ (snapshotDirectory ifNil: [ 
-		   snapshotDirectory := self createSnapshotDirectory ifNil: [ ^ nil ] ])
+		   snapshotDirectory := self createTemporarySnapshotDirectory ifNil: [ ^ nil ] ])
 		  ensureCreateDirectory
 ]
 
@@ -1950,6 +1972,21 @@ Golap >> sumMode [
 	edgesAppearancePresenter sumMode
 ]
 
+{ #category : #snapshot }
+Golap >> temporaryDirectoryName [
+
+	^ 'temporary'
+]
+
+{ #category : #accessing }
+Golap >> title [
+
+	^ (self basicSnapshotDirectory notNil and: [ 
+		   self isTemporarySnapshot not ])
+		  ifTrue: [ self snapshotDirectory basename ]
+		  ifFalse: [ 'gOLAP' ]
+]
+
 { #category : #'accessing-selection' }
 Golap >> togglePin: aGolapVertex [
 
@@ -1958,8 +1995,7 @@ Golap >> togglePin: aGolapVertex [
 		id := aGolapVertex data.
 		(pins includes: id)
 			ifTrue: [ pins remove: id ]
-			ifFalse: [ pins add: id ] ].
-	self snapshotSelections
+			ifFalse: [ pins add: id ] ]
 ]
 
 { #category : #'accessing-selection' }
@@ -2006,7 +2042,6 @@ Golap >> unmergeMenu [
 Golap >> unmergeVertex: aString [
 
 	merges removeAllSuchThat: [ :assoc | assoc key = aString ].
-	self snapshotMerges.
 	self updateModel.
 	itemList updateVertexList
 ]
@@ -2017,8 +2052,7 @@ Golap >> unselect: aGolapVertex [
 	self updateGlobalImageAfter: [ 
 		aGolapVertex dataDo: [ :data | 
 			selections remove: data ifAbsent: [  ] ].
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-selection' }
@@ -2026,8 +2060,7 @@ Golap >> unselectAll [
 
 	self updateGlobalImageAfter: [ 
 		selections removeAll.
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-dimensions' }
@@ -2043,13 +2076,7 @@ Golap >> updateGlobalImage [
 	| imageAndMap |
 	imageAndMap := self renderer globalImageAndMap.
 	globalImagePane image: imageAndMap first.
-	globalMapPane image: imageAndMap second.
-	snapshotProcess ifNotNil: [ snapshotProcess terminate ].
-	snapshotProcess := [ 
-	                   5 seconds wait.
-	                   snapshotProcess := nil.
-	                   self snapshotGlobalImage ] forkAt:
-		                   Processor userBackgroundPriority
+	globalMapPane image: imageAndMap second
 ]
 
 { #category : #drawing }
@@ -2102,8 +2129,7 @@ Golap >> url [
 { #category : #accessing }
 Golap >> url: aZnUrl [
 
-	url := aZnUrl asUrl.
-	self snapshotQuery
+	url := aZnUrl asUrl
 ]
 
 { #category : #accessing }

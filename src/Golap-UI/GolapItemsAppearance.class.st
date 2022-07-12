@@ -7,8 +7,7 @@ Class {
 		'showConnectedVerticesCheckBox',
 		'numLabelsSlider',
 		'fontButton',
-		'golap',
-		'snapshotProcess'
+		'golap'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -61,8 +60,7 @@ GolapItemsAppearance >> initializePresenters [
 		                                label: 'isolated';
 		                                state: false;
 		                                whenChangedDo: [ :value | 
-			                                golap updateGlobalImageAfter: [  ].
-			                                self snapshot ];
+			                                golap updateGlobalImageAfter: [  ] ];
 		                                yourself.
 	showHiddenConnectionVerticesCheckBox := self newCheckBox
 		                                        label: 'hidden';
@@ -70,15 +68,13 @@ GolapItemsAppearance >> initializePresenters [
 		                                        whenChangedDo: [ :value | 
 			                                        golap 
 				                                        updateGlobalImageAfter: [ 
-					                                         ].
-			                                        self snapshot ];
+					                                         ] ];
 		                                        yourself.
 	showConnectedVerticesCheckBox := self newCheckBox
 		                                 label: 'connected';
 		                                 state: true;
 		                                 whenChangedDo: [ :value | 
-			                                 golap updateGlobalImageAfter: [  ].
-			                                 self snapshot ];
+			                                 golap updateGlobalImageAfter: [  ] ];
 		                                 yourself.
 	numLabelsSlider := self newSlider
 		                   label: 'labels';
@@ -90,8 +86,7 @@ GolapItemsAppearance >> initializePresenters [
 			                   golap updateGlobalImageAfter: [ 
 					                   numLabelsSlider label:
 							                   (50.0 ** value) truncated printString
-							                   , ' labels' ].
-			                   self snapshotLazy ];
+							                   , ' labels' ] ];
 		                   yourself.
 	fontButton := self newButton
 		              label: 'font';
@@ -148,9 +143,6 @@ GolapItemsAppearance >> showsIsolatedVertices [
 { #category : #snapshot }
 GolapItemsAppearance >> snapshot [
 
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
 	golap snapshotItemsAppearance: [ :stream | self snapshotInto: stream ]
 ]
 
@@ -164,18 +156,4 @@ GolapItemsAppearance >> snapshotInto: aStream [
 			('show-connected-vertices' -> showConnectedVerticesCheckBox state).
 			('max-display-labels' -> numLabelsSlider value) }
 			asOrderedDictionary
-]
-
-{ #category : #snapshot }
-GolapItemsAppearance >> snapshotLazy [
-
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
-	snapshotProcess := [ 
-	                   1 seconds wait.
-	                   snapshotProcess := nil.
-	                   golap snapshotItemsAppearance: [ :stream | 
-		                   self snapshotInto: stream ] ] forkAt:
-		                   Processor userBackgroundPriority
 ]

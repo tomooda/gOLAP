@@ -484,8 +484,7 @@ GolapOverviewRenderer >> minScale [
 { #category : #'view manipulation' }
 GolapOverviewRenderer >> moveImageOffset: aPoint [
 
-	viewOffset := aPoint + viewOffset.
-	self snapshotLazy 
+	viewOffset := aPoint + viewOffset
 ]
 
 { #category : #'view manipulation' }
@@ -498,21 +497,20 @@ GolapOverviewRenderer >> moveMapOffset: aPoint [
 	              @
 		              (aPoint y / activeImage extent y asFloat
 		               * activeMap extent y asFloat + viewOffset y)."
-	viewOffset := aPoint * 2.0 + viewOffset.
-	self snapshotLazy
+	viewOffset := aPoint * 2.0 + viewOffset
 ]
 
 { #category : #accessing }
 GolapOverviewRenderer >> overridesYWithFrequency: aBoolean [
-	self layouter overridesYWithFrequency: aBoolean.
-	self snapshot
+
+	self layouter overridesYWithFrequency: aBoolean
 ]
 
 { #category : #'view manipulation' }
 GolapOverviewRenderer >> resetZoom [
+
 	viewScale := 1.0.
-	viewOffset := 0 @ 0.
-	self snapshot
+	viewOffset := 0 @ 0
 ]
 
 { #category : #snapshot }
@@ -644,23 +642,23 @@ GolapOverviewRenderer >> vertexAtPoint: aPoint [
 
 { #category : #'view manipulation' }
 GolapOverviewRenderer >> zoom: aNumber [
+
 	| handPosition widget scale halfExtent center |
 	handPosition := self currentHand position.
-	widget := ((golap globalMapPane adapter widget bounds
-		containsPoint: handPosition)
-		ifTrue: [ golap globalMapPane ]
-		ifFalse: [ golap globalImagePane ]) adapter widget.
+	widget := ((golap globalMapPane adapter widget bounds containsPoint:
+		            handPosition)
+		           ifTrue: [ golap globalMapPane ]
+		           ifFalse: [ golap globalImagePane ]) adapter widget.
 	halfExtent := self currentHand position - widget position.
 	scale := self globalImageExtent / self layouter divisions asFloat
-		* viewScale.
-	center := (halfExtent - viewOffset) / scale.
+	         * viewScale.
+	center := halfExtent - viewOffset / scale.
 	viewScale := viewScale * aNumber
-		min: self maxScale
-		max: self minScale.
+		             min: self maxScale
+		             max: self minScale.
 	scale := self globalImageExtent / self layouter divisions asFloat
-		* viewScale.
-	viewOffset := halfExtent - (center * scale).
-	self snapshotLazy 
+	         * viewScale.
+	viewOffset := halfExtent - (center * scale)
 ]
 
 { #category : #'view manipulation' }
@@ -678,6 +676,5 @@ GolapOverviewRenderer >> zoomCenter: aNumber [
 		             max: self minScale.
 	scale := self globalImageExtent / self layouter divisions asFloat
 	         * viewScale.
-	viewOffset := halfExtent - (center * scale).
-	self snapshotLazy 
+	viewOffset := halfExtent - (center * scale)
 ]

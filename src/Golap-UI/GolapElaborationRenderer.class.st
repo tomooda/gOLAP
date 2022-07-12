@@ -322,14 +322,14 @@ GolapElaborationRenderer >> layout [
 
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> moveImageOffset: aPoint [
-	imageOffset := aPoint y negated / imageScale + imageOffset.
-	self snapshotLazy
+
+	imageOffset := aPoint y negated / imageScale + imageOffset
 ]
 
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> moveMapOffset: aPoint [
-	imageOffset := aPoint y negated / mapScale + imageOffset.
-	self snapshotLazy
+
+	imageOffset := aPoint y negated / mapScale + imageOffset
 ]
 
 { #category : #accessing }
@@ -339,8 +339,8 @@ GolapElaborationRenderer >> overridesYWithFrequency: aBoolean [
 
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> resetZoom [
-	imageScale := self defaultImageScale.
-	self snapshot
+
+	imageScale := self defaultImageScale
 ]
 
 { #category : #snapshot }
@@ -457,23 +457,31 @@ GolapElaborationRenderer >> vertexAtPoint: aPoint [
 
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> zoom: aNumber [
+
 	| handPosition oldCenterIndex newCenterIndex |
 	handPosition := self currentHand position.
-	oldCenterIndex := (golap globalMapPane adapter widget bounds
-		containsPoint: handPosition)
-		ifTrue: [ self globalImageExtent y / imageScale * 0.5 + imageOffset ]
-		ifFalse: [ (handPosition y - golap globalImagePane adapter widget bounds top)
-				/ imageScale + 1 + imageOffset ].
+	oldCenterIndex := (golap globalMapPane adapter widget bounds 
+		                   containsPoint: handPosition)
+		                  ifTrue: [ 
+		                  self globalImageExtent y / imageScale * 0.5
+		                  + imageOffset ]
+		                  ifFalse: [ 
+			                  handPosition y
+			                  - golap globalImagePane adapter widget bounds top
+			                  / imageScale + 1 + imageOffset ].
 	imageScale := imageScale * aNumber
-		min: self globalImageExtent y - 10
-		max: 10.0.
-	newCenterIndex := (golap globalMapPane adapter widget bounds
-		containsPoint: handPosition)
-		ifTrue: [ self globalImageExtent y / imageScale * 0.5 + imageOffset ]
-		ifFalse: [ (handPosition y - golap globalImagePane adapter widget bounds top)
-				/ imageScale + 1 + imageOffset ].
-	imageOffset := oldCenterIndex - newCenterIndex + imageOffset.
-	self snapshotLazy
+		              min: self globalImageExtent y - 10
+		              max: 10.0.
+	newCenterIndex := (golap globalMapPane adapter widget bounds 
+		                   containsPoint: handPosition)
+		                  ifTrue: [ 
+		                  self globalImageExtent y / imageScale * 0.5
+		                  + imageOffset ]
+		                  ifFalse: [ 
+			                  handPosition y
+			                  - golap globalImagePane adapter widget bounds top
+			                  / imageScale + 1 + imageOffset ].
+	imageOffset := oldCenterIndex - newCenterIndex + imageOffset
 ]
 
 { #category : #'view manipulation' }
@@ -481,6 +489,5 @@ GolapElaborationRenderer >> zoomCenter: aNumber [
 
 	imageScale := imageScale * aNumber
 		              min: self globalImageExtent y - 10
-		              max: 10.0.
-	self snapshotLazy
+		              max: 10.0
 ]

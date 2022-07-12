@@ -16,7 +16,6 @@ Class {
 		'itemName',
 		'itemFieldQuerySpec',
 		'authenticateBlock',
-		'snapshotProcess',
 		'golap'
 	],
 	#classVars : [
@@ -83,8 +82,8 @@ GolapItemView >> image [
 
 { #category : #accessing }
 GolapItemView >> imageRepositoryUrl: aString [
-	imageRepositoryField text: (aString ifNil: [ '' ]).
-	self snapshot
+
+	imageRepositoryField text: (aString ifNil: [ '' ])
 ]
 
 { #category : #http }
@@ -269,16 +268,12 @@ GolapItemView >> retrieveItemInfoFor: aString [
 { #category : #accessing }
 GolapItemView >> serverUrl: aString [
 
-	serverUrlField text: aString.
-	self snapshot
+	serverUrlField text: aString
 ]
 
 { #category : #snapshot }
 GolapItemView >> snapshot [
 
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
 	golap snapshotItemView: [ :stream | self snapshotInto: stream ]
 ]
 
@@ -292,20 +287,6 @@ GolapItemView >> snapshotInto: aStream [
 			('image-index' -> imageIndex value).
 			('query' -> query).
 			('item-query' -> itemFieldQuerySpec) } asOrderedDictionary
-]
-
-{ #category : #snapshot }
-GolapItemView >> snapshotLazy [
-
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
-	snapshotProcess := [ 
-	                   1 seconds wait.
-	                   snapshotProcess := nil.
-	                   golap snapshotItemView: [ :stream | 
-		                   self snapshotInto: stream ] ] forkAt:
-		                   Processor userBackgroundPriority
 ]
 
 { #category : #private }

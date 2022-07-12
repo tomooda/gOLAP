@@ -143,7 +143,7 @@ GolapSnapshotListItemPresenter >> launchSnapshot [
 
 	| golap |
 	golap := Golap new.
-	golap open title: self getName.
+	golap open.
 	golap restoreSnapshot: self snapshotDirectory / snapshotName
 ]
 

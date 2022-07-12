@@ -55,8 +55,8 @@ GolapColorsAppearance class >> colorNames [
 	^ self colorMap keys
 ]
 
-{ #category : #specs }
-GolapColorsAppearance class >> defaultSpec [
+{ #category : #layout }
+GolapColorsAppearance class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newHorizontal
 		add: #nameList width: 140;
@@ -367,7 +367,6 @@ GolapColorsAppearance >> updateSelectedColor [
 			with: colorList selection selectedItem.
 		self updateNameList.
 		nameList selectItem: item.
-		self snapshot.
 		golap updateGlobalImage ]
 ]
 

@@ -8,8 +8,7 @@ Class {
 		'queryField',
 		'markers',
 		'presetQueryButton',
-		'vertexList',
-		'snapshotProcess'
+		'vertexList'
 	],
 	#classVars : [
 		'EmptyImage',
@@ -302,7 +301,7 @@ GolapItemList >> markedVertices [
 
 	| ids |
 	ids := markers
-		       at: markerDropList selectedItem key
+		       at: (markerDropList selectedItem ifNotNil: #key)
 		       ifAbsent: [ Array new ].
 	^ self model vertices asArray select: [ :v | 
 		  ids anySatisfy: [ :id | v hasData: id ] ]
@@ -450,9 +449,6 @@ GolapItemList >> simpleStringFor: aNumber [
 { #category : #snapshot }
 GolapItemList >> snapshot [
 
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
 	golap snapshotItemList: [ :stream | self snapshotInto: stream ]
 ]
 
@@ -480,20 +476,6 @@ GolapItemList >> snapshotInto: aStream [
 			 (self snapshotColor: color) -> (markers at: color) ])
 			asOrderedDictionary.
 	(NeoJSONWriter on: aStream) nextPut: json
-]
-
-{ #category : #snapshot }
-GolapItemList >> snapshotLazy [
-
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
-	snapshotProcess := [ 
-	                   1 seconds wait.
-	                   snapshotProcess := nil.
-	                   golap snapshotItemList: [ :stream | 
-		                   self snapshotInto: stream ] ] forkAt:
-		                   Processor userBackgroundPriority
 ]
 
 { #category : #menu }
@@ -535,23 +517,20 @@ GolapItemList >> unmarkSelectionsMenu [
 { #category : #drawing }
 GolapItemList >> updateGlobalImage [
 
-	self golapDo: [ :g | g updateGlobalImage ].
-	self snapshot
+	self golapDo: [ :g | g updateGlobalImage ]
 ]
 
 { #category : #drawing }
 GolapItemList >> updateGlobalImageAfter: aBlock [
 
-	self golapDo: [ :g | g updateGlobalImageAfter: aBlock ].
-	self snapshot
+	self golapDo: [ :g | g updateGlobalImageAfter: aBlock ]
 ]
 
 { #category : #drawing }
 GolapItemList >> updateGlobalImageAfter: aBlock layout: aBoolean [
 
 	self golapDo: [ :g | 
-		g updateGlobalImageAfter: aBlock layout: aBoolean ].
-	self snapshot
+		g updateGlobalImageAfter: aBlock layout: aBoolean ]
 ]
 
 { #category : #updating }
