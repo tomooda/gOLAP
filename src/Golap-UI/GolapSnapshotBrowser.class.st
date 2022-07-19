@@ -74,6 +74,7 @@ GolapSnapshotBrowser >> initializePresenters [
 		                         whenActivatedDo: [ self openSnapshot ];
 		                         whenSelectionChangedDo: [ 
 			                         self updateButtons ];
+		                         contextMenu: [ self snapshotListMenu ];
 		                         yourself.
 	refreshSnapshotButton := self newButton
 		                         icon: Smalltalk ui icons smallUpdate;
@@ -140,6 +141,35 @@ GolapSnapshotBrowser >> renameSnapshot [
 GolapSnapshotBrowser >> snapshotDirectory [
 
 	^ (self golapDirectory / 'snapshots') ensureCreateDirectory
+]
+
+{ #category : #menus }
+GolapSnapshotBrowser >> snapshotListMenu [
+
+	^ self newMenu
+		  addGroup: [ :group | 
+			  group addItem: [ :item | 
+					  item
+						  name: 'Open';
+						  action: [ self openSnapshot ] ] ];
+		  addGroup: [ :group | 
+			  group
+				  addItem: [ :item | 
+					  item
+						  name: 'New...';
+						  action: [ self addSnapshot ] ];
+				  addItem: [ :item | 
+					  item
+						  name: 'Delete';
+						  action: [ self removeSnapshot ] ];
+				  addItem: [ :item | 
+					  item
+						  name: 'Copy';
+						  action: [ self copySnapshot ] ];
+				  addItem: [ :item | 
+					  item
+						  name: 'Rename';
+						  action: [ self renameSnapshot ] ] ]
 ]
 
 { #category : #updating }
