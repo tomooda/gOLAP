@@ -984,10 +984,11 @@ GolapModel >> setTreeMode [
 
 { #category : #accessing }
 GolapModel >> sumEdgeValueAtVertex: aGolapVertex [
+
 	| value |
 	value := 0.
-	aGolapVertex
-		edgesDo: [ :edge | value := value + (self valueAtEdge: edge) ].
+	aGolapVertex edgesDo: [ :edge | 
+		value := value + (self valueAtEdge: edge) ].
 	^ value
 ]
 
@@ -1042,6 +1043,7 @@ GolapModel >> unmergeVertex: aGolapVertex [
 
 { #category : #accessing }
 GolapModel >> valueAtEdge: aGolapEdge [
+
 	^ aGolapEdge at: self edgeKey
 ]
 
