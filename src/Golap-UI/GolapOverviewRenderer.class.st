@@ -189,13 +189,36 @@ GolapOverviewRenderer >> drawPinsOn: aCanvas extent: extent scale: scale offset:
 { #category : #drawing }
 GolapOverviewRenderer >> drawSelectionsOn: aCanvas extent: extent scale: scale offset: offset [
 
-	| labelOffset newLabelBoxes |
+	| labelOffset newLabelBoxes markersAndVertices |
 	labelOffset := 15 @ (self font height * -0.5).
 	newLabelBoxes := Array new writeStream.
+	markersAndVertices := Array streamContents: [ :stream | 
+		                      golap markersAndVerticesDo: [ :color :vs | 
+			                      color ifNotNil: [ 
+				                      stream nextPut: color -> vs asIdentitySet ] ] ].
 	golap selectedVerticesDo: [ :vertex | 
 		(self colorForVertex: vertex) ifNotNil: [ :c | 
 			| p lp |
 			p := vertex asPoint * scale + offset.
+			((p x between: 0.0 and: extent x) and: [ 
+				 p y between: 0.0 and: extent y ]) ifTrue: [ 
+				vertex photoimage ifNotNil: [ :photo | 
+					| w h |
+					w := photo width.
+					h := photo height.
+					aCanvas
+						paintImage: photo at: p x - (w // 2) @ (p y - (h // 2));
+						frameRectangle: (Rectangle center: p extent: w @ h)
+						width: 2
+						color: c.
+					markersAndVertices do: [ :colorAndVs | 
+						(colorAndVs value includes: vertex) ifTrue: [ 
+							w := w + 8.
+							h := h + 8.
+							aCanvas
+								frameOval: (Rectangle center: p extent: w @ h)
+								width: 4
+								color: colorAndVs key ] ] ] ].
 			lp := p + (((golap visibleEdges collect: [ :edge | 
 				         (edge peerOf: vertex)
 					         ifNil: [ 0 ]
@@ -298,7 +321,7 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 							| w h |
 							w := photo width.
 							h := photo height.
-							aCanvas paintImage: photo at: p x - (w // 2) @ (p y - (h // 2)).
+							aCanvas drawImage: photo at: p x - (w // 2) @ (p y - (h // 2)).
 							markersAndVertices do: [ :colorAndVs | 
 								(colorAndVs value includes: vertex) ifTrue: [ 
 									w := w + 8.
@@ -645,15 +668,32 @@ GolapOverviewRenderer >> validateViewOffset: aPoint [
 { #category : #accessing }
 GolapOverviewRenderer >> vertexAtPoint: aPoint [
 
-	| scale |
+	| scale minD minV |
 	scale := self scale.
 	labelBoxes ifNotNil: [ 
 		labelBoxes do: [ :assoc | 
 			(assoc key containsPoint: aPoint) ifTrue: [ ^ assoc value ] ] ].
-	^ self vertices
-		  detect: [ :vertex | 
-			  (vertex asPoint * scale + viewOffset distanceTo: aPoint) < 8 ]
-		  ifNone: [ nil ]
+	minD := Float infinity.
+	minV := nil.
+	self vertices do: [ :vertex | 
+		| p |
+		p := vertex asPoint * scale + viewOffset.
+		vertex photoimage
+			ifNil: [ 
+				| d |
+				d := p distanceTo: aPoint.
+				(d < 8 and: [ d < minD ]) ifTrue: [ 
+					minD := d.
+					minV := vertex ] ]
+			ifNotNil: [ :image | 
+				| dp d |
+				dp := p - aPoint.
+				(dp x abs <= image width and: [ 
+					 dp y abs <= image height and: [ 
+						 (d := p distanceTo: aPoint) < minD ] ]) ifTrue: [ 
+					minD := d.
+					minV := vertex ] ] ].
+	^ minV
 ]
 
 { #category : #accessing }
