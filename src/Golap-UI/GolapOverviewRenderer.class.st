@@ -293,44 +293,60 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 				p := vertex asPoint * scale + offset.
 				((p x between: 0.0 and: extent x) and: [ 
 					 p y between: 0.0 and: extent y ]) ifTrue: [ 
-					| r |
-					r := (vertex frequency abs + 0.1) log - 1.0 log * freqScale max:
-						     10.
-					aCanvas
-						fillOval: (Rectangle center: p extent: r asPoint)
-						color: c.
-					markersAndVertices do: [ :colorAndVs | 
-						(colorAndVs value  includes: vertex) ifTrue: [ 
-							r := r + 8.
+					vertex photoimage
+						ifNotNil: [ :photo | 
+							| w h |
+							w := photo width.
+							h := photo height.
+							aCanvas paintImage: photo at: p x - (w // 2) @ (p y - (h // 2)).
+							markersAndVertices do: [ :colorAndVs | 
+								(colorAndVs value includes: vertex) ifTrue: [ 
+									w := w + 8.
+									h := h + 8.
+									aCanvas
+										frameOval: (Rectangle center: p extent: w @ h)
+										width: 4
+										color: colorAndVs key ] ] ]
+						ifNil: [ 
+							| r |
+							r := (vertex frequency abs + 0.1) log - 1.0 log * freqScale 
+								     max: 10.
 							aCanvas
-								frameOval: (Rectangle center: p extent: r asPoint)
-								width: 4
-								color: colorAndVs key ] ].
-					labelVertices add: vertex -> (model valueAtVertex: vertex).
-					(numLabels notNil and: [ labelVertices size > numLabels ]) 
-						ifTrue: [ labelVertices removeLast ] ] ] ].
+								fillOval: (Rectangle center: p extent: r asPoint)
+								color: c.
+							markersAndVertices do: [ :colorAndVs | 
+								(colorAndVs value includes: vertex) ifTrue: [ 
+									r := r + 8.
+									aCanvas
+										frameOval: (Rectangle center: p extent: r asPoint)
+										width: 4
+										color: colorAndVs key ] ].
+							labelVertices add: vertex -> (model valueAtVertex: vertex).
+							(numLabels notNil and: [ labelVertices size > numLabels ]) 
+								ifTrue: [ labelVertices removeLast ] ] ] ] ].
 		labelVertices do: [ :assoc | 
 			| vertex |
 			vertex := assoc key.
-			(self colorForVertex: vertex) ifNotNil: [ :c | 
-				| p lp |
-				p := vertex asPoint * scale + offset.
-				lp := p + (((golap visibleEdges collect: [ :edge | 
-					         (edge peerOf: vertex)
-						         ifNil: [ 0 ]
-						         ifNotNil: [ :peer | peer x - vertex x ] ])
-					        ifEmpty: [ 0 ]
-					        ifNotEmpty: #sum) <= 0.0
-					       ifTrue: [ labelOffset ]
-					       ifFalse: [ 
-						       (self extentForName: vertex name) x + labelOffset x * -1
-						       @ labelOffset y ]).
-				self
-					drawVertexLabelFor: vertex
-					at: lp
-					color: c
-					fillColor: nil
-					on: aCanvas ] ] ]
+			vertex photoimage ifNil: [ 
+				(self colorForVertex: vertex) ifNotNil: [ :c | 
+					| p lp |
+					p := vertex asPoint * scale + offset.
+					lp := p + (((golap visibleEdges collect: [ :edge | 
+						         (edge peerOf: vertex)
+							         ifNil: [ 0 ]
+							         ifNotNil: [ :peer | peer x - vertex x ] ])
+						        ifEmpty: [ 0 ]
+						        ifNotEmpty: #sum) <= 0.0
+						       ifTrue: [ labelOffset ]
+						       ifFalse: [ 
+							       (self extentForName: vertex name) x + labelOffset x * -1
+							       @ labelOffset y ]).
+					self
+						drawVertexLabelFor: vertex
+						at: lp
+						color: c
+						fillColor: nil
+						on: aCanvas ] ] ] ]
 ]
 
 { #category : #private }
@@ -394,16 +410,16 @@ GolapOverviewRenderer >> globalImage [
 		form getCanvas in: [ :canvas | 
 			canvas fillColor: Color white.
 			self
+				drawEdgesOn: canvas
+				extent: form extent
+				scale: self scale
+				offset: viewOffset.
+			self
 				drawVerticesOn: canvas
 				extent: form extent
 				scale: self scale
 				offset: viewOffset
 				numLabels: (50.0 ** golap numLabels) truncated.
-			self
-				drawEdgesOn: canvas
-				extent: form extent
-				scale: self scale
-				offset: viewOffset.
 			self
 				drawSelectionsOn: canvas
 				extent: form extent
@@ -638,6 +654,12 @@ GolapOverviewRenderer >> vertexAtPoint: aPoint [
 		  detect: [ :vertex | 
 			  (vertex asPoint * scale + viewOffset distanceTo: aPoint) < 8 ]
 		  ifNone: [ nil ]
+]
+
+{ #category : #accessing }
+GolapOverviewRenderer >> vertexPointAtPoint: aPoint [
+
+	^ aPoint - viewOffset / self scale
 ]
 
 { #category : #'view manipulation' }

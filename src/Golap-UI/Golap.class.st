@@ -44,7 +44,8 @@ Class {
 		'resentQueryButton',
 		'lastZoomTimestamp',
 		'saveAsSvgButton',
-		'saveSnapshotButton'
+		'saveSnapshotButton',
+		'photoImageRetrievingProcess'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -193,16 +194,18 @@ Golap class >> nameEndOfLineDelimiter: aString [
 
 { #category : #utilities }
 Golap class >> open [
+
 	<script: 'GolapOverview open'>
 	| overview |
 	overview := Golap new.
-	overview openWithSpec maximize.
+	overview open maximize.
 	^ overview
-		updateGlobalImageAfter: [ overview
-				model: nil;
-				minimalSpanningTree ]
-			layout: true;
-		yourself
+		  updateGlobalImageAfter: [ 
+			  overview
+				  model: nil;
+				  minimalSpanningTree ]
+		  layout: true;
+		  yourself
 ]
 
 { #category : #examples }
@@ -262,7 +265,7 @@ Golap class >> openFile [
 	<script: 'GolapOverview openFile'>
 	| overview |
 	overview := Golap new.
-	overview openWithSpec maximize.
+	overview open maximize.
 	(UIManager default
 		 chooseExistingFileReference: 'Select a coocurrence file'
 		 extensions: #( 'csv' )
@@ -746,6 +749,14 @@ Golap >> iconForCircleColor: aColor [
 	^ itemList iconForCircleColor: aColor
 ]
 
+{ #category : #private }
+Golap >> ifNotActive: aBlock [
+
+	adapter ifNil: [ ^ aBlock value ].
+	adapter widget ifNil: [ ^ aBlock value ].
+	adapter widget world ifNil: [ ^ aBlock value ]
+]
+
 { #category : #snapshot }
 Golap >> ifSnapshotEnabled: aBlock [
 
@@ -1155,6 +1166,15 @@ Golap >> numLabels [
 	^ itemsAppearancePresenter numLabels
 ]
 
+{ #category : #'instance creation' }
+Golap >> open [
+
+	| window |
+	window := super open.
+	self startPhotoimageRetrievingProcess.
+	^ window
+]
+
 { #category : #operations }
 Golap >> openPresetQueryDialog [
 
@@ -1193,6 +1213,12 @@ Golap >> overridesYWithFrequencyCheckbox [
 Golap >> overviewRenderer [
 	^ overviewRenderer
 		ifNil: [ overviewRenderer := GolapOverviewRenderer on: self ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> photoimageRetrievingInterval [
+
+	^ 100 milliSecond
 ]
 
 { #category : #'accessing-colors' }
@@ -1594,6 +1620,46 @@ Golap >> retreatingColor [
 	^ colorsAppearancePresenter retreatingColor
 ]
 
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimage [
+
+	rendererSelector = #overviewRenderer ifTrue: [ 
+		overviewRenderer ifNotNil: [ 
+			self withAdapterDo: [ :a | 
+				a widgetDo: [ :w | 
+					| mouse minD minV |
+					mouse := overviewRenderer vertexPointAtPoint:
+						         w activeHand position.
+					minD := Float infinity.
+					minV := nil.
+					overviewRenderer reallyVisibleVerticesDo: [ :vertex | 
+						vertex basicPhotoimage ifNil: [ 
+							vertex x ifNotNil: [ :x | 
+								vertex y ifNotNil: [ :y | 
+									| d |
+									d := (x - mouse x) squared + (y - mouse y) squared.
+									d < minD ifTrue: [ 
+										minD := d.
+										minV := vertex ] ] ] ].
+						Processor yield ].
+
+					minV ifNotNil: [ 
+						self retrievePhotoimageFor: minV.
+						self updateGlobalImageAfter: [  ] ] ] ] ] ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimageFor: aGolapVertex [
+
+	itemView ifNotNil: [ 
+		(itemView retrieveSingleImageFor: aGolapVertex data value)
+			ifNotNil: [ :image | 
+				aGolapVertex photoimage: (image scaledToSize: image extent
+						 * (64.0 / image width asFloat min: 64.0 / image height asFloat)) ]
+			ifNil: [ aGolapVertex photoimage: false ] ].
+	^ false
+]
+
 { #category : #operations }
 Golap >> saveAsSVG [
 	(UIManager default
@@ -1965,6 +2031,29 @@ Golap >> snapshotSelections [
 						('pins' -> pins).
 						('frontDimension' -> frontList selectedItem).
 						('baseDimension' -> baseList selectedItem) } asOrderedDictionary ] ] ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> startPhotoimageRetrievingProcess [
+
+	self stopPhotoimageRetrievingProcess.
+	photoImageRetrievingProcess := [ 
+	                               [ 
+	                               self ifNotActive: [ 
+		                               photoImageRetrievingProcess := nil.
+		                               Processor activeProcess terminate ].
+	                               self retrievePhotoimage.
+	                               self photoimageRetrievingInterval wait ]
+		                               repeat ] forkAt:
+		                               Processor userBackgroundPriority
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> stopPhotoimageRetrievingProcess [
+
+	photoImageRetrievingProcess ifNotNil: [ 
+		photoImageRetrievingProcess terminate.
+		photoImageRetrievingProcess := nil ]
 ]
 
 { #category : #operations }

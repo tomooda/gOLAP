@@ -13,7 +13,8 @@ Class {
 		'y',
 		'label',
 		'rectangles',
-		'frequency'
+		'frequency',
+		'photoimage'
 	],
 	#category : #'Golap-Models'
 }
@@ -77,6 +78,12 @@ GolapVertex >> asPoint [
 	^ (x notNil and: [ y notNil ])
 		  ifTrue: [ x @ y ]
 		  ifFalse: [ nil ]
+]
+
+{ #category : #accessing }
+GolapVertex >> basicPhotoimage [
+
+	^ photoimage
 ]
 
 { #category : #private }
@@ -143,6 +150,12 @@ GolapVertex >> edgesDo: aBlock [
 			(negativePolishEdges includes: edge)
 				ifFalse: [ aBlock value: edge ] ].
 	positivePolishEdges do: aBlock
+]
+
+{ #category : #accessing }
+GolapVertex >> flushPhotoimage [
+
+	photoimage := nil
 ]
 
 { #category : #accessing }
@@ -283,6 +296,19 @@ GolapVertex >> negativePolishEdgesDo: aBlock [
 { #category : #accessing }
 GolapVertex >> numberOfEdges [
 	^ edges size
+]
+
+{ #category : #accessing }
+GolapVertex >> photoimage [
+
+	^ false = photoimage
+		  ifTrue: [ nil ]
+		  ifFalse: [ photoimage ]
+]
+
+{ #category : #accessing }
+GolapVertex >> photoimage: aForm [
+	photoimage := aForm
 ]
 
 { #category : #accessing }

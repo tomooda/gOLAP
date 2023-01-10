@@ -131,6 +131,12 @@ GolapRenderer >> nameIntoLines: aString [
 	^ aString substrings: golap class nameEndOfLineDelimiter
 ]
 
+{ #category : #enumerating }
+GolapRenderer >> reallyVisibleVerticesDo: aBlock [
+
+	reallyVisibleVertices ifNotNil: [ reallyVisibleVertices do: aBlock ]
+]
+
 { #category : #'view manipulation' }
 GolapRenderer >> resetZoom [
 	^ self subclassResponsibility 

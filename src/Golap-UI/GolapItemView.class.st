@@ -265,6 +265,31 @@ GolapItemView >> retrieveItemInfoFor: aString [
 	^ itemInfo
 ]
 
+{ #category : #http }
+GolapItemView >> retrieveSingleImageFor: aString [
+
+	| imageRepo filenames filename response |
+	aString ifNil: [ ^ nil ].
+	imageRepo := imageRepositoryField text asString trim asUrl.
+	[ 
+	filenames := (GolapHttpClient
+		              post: serverUrlField text asString trim asUrl
+		              data:
+		              (ZnEntity json: (self imageRequestJsonFor: aString))
+		              authenticateBlock: self authenticateBlock) entity
+		             contents trim lines.
+	filenames size < 3 ifTrue: [ ^ nil ].
+	filename := filenames at: 3.
+	response := GolapHttpClient get: imageRepo / filename.
+	^ response isSuccess
+		  ifTrue: [ 
+			  ImageReadWriter formFromStream:
+				  (GolapHttpClient get: imageRepo / filename) entity readStream ]
+		  ifFalse: [ nil ] ]
+		on: Error
+		do: [ :ex | ^ nil ]
+]
+
 { #category : #accessing }
 GolapItemView >> serverUrl: aString [
 
