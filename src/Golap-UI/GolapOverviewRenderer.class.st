@@ -316,12 +316,49 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 				p := vertex asPoint * scale + offset.
 				((p x between: 0.0 and: extent x) and: [ 
 					 p y between: 0.0 and: extent y ]) ifTrue: [ 
+					| r |
+					r := (vertex frequency abs + 0.1) log - 1.0 log * freqScale max:
+						     10.
+					golap selectedBaseDimension ifNotNil: [ 
+						| pt pb |
+						pt := p x + 32 + 6 @ (p y - (r )).
+						pb := pt x @ (pt y + (r * 2)).
+						vertex frequency >= 0
+							ifTrue: [ 
+								aCanvas
+									line: pt
+									to: pb
+									width: 3
+									color: c;
+									line: pt
+									to: pt + (-5 @ 5)
+									width: 3
+									color: c;
+									line: pt
+									to: pt + (5 @ 5)
+									width: 3
+									color: c ]
+							ifFalse: [ 
+								aCanvas
+									line: pt
+									to: pb
+									width: 3
+									color: c;
+									line: pb
+									to: pb + (-5 @ -5)
+									width: 3
+									color: c;
+									line: pb
+									to: pb + (5 @ -5)
+									width: 3
+									color: c ] ].
 					vertex photoimage
 						ifNotNil: [ :photo | 
 							| w h |
 							w := photo width.
 							h := photo height.
 							aCanvas drawImage: photo at: p x - (w // 2) @ (p y - (h // 2)).
+
 							markersAndVertices do: [ :colorAndVs | 
 								(colorAndVs value includes: vertex) ifTrue: [ 
 									w := w + 8.
@@ -331,9 +368,6 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 										width: 4
 										color: colorAndVs key ] ] ]
 						ifNil: [ 
-							| r |
-							r := (vertex frequency abs + 0.1) log - 1.0 log * freqScale 
-								     max: 10.
 							aCanvas
 								fillOval: (Rectangle center: p extent: r asPoint)
 								color: c.

@@ -1215,12 +1215,6 @@ Golap >> overviewRenderer [
 		ifNil: [ overviewRenderer := GolapOverviewRenderer on: self ]
 ]
 
-{ #category : #'operations-photoimages' }
-Golap >> photoimageRetrievingInterval [
-
-	^ 100 milliSecond
-]
-
 { #category : #'accessing-colors' }
 Golap >> pinColor [
 	^ Color red
@@ -1625,11 +1619,11 @@ Golap >> retrievePhotoimage [
 
 	rendererSelector = #overviewRenderer ifTrue: [ 
 		overviewRenderer ifNotNil: [ 
-			self withAdapterDo: [ :a | 
+			globalMapPane withAdapterDo: [ :a | 
 				a widgetDo: [ :w | 
 					| mouse minD minV |
 					mouse := overviewRenderer vertexPointAtPoint:
-						         w activeHand position.
+						         w activeHand position - w position.
 					minD := Float infinity.
 					minV := nil.
 					overviewRenderer reallyVisibleVerticesDo: [ :vertex | 
@@ -2042,9 +2036,8 @@ Golap >> startPhotoimageRetrievingProcess [
 	                               self ifNotActive: [ 
 		                               photoImageRetrievingProcess := nil.
 		                               Processor activeProcess terminate ].
-	                               self retrievePhotoimage.
-	                               self photoimageRetrievingInterval wait ]
-		                               repeat ] forkAt:
+	                               self retrievePhotoimage ] repeat ] 
+		                               forkAt:
 		                               Processor userBackgroundPriority
 ]
 
