@@ -301,14 +301,14 @@ GolapVertex >> numberOfEdges [
 { #category : #accessing }
 GolapVertex >> photoimage [
 
-	^ false = photoimage
-		  ifTrue: [ nil ]
-		  ifFalse: [ photoimage ]
+	^ photoimage isForm
+		  ifTrue: [ photoimage ]
+		  ifFalse: [ nil ]
 ]
 
 { #category : #accessing }
-GolapVertex >> photoimage: aForm [
-	photoimage := aForm
+GolapVertex >> photoimage: aFormOrAny [
+	photoimage := aFormOrAny
 ]
 
 { #category : #accessing }

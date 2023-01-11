@@ -45,7 +45,9 @@ Class {
 		'lastZoomTimestamp',
 		'saveAsSvgButton',
 		'saveSnapshotButton',
-		'photoImageRetrievingProcess'
+		'photoImageRetrievingProcess',
+		'retrievalProcessCount',
+		'drawingSemaphore'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -88,7 +90,7 @@ Golap class >> defaultLayout [
 						    add: #layoutButton expand: true;
 						    add: #overridesYWithFrequencyCheckbox width: 100)
 				   height: self buttonHeight)
-		  width: 310;
+		  width: 350;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.75;
 				   add: #globalImagePane;
@@ -557,6 +559,14 @@ Golap >> elaborationRenderer [
 		ifNil: [ elaborationRenderer := GolapElaborationRenderer on: self ]
 ]
 
+{ #category : #'operations-photoimages' }
+Golap >> ensurePhotoimageRetrievingProcess [
+
+	(photoImageRetrievingProcess isNil or: [ 
+		 photoImageRetrievingProcess isTerminating ]) ifTrue: [ 
+		self startPhotoimageRetrievingProcess ]
+]
+
 { #category : #private }
 Golap >> flushVisibleEdges [
 	visibleEdges := nil
@@ -788,7 +798,8 @@ Golap >> initialize [
 	merges := OrderedCollection new.
 	rendererSelector := #overviewRenderer.
 	snapshotEnabled := true.
-	lastZoomTimestamp := DateAndTime now
+	lastZoomTimestamp := DateAndTime now.
+	drawingSemaphore := Semaphore forMutualExclusion
 ]
 
 { #category : #initialization }
@@ -1016,6 +1027,12 @@ Golap >> maxMode [
 	edgesAppearancePresenter maxMode
 ]
 
+{ #category : #'operations-photoimages' }
+Golap >> maxPhotoimageRetrievalProcesses [
+
+	^ 3
+]
+
 { #category : #private }
 Golap >> maxScale [
 	^ 50.0
@@ -1213,6 +1230,12 @@ Golap >> overridesYWithFrequencyCheckbox [
 Golap >> overviewRenderer [
 	^ overviewRenderer
 		ifNil: [ overviewRenderer := GolapOverviewRenderer on: self ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> photoimageSize [
+
+	^ 64
 ]
 
 { #category : #'accessing-colors' }
@@ -1618,40 +1641,74 @@ Golap >> retreatingColor [
 Golap >> retrievePhotoimage [
 
 	rendererSelector = #overviewRenderer ifTrue: [ 
-		overviewRenderer ifNotNil: [ 
-			globalMapPane withAdapterDo: [ :a | 
-				a widgetDo: [ :w | 
-					| mouse minD minV |
-					mouse := overviewRenderer vertexPointAtPoint:
-						         w activeHand position - w position.
-					minD := Float infinity.
-					minV := nil.
-					overviewRenderer reallyVisibleVerticesDo: [ :vertex | 
-						vertex basicPhotoimage ifNil: [ 
-							vertex x ifNotNil: [ :x | 
-								vertex y ifNotNil: [ :y | 
-									| d |
-									d := (x - mouse x) squared + (y - mouse y) squared.
-									d < minD ifTrue: [ 
-										minD := d.
-										minV := vertex ] ] ] ].
-						Processor yield ].
-
-					minV ifNotNil: [ 
-						self retrievePhotoimageFor: minV.
-						self updateGlobalImageAfter: [  ] ] ] ] ] ]
+		self retrievePhotoimageOnOverviewRenderer ].
+	rendererSelector = #elaborationRenderer ifTrue: [ 
+		self retrievePhotoimageOnElaborationRenderer ]
 ]
 
 { #category : #'operations-photoimages' }
 Golap >> retrievePhotoimageFor: aGolapVertex [
 
+	aGolapVertex photoimage: false.
+	[ retrievalProcessCount > self maxPhotoimageRetrievalProcesses ] 
+		whileTrue: [ 300 milliSecond wait ].
+	retrievalProcessCount := retrievalProcessCount + 1.
+	[ 
 	itemView ifNotNil: [ 
-		(itemView retrieveSingleImageFor: aGolapVertex data value)
+		[ 
+		(itemView retrieveSingleImageFor: aGolapVertex data value) 
 			ifNotNil: [ :image | 
-				aGolapVertex photoimage: (image scaledToSize: image extent
-						 * (64.0 / image width asFloat min: 64.0 / image height asFloat)) ]
-			ifNil: [ aGolapVertex photoimage: false ] ].
-	^ false
+				aGolapVertex photoimage:
+					(image scaledToSize: self photoimageSize asPoint).
+				self updateGlobalImageAfter: [  ] ] ] ensure: [ 
+			retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
+		Processor userBackgroundPriority - 5
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimageOnElaborationRenderer [
+
+	[ 
+	elaborationRenderer ifNotNil: [ 
+		overviewRenderer verticesDo: [ :vertex | 
+			vertex basicPhotoimage ifNil: [ self retrievePhotoimageFor: vertex ].
+			Processor yield ] ] ]
+		on: Error
+		do: [ :ex |  ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimageOnOverviewRenderer [
+
+	[ 
+	overviewRenderer ifNotNil: [ 
+		globalImagePane withAdapterDo: [ :a | 
+			a widgetDo: [ :w | 
+				| origin corner mouse minD minV |
+				origin := overviewRenderer vertexPointAtPoint:
+					          (-10 @ -10 min: w extent // 10).
+				corner := overviewRenderer vertexPointAtPoint:
+					          w extent + (10 @ 10 max: w extent // 10).
+				mouse := overviewRenderer vertexPointAtPoint:
+					         w activeHand position - w position.
+				minD := Float infinity.
+				minV := nil.
+				overviewRenderer reallyVisibleVerticesDo: [ :vertex | 
+					vertex basicPhotoimage ifNil: [ 
+						vertex x ifNotNil: [ :x | 
+							vertex y ifNotNil: [ :y | 
+								((x between: origin x and: corner x) and: [ 
+									 y between: origin y and: corner y ]) ifTrue: [ 
+									| d |
+									d := (x - mouse x) squared + (y - mouse y) squared.
+									d < minD ifTrue: [ 
+										minD := d.
+										minV := vertex ] ] ] ] ].
+					Processor yield ].
+
+				minV ifNotNil: [ self retrievePhotoimageFor: minV ] ] ] ] ]
+		on: Error
+		do: [ :ex |  ]
 ]
 
 { #category : #operations }
@@ -2031,7 +2088,7 @@ Golap >> snapshotSelections [
 Golap >> startPhotoimageRetrievingProcess [
 
 	self stopPhotoimageRetrievingProcess.
-	photoImageRetrievingProcess := [ 
+	photoImageRetrievingProcess := [ retrievalProcessCount := 0.
 	                               [ 
 	                               self ifNotActive: [ 
 		                               photoImageRetrievingProcess := nil.
@@ -2155,10 +2212,12 @@ Golap >> updateDimensions [
 { #category : #drawing }
 Golap >> updateGlobalImage [
 
-	| imageAndMap |
-	imageAndMap := self renderer globalImageAndMap.
-	globalImagePane image: imageAndMap first.
-	globalMapPane image: imageAndMap second
+	drawingSemaphore critical: [ 
+		| imageAndMap |
+		imageAndMap := self renderer globalImageAndMap.
+		globalImagePane image: imageAndMap first.
+		globalMapPane image: imageAndMap second ].
+	self ensurePhotoimageRetrievingProcess
 ]
 
 { #category : #drawing }

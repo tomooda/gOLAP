@@ -16,7 +16,8 @@ Class {
 		'itemName',
 		'itemFieldQuerySpec',
 		'authenticateBlock',
-		'golap'
+		'golap',
+		'vertex'
 	],
 	#classVars : [
 		'EmptyImage',
@@ -58,6 +59,13 @@ GolapItemView >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
+{ #category : #accessing }
+GolapItemView >> basicImage [
+
+	^ self images ifNotNil: [ :images | 
+		  images at: imageIndex value ifAbsent: [ nil ] ]
+]
+
 { #category : #private }
 GolapItemView >> emptyImage [
 	^ EmptyImage
@@ -74,10 +82,8 @@ GolapItemView >> golap: aGolap [
 
 { #category : #accessing }
 GolapItemView >> image [
-	^ self images
-		ifNil: [ self emptyImage ]
-		ifNotNil:
-			[ :images | images at: imageIndex value ifAbsent: [ self emptyImage ] ]
+
+	^ self basicImage ifNil: [ self emptyImage ]
 ]
 
 { #category : #accessing }
@@ -268,7 +274,7 @@ GolapItemView >> retrieveItemInfoFor: aString [
 { #category : #http }
 GolapItemView >> retrieveSingleImageFor: aString [
 
-	| imageRepo filenames filename response |
+	| imageRepo filenames |
 	aString ifNil: [ ^ nil ].
 	imageRepo := imageRepositoryField text asString trim asUrl.
 	[ 
@@ -277,17 +283,23 @@ GolapItemView >> retrieveSingleImageFor: aString [
 		              data:
 		              (ZnEntity json: (self imageRequestJsonFor: aString))
 		              authenticateBlock: self authenticateBlock) entity
-		             contents trim lines.
-	filenames size < 3 ifTrue: [ ^ nil ].
-	filename := filenames at: 3.
-	response := GolapHttpClient get: imageRepo / filename.
-	^ response isSuccess
-		  ifTrue: [ 
-			  ImageReadWriter formFromStream:
-				  (GolapHttpClient get: imageRepo / filename) entity readStream ]
-		  ifFalse: [ nil ] ]
+		             contents trim lines ]
 		on: Error
-		do: [ :ex | ^ nil ]
+		do: [ :ex | ^ nil ].
+	filenames size < 3 ifTrue: [ ^ nil ].
+	3 timesRepeat: [ 
+		3 to: filenames size do: [ :index | 
+			| filename |
+			filename := filenames at: index.
+			[ 
+			| response |
+			response := GolapHttpClient get: imageRepo / filename.
+			response isSuccess ifTrue: [ 
+				^ ImageReadWriter formFromStream: response entity readStream ] ]
+				on: Error
+				do: [ :ex |  ].
+			500 milliSecond wait ] ].
+	^ nil
 ]
 
 { #category : #accessing }
@@ -316,6 +328,12 @@ GolapItemView >> snapshotInto: aStream [
 
 { #category : #private }
 GolapItemView >> updateImage [
+
+	vertex ifNotNil: [ 
+		self basicImage
+			ifNotNil: [ :image | 
+			vertex photoimage: (image scaledToSize: 64 @ 64) ]
+			ifNil: [ vertex photoimage: false ] ].
 	^ itemImage image: self image
 ]
 
@@ -331,6 +349,7 @@ GolapItemView >> url [
 
 { #category : #accessing }
 GolapItemView >> vertex: aGolapVertex [
+	vertex := aGolapVertex.
 	item := aGolapVertex data.
 	itemName := aGolapVertex name.
 	imageIndex rawValue: 1.

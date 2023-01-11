@@ -557,20 +557,21 @@ GolapOverviewRenderer >> minScale [
 { #category : #'view manipulation' }
 GolapOverviewRenderer >> moveImageOffset: aPoint [
 
-	viewOffset := aPoint + viewOffset
+	| dx dy |
+	dx := aPoint x min: 10 max: -10.
+	dy := aPoint y min: 10 max: -10.
+	viewOffset := dx @ dy + viewOffset
 ]
 
 { #category : #'view manipulation' }
 GolapOverviewRenderer >> moveMapOffset: aPoint [
 
+	| dx dy |
 	activeImage ifNil: [ ^ self ].
 	activeMap ifNil: [ ^ self ].
-	"viewOffset := aPoint x / activeImage extent x asFloat
-	              * activeMap extent x asFloat + viewOffset x
-	              @
-		              (aPoint y / activeImage extent y asFloat
-		               * activeMap extent y asFloat + viewOffset y)."
-	viewOffset := aPoint * 2.0 + viewOffset
+	dx := aPoint x * mapScale x min: 20 max: -20.
+	dy := aPoint y * mapScale y min: 20 max: -20.
+	viewOffset := dx @ dy + viewOffset
 ]
 
 { #category : #accessing }

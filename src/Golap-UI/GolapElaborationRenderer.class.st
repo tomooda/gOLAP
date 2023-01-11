@@ -33,77 +33,127 @@ GolapElaborationRenderer >> baseX [
 
 { #category : #drawing }
 GolapElaborationRenderer >> createAssociatedVertexLabel: aGolapVertex [
-	| barWidth totalBarHeight margin frameWidth labelString scale boxTop boxRight form canvas |
+
+	| height barWidth totalBarHeight margin frameWidth labelString scale boxTop boxRight form canvas |
+	height := 64.
 	barWidth := self barWidth.
 	totalBarHeight := 15.
 	margin := 0.
 	frameWidth := 1.
 	labelString := aGolapVertex name.
 	scale := (barWidth - 2) asFloat
-		/ (associates first totalScore asFloat max: 0.1).
-	boxTop := self font height // 2 + frameWidth + margin - 5.
+	         / (associates first totalScore asFloat max: 0.1).
+	boxTop := height // 2 + frameWidth + margin - 5.
 	boxRight := barWidth.
 	form := Form
-		extent:
-			((self font widthOfString: labelString) + ((margin + frameWidth) * 2)
-				+ barWidth)
-				@ (self font height + ((margin + frameWidth) * 2) max: totalBarHeight)
-		depth: 32.
+		        extent: (aGolapVertex photoimage
+				         ifNil: [ 
+				         (self font widthOfString: labelString) + (frameWidth * 2) ]
+				         ifNotNil: [ :image | 
+					         image width + ((golap includesSelection: aGolapVertex)
+						          ifTrue: [ 
+						          (self font widthOfString: labelString)
+						          + (frameWidth * 2) ]
+						          ifFalse: [ 0 ]) ]) + margin + barWidth @ height
+		        depth: 32.
 	canvas := form getCanvas.
 	canvas fillColor: Color transparent.
 	canvas
 		fillRectangle: (barWidth @ 0 corner: form extent)
 		color: Color white.
-	aGolapVertex
-		verticesAndScoresDo: [ :root :score | 
-			| width rect borderColor fillColor |
-			width := score * scale.
-			rect := (boxRight - width) @ boxTop extent: width @ 10.
-			aGolapVertex addRectangle: rect with: root.
-			(golap includesSelection: root)
-				ifTrue: [ fillColor := Color lightGray.
-					borderColor := Color black ]
-				ifFalse: [ fillColor := Color white.
-					borderColor := Color gray ].
+	aGolapVertex verticesAndScoresDo: [ :root :score | 
+		| width rect borderColor fillColor |
+		width := score * scale.
+		rect := boxRight - width @ boxTop extent: width @ 10.
+		aGolapVertex addRectangle: rect with: root.
+		(golap includesSelection: root)
+			ifTrue: [ 
+				fillColor := Color lightGray.
+				borderColor := Color black ]
+			ifFalse: [ 
+				fillColor := Color white.
+				borderColor := Color gray ].
+		canvas
+			frameAndFillRectangle: rect
+			fillColor: fillColor
+			borderWidth: 1
+			borderColor: borderColor.
+		boxRight := boxRight - width ].
+	aGolapVertex photoimage
+		ifNotNil: [ :image | 
+			canvas paintImage: image at: barWidth + margin @ 0.
+			(golap includesSelection: aGolapVertex) ifTrue: [ 
+				canvas
+					drawString: labelString
+					at: barWidth + margin + frameWidth + image width
+						@ (height - self font height // 2)
+					font: self font
+					color: Color black ] ]
+		ifNil: [ 
 			canvas
-				frameAndFillRectangle: rect
-				fillColor: fillColor
-				borderWidth: 1
-				borderColor: borderColor.
-			boxRight := boxRight - width ].
-	canvas
-		drawString: labelString
-			at: (barWidth + margin + frameWidth) @ (margin + frameWidth)
-			font: self font
-			color: Color black;
-		flush.
+				drawString: labelString
+				at:
+				barWidth + margin + frameWidth @ (height - self font height // 2)
+				font: self font
+				color: Color black ].
+	canvas flush.
 	^ form
 ]
 
 { #category : #drawing }
 GolapElaborationRenderer >> createNameLabel: aGolapVertex [
-	| margin frameWidth labelString form |
-	margin := 2.
-	frameWidth := 1.
-	labelString := aGolapVertex name.
-	form := Form
-		extent:
-			(self font widthOfString: labelString) @ self font height
-				+ ((margin + frameWidth) * 2)
-		depth: 32.
-	form getCanvas
-		fillColor: Color white;
-		drawString: labelString
-			at: (margin + frameWidth) @ (margin + frameWidth)
-			font: self font
-			color: Color black;
-		flush.
-	^ form
+
+	^ aGolapVertex photoimage
+		  ifNotNil: [ :image | 
+			  (golap includesSelection: aGolapVertex)
+				  ifTrue: [ 
+					  | height margin frameWidth labelString form |
+					  height := 64.
+					  margin := 2.
+					  frameWidth := 1.
+					  labelString := aGolapVertex name.
+					  form := Form
+						          extent:
+							          image width + (self font widthOfString: labelString)
+							          + (margin + frameWidth * 2) @ height
+						          depth: 32.
+					  form getCanvas
+						  fillColor: Color white;
+						  paintImage: image at: 0 @ 0;
+						  drawString: labelString
+						  at:
+							  image width + margin + frameWidth
+							  @ (height - self font height // 2)
+						  font: self font
+						  color: Color black;
+						  flush.
+					  form ]
+				  ifFalse: [ image ] ]
+		  ifNil: [ 
+			  | height margin frameWidth labelString form |
+			  height := 64.
+			  margin := 2.
+			  frameWidth := 1.
+			  labelString := aGolapVertex name.
+			  form := Form
+				          extent:
+					          (self font widthOfString: labelString)
+					          + (margin + frameWidth * 2) @ height
+				          depth: 32.
+			  form getCanvas
+				  fillColor: Color white;
+				  drawString: labelString
+				  at: margin + frameWidth @ (height - self font height // 2)
+				  font: self font
+				  color: Color black;
+				  flush.
+			  form ]
 ]
 
 { #category : #defaults }
 GolapElaborationRenderer >> defaultImageScale [
-	^ 50.0
+
+	^ 80.0
 ]
 
 { #category : #drawing }
@@ -121,14 +171,17 @@ GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale off
 	roots doWithIndex: [ :vertex :index | 
 		rootIndices at: vertex put: index ].
 	associates doWithIndex: [ :vertex2 :index2 | 
+		| point2 image2 |
+		image2 := vertex2 label.
+		point2 := (self associateX: extent)
+		          @ (index2 - offset * scale + (image2 height // 2)).
 		vertex2 verticesAndScoresDo: [ :vertex1 :score | 
-			| point1 point2 selected |
-			point1 := (self rootX + vertex1 label width) ceiling
-			          @ ((rootIndices at: vertex1) - offset * scale
-				           + (vertex1 label height * 0.5)).
-			point2 := (self associateX: extent)
+			| image1 point1 selected |
+			image1 := vertex1 label.
+			point1 := (self rootX + image1 width) ceiling
 			          @
-			          (index2 - offset * scale + (vertex2 label height * 0.5)).
+			          ((rootIndices at: vertex1) - offset * scale
+			           + (image1 height // 2)).
 			selected := (golap includesSelection: vertex1) or: [ 
 				            golap includesSelection: vertex2 ].
 			aCanvas
@@ -144,18 +197,21 @@ GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale off
 
 { #category : #drawing }
 GolapElaborationRenderer >> drawLabelForVertex: aGolapVertex on: aCanvas at: aPoint [
+
 	| extent margin frameWidth labelString |
 	extent := self labelExtentForVertex: aGolapVertex.
 	margin := 2.
 	frameWidth := 1.
 	labelString := aGolapVertex name.
-	aCanvas
+	aCanvas paintImage: aGolapVertex label at: aPoint
+	"aCanvas
 		fillRectangle: (aPoint extent: extent) color: Color white;
 		drawString: labelString
-			at: (aPoint x + margin + frameWidth) @ (aPoint y + margin + frameWidth)
-			font: self font
-			color: Color black;
-		flush
+		at:
+			aPoint x + margin + frameWidth @ (aPoint y + margin + frameWidth)
+		font: self font
+		color: Color black;
+		flush"
 ]
 
 { #category : #drawing }
@@ -170,16 +226,17 @@ GolapElaborationRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale 
 		(roots at: index ifAbsent: [ nil ]) ifNotNil: [ :vertex | 
 			| string |
 			point := x @ (index asFloat - offset * scale) rounded.
+
 			bounds := point extent:
 				          (self labelExtentForVertex: vertex) - (1 @ 1).
+			self drawLabelForVertex: vertex on: aCanvas at: point.
 			string := golap simpleStringFor:
 				          (golap model valueAtVertex: vertex).
 			aCanvas
 				drawString: string
-				at: point x - (font widthOfString: string) - 5 @ point y
+				at: bounds origin x - (font widthOfString: string) - 5 @ point y
 				font: font
 				color: Color gray.
-			self drawLabelForVertex: vertex on: aCanvas at: point.
 			(golap includesSelection: vertex) ifTrue: [ 
 				aCanvas frameRectangle: bounds width: 2 color: Color black ].
 			golap markersAndVerticesDo: [ :color :vs | 
@@ -307,12 +364,8 @@ GolapElaborationRenderer >> initialize [
 
 { #category : #drawing }
 GolapElaborationRenderer >> labelExtentForVertex: aGolapVertex [
-	| margin frameWidth labelString |
-	margin := 2.
-	frameWidth := 1.
-	labelString := aGolapVertex name.
-	^ (self font widthOfString: labelString) @ self font height
-		+ ((margin + frameWidth) * 2) asPoint
+
+	^ aGolapVertex label extent
 ]
 
 { #category : #'view manipulation' }
@@ -323,13 +376,15 @@ GolapElaborationRenderer >> layout [
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> moveImageOffset: aPoint [
 
-	imageOffset := aPoint y negated / imageScale + imageOffset
+	imageOffset := (aPoint y negated / imageScale / 2.0 min: 3.0 max: -3.0)
+	               + imageOffset
 ]
 
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> moveMapOffset: aPoint [
 
-	imageOffset := aPoint y negated / mapScale + imageOffset
+	imageOffset := (aPoint y negated / mapScale / 2.0 min: 3.0 max: -3.0)
+	               + imageOffset
 ]
 
 { #category : #accessing }
@@ -340,7 +395,8 @@ GolapElaborationRenderer >> overridesYWithFrequency: aBoolean [
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> resetZoom [
 
-	imageScale := self defaultImageScale
+	imageScale := self defaultImageScale.
+	imageOffset := 0.0.
 ]
 
 { #category : #snapshot }
@@ -430,29 +486,41 @@ GolapElaborationRenderer >> updateRootsAndAssociates [
 
 { #category : #accessing }
 GolapElaborationRenderer >> vertexAtPoint: aPoint [
+
 	| index |
 	index := (aPoint y / imageScale + imageOffset) floor.
 	self associateX <= aPoint x
-		ifTrue: [ | vertex |
+		ifTrue: [ 
+			| vertex |
 			vertex := associates at: index ifAbsent: [ ^ nil ].
 			vertex label ifNil: [ ^ nil ].
-			^ ((aPoint y - ((index - imageOffset) * imageScale)
-				between: 0.0
-				and: vertex label height)
-				and: [ aPoint x
-						between: self associateX
-						and: self associateX + self barWidth + vertex label width ])
-				ifTrue: [ vertex ]
-				ifFalse: [ nil ] ]
-		ifFalse: [ | vertex |
+			^ ((aPoint y - (index - imageOffset * imageScale)
+				    between: 0.0
+				    and: (vertex photoimage ifNil: [ vertex label ]) height) and: [ 
+				   aPoint x
+					   between: self associateX
+					   and: self associateX + self barWidth + vertex label width ])
+				  ifTrue: [ vertex ]
+				  ifFalse: [ nil ] ]
+		ifFalse: [ 
+			| vertex |
 			vertex := roots at: index ifAbsent: [ ^ nil ].
 			vertex label ifNil: [ ^ nil ].
-			^ ((aPoint y - ((index - imageOffset) * imageScale)
-				between: 0.0
-				and: vertex label height)
-				and: [ aPoint x between: self rootX and: self rootX + vertex label width ])
-				ifTrue: [ vertex ]
-				ifFalse: [ nil ] ]
+			^ ((aPoint y - (index - imageOffset * imageScale)
+				    between: 0.0
+				    and: vertex label height) and: [ 
+				   aPoint x
+					   between: self rootX
+					   and: self rootX + vertex label width ])
+				  ifTrue: [ vertex ]
+				  ifFalse: [ nil ] ]
+]
+
+{ #category : #enumerating }
+GolapElaborationRenderer >> verticesDo: aBlock [
+
+	roots do: aBlock.
+	associates do: aBlock
 ]
 
 { #category : #'view manipulation' }
