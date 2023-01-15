@@ -1671,7 +1671,8 @@ Golap >> retrievePhotoimageOnElaborationRenderer [
 	[ 
 	elaborationRenderer ifNotNil: [ 
 		overviewRenderer verticesDo: [ :vertex | 
-			vertex basicPhotoimage ifNil: [ self retrievePhotoimageFor: vertex ].
+			vertex basicPhotoimage ifNil: [ 
+				^ self retrievePhotoimageFor: vertex ].
 			Processor yield ] ] ]
 		on: Error
 		do: [ :ex |  ]
@@ -1706,7 +1707,7 @@ Golap >> retrievePhotoimageOnOverviewRenderer [
 										minV := vertex ] ] ] ] ].
 					Processor yield ].
 
-				minV ifNotNil: [ self retrievePhotoimageFor: minV ] ] ] ] ]
+				minV ifNotNil: [ ^ self retrievePhotoimageFor: minV ] ] ] ] ]
 		on: Error
 		do: [ :ex |  ]
 ]
@@ -2088,12 +2089,14 @@ Golap >> snapshotSelections [
 Golap >> startPhotoimageRetrievingProcess [
 
 	self stopPhotoimageRetrievingProcess.
-	photoImageRetrievingProcess := [ retrievalProcessCount := 0.
+	photoImageRetrievingProcess := [ 
+	                               retrievalProcessCount := 0.
 	                               [ 
 	                               self ifNotActive: [ 
 		                               photoImageRetrievingProcess := nil.
 		                               Processor activeProcess terminate ].
-	                               self retrievePhotoimage ] repeat ] 
+	                               self retrievePhotoimage.
+	                               100 milliSecond wait ] repeat ] 
 		                               forkAt:
 		                               Processor userBackgroundPriority
 ]
