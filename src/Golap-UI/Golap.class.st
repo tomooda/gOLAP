@@ -35,14 +35,19 @@ Class {
 		'edgesAppearancePresenter',
 		'colorsAppearancePresenter',
 		'lastSelectedMarkerItem',
-		'saveAsSvgButton',
+		'saveAsPngButton',
 		'appearanceNotebook',
 		'itemList',
 		'itemNotebook',
 		'snapshotDirectory',
 		'snapshotEnabled',
-		'snapshotProcess',
-		'resentQueryButton'
+		'resentQueryButton',
+		'lastZoomTimestamp',
+		'saveAsSvgButton',
+		'saveSnapshotButton',
+		'photoImageRetrievingProcess',
+		'retrievalProcessCount',
+		'drawingSemaphore'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -60,8 +65,8 @@ Golap class >> defaultFont: aFont [
 	^ StandardFonts defaultFont: aFont
 ]
 
-{ #category : #specs }
-Golap class >> defaultSpec [
+{ #category : #layout }
+Golap class >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newHorizontal
@@ -85,13 +90,14 @@ Golap class >> defaultSpec [
 						    add: #layoutButton expand: true;
 						    add: #overridesYWithFrequencyCheckbox width: 100)
 				   height: self buttonHeight)
-		  width: 310;
+		  width: 350;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.75;
 				   add: #globalImagePane;
 				   add: (SpBoxLayout newVertical
-						    add: #saveAsButton height: self buttonHeight;
+						    add: #saveSnapshotButton height: self buttonHeight;
 						    add: #saveAsSvgButton height: self buttonHeight;
+						    add: #saveAsPngButton height: self buttonHeight;
 						    add: #resentQueryButton height: self buttonHeight;
 						    add: #queryViewTree height: 200;
 						    add: #itemNotebook))
@@ -190,16 +196,18 @@ Golap class >> nameEndOfLineDelimiter: aString [
 
 { #category : #utilities }
 Golap class >> open [
+
 	<script: 'GolapOverview open'>
 	| overview |
 	overview := Golap new.
-	overview openWithSpec maximize.
+	overview open maximize.
 	^ overview
-		updateGlobalImageAfter: [ overview
-				model: nil;
-				minimalSpanningTree ]
-			layout: true;
-		yourself
+		  updateGlobalImageAfter: [ 
+			  overview
+				  model: nil;
+				  minimalSpanningTree ]
+		  layout: true;
+		  yourself
 ]
 
 { #category : #examples }
@@ -208,7 +216,7 @@ Golap class >> openClient [
 	<script: 'GolapOverview openClient'>
 	| overview |
 	overview := Golap new.
-	overview openWithSpec maximize.
+	overview open maximize.
 	GolapNetworkClientPresenter
 		openDialogIfAccepted: [ :client | 
 			[ 
@@ -259,7 +267,7 @@ Golap class >> openFile [
 	<script: 'GolapOverview openFile'>
 	| overview |
 	overview := Golap new.
-	overview openWithSpec maximize.
+	overview open maximize.
 	(UIManager default
 		 chooseExistingFileReference: 'Select a coocurrence file'
 		 extensions: #( 'csv' )
@@ -369,7 +377,23 @@ Golap >> applyMergesToModel: aGolapModel [
 
 { #category : #accessing }
 Golap >> authenticateBlock [
-	^ authenticateBlock
+
+	^ authenticateBlock ifNil: [ 
+		  | username password |
+		  username := nil.
+		  password := nil.
+		  ^ authenticateBlock := [ :auth | 
+		                         username ifNil: [ 
+			                         username := UIManager default request:
+				                                     'username' ].
+		                         username ifNotNil: [ 
+			                         password ifNil: [ 
+				                         password := UIManager default 
+					                                     requestPassword: 'password' ].
+			                         password
+				                         ifNotNil: [ 
+				                         auth value: username value: password ]
+				                         ifNil: [ username := nil ] ] ] ]
 ]
 
 { #category : #accessing }
@@ -457,11 +481,11 @@ Golap >> copyFromQueryViewTree [
 ]
 
 { #category : #snapshot }
-Golap >> createSnapshotDirectory [
+Golap >> createTemporarySnapshotDirectory [
 
 	^ url ifNotNil: [ 
 		  | ref |
-		  ref := (self golapDirectory / 'snapshots'
+		  ref := (self golapDirectory / self temporaryDirectoryName
 		          /
 			          (url host asString , '--' , DateAndTime now printString
 			           , '--'
@@ -533,6 +557,14 @@ Golap >> edgeScale: aNumber [
 Golap >> elaborationRenderer [
 	^ elaborationRenderer
 		ifNil: [ elaborationRenderer := GolapElaborationRenderer on: self ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> ensurePhotoimageRetrievingProcess [
+
+	(photoImageRetrievingProcess isNil or: [ 
+		 photoImageRetrievingProcess isTerminating ]) ifTrue: [ 
+		self startPhotoimageRetrievingProcess ]
 ]
 
 { #category : #private }
@@ -687,12 +719,18 @@ Golap >> globalImagePane [
 ]
 
 { #category : #operations }
+Golap >> globalMapMouseClick: anEvent [
+
+	anEvent wasHandled: true
+]
+
+{ #category : #operations }
 Golap >> globalMapMouseMove: anEvent [
-	anEvent anyButtonPressed
-		ifFalse: [ ^ self ].
-	self
-		updateGlobalImageAfter: [ self renderer moveMapOffset: anEvent startPoint - anEvent endPoint.
-			anEvent wasHandled: true ]
+
+	anEvent anyButtonPressed ifFalse: [ ^ self ].
+	anEvent wasHandled: true.
+	self updateGlobalImageAfter: [ 
+		self renderer moveMapOffset: anEvent startPoint - anEvent endPoint ]
 ]
 
 { #category : #'accessing-widgets' }
@@ -721,6 +759,14 @@ Golap >> iconForCircleColor: aColor [
 	^ itemList iconForCircleColor: aColor
 ]
 
+{ #category : #private }
+Golap >> ifNotActive: aBlock [
+
+	adapter ifNil: [ ^ aBlock value ].
+	adapter widget ifNil: [ ^ aBlock value ].
+	adapter widget world ifNil: [ ^ aBlock value ]
+]
+
 { #category : #snapshot }
 Golap >> ifSnapshotEnabled: aBlock [
 
@@ -744,13 +790,16 @@ Golap >> includesSelection: aGolapVertex [
 
 { #category : #initialization }
 Golap >> initialize [
+
 	super initialize.
 	pins := Set new.
 	selections := Set new.
 	dimensions := OrderedDictionary new.
 	merges := OrderedCollection new.
 	rendererSelector := #overviewRenderer.
-	snapshotEnabled := true
+	snapshotEnabled := true.
+	lastZoomTimestamp := DateAndTime now.
+	drawingSemaphore := Semaphore forMutualExclusion
 ]
 
 { #category : #initialization }
@@ -782,6 +831,12 @@ Golap >> initializePresenters [
 			                 globalMapPane adapter widget
 				                 on: #mouseMove
 				                 send: #globalMapMouseMove:
+				                 to: self;
+				                 on: #mouseUp
+				                 send: #globalMapMouseClick:
+				                 to: self;
+				                 on: #mouseWheel
+				                 send: #globalImageMouseWheel:
 				                 to: self ];
 		                 bindKeyCombination: Character arrowUp
 		                 toAction: [ self zoomIn ];
@@ -862,6 +917,10 @@ Golap >> initializePresenters [
 		                label: 'save...';
 		                action: [ self dumpToFile ];
 		                yourself.
+	saveAsPngButton := self newButton
+		                   label: 'save as PNG...';
+		                   action: [ self saveFullImage ];
+		                   yourself.
 	saveAsSvgButton := self newButton
 		                   label: 'save as SVG...';
 		                   action: [ self saveAsSVG ];
@@ -870,6 +929,10 @@ Golap >> initializePresenters [
 		                     label: 'resend query';
 		                     action: [ self resendQuery ];
 		                     yourself.
+	saveSnapshotButton := self newButton
+		                      label: 'save snapshot...';
+		                      action: [ self saveSnapshot ];
+		                      yourself.
 	queryViewTree := self newTreeTable
 		                 addColumn:
 			                 (SpStringTableColumn evaluated: [ :assoc | 
@@ -911,8 +974,15 @@ Golap >> initializePresenters [
 Golap >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter
-		title: 'gOLAP overview';
+		title: self title;
 		initialExtent: World extent
+]
+
+{ #category : #snapshot }
+Golap >> isTemporarySnapshot [
+
+	^ self snapshotDirectory parent basename
+	  = self temporaryDirectoryName
 ]
 
 { #category : #accessing }
@@ -957,6 +1027,12 @@ Golap >> maxMode [
 	edgesAppearancePresenter maxMode
 ]
 
+{ #category : #'operations-photoimages' }
+Golap >> maxPhotoimageRetrievalProcesses [
+
+	^ 3
+]
+
 { #category : #private }
 Golap >> maxScale [
 	^ 50.0
@@ -964,35 +1040,38 @@ Golap >> maxScale [
 
 { #category : #menu }
 Golap >> mergeMenu [
+
 	| menu |
 	menu := self newMenu.
-	menu
-		addGroup: [ :group | 
-			selections size > 1
-				ifTrue: [ group
-						addItem: [ :item | 
-							item
-								name: 'selections';
-								action: [ self mergeSelectedVertices ] ] ].
-			itemList markerDropList listItems
-				do: [ :listItem | 
-					| color ids |
-					color := listItem key.
-					ids := itemList markers at: color ifAbsent: [ #() ].
-					ids size > 1
-						ifTrue: [ group
-								addItem: [ :menuItem | 
-									menuItem
-										name: '';
-										icon: (self iconForCircleColor: color);
-										action: [ self mergeVertices: ids copy ] ] ] ] ].
+	menu addGroup: [ :group | 
+		selections size > 1 ifTrue: [ 
+			group addItem: [ :item | 
+				item
+					name: 'selections';
+					action: [ self mergeSelectedVertices ] ] ].
+		itemList markerDropList listItems do: [ :listItem | 
+			| color ids |
+			color := listItem key.
+			ids := itemList markers at: color ifAbsent: [ #(  ) ].
+			ids size > 1 ifTrue: [ 
+				group addItem: [ :menuItem | 
+					menuItem
+						name: '';
+						icon: (self iconForCircleColor: color);
+						action: [ 
+							(self mergeVertices: ids copy) ifNotNil: [ :newId | 
+									itemList markerDropList items do: [ :item | 
+											item key = color ifTrue: [ item value: item value, ',',newId ] ].
+									(itemList markers at: color) add: newId.
+									itemList currentMarker: color.
+									itemList updateVertexList ] ] ] ] ] ].
 	^ menu
 ]
 
 { #category : #merging }
 Golap >> mergeSelectedVertices [
-	^ selections
-		ifNotEmpty: [ self mergeVertices: selections copy ]
+	^ self selections
+		ifNotEmpty: [:vs | (self mergeVertices: (vs collect: #data)) ifNotNil: [ :newId | self select: (model vertexAt: newId) ] ]
 		ifEmpty: [ nil ]
 ]
 
@@ -1011,9 +1090,9 @@ Golap >> mergeVertices: aCollectionOfIds [
 					  nil ]
 				  ifFalse: [ 
 					  merges add: nodeName -> aCollectionOfIds copy.
-					  self snapshotMerges.
 					  self updateModel.
-					  itemList updateVertexList ] ] ]
+					  itemList updateVertexList.
+					  nodeName ] ] ]
 ]
 
 { #category : #private }
@@ -1104,6 +1183,15 @@ Golap >> numLabels [
 	^ itemsAppearancePresenter numLabels
 ]
 
+{ #category : #'instance creation' }
+Golap >> open [
+
+	| window |
+	window := super open.
+	self startPhotoimageRetrievingProcess.
+	^ window
+]
+
 { #category : #operations }
 Golap >> openPresetQueryDialog [
 
@@ -1144,6 +1232,12 @@ Golap >> overviewRenderer [
 		ifNil: [ overviewRenderer := GolapOverviewRenderer on: self ]
 ]
 
+{ #category : #'operations-photoimages' }
+Golap >> photoimageSize [
+
+	^ 64
+]
+
 { #category : #'accessing-colors' }
 Golap >> pinColor [
 	^ Color red
@@ -1180,8 +1274,7 @@ Golap >> query [
 { #category : #accessing }
 Golap >> query: aDictionary [
 
-	self setQuery: aDictionary.
-	self snapshotQuery
+	self setQuery: aDictionary
 ]
 
 { #category : #menu }
@@ -1206,7 +1299,9 @@ Golap >> readDimensionFrom: aReadStream [
 	line := aReadStream upTo: Character lf.
 	index := line indexOf: $:.
 	index = 0 ifTrue: [ ^ nil ].
-	(line beginsWithEmpty: 'status:' caseSensitive: false)
+	('status:'
+		 ifEmpty: [ true ]
+		 ifNotEmpty: [ line beginsWith: 'status:' caseSensitive: false ])
 		ifTrue: [ name := 'no dimensions' ]
 		ifFalse: [ 
 			name := line.
@@ -1369,7 +1464,7 @@ Golap >> resendQuery [
 		| now |
 		now := DateAndTime now.
 		stream nextPutAll: now asDate printString , ' ' , now asTime print24 ].
-	overview openWithSpec title: overview snapshotDirectory basename.
+	overview open title: overview snapshotDirectory basename.
 	overview snapshotData: client readStream do: [ :readStream |  ].
 	overview restoreSnapshot: overview snapshotDirectory
 ]
@@ -1515,6 +1610,7 @@ Golap >> restoreSelections [
 { #category : #snapshot }
 Golap >> restoreSnapshot: aFileReference [
 
+	self window ifNotNil: [ :w | w title: aFileReference basename ].
 	snapshotDirectory := aFileReference.
 	self disableSnapshotWhile: [ 
 		self
@@ -1541,6 +1637,81 @@ Golap >> retreatingColor [
 	^ colorsAppearancePresenter retreatingColor
 ]
 
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimage [
+
+	rendererSelector = #overviewRenderer ifTrue: [ 
+		self retrievePhotoimageOnOverviewRenderer ].
+	rendererSelector = #elaborationRenderer ifTrue: [ 
+		self retrievePhotoimageOnElaborationRenderer ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimageFor: aGolapVertex [
+
+	aGolapVertex photoimage: false.
+	[ retrievalProcessCount > self maxPhotoimageRetrievalProcesses ] 
+		whileTrue: [ 300 milliSecond wait ].
+	retrievalProcessCount := retrievalProcessCount + 1.
+	[ 
+	itemView ifNotNil: [ 
+		[ 
+		(itemView retrieveSingleImageFor: aGolapVertex data value) 
+			ifNotNil: [ :image | 
+				aGolapVertex photoimage:
+					(image scaledToSize: self photoimageSize asPoint).
+				self updateGlobalImageAfter: [  ] ] ] ensure: [ 
+			retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
+		Processor userBackgroundPriority - 5
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimageOnElaborationRenderer [
+
+	[ 
+	elaborationRenderer ifNotNil: [ 
+		overviewRenderer verticesDo: [ :vertex | 
+			vertex basicPhotoimage ifNil: [ 
+				^ self retrievePhotoimageFor: vertex ].
+			Processor yield ] ] ]
+		on: Error
+		do: [ :ex |  ]
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> retrievePhotoimageOnOverviewRenderer [
+
+	[ 
+	overviewRenderer ifNotNil: [ 
+		globalImagePane withAdapterDo: [ :a | 
+			a widgetDo: [ :w | 
+				| origin corner mouse minD minV |
+				origin := overviewRenderer vertexPointAtPoint:
+					          (-10 @ -10 min: w extent // 10).
+				corner := overviewRenderer vertexPointAtPoint:
+					          w extent + (10 @ 10 max: w extent // 10).
+				mouse := overviewRenderer vertexPointAtPoint:
+					         w activeHand position - w position.
+				minD := Float infinity.
+				minV := nil.
+				overviewRenderer reallyVisibleVerticesDo: [ :vertex | 
+					vertex basicPhotoimage ifNil: [ 
+						vertex x ifNotNil: [ :x | 
+							vertex y ifNotNil: [ :y | 
+								((x between: origin x and: corner x) and: [ 
+									 y between: origin y and: corner y ]) ifTrue: [ 
+									| d |
+									d := (x - mouse x) squared + (y - mouse y) squared.
+									d < minD ifTrue: [ 
+										minD := d.
+										minV := vertex ] ] ] ] ].
+					Processor yield ].
+
+				minV ifNotNil: [ ^ self retrievePhotoimageFor: minV ] ] ] ] ]
+		on: Error
+		do: [ :ex |  ]
+]
+
 { #category : #operations }
 Golap >> saveAsSVG [
 	(UIManager default
@@ -1552,14 +1723,57 @@ Golap >> saveAsSVG [
 				writeStreamDo: [ :stream | self renderer svg printWithPrologOn: stream ] ]
 ]
 
+{ #category : #operations }
+Golap >> saveFullImage [
+
+	(UIManager default
+		 chooseForSaveFileReference: 'Save as a PNG file'
+		 extensions: #( 'png' )
+		 path: self golapDirectory) ifNotNil: [ :fileReference | 
+		fileReference binaryWriteStreamDo: [ :stream | 
+			Cursor wait showWhile: [ 
+				PNGReadWriter putForm: self renderer fullImage onStream: stream ] ] ]
+]
+
+{ #category : #snapshot }
+Golap >> saveSnapshot [
+
+	| newSnapshotRef |
+	newSnapshotRef := self snapshotBaseDirectory / ((UIManager default
+		                    request: 'スナップショット名'
+		                    initialAnswer: (self isTemporarySnapshot
+				                     ifTrue: [ '' ]
+				                     ifFalse: [ self snapshotDirectory basename ])) 
+		                   ifNil: [ ^ self ]).
+	newSnapshotRef ~= self snapshotDirectory ifTrue: [ 
+		newSnapshotRef exists ifTrue: [ 
+			(UIManager confirm: newSnapshotRef basename , 'は既に存在しています。上書きしますか？')
+				ifTrue: [ newSnapshotRef ensureDeleteAll ]
+				ifFalse: [ ^ self ] ].
+		self snapshotDirectory copyAllTo: newSnapshotRef.
+		(self isTemporarySnapshot or: [ 
+			 UIManager confirm: self snapshotDirectory basename , 'を削除しますか？' ]) 
+			ifTrue: [ self snapshotDirectory ensureDeleteAll ].
+		snapshotDirectory := newSnapshotRef ].
+	self snapshotGlobalImage.
+	self snapshotMerges.
+	self snapshotSelections.
+	colorsAppearancePresenter snapshot.
+	edgesAppearancePresenter snapshot.
+	itemsAppearancePresenter snapshot.
+	itemList snapshot.
+	itemView snapshot.
+	elaborationRenderer ifNotNil: #snapshot.
+	overviewRenderer ifNotNil: #snapshot
+]
+
 { #category : #'accessing-selection' }
 Golap >> select: aGolapVertex [
 
 	self updateGlobalImageAfter: [ 
 		aGolapVertex dataDo: [ :data | selections add: data ].
 		selectedEdges := nil.
-		self showItemView: aGolapVertex ].
-	self snapshotSelections
+		self showItemView: aGolapVertex ]
 ]
 
 { #category : #'accessing-dimensions' }
@@ -1584,7 +1798,6 @@ Golap >> selectedFrontDimension [
 { #category : #'accessing-dimensions' }
 Golap >> selectedModel [
 
-	self snapshotSelections.
 	^ (self selectedFrontDimension ifNil: [ nil ] ifNotNil: [ :front | 
 		   self selectedBaseDimension ifNil: [ front ] ifNotNil: [ :base | 
 			   self
@@ -1621,8 +1834,7 @@ Golap >> selectionsAdd: aGolapVertex [
 
 	self updateGlobalImageAfter: [ 
 		aGolapVertex dataDo: [ :data | selections add: data ].
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-selection' }
@@ -1631,8 +1843,7 @@ Golap >> selectionsAddAll: aCollectionOfGolapVertex [
 	self updateGlobalImageAfter: [ 
 		aCollectionOfGolapVertex do: [ :vertex | 
 			vertex dataDo: [ :data | selections add: data ] ].
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-renderer' }
@@ -1641,8 +1852,7 @@ Golap >> setElaborationRenderer [
 	self updateGlobalImageAfter: [ 
 		rendererSelector := #elaborationRenderer.
 		elaborationRendererButton state: true.
-		overviewRendererButton state: false ].
-	self snapshotSelections
+		overviewRendererButton state: false ]
 ]
 
 { #category : #'accessing-renderer' }
@@ -1653,48 +1863,17 @@ Golap >> setOverviewRenderer [
 			rendererSelector := #overviewRenderer.
 			elaborationRendererButton state: false.
 			overviewRendererButton state: true ]
-		layout: (self vertices anySatisfy: [ :v | v asPoint isNil ]).
-	self snapshotSelections
+		layout: (self vertices anySatisfy: [ :v | v asPoint isNil ])
 ]
 
 { #category : #accessing }
 Golap >> setQuery: aDictionary [
+
 	query := aDictionary.
-	self window
-		title:
-			'gOLAP overview'
-				,
-					((String
-						streamContents: [ :stream | 
-							query
-								at: 'query'
-								ifPresent: [ :q | 
-									q
-										at: 'traFilter'
-										ifPresent: [ :traFilter | 
-											stream
-												nextPutAll: 'traFilter:';
-												nextPutAll: traFilter;
-												nextPutAll: ', ' ].
-									q
-										at: 'itemFilter'
-										ifPresent: [ :itemFilter | 
-											stream
-												nextPutAll: 'itemFilter:';
-												nextPutAll: itemFilter;
-												nextPutAll: ', ' ].
-									q
-										at: 'dimensions'
-										ifPresent: [ :ds | 
-											stream
-												nextPutAll: 'dimensions:';
-												nextPutAll: ds;
-												nextPutAll: ', ' ] ] ])
-						ifNotEmpty: [ :str | ' - ' , (str copyFrom: 1 to: str size - 2) ]).
-	queryViewTree
-		roots:
-			(query keys asSortedCollection
-				collect: [ :key | key -> (query at: key) ]).
+
+	queryViewTree roots:
+		(query keys asSortedCollection collect: [ :key | 
+			 key -> (query at: key) ]).
 	itemView ifNotNil: [ itemView query: aDictionary ]
 ]
 
@@ -1742,6 +1921,20 @@ Golap >> simpleStringFor: aNumber [
 ]
 
 { #category : #snapshot }
+Golap >> snapshotBaseDirectory [
+
+	^ (self golapDirectory / self snapshotBaseDirectoryName)
+		  ensureCreateDirectory;
+		  yourself
+]
+
+{ #category : #snapshot }
+Golap >> snapshotBaseDirectoryName [
+
+	^ 'snapshots'
+]
+
+{ #category : #snapshot }
 Golap >> snapshotColorsAppearance: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -1752,6 +1945,8 @@ Golap >> snapshotColorsAppearance: aBlock [
 
 { #category : #snapshot }
 Golap >> snapshotData: aReadStream do: aBlock [
+
+	self snapshotQuery.
 	aReadStream
 		ifNotNil: [ 
 			self snapshotDirectory
@@ -1776,7 +1971,7 @@ Golap >> snapshotData: aReadStream do: aBlock [
 Golap >> snapshotDirectory [
 
 	^ (snapshotDirectory ifNil: [ 
-		   snapshotDirectory := self createSnapshotDirectory ifNil: [ ^ nil ] ])
+		   snapshotDirectory := self createTemporarySnapshotDirectory ifNil: [ ^ nil ] ])
 		  ensureCreateDirectory
 ]
 
@@ -1890,9 +2085,48 @@ Golap >> snapshotSelections [
 						('baseDimension' -> baseList selectedItem) } asOrderedDictionary ] ] ]
 ]
 
+{ #category : #'operations-photoimages' }
+Golap >> startPhotoimageRetrievingProcess [
+
+	self stopPhotoimageRetrievingProcess.
+	photoImageRetrievingProcess := [ 
+	                               retrievalProcessCount := 0.
+	                               [ 
+	                               self ifNotActive: [ 
+		                               photoImageRetrievingProcess := nil.
+		                               Processor activeProcess terminate ].
+	                               self retrievePhotoimage.
+	                               100 milliSecond wait ] repeat ] 
+		                               forkAt:
+		                               Processor userBackgroundPriority
+]
+
+{ #category : #'operations-photoimages' }
+Golap >> stopPhotoimageRetrievingProcess [
+
+	photoImageRetrievingProcess ifNotNil: [ 
+		photoImageRetrievingProcess terminate.
+		photoImageRetrievingProcess := nil ]
+]
+
 { #category : #operations }
 Golap >> sumMode [
 	edgesAppearancePresenter sumMode
+]
+
+{ #category : #snapshot }
+Golap >> temporaryDirectoryName [
+
+	^ 'temporary'
+]
+
+{ #category : #accessing }
+Golap >> title [
+
+	^ (self basicSnapshotDirectory notNil and: [ 
+		   self isTemporarySnapshot not ])
+		  ifTrue: [ self snapshotDirectory basename ]
+		  ifFalse: [ 'gOLAP' ]
 ]
 
 { #category : #'accessing-selection' }
@@ -1903,8 +2137,7 @@ Golap >> togglePin: aGolapVertex [
 		id := aGolapVertex data.
 		(pins includes: id)
 			ifTrue: [ pins remove: id ]
-			ifFalse: [ pins add: id ] ].
-	self snapshotSelections
+			ifFalse: [ pins add: id ] ]
 ]
 
 { #category : #'accessing-selection' }
@@ -1951,7 +2184,6 @@ Golap >> unmergeMenu [
 Golap >> unmergeVertex: aString [
 
 	merges removeAllSuchThat: [ :assoc | assoc key = aString ].
-	self snapshotMerges.
 	self updateModel.
 	itemList updateVertexList
 ]
@@ -1962,8 +2194,7 @@ Golap >> unselect: aGolapVertex [
 	self updateGlobalImageAfter: [ 
 		aGolapVertex dataDo: [ :data | 
 			selections remove: data ifAbsent: [  ] ].
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-selection' }
@@ -1971,8 +2202,7 @@ Golap >> unselectAll [
 
 	self updateGlobalImageAfter: [ 
 		selections removeAll.
-		selectedEdges := nil ].
-	self snapshotSelections
+		selectedEdges := nil ]
 ]
 
 { #category : #'accessing-dimensions' }
@@ -1985,16 +2215,12 @@ Golap >> updateDimensions [
 { #category : #drawing }
 Golap >> updateGlobalImage [
 
-	| imageAndMap |
-	imageAndMap := self renderer globalImageAndMap.
-	globalImagePane image: imageAndMap first.
-	globalMapPane image: imageAndMap second.
-	snapshotProcess ifNotNil: [ snapshotProcess terminate ].
-	snapshotProcess := [ 
-	                   5 seconds wait.
-	                   snapshotProcess := nil.
-	                   self snapshotGlobalImage ] forkAt:
-		                   Processor userBackgroundPriority
+	drawingSemaphore critical: [ 
+		| imageAndMap |
+		imageAndMap := self renderer globalImageAndMap.
+		globalImagePane image: imageAndMap first.
+		globalMapPane image: imageAndMap second ].
+	self ensurePhotoimageRetrievingProcess
 ]
 
 { #category : #drawing }
@@ -2047,8 +2273,7 @@ Golap >> url [
 { #category : #accessing }
 Golap >> url: aZnUrl [
 
-	url := aZnUrl asUrl.
-	self snapshotQuery
+	url := aZnUrl asUrl
 ]
 
 { #category : #accessing }
@@ -2136,20 +2361,40 @@ Golap >> writePresetQueries: anArrayOfString [
 
 { #category : #operations }
 Golap >> zoomIn [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomIn ]
 ]
 
 { #category : #operations }
 Golap >> zoomInCenter [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomInCenter ]
 ]
 
 { #category : #operations }
 Golap >> zoomOut [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomOut ]
 ]
 
 { #category : #operations }
 Golap >> zoomOutCenter [
+
+	(lastZoomTimestamp notNil and: [ 
+		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
+		^ self ].
+	lastZoomTimestamp := DateAndTime now.
 	self updateGlobalImageAfter: [ self renderer zoomOutCenter ]
 ]

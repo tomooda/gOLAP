@@ -16,8 +16,8 @@ Class {
 		'itemName',
 		'itemFieldQuerySpec',
 		'authenticateBlock',
-		'snapshotProcess',
-		'golap'
+		'golap',
+		'vertex'
 	],
 	#classVars : [
 		'EmptyImage',
@@ -26,8 +26,8 @@ Class {
 	#category : #'Golap-UI-Graph'
 }
 
-{ #category : #specs }
-GolapItemView class >> defaultSpec [
+{ #category : #layout }
+GolapItemView class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newVertical
 		add: #serverUrlField height: self buttonHeight;
@@ -59,6 +59,13 @@ GolapItemView >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
+{ #category : #accessing }
+GolapItemView >> basicImage [
+
+	^ self images ifNotNil: [ :images | 
+		  images at: imageIndex value ifAbsent: [ nil ] ]
+]
+
 { #category : #private }
 GolapItemView >> emptyImage [
 	^ EmptyImage
@@ -75,16 +82,14 @@ GolapItemView >> golap: aGolap [
 
 { #category : #accessing }
 GolapItemView >> image [
-	^ self images
-		ifNil: [ self emptyImage ]
-		ifNotNil:
-			[ :images | images at: imageIndex value ifAbsent: [ self emptyImage ] ]
+
+	^ self basicImage ifNil: [ self emptyImage ]
 ]
 
 { #category : #accessing }
 GolapItemView >> imageRepositoryUrl: aString [
-	imageRepositoryField text: (aString ifNil: [ '' ]).
-	self snapshot
+
+	imageRepositoryField text: (aString ifNil: [ '' ])
 ]
 
 { #category : #http }
@@ -266,19 +271,46 @@ GolapItemView >> retrieveItemInfoFor: aString [
 	^ itemInfo
 ]
 
+{ #category : #http }
+GolapItemView >> retrieveSingleImageFor: aString [
+
+	| imageRepo filenames |
+	aString ifNil: [ ^ nil ].
+	imageRepo := imageRepositoryField text asString trim asUrl.
+	[ 
+	filenames := (GolapHttpClient
+		              post: serverUrlField text asString trim asUrl
+		              data:
+		              (ZnEntity json: (self imageRequestJsonFor: aString))
+		              authenticateBlock: self authenticateBlock) entity
+		             contents trim lines ]
+		on: Error
+		do: [ :ex | ^ nil ].
+	filenames size < 3 ifTrue: [ ^ nil ].
+	3 timesRepeat: [ 
+		3 to: filenames size do: [ :index | 
+			| filename |
+			filename := filenames at: index.
+			[ 
+			| response |
+			response := GolapHttpClient get: imageRepo / filename.
+			response isSuccess ifTrue: [ 
+				^ ImageReadWriter formFromStream: response entity readStream ] ]
+				on: Error
+				do: [ :ex |  ].
+			500 milliSecond wait ] ].
+	^ nil
+]
+
 { #category : #accessing }
 GolapItemView >> serverUrl: aString [
 
-	serverUrlField text: aString.
-	self snapshot
+	serverUrlField text: aString
 ]
 
 { #category : #snapshot }
 GolapItemView >> snapshot [
 
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
 	golap snapshotItemView: [ :stream | self snapshotInto: stream ]
 ]
 
@@ -294,22 +326,14 @@ GolapItemView >> snapshotInto: aStream [
 			('item-query' -> itemFieldQuerySpec) } asOrderedDictionary
 ]
 
-{ #category : #snapshot }
-GolapItemView >> snapshotLazy [
-
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
-	snapshotProcess := [ 
-	                   1 seconds wait.
-	                   snapshotProcess := nil.
-	                   golap snapshotItemView: [ :stream | 
-		                   self snapshotInto: stream ] ] forkAt:
-		                   Processor userBackgroundPriority
-]
-
 { #category : #private }
 GolapItemView >> updateImage [
+
+	vertex ifNotNil: [ 
+		self basicImage
+			ifNotNil: [ :image | 
+			vertex photoimage: (image scaledToSize: 64 @ 64) ]
+			ifNil: [ vertex photoimage: false ] ].
 	^ itemImage image: self image
 ]
 
@@ -325,6 +349,7 @@ GolapItemView >> url [
 
 { #category : #accessing }
 GolapItemView >> vertex: aGolapVertex [
+	vertex := aGolapVertex.
 	item := aGolapVertex data.
 	itemName := aGolapVertex name.
 	imageIndex rawValue: 1.

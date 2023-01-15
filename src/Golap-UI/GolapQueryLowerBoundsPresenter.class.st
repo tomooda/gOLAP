@@ -11,8 +11,8 @@ Class {
 	#category : #'Golap-UI-Query'
 }
 
-{ #category : #specs }
-GolapQueryLowerBoundsPresenter class >> defaultSpec [
+{ #category : #layout }
+GolapQueryLowerBoundsPresenter class >> defaultLayout [
 	<script: 'GolapQueryLowerBoundsPresenter new openWithSpec'>
 	<spec>
 	^ SpGridLayout new

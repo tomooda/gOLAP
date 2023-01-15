@@ -15,8 +15,8 @@ Class {
 	#category : #'Golap-UI-Query'
 }
 
-{ #category : #specs }
-GolapFilterPresenter class >> defaultSpec [
+{ #category : #layout }
+GolapFilterPresenter class >> defaultLayout [
 	<script: 'GolapItemFilterPresenter forCurrent openWithSpec'>
 	<spec>
 	^ SpBoxLayout newHorizontal
@@ -291,7 +291,8 @@ GolapFilterPresenter >> initializePresenters [
 		                  dropEnabled: true;
 		                  acceptDrop: [ :transfer | 
 			                  self predicateFieldDropped: transfer passenger ];
-		                  whenSubmitDo: [ self predicateFieldAccepted ];
+		                  whenSubmitDo: [ :txt | 
+			                  self predicateFieldAccepted ];
 		                  borderColor: (Color gray: 0.9);
 		                  borderWidth: 1;
 		                  yourself.
@@ -304,7 +305,7 @@ GolapFilterPresenter >> initializePresenters [
 		                        acceptDrop: [ :transfer | 
 			                        guardPredicatesField text:
 					                        (',' join: transfer passenger) ];
-		                        whenSubmitDo: [ 
+		                        whenSubmitDo: [ :txt | 
 			                        self guardPredicatesFieldAccepted ];
 		                        borderColor: (Color gray: 0.9);
 		                        borderWidth: 1;
@@ -327,7 +328,7 @@ GolapFilterPresenter >> initializePresenters [
 		               yourself.
 	previewFilterBlock := [ :items | items ].
 	previewFilterField := self newTextInput
-		                      whenSubmitDo: [ 
+		                      whenSubmitDo: [ :txt | 
 			                      ((previewFilterField text asString trim 
 				                        substrings: ',') collect: [ :string | 
 					                       (((#( '\' '.' '[' ']' '(' ')' '!' '+' '|' )

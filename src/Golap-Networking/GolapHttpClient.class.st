@@ -127,22 +127,20 @@ GolapHttpClient >> a2ForUrl: url method: method [
 
 { #category : #private }
 GolapHttpClient >> authenticate [
-	self authenticateBlock
-		value: [ :username :password | 
-			| params result |
-			params := self getAuthParams ifNil: [ ^ nil ].
-			request headers
-				at: 'Authorization'
-				put:
-					(self
-						authorizationForUsername: username
-						password: password
-						params: params).
-			response := nil.
-			self prepareRequest.
-			self withProgressDo: [ result := self executeWithTimeout ].
-			self prepareNextRequest.
-			^ result ].
+
+	self authenticateBlock value: [ :username :password | 
+		| params result |
+		params := self getAuthParams ifNil: [ ^ nil ].
+		request headers at: 'Authorization' put: (self
+				 authorizationForUsername: username
+				 password: password
+				 params: params).
+		response := nil.
+		self prepareRequest.
+		self signalProgress: true.
+		result := self executeWithTimeout.
+		self prepareNextRequest.
+		^ result ].
 	^ nil
 ]
 
@@ -215,6 +213,13 @@ GolapHttpClient >> getAuthParams [
 				ifTrue: [ ^ nil ].
 			(def copyFrom: 1 to: index - 1)
 				-> (def copyFrom: index + 2 to: def size - 1) ]) asDictionary
+]
+
+{ #category : #initialization }
+GolapHttpClient >> initialize [
+
+	super initialize.
+	self maximumEntitySize: 256 * 1024 * 1024
 ]
 
 { #category : #private }

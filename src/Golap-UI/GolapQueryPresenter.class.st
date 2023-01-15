@@ -27,8 +27,8 @@ Class {
 	#category : #'Golap-UI-Query'
 }
 
-{ #category : #specs }
-GolapQueryPresenter class >> defaultSpec [
+{ #category : #layout }
+GolapQueryPresenter class >> defaultLayout [
 
 	<script: 'GolapQueryPresenter new openWithSpec'>
 	<spec>
@@ -350,7 +350,8 @@ GolapQueryPresenter >> networkClient: aGolapNetworkClientPresenter [
 
 { #category : #operations }
 GolapQueryPresenter >> openLowerBoundsDialog [
-	^ lowerBoundsPresenter openDialogWithSpec
+
+	^ lowerBoundsPresenter openDialog
 ]
 
 { #category : #'accessing-query' }

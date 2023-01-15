@@ -29,8 +29,8 @@ GolapNetworkClientPresenter class >> current [
 	^ current ifNil: [ current := self new ]
 ]
 
-{ #category : #specs }
-GolapNetworkClientPresenter class >> defaultSpec [
+{ #category : #layout }
+GolapNetworkClientPresenter class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newVertical
 		add:
@@ -196,7 +196,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 		            text: self defaultUrl;
 		            whenTextChangedDo: [ :old :new | 
 			            old ~= new ifTrue: [ self flushAuth ] ];
-		            whenSubmitDo: [ 
+		            whenSubmitDo: [ :text |
 			            self updateServerConfig.
 			            queryPresenter
 				            resetItemFilterSpec;
@@ -334,48 +334,52 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 
 { #category : #operations }
 GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
-	self openDialogWithSpec
-		okAction: [ [ aBlock
-				cull:
-					(GolapApiClient
-						url: self url
-						query: self query
-						serverConfig: self serverConfig
-						itemFieldQuerySpec: self itemFieldQuerySpec
-						authenticateBlock: self authenticateBlock) ]
-				forkAt: Processor userBackgroundPriority ];
+
+	self openDialog
+		okAction: [ 
+			[ 
+			aBlock cull: (GolapApiClient
+						 url: self url
+						 query: self query
+						 serverConfig: self serverConfig
+						 itemFieldQuerySpec: self itemFieldQuerySpec
+						 authenticateBlock: self authenticateBlock) ] forkAt:
+					Processor userBackgroundPriority ];
 		cancelAction: anotherBlock
 ]
 
 { #category : #operations }
 GolapNetworkClientPresenter >> openPresetUrlDialog [
+
 	| presetUrls urlList |
 	presetUrls := self readPresetUrls.
 	urlList := SpEditableListPresenter new.
 	urlList
 		title: 'URL';
 		items: presetUrls asOrderedCollection;
-		addItemBlock: [ (UIManager default request: '新規プレセット名')
-				ifNotNil: [ :name | 
+		addItemBlock: [ 
+			(UIManager default request: '新規プレセット名') ifNotNil: [ :name | 
 					self asJSON
 						at: 'name' put: name;
 						yourself ] ];
-		removeItemBlock: [ urlList selectedItem
-				ifNotNil: [ :selection | 
-					urlList items remove: selection ifAbsent: [  ].
-					urlList refresh ] ];
+		removeItemBlock: [ 
+			urlList selectedItem ifNotNil: [ :selection | 
+				urlList items remove: selection ifAbsent: [  ].
+				urlList refresh ] ];
 		display: [ :dict | dict at: 'name' ifAbsent: [ '-' ] ];
-		whenSelectionChangedDo: [ ([ urlList selectedItem ]
-				on: Error
-				do: [ :ex | ex return: nil ])
-				ifNotNil: [ :selection | self loadPreset: selection ] ];
-		okAction: [ urlList items asArray ~= presetUrls
-				ifTrue: [ self writePreset: urlList items asArray ].
+		whenSelectionChangedDo: [ 
 			([ urlList selectedItem ]
-				on: Error
-				do: [ :ex | ex return: nil ])
-				ifNotNil: [ :selection | self loadPreset: selection ] ];
-		openModalWithSpec
+				 on: Error
+				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection | 
+				self loadPreset: selection ] ];
+		okAction: [ 
+			urlList items asArray ~= presetUrls ifTrue: [ 
+				self writePreset: urlList items asArray ].
+			([ urlList selectedItem ]
+				 on: Error
+				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection | 
+				self loadPreset: selection ] ];
+		openModal
 ]
 
 { #category : #accessing }

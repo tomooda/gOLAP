@@ -20,7 +20,8 @@ GolapEdge class >> on: aDataSeries between: aGolapVertex1 and: aGolapVertex2 [
 
 { #category : #accessing }
 GolapEdge >> at: aString [
-	^ self data ifNotNil: [:d | d at: aString]
+
+	^ self data ifNotNil: [ :d | d at: aString ]
 ]
 
 { #category : #operations }

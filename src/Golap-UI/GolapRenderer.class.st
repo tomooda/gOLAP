@@ -6,8 +6,7 @@ Class {
 		'visibleEdgeMinValue',
 		'visibleEdgeMaxValue',
 		'reallyVisibleEdges',
-		'reallyVisibleVertices',
-		'snapshotProcess'
+		'reallyVisibleVertices'
 	],
 	#category : #'Golap-UI-Graph'
 }
@@ -132,6 +131,12 @@ GolapRenderer >> nameIntoLines: aString [
 	^ aString substrings: golap class nameEndOfLineDelimiter
 ]
 
+{ #category : #enumerating }
+GolapRenderer >> reallyVisibleVerticesDo: aBlock [
+
+	reallyVisibleVertices ifNotNil: [ reallyVisibleVertices do: aBlock ]
+]
+
 { #category : #'view manipulation' }
 GolapRenderer >> resetZoom [
 	^ self subclassResponsibility 
@@ -140,9 +145,6 @@ GolapRenderer >> resetZoom [
 { #category : #snapshot }
 GolapRenderer >> snapshot [
 
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
 	self snapshotStreamDo: [ :stream | self snapshotInto: stream ]
 ]
 
@@ -150,20 +152,6 @@ GolapRenderer >> snapshot [
 GolapRenderer >> snapshotInto: aStream [
 
 	^ self subclassResponsibility
-]
-
-{ #category : #snapshot }
-GolapRenderer >> snapshotLazy [
-
-	snapshotProcess ifNotNil: [ 
-		snapshotProcess terminate.
-		snapshotProcess := nil ].
-	snapshotProcess := [ 
-	                   1 seconds wait.
-	                   snapshotProcess := nil.
-	                   self snapshotStreamDo: [ :stream | 
-		                   self snapshotInto: stream ] ] forkAt:
-		                   Processor userBackgroundPriority
 ]
 
 { #category : #snapshot }
