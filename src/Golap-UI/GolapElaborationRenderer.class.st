@@ -6,19 +6,22 @@ Class {
 		'mapScale',
 		'roots',
 		'associates',
-		'imageOffset'
+		'imageOffset',
+		'maxLabelWidth'
 	],
 	#category : #'Golap-UI-Graph'
 }
 
 { #category : #drawing }
 GolapElaborationRenderer >> associateX [
-	^ self globalImageExtent x * 0.4 + self baseX
+
+	^ self globalImageExtent x - self maxLabelWidth - 10
 ]
 
 { #category : #drawing }
 GolapElaborationRenderer >> associateX: extent [
-	^ extent x * 0.4 + self baseX
+
+	^ extent x - self maxLabelWidth - 10
 ]
 
 { #category : #drawing }
@@ -373,6 +376,16 @@ GolapElaborationRenderer >> layout [
 
 ]
 
+{ #category : #private }
+GolapElaborationRenderer >> maxLabelWidth [
+
+	^ maxLabelWidth ifNil: [ 
+		  | max |
+		  max := 0.
+		  associates do: [ :vertex | max := max max: vertex label width ].
+		  maxLabelWidth := max ]
+]
+
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> moveImageOffset: aPoint [
 
@@ -481,7 +494,8 @@ GolapElaborationRenderer >> updateRootsAndAssociates [
 	associates
 		do: [ :vertex | vertex label: (self createAssociatedVertexLabel: vertex) ].
 	mapScale := self globalMapExtent y
-		/ ((roots size max: associates size) + 1)
+		/ ((roots size max: associates size) + 1).
+	maxLabelWidth := nil
 ]
 
 { #category : #accessing }
