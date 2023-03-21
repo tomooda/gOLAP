@@ -62,15 +62,16 @@ GolapQueryPresenter class >> defaultLayout [
 						    add: (SpBoxLayout newHorizontal
 								     add: 'ソートキー' width: 100;
 								     add: #sortKey)
-						    height: self inputTextHeight);
+						    height: self inputTextHeight)
+				   width: 400;
 				   add: (SpBoxLayout newVertical add: (SpBoxLayout newHorizontal
 							     add: (SpBoxLayout newVertical
 									      add: (SpBoxLayout newHorizontal
 											       add: '比較集計' width: 70;
-											       add: #dimensionsKey)
+											       add: #dimensionsKey width: 200)
 									      height: self inputTextHeight;
 									      add: #dimensionsValues height: self inputTextHeight);
-							     add: #dimensionsPreview)))
+							     add: #dimensionsPreview width: 200)))
 		  height: 180
 ]
 
