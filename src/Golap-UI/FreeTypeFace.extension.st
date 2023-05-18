@@ -12,7 +12,7 @@ FreeTypeFace >> findFilename [
 	| fileRef basename provider |
 	filename ifNil: [ ^ filename ].
 	fileRef := filename asFileReference.
-	"fileRef ifExists: [ ^ filename ]."
+	fileRef ifExists: [ ^ filename ].
 	basename := fileRef basename.
 	provider := FreeTypeFontProvider current.
 	provider platformImageRelativeDirectories do: [ :each |
