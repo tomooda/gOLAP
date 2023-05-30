@@ -705,27 +705,27 @@ GolapOverviewRenderer >> vertexAtPoint: aPoint [
 
 	| scale minD minV |
 	scale := self scale.
-	labelBoxes ifNotNil: [ 
-		labelBoxes do: [ :assoc | 
+	labelBoxes ifNotNil: [
+		labelBoxes do: [ :assoc |
 			(assoc key containsPoint: aPoint) ifTrue: [ ^ assoc value ] ] ].
 	minD := Float infinity.
 	minV := nil.
-	self vertices do: [ :vertex | 
+	reallyVisibleVertices do: [ :vertex |
 		| p |
 		p := vertex asPoint * scale + viewOffset.
 		vertex photoimage
-			ifNil: [ 
+			ifNil: [
 				| d |
 				d := p distanceTo: aPoint.
-				(d < 8 and: [ d < minD ]) ifTrue: [ 
+				(d < 8 and: [ d < minD ]) ifTrue: [
 					minD := d.
 					minV := vertex ] ]
-			ifNotNil: [ :image | 
+			ifNotNil: [ :image |
 				| dp d |
 				dp := p - aPoint.
-				(dp x abs <= image width and: [ 
-					 dp y abs <= image height and: [ 
-						 (d := p distanceTo: aPoint) < minD ] ]) ifTrue: [ 
+				(dp x abs <= image width and: [
+					 dp y abs <= image height and: [
+						 (d := p distanceTo: aPoint) < minD ] ]) ifTrue: [
 					minD := d.
 					minV := vertex ] ] ].
 	^ minV

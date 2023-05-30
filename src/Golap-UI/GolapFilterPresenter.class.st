@@ -17,29 +17,26 @@ Class {
 
 { #category : #layout }
 GolapFilterPresenter class >> defaultLayout [
+
 	<script: 'GolapItemFilterPresenter forCurrent openWithSpec'>
 	<spec>
 	^ SpBoxLayout newHorizontal
-		add:
-			(SpBoxLayout newVertical
-				add: '変数' expand: false;
-				add: #clauseList expand: true)
-			width: 200;
-		add:
-			(SpBoxLayout newVertical
-				add: 'フィルタ' expand: false;
-				add: #predicateList expand: true;
-				add: #predicateField expand: false;
-				add:
-					(SpBoxLayout newHorizontal
-						add: #guardFieldDropList height: self labelHeight;
-						add: #guardPredicatesField)
-					expand: false);
-		add:
-			(SpBoxLayout newVertical
-				add: 'プレビュー' expand: false;
-				add: #previewList expand: true;
-				add: #previewFilterField expand: false)
+		  add: (SpBoxLayout newVertical
+				   add: '変数' expand: false;
+				   add: #clauseList expand: true)
+		  width: 200;
+		  add: (SpBoxLayout newVertical
+				   add: 'フィルタ' expand: false;
+				   add: #predicateList expand: true;
+				   add: #predicateField height: self labelHeight;
+				   add: (SpBoxLayout newHorizontal
+						    add: #guardFieldDropList height: self labelHeight;
+						    add: #guardPredicatesField height: self labelHeight)
+				   expand: false);
+		  add: (SpBoxLayout newVertical
+				   add: 'プレビュー' expand: false;
+				   add: #previewList expand: true;
+				   add: #previewFilterField height: self labelHeight)
 ]
 
 { #category : #'instance creation' }

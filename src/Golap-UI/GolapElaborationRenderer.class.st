@@ -165,27 +165,27 @@ GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale off
 	| maxScore scoreScale rootIndices |
 	associates ifEmpty: [ ^ self ].
 	maxScore := 0.0.
-	associates do: [ :vertex | 
+	associates do: [ :vertex |
 		vertex scoresDo: [ :score | maxScore := maxScore max: score ] ].
 	scoreScale := maxScore <= 1.0e-8
 		              ifTrue: [ 0.0 ]
 		              ifFalse: [ 1.0 / maxScore * self edgeScale ].
 	rootIndices := IdentityDictionary new: roots size.
-	roots doWithIndex: [ :vertex :index | 
+	roots doWithIndex: [ :vertex :index |
 		rootIndices at: vertex put: index ].
-	associates doWithIndex: [ :vertex2 :index2 | 
+	associates doWithIndex: [ :vertex2 :index2 |
 		| point2 image2 |
 		image2 := vertex2 label.
 		point2 := (self associateX: extent)
 		          @ (index2 - offset * scale + (image2 height // 2)).
-		vertex2 verticesAndScoresDo: [ :vertex1 :score | 
+		vertex2 verticesAndScoresDo: [ :vertex1 :score |
 			| image1 point1 selected |
 			image1 := vertex1 label.
 			point1 := (self rootX + image1 width) ceiling
 			          @
 			          ((rootIndices at: vertex1) - offset * scale
 			           + (image1 height // 2)).
-			selected := (golap includesSelection: vertex1) or: [ 
+			selected := (golap includesSelection: vertex1) or: [
 				            golap includesSelection: vertex2 ].
 			aCanvas
 				line: point1
@@ -195,7 +195,28 @@ GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale off
 						 ifFalse: [ 1 ])
 				color: (selected
 						 ifTrue: [ Color black ]
-						 ifFalse: [ Color black alpha: (score * scoreScale max: 0.1) ]) ] ]
+						 ifFalse: [ Color black alpha: (score * scoreScale max: 0.1) ]).
+			selected ifTrue: [
+				(vertex1 edgeTo: vertex2 ifAbsent: [ nil ]) ifNotNil: [ :edge |
+					| labelString labelForm |
+					labelString := edge frequency printString.
+					labelForm := Form
+						             extent:
+						             (self font widthOfString: labelString) + 6
+						             @ (self font height + 4)
+						             depth: 32.
+					labelForm getCanvas
+						fillColor: Color white;
+						frameRectangle: (0 @ 0 extent: labelForm extent)
+						width: 1
+						color: Color black;
+						drawString: labelString
+						at: 3 @ 2
+						font: self font
+						color: Color black.
+					aCanvas
+						paintImage: labelForm
+						at: point1 + point2 - labelForm extent // 2 ] ] ] ]
 ]
 
 { #category : #drawing }

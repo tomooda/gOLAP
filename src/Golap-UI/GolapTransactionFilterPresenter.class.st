@@ -9,32 +9,28 @@ Class {
 
 { #category : #layout }
 GolapTransactionFilterPresenter class >> defaultLayout [
+
 	<script: 'GolapTransactionFilterPresenter forCurrent openWithSpec'>
 	<spec>
 	^ SpBoxLayout newHorizontal
-		add:
-			(SpBoxLayout newVertical
-				add: '変数' height: self labelHeight;
-				add: #clauseList);
-		add:
-			(SpBoxLayout newVertical
-				add:
-					(SpBoxLayout newHorizontal
-						add: 'フィルタ';
-						add: #subqueryDropList)
-					height: self labelHeight;
-				add: #predicateList;
-				add: #predicateField height: self inputTextHeight;
-				add:
-					(SpBoxLayout newHorizontal
-						add: #guardFieldDropList;
-						add: #guardPredicatesField)
-					height: self labelHeight);
-		add:
-			(SpBoxLayout newVertical
-				add: 'プレビュー' height: self labelHeight;
-				add: #previewList;
-				add: #previewFilterField height: self inputTextHeight)
+		  add: (SpBoxLayout newVertical
+				   add: '変数' height: self labelHeight;
+				   add: #clauseList);
+		  add: (SpBoxLayout newVertical
+				   add: (SpBoxLayout newHorizontal
+						    add: 'フィルタ';
+						    add: #subqueryDropList)
+				   height: self labelHeight;
+				   add: #predicateList;
+				   add: #predicateField height: self labelHeight;
+				   add: (SpBoxLayout newHorizontal
+						    add: #guardFieldDropList height: self labelHeight;
+						    add: #guardPredicatesField height: self labelHeight)
+				   height: self labelHeight);
+		  add: (SpBoxLayout newVertical
+				   add: 'プレビュー' height: self labelHeight;
+				   add: #previewList;
+				   add: #previewFilterField height: self labelHeight)
 ]
 
 { #category : #operations }

@@ -2,6 +2,8 @@ Class {
 	#name : #GolapItemsAppearance,
 	#superclass : #SpPresenter,
 	#instVars : [
+		'minFreqSlider',
+		'minFreqField',
 		'showIsolatedVerticesCheckBox',
 		'showHiddenConnectionVerticesCheckBox',
 		'showConnectedVerticesCheckBox',
@@ -17,18 +19,21 @@ Class {
 
 { #category : #layout }
 GolapItemsAppearance class >> defaultLayout [
+
 	<spec>
-	^ SpPanedLayout newHorizontal
-		add:
-			(SpBoxLayout newVertical
-				add: #showConnectedVerticesCheckBox height: self inputTextHeight;
-				add: #showHiddenConnectionVerticesCheckBox
-					height: self inputTextHeight;
-				add: #showIsolatedVerticesCheckBox height: self inputTextHeight);
-		add:
-			(SpBoxLayout newVertical
-				add: #numLabelsSlider height: self inputTextHeight;
-				add: #fontButton height: self buttonHeight)
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: #minFreqSlider;
+				   add: '  ' expand: false;
+				   add: #minFreqField width: 50)
+		  height: self inputTextHeight;
+		  add: #numLabelsSlider height: self inputTextHeight;
+		  add: #fontButton height: self buttonHeight;
+		  add: #showConnectedVerticesCheckBox height: self inputTextHeight;
+		  add: #showHiddenConnectionVerticesCheckBox
+		  height: self inputTextHeight;
+		  add: #showIsolatedVerticesCheckBox height: self inputTextHeight;
+		  yourself
 ]
 
 { #category : #'instance creation' }
@@ -56,24 +61,42 @@ GolapItemsAppearance >> initialExtent [
 { #category : #initialization }
 GolapItemsAppearance >> initializePresenters [
 
+	minFreqSlider := self newSlider
+		                 label: 'min freq';
+		                 min: 1;
+		                 max: 100;
+		                 quantum: 1;
+		                 value: 1;
+		                 whenValueChangedDo: [ :value |
+			                 self minFrequency: value rounded ];
+		                 yourself.
+	minFreqField := self newNumberInput
+		                beInteger;
+		                minimum: 1;
+		                maximum: 100;
+		                number: 1;
+		                whenNumberChangedDo: [ :value |
+			                self minFrequency: value ];
+		                yourself.
+
 	showIsolatedVerticesCheckBox := self newCheckBox
 		                                label: 'isolated';
 		                                state: false;
-		                                whenChangedDo: [ :value | 
+		                                whenChangedDo: [ :value |
 			                                golap updateGlobalImageAfter: [  ] ];
 		                                yourself.
 	showHiddenConnectionVerticesCheckBox := self newCheckBox
 		                                        label: 'hidden';
 		                                        state: false;
-		                                        whenChangedDo: [ :value | 
-			                                        golap 
-				                                        updateGlobalImageAfter: [ 
+		                                        whenChangedDo: [ :value |
+			                                        golap
+				                                        updateGlobalImageAfter: [
 					                                         ] ];
 		                                        yourself.
 	showConnectedVerticesCheckBox := self newCheckBox
 		                                 label: 'connected';
 		                                 state: true;
-		                                 whenChangedDo: [ :value | 
+		                                 whenChangedDo: [ :value |
 			                                 golap updateGlobalImageAfter: [  ] ];
 		                                 yourself.
 	numLabelsSlider := self newSlider
@@ -82,8 +105,8 @@ GolapItemsAppearance >> initializePresenters [
 		                   max: 2.0;
 		                   quantum: 0.1;
 		                   value: 1.0;
-		                   whenValueChangedDo: [ :value | 
-			                   golap updateGlobalImageAfter: [ 
+		                   whenValueChangedDo: [ :value |
+			                   golap updateGlobalImageAfter: [
 					                   numLabelsSlider label:
 							                   (50.0 ** value) truncated printString
 							                   , ' labels' ] ];
@@ -101,6 +124,29 @@ GolapItemsAppearance >> initializeWindow: aWindowPresenter [
 ]
 
 { #category : #accessing }
+GolapItemsAppearance >> maxFrequency: anInteger [
+
+	minFreqSlider max: anInteger.
+	minFreqField maximum: anInteger
+]
+
+{ #category : #accessing }
+GolapItemsAppearance >> minFrequency [
+
+	^ minFreqField number
+]
+
+{ #category : #accessing }
+GolapItemsAppearance >> minFrequency: anInteger [
+
+	minFreqSlider value rounded = anInteger ifFalse: [
+		minFreqSlider value: anInteger ].
+	minFreqField number = anInteger ifFalse: [
+		minFreqField number: anInteger ].
+	golap updateGlobalImageAfter: [  ]
+]
+
+{ #category : #accessing }
 GolapItemsAppearance >> numLabels [
 	^ numLabelsSlider value
 ]
@@ -109,10 +155,12 @@ GolapItemsAppearance >> numLabels [
 GolapItemsAppearance >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next
+		at: 'minimum-frequency'
+		ifPresent: [ :int | minFreqField number: int ];
 		at: 'show-isolatex-vertices'
 		ifPresent: [ :bool | showIsolatedVerticesCheckBox state: bool ];
 		at: 'show-hidden-connection-vertices'
-		ifPresent: [ :bool | 
+		ifPresent: [ :bool |
 			showHiddenConnectionVerticesCheckBox state: bool ];
 		at: 'show-connected-vertices'
 		ifPresent: [ :bool | showConnectedVerticesCheckBox state: bool ];
@@ -122,7 +170,9 @@ GolapItemsAppearance >> restore: aStream [
 
 { #category : #private }
 GolapItemsAppearance >> setGolap: aGolap [
-	golap := aGolap
+
+	golap := aGolap.
+	self updateMaxFrequency
 ]
 
 { #category : #accessing }
@@ -149,11 +199,21 @@ GolapItemsAppearance >> snapshot [
 { #category : #snapshot }
 GolapItemsAppearance >> snapshotInto: aStream [
 
-	(NeoJSONWriter on: aStream) nextPut: { 
+	(NeoJSONWriter on: aStream) nextPut: {
+			('minimum-frequency' -> minFreqField number).
 			('show-isolatex-vertices' -> showIsolatedVerticesCheckBox state).
 			('show-hidden-connection-vertices'
 			 -> showHiddenConnectionVerticesCheckBox state).
 			('show-connected-vertices' -> showConnectedVerticesCheckBox state).
 			('max-display-labels' -> numLabelsSlider value) }
 			asOrderedDictionary
+]
+
+{ #category : #updating }
+GolapItemsAppearance >> updateMaxFrequency [
+
+	golap ifNotNil: [
+		self maxFrequency: ((golap vertices collect: #frequency)
+				 ifEmpty: [ 100 ]
+				 ifNotEmpty: #max) ]
 ]

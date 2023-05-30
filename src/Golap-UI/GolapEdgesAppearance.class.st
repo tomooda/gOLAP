@@ -181,7 +181,6 @@ GolapEdgesAppearance >> frequencyMode [
 			jaccardButton state: false.
 			liftButton state: false.
 			pmiButton state: false.
-			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
 			golap updateQuery ] ]
@@ -197,19 +196,17 @@ GolapEdgesAppearance >> friendsEdges [
 { #category : #operations }
 GolapEdgesAppearance >> friendsGraph [
 
-	self updateGlobalImageAfter: [ 
+	self updateGlobalImageAfter: [
 		fullGraphButton state: false.
-		minimalSpanningTreeButton state: false.
-		golap flushVisibleEdges ]
+		minimalSpanningTreeButton state: false ]
 ]
 
 { #category : #operations }
 GolapEdgesAppearance >> fullGraph [
 
-	self updateGlobalImageAfter: [ 
+	self updateGlobalImageAfter: [
 		fullGraphButton state: true.
 		minimalSpanningTreeButton state: false.
-		golap flushVisibleEdges.
 		golap model ifNotNil: [ :model | model setFullGraphMode ] ]
 ]
 
@@ -413,14 +410,13 @@ GolapEdgesAppearance >> initializeWindow: aWindowPresenter [
 { #category : #operations }
 GolapEdgesAppearance >> jaccardMode [
 
-	golap model ifNotNil: [ :model | 
-		self updateGlobalImageAfter: [ 
+	golap model ifNotNil: [ :model |
+		self updateGlobalImageAfter: [
 			self setModelToJaccardMode.
 			frequencyButton state: false.
 			jaccardButton state: true.
 			liftButton state: false.
 			pmiButton state: false.
-			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
 			golap updateQuery ] ]
@@ -429,14 +425,13 @@ GolapEdgesAppearance >> jaccardMode [
 { #category : #operations }
 GolapEdgesAppearance >> liftMode [
 
-	golap model ifNotNil: [ :model | 
-		self updateGlobalImageAfter: [ 
+	golap model ifNotNil: [ :model |
+		self updateGlobalImageAfter: [
 			self setModelToLiftMode.
 			frequencyButton state: false.
 			jaccardButton state: false.
 			liftButton state: true.
 			pmiButton state: false.
-			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
 			golap updateQuery ] ]
@@ -458,10 +453,9 @@ GolapEdgesAppearance >> maxMode [
 { #category : #operations }
 GolapEdgesAppearance >> minimalSpanningTree [
 
-	self updateGlobalImageAfter: [ 
+	self updateGlobalImageAfter: [
 		fullGraphButton state: false.
 		minimalSpanningTreeButton state: true.
-		golap flushVisibleEdges.
 		golap model ifNotNil: [ :model | model setTreeMode ] ]
 ]
 
@@ -485,14 +479,13 @@ GolapEdgesAppearance >> numFriends: anInteger [
 { #category : #operations }
 GolapEdgesAppearance >> pmiMode [
 
-	golap model ifNotNil: [ :model | 
-		self updateGlobalImageAfter: [ 
+	golap model ifNotNil: [ :model |
+		self updateGlobalImageAfter: [
 			self setModelToPmiMode.
 			frequencyButton state: false.
 			jaccardButton state: false.
 			liftButton state: false.
 			pmiButton state: true.
-			golap flushVisibleEdges.
 			model friendsEdges: nil.
 			self resetVisibleEdgeThresholds.
 			golap updateQuery ] ]

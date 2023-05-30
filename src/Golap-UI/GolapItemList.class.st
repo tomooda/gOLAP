@@ -185,7 +185,7 @@ GolapItemList >> initialize [
 GolapItemList >> initializePresenters [
 
 	markerDropList := self newDropList
-		                  items: { 
+		                  items: {
 				                  (nil -> '').
 				                  (Color red -> '').
 				                  (Color yellow darker -> '').
@@ -193,19 +193,19 @@ GolapItemList >> initializePresenters [
 				                  (Color blue -> '').
 				                  (#addMarkerColor -> '') };
 		                  display: [ :assoc | '' ];
-		                  displayIcon: [ :assoc | 
+		                  displayIcon: [ :assoc |
 			                  assoc key
-				                  ifNotNil: [ :c | 
+				                  ifNotNil: [ :c |
 					                  c isSymbol
 						                  ifTrue: [ self iconForSelector: c ]
 						                  ifFalse: [ self iconForCircleColor: c ] ]
 				                  ifNil: [ nil ] ];
-		                  whenSelectedItemChangedDo: [ 
-			                  markerDropList selectedItem ifNotNil: [ 
-					                  :selectedItem | 
+		                  whenSelectedItemChangedDo: [
+			                  markerDropList selectedItem ifNotNil: [
+					                  :selectedItem |
 					                  selectedItem key isSymbol
 						                  ifTrue: [ self perform: selectedItem key ]
-						                  ifFalse: [ 
+						                  ifFalse: [
 							                  lastSelectedMarkerIndex := markerDropList
 								                                             selectedIndex.
 							                  queryField text: selectedItem value asText.
@@ -213,23 +213,23 @@ GolapItemList >> initializePresenters [
 							                  self updateGlobalImage ] ] ];
 		                  yourself.
 	lastSelectedMarkerIndex := 0.
-	queryField := self newTextInput whenSubmitDo: [ :txt | 
+	queryField := self newTextInput whenSubmitDo: [ :txt |
 		              | text |
 		              text := queryField text asString trim.
-		              self updateGlobalImageAfter: [ 
+		              self updateGlobalImageAfter: [
 			              | selectedMarker |
 			              selectedMarker := markerDropList selectedItem.
 			              selectedMarker value: text.
 			              text
-				              ifEmpty: [ 
+				              ifEmpty: [
 				              markers removeKey: selectedMarker key ifAbsent: [  ] ]
-				              ifNotEmpty: [ :q | 
+				              ifNotEmpty: [ :q |
 					              | regexs |
-					              regexs := (q substrings: ',') collect: [ :pattern | 
+					              regexs := (q substrings: ',') collect: [ :pattern |
 						                        self regexFor: pattern trim ].
 					              markers at: selectedMarker key put: (self vertices
-							               select: [ :v | 
-							               regexs anySatisfy: [ :regex | 
+							               select: [ :v |
+							               regexs anySatisfy: [ :regex |
 								               regex matches: v name ] ]
 							               thenCollect: #data) asSet ].
 			              self updateVertexList ] ].
@@ -238,26 +238,29 @@ GolapItemList >> initializePresenters [
 		                     action: [ golap openPresetQueryDialog ];
 		                     yourself.
 	vertexList := self newTable
-		              beSingleSelection;
+		              beMultipleSelection;
 		              disableSearch;
 		              addColumn: (SpStringTableColumn new
 				               width: 80;
-				               evaluated: [ :id | 
+				               evaluated: [ :id |
 					               self simpleStringFor:
 							               (self model valueAtVertex:
 									                (self model vertexAt: id)) ]);
 		              addColumn:
-			              (SpStringTableColumn new evaluated: [ :id | 
+			              (SpStringTableColumn new evaluated: [ :id |
 				               (self model vertexAt: id) name ]);
 		              contextMenu: [ self vertexListMenu ];
-		              whenSelectionChangedDo: [ 
-			              self updateGlobalImageAfter: [ 
-				              vertexList selection selectedItem
-					              ifNil: [ golap unselectAll ]
-					              ifNotNil: [ :data | 
-					              golap select: (self model vertexAt: data) ].
+		              whenSelectionChangedDo: [
+			              self updateGlobalImageAfter: [
+				              golap setSelections: vertexList selectedItems.
 				              golap updateItemView ] ];
-		              yourself
+		              yourself.
+	vertexList whenBuiltDo: [
+		vertexList withAdapterDo: [ :a |
+			a widgetDo: [ :w |
+				w
+					secondarySelectionColor: w selectionColor lighter lighter lighter;
+					allowsDeselection: true ] ] ]
 ]
 
 { #category : #menu }
@@ -438,6 +441,12 @@ GolapItemList >> restore: aStream [
 GolapItemList >> selectedItem [
 
 	^ vertexList selection selectedItem
+]
+
+{ #category : #accessing }
+GolapItemList >> selectedItems: aCollectionOfString [
+
+	vertexList selectItems: aCollectionOfString
 ]
 
 { #category : #private }

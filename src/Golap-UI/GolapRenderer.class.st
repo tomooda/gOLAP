@@ -167,51 +167,61 @@ GolapRenderer >> svg [
 
 { #category : #private }
 GolapRenderer >> updateVisibleEdgeThresholds [
-	self
-		modelDo: [ :model | 
-			| min max connectedVertices |
-			min := 0.0.
-			max := 0.0.
-			model
-				ifNotNil: [ | d |
-					d := (golap visibleEdges
-						collect: [ :edge | model valueAtEdge: edge ]
-						thenSelect: [ :value | value notNil and: [ value isNaN not ] ])
-						asArray asSortedCollection.
-					d
-						ifNotEmpty: [ min := d
-								at: ((d size - 1) * golap visibleEdgeMinPercentile value) rounded + 1.
-							max := d
-								at: ((d size - 1) * golap visibleEdgeMaxPercentile value) rounded + 1 ] ].
-			visibleEdgeMaxValue := max.
-			visibleEdgeMinValue := min.
-			golap visibleEdgeMinPercentile
-				label: 'min ' , visibleEdgeMinValue printString.
-			golap visibleEdgeMaxPercentile
-				label: 'max ' , visibleEdgeMaxValue printString.
-			reallyVisibleEdges := golap visibleEdges
-				select: [ :edge | 
-					(model valueAtEdge: edge)
-						ifNil: [ true ]
-						ifNotNil: [ :v | v between: visibleEdgeMinValue and: visibleEdgeMaxValue ] ].
-			connectedVertices := IdentitySet new: reallyVisibleEdges size.
-			reallyVisibleEdges
-				do: [ :edge | 
-					connectedVertices
-						add: edge vertex1;
-						add: edge vertex2 ].
-			reallyVisibleVertices := Array
-				streamContents: [ :stream | 
-					golap showsConnectedVertices
-						ifTrue: [ stream nextPutAll: connectedVertices ].
-					self
-						verticesDo: [ :v | 
-							(connectedVertices includes: v)
-								ifFalse: [ v isIsolated
-										ifTrue: [ golap showsIsolatedVertices
-												ifTrue: [ stream nextPut: v ] ]
-										ifFalse: [ golap showsHiddenConnectionVertices
-												ifTrue: [ stream nextPut: v ] ] ] ] ] ]
+
+	self modelDo: [ :model |
+		| min max minFreq connectedVertices |
+		min := 0.0.
+		max := 0.0.
+		minFreq := golap minFrequency.
+		model ifNotNil: [
+			| d |
+			d := (golap visibleEdges
+				      collect: [ :edge | model valueAtEdge: edge ]
+				      thenSelect: [ :value |
+				      value notNil and: [ value isNaN not ] ]) asArray
+				     asSortedCollection.
+			d ifNotEmpty: [
+				min := d at:
+					       (d size - 1 * golap visibleEdgeMinPercentile value)
+						       rounded + 1.
+				max := d at:
+					       (d size - 1 * golap visibleEdgeMaxPercentile value)
+						       rounded + 1 ] ].
+		visibleEdgeMaxValue := max.
+		visibleEdgeMinValue := min.
+		golap visibleEdgeMinPercentile label:
+			'min ' , visibleEdgeMinValue printString.
+		golap visibleEdgeMaxPercentile label:
+			'max ' , visibleEdgeMaxValue printString.
+		reallyVisibleEdges := golap visibleEdges select: [ :edge |
+			                      (edge vertex1 notNil and: [
+				                       edge vertex2 notNil and: [
+					                       edge vertex1 frequency >= minFreq and:
+						                       edge vertex2 frequency > minFreq ] ])
+				                      and: [
+					                      (model valueAtEdge: edge)
+						                      ifNil: [ true ]
+						                      ifNotNil: [ :v |
+						                      v
+							                      between: visibleEdgeMinValue
+							                      and: visibleEdgeMaxValue ] ] ].
+		connectedVertices := IdentitySet new: reallyVisibleEdges size.
+		reallyVisibleEdges do: [ :edge |
+			connectedVertices
+				add: edge vertex1;
+				add: edge vertex2 ].
+		reallyVisibleVertices := Array streamContents: [ :stream |
+			                         golap showsConnectedVertices ifTrue: [
+				                         stream nextPutAll: connectedVertices ].
+			                         self verticesDo: [ :v |
+				                         (connectedVertices includes: v) ifFalse: [
+					                         v isIsolated
+						                         ifTrue: [
+						                         golap showsIsolatedVertices ifTrue: [
+							                         stream nextPut: v ] ]
+						                         ifFalse: [
+						                         golap showsHiddenConnectionVertices
+							                         ifTrue: [ stream nextPut: v ] ] ] ] ] ]
 ]
 
 { #category : #accessing }

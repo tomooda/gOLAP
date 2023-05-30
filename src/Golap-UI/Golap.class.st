@@ -7,7 +7,6 @@ Class {
 		'query',
 		'overviewRenderer',
 		'elaborationRenderer',
-		'visibleEdges',
 		'globalImagePane',
 		'pins',
 		'selections',
@@ -17,7 +16,6 @@ Class {
 		'zoomOutButton',
 		'resetZoomButton',
 		'globalMapPane',
-		'vertexList',
 		'font',
 		'itemView',
 		'baseList',
@@ -567,11 +565,6 @@ Golap >> ensurePhotoimageRetrievingProcess [
 		self startPhotoimageRetrievingProcess ]
 ]
 
-{ #category : #private }
-Golap >> flushVisibleEdges [
-	visibleEdges := nil
-]
-
 { #category : #accessing }
 Golap >> font [
 	^ font ifNil: [ font := TextStyle defaultFont ]
@@ -1095,6 +1088,12 @@ Golap >> mergeVertices: aCollectionOfIds [
 					  nodeName ] ] ]
 ]
 
+{ #category : #accessing }
+Golap >> minFrequency [
+
+	^ itemsAppearancePresenter minFrequency
+]
+
 { #category : #private }
 Golap >> minScale [
 	^ 0.9
@@ -1120,17 +1119,18 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 
 	(aBoolean == false and: [ aGolapModel == model ]) ifTrue: [ ^ self ].
 	self
-		updateGlobalImageAfter: [ 
-			(model notNil and: [ aGolapModel notNil ]) ifTrue: [ 
-				model vertices keysAndValuesDo: [ :id :v1 | 
-					(aGolapModel vertexAt: id ifAbsent: [ nil ]) ifNotNil: [ :v2 | 
+		updateGlobalImageAfter: [
+			(model notNil and: [ aGolapModel notNil ]) ifTrue: [
+				model vertices keysAndValuesDo: [ :id :v1 |
+					(aGolapModel vertexAt: id ifAbsent: [ nil ]) ifNotNil: [ :v2 |
 						v2
 							x: v1 x;
 							y: v1 y ] ] ].
 			model := aGolapModel.
 			self overviewRenderer layouter model: model.
 			self unselectAll.
-			model ifNotNil: [ 
+			model ifNotNil: [
+				itemsAppearancePresenter updateMaxFrequency.
 				edgesAppearancePresenter updateModel: model.
 				itemList updateVertexList ] ]
 		layout: true
@@ -1422,13 +1422,13 @@ Golap >> regexFor: aString [
 
 { #category : #initialization }
 Golap >> release [
+
 	dimensions := nil.
 	frontList := nil.
 	baseList := nil.
 	model := nil.
 	overviewRenderer := nil.
 	elaborationRenderer := nil.
-	visibleEdges := nil.
 	globalImagePane := nil.
 	pins := nil.
 	selections := nil.
@@ -1770,10 +1770,10 @@ Golap >> saveSnapshot [
 { #category : #'accessing-selection' }
 Golap >> select: aGolapVertex [
 
-	self updateGlobalImageAfter: [ 
-		aGolapVertex dataDo: [ :data | selections add: data ].
-		selectedEdges := nil.
-		self showItemView: aGolapVertex ]
+	aGolapVertex dataDo: [ :data | selections add: data ].
+	selectedEdges := nil.
+	self showItemView: aGolapVertex.
+	self updateSelection
 ]
 
 { #category : #'accessing-dimensions' }
@@ -1830,20 +1830,17 @@ Golap >> selections [
 ]
 
 { #category : #'accessing-selection' }
-Golap >> selectionsAdd: aGolapVertex [
+Golap >> selections: aCollectionOfGolapVertex [
 
-	self updateGlobalImageAfter: [ 
-		aGolapVertex dataDo: [ :data | selections add: data ].
-		selectedEdges := nil ]
-]
-
-{ #category : #'accessing-selection' }
-Golap >> selectionsAddAll: aCollectionOfGolapVertex [
-
-	self updateGlobalImageAfter: [ 
-		aCollectionOfGolapVertex do: [ :vertex | 
-			vertex dataDo: [ :data | selections add: data ] ].
-		selectedEdges := nil ]
+	| newSelections |
+	newSelections := Set new: aCollectionOfGolapVertex size.
+	aCollectionOfGolapVertex do: [ :v |
+		v dataDo: [ :data | newSelections add: data ] ].
+	selections = newSelections ifFalse: [
+		selections := newSelections.
+		selectedEdges := nil.
+		self showItemView: aCollectionOfGolapVertex last.
+		self updateSelection ]
 ]
 
 { #category : #'accessing-renderer' }
@@ -1875,6 +1872,19 @@ Golap >> setQuery: aDictionary [
 		(query keys asSortedCollection collect: [ :key | 
 			 key -> (query at: key) ]).
 	itemView ifNotNil: [ itemView query: aDictionary ]
+]
+
+{ #category : #'accessing-selection' }
+Golap >> setSelections: aCollectionOfString [
+
+	| newSelections |
+	newSelections := aCollectionOfString asSet.
+	selections = newSelections ifFalse: [
+		selections := newSelections.
+		selectedEdges := nil.
+		itemList selectedItem ifNotNil: [ :item |
+			self showItemView: (model vertexAt: item) ].
+		self updateSelection ]
 ]
 
 { #category : #operations }
@@ -2191,18 +2201,18 @@ Golap >> unmergeVertex: aString [
 { #category : #'accessing-selection' }
 Golap >> unselect: aGolapVertex [
 
-	self updateGlobalImageAfter: [ 
-		aGolapVertex dataDo: [ :data | 
-			selections remove: data ifAbsent: [  ] ].
-		selectedEdges := nil ]
+	aGolapVertex dataDo: [ :data |
+		selections remove: data ifAbsent: [  ] ].
+	selectedEdges := nil.
+	self updateSelection
 ]
 
 { #category : #'accessing-selection' }
 Golap >> unselectAll [
 
-	self updateGlobalImageAfter: [ 
-		selections removeAll.
-		selectedEdges := nil ]
+	selections removeAll.
+	selectedEdges := nil.
+	self updateSelection
 ]
 
 { #category : #'accessing-dimensions' }
@@ -2262,7 +2272,9 @@ Golap >> updateQuery [
 
 { #category : #'accessing-selection' }
 Golap >> updateSelection [
-	self updateGlobalImageAfter: [  ]
+
+	self updateGlobalImageAfter: [
+		itemList ifNotNil: [ itemList selectedItems: selections ] ]
 ]
 
 { #category : #accessing }
@@ -2298,7 +2310,8 @@ Golap >> visibleEdgeMinPercentile [
 
 { #category : #accessing }
 Golap >> visibleEdges [
-	^ visibleEdges ifNil: [ edgesAppearancePresenter visibleEdges ]
+
+	^ edgesAppearancePresenter visibleEdges
 ]
 
 { #category : #private }
