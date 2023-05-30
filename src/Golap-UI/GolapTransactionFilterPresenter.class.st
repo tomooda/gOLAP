@@ -14,23 +14,23 @@ GolapTransactionFilterPresenter class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newHorizontal
 		  add: (SpBoxLayout newVertical
-				   add: '変数' height: self labelHeight;
-				   add: #clauseList);
+				   add: '変数' expand: false;
+				   add: #clauseList expand: true);
 		  add: (SpBoxLayout newVertical
 				   add: (SpBoxLayout newHorizontal
-						    add: 'フィルタ';
-						    add: #subqueryDropList)
-				   height: self labelHeight;
-				   add: #predicateList;
-				   add: #predicateField height: self labelHeight;
+						    add: 'フィルタ' expand: false;
+						    add: #subqueryDropList expand: true)
+				   expand: false;
+				   add: #predicateList expand: true;
+				   add: #predicateField expand: false;
 				   add: (SpBoxLayout newHorizontal
-						    add: #guardFieldDropList height: self labelHeight;
-						    add: #guardPredicatesField height: self labelHeight)
-				   height: self labelHeight);
+						    add: #guardFieldDropList expand: false;
+						    add: #guardPredicatesField expand: true)
+				   expand: false);
 		  add: (SpBoxLayout newVertical
-				   add: 'プレビュー' height: self labelHeight;
+				   add: 'プレビュー' expand: false;
 				   add: #previewList;
-				   add: #previewFilterField height: self labelHeight)
+				   add: #previewFilterField expand: false)
 ]
 
 { #category : #operations }

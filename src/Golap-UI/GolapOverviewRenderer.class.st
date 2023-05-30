@@ -710,24 +710,25 @@ GolapOverviewRenderer >> vertexAtPoint: aPoint [
 			(assoc key containsPoint: aPoint) ifTrue: [ ^ assoc value ] ] ].
 	minD := Float infinity.
 	minV := nil.
-	reallyVisibleVertices do: [ :vertex |
-		| p |
-		p := vertex asPoint * scale + viewOffset.
-		vertex photoimage
-			ifNil: [
-				| d |
-				d := p distanceTo: aPoint.
-				(d < 8 and: [ d < minD ]) ifTrue: [
-					minD := d.
-					minV := vertex ] ]
-			ifNotNil: [ :image |
-				| dp d |
-				dp := p - aPoint.
-				(dp x abs <= image width and: [
-					 dp y abs <= image height and: [
-						 (d := p distanceTo: aPoint) < minD ] ]) ifTrue: [
-					minD := d.
-					minV := vertex ] ] ].
+	reallyVisibleVertices ifNotNil: [
+		reallyVisibleVertices do: [ :vertex |
+			| p |
+			p := vertex asPoint * scale + viewOffset.
+			vertex photoimage
+				ifNil: [
+					| d |
+					d := p distanceTo: aPoint.
+					(d < 8 and: [ d < minD ]) ifTrue: [
+						minD := d.
+						minV := vertex ] ]
+				ifNotNil: [ :image |
+					| dp d |
+					dp := p - aPoint.
+					(dp x abs <= image width and: [
+						 dp y abs <= image height and: [
+							 (d := p distanceTo: aPoint) < minD ] ]) ifTrue: [
+						minD := d.
+						minV := vertex ] ] ] ].
 	^ minV
 ]
 

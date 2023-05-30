@@ -3,12 +3,6 @@ Extension { #name : #FreeTypeFace }
 { #category : #'*Golap-UI' }
 FreeTypeFace >> filename [
 
-	^ self findFilename
-]
-
-{ #category : #'*Golap-UI' }
-FreeTypeFace >> findFilename [
-
 	| fileRef basename provider |
 	filename ifNil: [ ^ filename ].
 	fileRef := filename asFileReference.

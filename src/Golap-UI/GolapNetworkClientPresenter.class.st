@@ -58,7 +58,10 @@ GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock [
 
 { #category : #utilities }
 GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
-	^ self current openDialogIfAccepted: aBlock ifCanceled: anotherBlock
+
+	^ self current
+		  layout: self defaultLayout;
+		  openDialogIfAccepted: aBlock ifCanceled: anotherBlock
 ]
 
 { #category : #private }
@@ -179,7 +182,7 @@ GolapNetworkClientPresenter >> imageUrl [
 
 { #category : #initialization }
 GolapNetworkClientPresenter >> initialExtent [
-	^ 1200 @ 600
+	^ 1200 @ 700
 ]
 
 { #category : #initialization }
