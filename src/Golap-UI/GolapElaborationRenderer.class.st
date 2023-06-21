@@ -426,6 +426,11 @@ GolapElaborationRenderer >> overridesYWithFrequency: aBoolean [
 	
 ]
 
+{ #category : #accessing }
+GolapElaborationRenderer >> overridesYWithFrequencyOrder: aBoolean [
+	
+]
+
 { #category : #'view manipulation' }
 GolapElaborationRenderer >> resetZoom [
 

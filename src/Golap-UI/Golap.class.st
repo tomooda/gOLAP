@@ -11,6 +11,7 @@ Class {
 		'pins',
 		'selections',
 		'overridesYWithFrequencyCheckbox',
+		'overridesYWithFrequencyOrderCheckbox',
 		'layoutButton',
 		'zoomInButton',
 		'zoomOutButton',
@@ -86,8 +87,11 @@ Golap class >> defaultLayout [
 				   height: self buttonHeight;
 				   add: (SpBoxLayout newHorizontal
 						    add: #layoutButton expand: true;
-						    add: #overridesYWithFrequencyCheckbox width: 100)
-				   height: self buttonHeight)
+						    add: (SpBoxLayout newVertical
+								     add: #overridesYWithFrequencyCheckbox expand: false;
+								     add: #overridesYWithFrequencyOrderCheckbox expand: false)
+						    width: 100)
+				   expand: false)
 		  width: 350;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.75;
@@ -407,8 +411,11 @@ Golap >> averageMode [
 
 { #category : #'accessing-renderer' }
 Golap >> basicLayout [
+
 	self renderer
 		overridesYWithFrequency: overridesYWithFrequencyCheckbox state;
+		overridesYWithFrequencyOrder:
+			overridesYWithFrequencyOrderCheckbox state;
 		layout
 ]
 
@@ -800,7 +807,7 @@ Golap >> initializePresenters [
 
 	globalImagePane := self newImage
 		                   autoScale: true;
-		                   whenBuiltDo: [ 
+		                   whenBuiltDo: [
 			                   globalImagePane adapter widget
 				                   on: #mouseMove
 				                   send: #globalImageMouseMove:
@@ -820,7 +827,7 @@ Golap >> initializePresenters [
 		                   yourself.
 	globalMapPane := self newImage
 		                 autoScale: false;
-		                 whenBuiltDo: [ 
+		                 whenBuiltDo: [
 			                 globalMapPane adapter widget
 				                 on: #mouseMove
 				                 send: #globalMapMouseMove:
@@ -850,10 +857,10 @@ Golap >> initializePresenters [
 		                   yourself.
 	frontList := self newDropList
 		             display: [ :string | string asString ];
-		             whenSelectedItemChangedDo: [ :front | 
+		             whenSelectedItemChangedDo: [ :front |
 			             baseList
-				             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [ 
-							              dimensions keys asArray collect: [ :back | 
+				             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [
+							              dimensions keys asArray collect: [ :back |
 									              front = back
 										              ifTrue: [ String new ]
 										              ifFalse: [ back ] ] ]);
@@ -869,17 +876,17 @@ Golap >> initializePresenters [
 	appearanceNotebook := self newNotebook
 		                      addPage: (self newNotebookPage
 				                       title: 'グラフ';
-				                       presenterProvider: [ 
+				                       presenterProvider: [
 					                       edgesAppearancePresenter ];
 				                       yourself);
 		                      addPage: (self newNotebookPage
 				                       title: '商品';
-				                       presenterProvider: [ 
+				                       presenterProvider: [
 					                       itemsAppearancePresenter ];
 				                       yourself);
 		                      addPage: (self newNotebookPage
 				                       title: '色';
-				                       presenterProvider: [ 
+				                       presenterProvider: [
 					                       colorsAppearancePresenter ];
 				                       yourself);
 		                      yourself.
@@ -902,10 +909,27 @@ Golap >> initializePresenters [
 		                                   label: 'Y=freq';
 		                                   labelOnRight;
 		                                   state: false;
-		                                   whenChangedDo: [ 
+		                                   whenChangedDo: [
+			                                   overridesYWithFrequencyCheckbox
+				                                   state ifTrue: [
+					                                   overridesYWithFrequencyOrderCheckbox
+						                                   state: false ].
 			                                   self
 				                                   updateGlobalImageAfter: [  ]
 				                                   layout: true ].
+	overridesYWithFrequencyOrderCheckbox := self newCheckBox
+		                                        label: 'Y=freq order';
+		                                        labelOnRight;
+		                                        state: false;
+		                                        whenChangedDo: [
+			                                        overridesYWithFrequencyOrderCheckbox
+				                                        state ifTrue: [
+					                                        overridesYWithFrequencyCheckbox
+						                                        state: false ].
+			                                        self
+				                                        updateGlobalImageAfter: [
+					                                         ]
+				                                        layout: true ].
 	saveAsButton := self newButton
 		                label: 'save...';
 		                action: [ self dumpToFile ];
@@ -928,13 +952,13 @@ Golap >> initializePresenters [
 		                      yourself.
 	queryViewTree := self newTreeTable
 		                 addColumn:
-			                 (SpStringTableColumn evaluated: [ :assoc | 
+			                 (SpStringTableColumn evaluated: [ :assoc |
 					                  assoc key , ' : '
 					                  , (STONJSON toString: assoc value) ]);
-		                 children: [ :assoc | 
+		                 children: [ :assoc |
 			                 assoc value isDictionary
-				                 ifTrue: [ 
-					                 assoc value keys asSortedCollection collect: [ 
+				                 ifTrue: [
+					                 assoc value keys asSortedCollection collect: [
 							                 :k | k -> (assoc value at: k) ] ]
 				                 ifFalse: [ Array new ] ];
 		                 contextMenu: [ self queryViewTreeMenu ];
@@ -952,14 +976,14 @@ Golap >> initializePresenters [
 				                 yourself);
 		                yourself.
 
-	self whenBuiltDo: [ :w | 
+	self whenBuiltDo: [ :w |
 		| f |
 		f := TextStyle defaultFont.
 		w widget allMorphsDo: [ :m | "self window
 			bindKeyCombination: Character arrowUp asKeyCombination
 			toAction: [ self zoomIn ];
 			bindKeyCombination: Character arrowDown asKeyCombination
-			toAction: [ self zoomOut ]" 
+			toAction: [ self zoomOut ]"
 			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
@@ -1224,6 +1248,11 @@ Golap >> openPresetQueryDialog [
 { #category : #'accessing-widgets' }
 Golap >> overridesYWithFrequencyCheckbox [
 	^ overridesYWithFrequencyCheckbox
+]
+
+{ #category : #'accessing-widgets' }
+Golap >> overridesYWithFrequencyOrderCheckbox [
+	^ overridesYWithFrequencyOrderCheckbox
 ]
 
 { #category : #'accessing-renderer' }

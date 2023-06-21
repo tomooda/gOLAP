@@ -5,7 +5,8 @@ Class {
 		'divisions',
 		'model',
 		'softDivisions',
-		'overridesYWithFrequency'
+		'overridesYWithFrequency',
+		'overridesYWithFrequencyOrder'
 	],
 	#category : #'Golap-UI-Graph'
 }
@@ -119,92 +120,117 @@ GolapLayouter >> divisions [
 
 { #category : #initialization }
 GolapLayouter >> initialize [
+
 	super initialize.
 	divisions := nil.
-	overridesYWithFrequency := false
+	overridesYWithFrequency := false.
+	overridesYWithFrequencyOrder := false
 ]
 
 { #category : #layouting }
 GolapLayouter >> layout [
+
 	| vertices boundVertices bindings reps isolatedVertices |
-	vertices := self model vertices
-		asSortedCollection: [ :v1 :v2 | v2 frequency < v1 frequency or: [ v2 data <= v1 data ] ].
+	vertices := self model vertices asSortedCollection: [ :v1 :v2 |
+		            v2 frequency < v1 frequency or: [ v2 data <= v1 data ] ].
 	boundVertices := vertices reject: [ :vertex | vertex isIsolated ].
 	divisions := (boundVertices size sqrt * 1.4) ceiling max: 1.
 	softDivisions := divisions asFloat - 1.0e-8.
 	self swirlLayout: boundVertices.
 	bindings := self bindings.
 	reps := 40000000 // (boundVertices size squared max: 1)
-		min: 100
-		max: 20.
-	model
-		ifNotNil: [ UIManager default
-				displayProgress: 'layouting'
-				from: 1
-				to: reps
-				during: [ :progress | 
-					1 to: reps do: [ :i | 
-						progress value: i.
-						5
-							timesRepeat: [ self
-									centralize: boundVertices;
-									bindParticles: boundVertices bindings: bindings;
-									repulseParticles: boundVertices bindings: bindings;
-									wall: boundVertices;
-									adjustCenter: boundVertices ] ] ] ].
-	self overridesYWithFrequency
-		ifTrue: [ | minY maxY minF maxF |
-			minY := (boundVertices collect: #y thenSelect: #notNil)
-				ifEmpty: [ 0.0 ]
-				ifNotEmpty: #min.
-			maxY := (boundVertices collect: #y thenSelect: #notNil)
-				ifEmpty: [ 0.0 ]
-				ifNotEmpty: #max.
-			minF := (boundVertices collect: #frequency thenSelect: #notNil)
-				ifEmpty: [ 0.0 ]
-				ifNotEmpty: #min.
-			maxF := (boundVertices collect: #frequency thenSelect: #notNil)
-				ifEmpty: [ 0.0 ]
-				ifNotEmpty: #max.
-			(minY ~= maxY and: [ minF ~= maxF ])
-				ifTrue: [ | offset scale |
-					offset := minY.
-					scale := (maxY - minY) / (maxF - minF).
-					boundVertices
-						do:
-							[ :vertex | vertex y: (maxF - vertex frequency) * scale + offset ] ] ].
+		        min: 100
+		        max: 20.
+	model ifNotNil: [
+		UIManager default
+			displayProgress: 'layouting'
+			from: 1
+			to: reps
+			during: [ :progress |
+				1 to: reps do: [ :i |
+					progress value: i.
+					5 timesRepeat: [
+						self
+							centralize: boundVertices;
+							bindParticles: boundVertices bindings: bindings;
+							repulseParticles: boundVertices bindings: bindings;
+							wall: boundVertices;
+							adjustCenter: boundVertices ] ] ] ].
+	self overridesYWithFrequency ifTrue: [
+		| minY maxY minF maxF |
+		minY := (boundVertices collect: #y thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #min.
+		maxY := (boundVertices collect: #y thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #max.
+		minF := (boundVertices collect: #frequency thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #min.
+		maxF := (boundVertices collect: #frequency thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #max.
+		(minY ~= maxY and: [ minF ~= maxF ]) ifTrue: [
+			| offset scale |
+			offset := minY.
+			scale := maxY - minY / (maxF - minF).
+			boundVertices do: [ :vertex |
+				vertex y: maxF - vertex frequency * scale + offset ] ] ].
+	self overridesYWithFrequencyOrder ifTrue: [
+		| minY maxY minF maxF |
+		minY := (boundVertices collect: #y thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #min.
+		maxY := (boundVertices collect: #y thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #max.
+		minF := (boundVertices collect: #frequency thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #min.
+		maxF := (boundVertices collect: #frequency thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #max.
+		(minY ~= maxY and: [ minF ~= maxF and: [ boundVertices size > 1 ] ])
+			ifTrue: [
+				| offset scale |
+				offset := minY.
+				scale := maxY - minY / (boundVertices size - 1).
+				(boundVertices asSortedCollection: [ :more :less |
+					 less frequency isNil or: [
+						 more frequency notNil and: [ more frequency >= less frequency ] ] ])
+					doWithIndex: [ :vertex :index |
+					vertex y: (index - 1) asFloat * scale + offset ] ] ].
 	((boundVertices collect: #x thenSelect: #notNil)
-		ifEmpty: [ 0.0 ]
-		ifNotEmpty: #min) floor
-		@
-			((boundVertices collect: #y thenSelect: #notNil)
-				ifEmpty: [ 0.0 ]
-				ifNotEmpty: #min) floor
-		in: [ :offset | 
-			boundVertices
-				do: [ :v | 
-					v
-						x: v x - offset x;
-						y: v y - offset y ] ].
+		 ifEmpty: [ 0.0 ]
+		 ifNotEmpty: #min) floor
+	@ ((boundVertices collect: #y thenSelect: #notNil)
+			 ifEmpty: [ 0.0 ]
+			 ifNotEmpty: #min) floor in: [ :offset |
+		boundVertices do: [ :v |
+			v
+				x: v x - offset x;
+				y: v y - offset y ] ].
 	divisions := (((boundVertices collect: #x)
-		ifEmpty: [ 0 ]
-		ifNotEmpty: #max) ceiling
-		max: ((boundVertices collect: #y) ifEmpty: [ 0 ] ifNotEmpty: #max) ceiling)
-		+ 1.
+		               ifEmpty: [ 0 ]
+		               ifNotEmpty: #max) ceiling max:
+		              ((boundVertices collect: #y)
+			               ifEmpty: [ 0 ]
+			               ifNotEmpty: #max) ceiling) + 1.
 	isolatedVertices := (vertices select: [ :vertex | vertex isIsolated ])
-		readStream.
-	[ divisions := divisions + (1 / 2).
-	1 to: divisions by: 1 / 2 do: [ :x | 
-		isolatedVertices atEnd
-			ifTrue: [ divisions := divisions ceiling.
-				^ self ].
+		                    readStream.
+	[
+	divisions := divisions + (1 / 2).
+	1 to: divisions by: 1 / 2 do: [ :x |
+		isolatedVertices atEnd ifTrue: [
+			divisions := divisions ceiling.
+			^ self ].
 		isolatedVertices next
 			x: x - 0.25;
 			y: divisions - 0.25 ].
-	1 to: divisions - (1 / 2) by: 1 / 2 do: [ :y | 
-		isolatedVertices atEnd
-			ifTrue: [ divisions := divisions ceiling.
-				^ self ].
+	1 to: divisions - (1 / 2) by: 1 / 2 do: [ :y |
+		isolatedVertices atEnd ifTrue: [
+			divisions := divisions ceiling.
+			^ self ].
 		isolatedVertices next
 			x: divisions - 0.25;
 			y: y - 0.25 ] ] repeat
@@ -228,6 +254,16 @@ GolapLayouter >> overridesYWithFrequency [
 { #category : #accessing }
 GolapLayouter >> overridesYWithFrequency: aBoolean [
 	overridesYWithFrequency := aBoolean = true
+]
+
+{ #category : #accessing }
+GolapLayouter >> overridesYWithFrequencyOrder [
+	^ overridesYWithFrequencyOrder = true
+]
+
+{ #category : #accessing }
+GolapLayouter >> overridesYWithFrequencyOrder: aBoolean [
+	overridesYWithFrequencyOrder := aBoolean = true
 ]
 
 { #category : #layouting }

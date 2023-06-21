@@ -580,6 +580,12 @@ GolapOverviewRenderer >> overridesYWithFrequency: aBoolean [
 	self layouter overridesYWithFrequency: aBoolean
 ]
 
+{ #category : #accessing }
+GolapOverviewRenderer >> overridesYWithFrequencyOrder: aBoolean [
+
+	self layouter overridesYWithFrequencyOrder: aBoolean
+]
+
 { #category : #'view manipulation' }
 GolapOverviewRenderer >> resetZoom [
 
@@ -595,8 +601,11 @@ GolapOverviewRenderer >> restore: aStream [
 	y := nil.
 	(NeoJSONReader on: aStream) next
 		at: 'overrides-y-with-frequency'
-		ifPresent: [ :bool | 
+		ifPresent: [ :bool |
 			golap overridesYWithFrequencyCheckbox state: bool ];
+		at: 'overrides-y-with-frequency-order'
+		ifPresent: [ :bool |
+			golap overridesYWithFrequencyOrderCheckbox state: bool ];
 		at: 'offset-x' ifPresent: [ :float | x := float ];
 		at: 'offset-y' ifPresent: [ :float | y := float ];
 		at: 'scale' ifPresent: [ :float | viewScale := float ].
@@ -633,8 +642,10 @@ GolapOverviewRenderer >> simpleStringFor: aNumber [
 { #category : #snapshot }
 GolapOverviewRenderer >> snapshotInto: aStream [
 
-	(NeoJSONWriter on: aStream) nextPut: { 
+	(NeoJSONWriter on: aStream) nextPut: {
 			('overrides-y-with-frequency' -> layouter overridesYWithFrequency).
+			('overrides-y-with-frequency-order'
+			 -> layouter overridesYWithFrequencyOrder).
 			('offset-x' -> (viewOffset ifNotNil: #x)).
 			('offset-y' -> (viewOffset ifNotNil: #y)).
 			('scale' -> viewScale) } asOrderedDictionary
