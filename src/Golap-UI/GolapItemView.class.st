@@ -329,11 +329,9 @@ GolapItemView >> snapshotInto: aStream [
 { #category : #private }
 GolapItemView >> updateImage [
 
-	vertex ifNotNil: [ 
-		self basicImage
-			ifNotNil: [ :image | 
-			vertex photoimage: (image scaledToSize: 64 @ 64) ]
-			ifNil: [ vertex photoimage: false ] ].
+	vertex ifNotNil: [
+		self basicImage ifNotNil: [ :image |
+			vertex photoimage: (image scaledToSize: 64 @ 64) ] ].
 	^ itemImage image: self image
 ]
 

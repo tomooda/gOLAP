@@ -299,6 +299,12 @@ GolapVertex >> numberOfEdges [
 ]
 
 { #category : #accessing }
+GolapVertex >> photoData [
+
+	^ self data
+]
+
+{ #category : #accessing }
 GolapVertex >> photoimage [
 
 	^ photoimage isForm

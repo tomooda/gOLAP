@@ -1650,17 +1650,17 @@ Golap >> retrievePhotoimage [
 Golap >> retrievePhotoimageFor: aGolapVertex [
 
 	aGolapVertex photoimage: false.
-	[ retrievalProcessCount > self maxPhotoimageRetrievalProcesses ] 
+	[ retrievalProcessCount > self maxPhotoimageRetrievalProcesses ]
 		whileTrue: [ 300 milliSecond wait ].
 	retrievalProcessCount := retrievalProcessCount + 1.
-	[ 
-	itemView ifNotNil: [ 
-		[ 
-		(itemView retrieveSingleImageFor: aGolapVertex data value) 
-			ifNotNil: [ :image | 
+	[
+	itemView ifNotNil: [
+		[
+		(itemView retrieveSingleImageFor: aGolapVertex photoData value)
+			ifNotNil: [ :image |
 				aGolapVertex photoimage:
 					(image scaledToSize: self photoimageSize asPoint).
-				self updateGlobalImageAfter: [  ] ] ] ensure: [ 
+				self updateGlobalImageAfter: [  ] ] ] ensure: [
 			retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
 		Processor userBackgroundPriority - 5
 ]
@@ -1709,7 +1709,7 @@ Golap >> retrievePhotoimageOnOverviewRenderer [
 
 				minV ifNotNil: [ ^ self retrievePhotoimageFor: minV ] ] ] ] ]
 		on: Error
-		do: [ :ex |  ]
+		do: [ :ex | ]
 ]
 
 { #category : #operations }
