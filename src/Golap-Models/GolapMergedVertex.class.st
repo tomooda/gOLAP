@@ -10,6 +10,8 @@ Class {
 
 { #category : #enumerating }
 GolapMergedVertex >> dataDo: aBlock [
+
+	aBlock value: self data.
 	oldVertices do: [ :v | v dataDo: aBlock ]
 ]
 
