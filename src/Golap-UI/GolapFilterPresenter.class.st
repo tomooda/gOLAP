@@ -174,8 +174,7 @@ GolapFilterPresenter >> clauseListMenu [
 
 { #category : #operations }
 GolapFilterPresenter >> clauseListSelectionChanged [
-	previewFilterField text: ''.
-	previewFilterBlock := [ :items | items ].
+
 	self updatePredicateList
 ]
 
