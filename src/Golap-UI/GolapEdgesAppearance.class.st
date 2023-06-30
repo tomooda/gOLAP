@@ -288,7 +288,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                           yourself.
 	positivePolishSlider := self newSlider
 		                        label: '+研磨';
-		                        min: 0.8;
+		                        min: 0.0;
 		                        max: 1.0;
 		                        value: 1.0;
 		                        quantum: 0.01;
