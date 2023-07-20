@@ -1986,24 +1986,24 @@ Golap >> snapshotColorsAppearance: aBlock [
 Golap >> snapshotData: aReadStream do: aBlock [
 
 	self snapshotQuery.
-	aReadStream
-		ifNotNil: [ 
+	(aReadStream notNil and: [ aReadStream isString not ])
+		ifTrue: [
 			self snapshotDirectory
-				ifNotNil: [ :baseDir | 
+				ifNotNil: [ :baseDir |
 					| ref |
 					ref := (baseDir / 'data.csv') ensureDelete.
-					ref writeStreamDo: [ :writeStream | 
-						Cursor wait showWhile: [ 
-							UIManager default informUserDuring: [ :bar | 
+					ref writeStreamDo: [ :writeStream |
+						Cursor wait showWhile: [
+							UIManager default informUserDuring: [ :bar |
 								bar
 									min: 0;
 									max: aReadStream size.
-								[ aReadStream atEnd ] whileFalse: [ 
+								[ aReadStream atEnd ] whileFalse: [
 									bar value: aReadStream position.
 									writeStream nextPutAll: (aReadStream next: 16384) ] ] ] ].
 					ref readStreamDo: [ :readStream | aBlock value: readStream ] ]
 				ifNil: [ aBlock value: aReadStream ] ]
-		ifNil: [ aBlock value: nil ]
+		ifFalse: [ aBlock value: nil ]
 ]
 
 { #category : #snapshot }
