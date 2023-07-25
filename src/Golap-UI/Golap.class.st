@@ -46,7 +46,8 @@ Class {
 		'saveSnapshotButton',
 		'photoImageRetrievingProcess',
 		'retrievalProcessCount',
-		'drawingSemaphore'
+		'drawingSemaphore',
+		'commentText'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -91,7 +92,10 @@ Golap class >> defaultLayout [
 								     add: #overridesYWithFrequencyCheckbox expand: false;
 								     add: #overridesYWithFrequencyOrderCheckbox expand: false)
 						    width: 100)
-				   expand: false)
+				   expand: false;
+				   add: 'コメント' expand: false;
+				   add: #commentText;
+				   yourself)
 		  width: 350;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.75;
@@ -220,36 +224,37 @@ Golap class >> openClient [
 	overview := Golap new.
 	overview open maximize.
 	GolapNetworkClientPresenter
-		openDialogIfAccepted: [ :client | 
-			[ 
+		openDialogIfAccepted: [ :client |
+			[
 			overview
 				authenticateBlock: client authenticateBlock;
 				query: (NeoJSONReader fromString: client query);
 				url: client url;
+				comment: client comment;
 				imageRepositoryUrl: client imageUrl;
 				itemFieldQuerySpec: client itemFieldQuerySpec;
 				itemViewUrl: client url ]
 				on: Error
-				do: [ :ex | 
+				do: [ :ex |
 					UIManager default alert:
 						'Can''t open the given URL: ' , client url asString ].
-			overview snapshotData: client readStream do: [ :readStream | 
-				readStream ifNil: [ overview delete ] ifNotNil: [ 
+			overview snapshotData: client readStream do: [ :readStream |
+				readStream ifNil: [ overview delete ] ifNotNil: [
 					readStream isString
-						ifTrue: [ 
+						ifTrue: [
 							UIManager default alert: readStream.
 							overview delete ]
-						ifFalse: [ 
-							Cursor wait showWhile: [ 
-								UIManager default informUserDuring: [ :bar | 
+						ifFalse: [
+							Cursor wait showWhile: [
+								UIManager default informUserDuring: [ :bar |
 									bar
 										min: 0;
 										max: readStream size.
 									overview
-										updateGlobalImageAfter: [ 
-											[ 
+										updateGlobalImageAfter: [
+											[
 											bar value: readStream position.
-											readStream atEnd ] whileFalse: [ 
+											readStream atEnd ] whileFalse: [
 												overview readDimensionFrom: readStream ].
 											bar label: 'updating dimensions'.
 											overview updateDimensions.
@@ -468,6 +473,18 @@ Golap >> colorForVertex: aGolapVertex [
 			aGolapVertex frequency > 0
 				ifTrue: [ ^ self growingColor ] ].
 	^ self normalColorFor: aGolapVertex
+]
+
+{ #category : #accessing }
+Golap >> comment [
+
+	^ commentText text
+]
+
+{ #category : #accessing }
+Golap >> comment: aString [
+
+	commentText text: aString
 ]
 
 { #category : #operations }
@@ -930,6 +947,7 @@ Golap >> initializePresenters [
 				                                        updateGlobalImageAfter: [
 					                                         ]
 				                                        layout: true ].
+	commentText := self newText.
 	saveAsButton := self newButton
 		                label: 'save...';
 		                action: [ self dumpToFile ];
@@ -1610,13 +1628,15 @@ Golap >> restoreQuery [
 
 	| ref |
 	ref := self snapshotDirectory / 'query.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			(NeoJSONReader on: stream) next ifNotNil: [ :json | 
-				(json at: 'url' ifAbsent: [ nil ]) ifNotNil: [ :string | 
+	ref isFile ifTrue: [
+		ref readStreamDo: [ :stream |
+			(NeoJSONReader on: stream) next ifNotNil: [ :json |
+				(json at: 'url' ifAbsent: [ nil ]) ifNotNil: [ :string |
 					url := string asUrl ].
-				(json at: 'query' ifAbsent: [ nil ]) ifNotNil: [ :dictionary | 
-					self setQuery: dictionary ] ] ] ]
+				(json at: 'query' ifAbsent: [ nil ]) ifNotNil: [ :dictionary |
+					self setQuery: dictionary ].
+				(json at: 'comment' ifAbsent: [ nil ]) ifNotNil: [ :comment |
+					self comment: comment ] ] ] ]
 ]
 
 { #category : #snapshot }
@@ -2104,13 +2124,15 @@ Golap >> snapshotOverviewRenderer: aBlock [
 { #category : #snapshot }
 Golap >> snapshotQuery [
 
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
+	self ifSnapshotEnabled: [
+		self snapshotDirectory ifNotNil: [ :baseDir |
 			| queryJson |
 			queryJson := Dictionary new.
 			url ifNotNil: [ queryJson at: 'url' put: url printString ].
 			query ifNotNil: [ queryJson at: 'query' put: query ].
-			(baseDir / 'query.json') ensureDelete writeStreamDo: [ :stream | 
+			self comment ifNotNil: [ :comment |
+				queryJson at: 'comment' put: comment ].
+			(baseDir / 'query.json') ensureDelete writeStreamDo: [ :stream |
 				(NeoJSONWriter on: stream) nextPut: queryJson ] ] ]
 ]
 

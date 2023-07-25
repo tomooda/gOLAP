@@ -5,6 +5,7 @@ Class {
 		'url',
 		'authenticateBlock',
 		'query',
+		'comment',
 		'itemFieldQuerySpec',
 		'serverConfig'
 	],
@@ -30,14 +31,16 @@ GolapApiClient class >> url: aStringOrUrl query: aString authenticateBlock: aBlo
 ]
 
 { #category : #'instance cretion' }
-GolapApiClient class >> url: aStringOrUrl query: aString serverConfig: configDictionary itemFieldQuerySpec: aDictionary authenticateBlock: aBlock [
+GolapApiClient class >> url: aStringOrUrl query: aString comment: anotherString serverConfig: configDictionary itemFieldQuerySpec: aDictionary authenticateBlock: aBlock [
+
 	^ self new
-		url: aStringOrUrl;
-		query: aString;
-		serverConfig: configDictionary;
-		itemFieldQuerySpec: aDictionary;
-		authenticateBlock: aBlock;
-		yourself
+		  url: aStringOrUrl;
+		  query: aString;
+		  comment: anotherString;
+		  serverConfig: configDictionary;
+		  itemFieldQuerySpec: aDictionary;
+		  authenticateBlock: aBlock;
+		  yourself
 ]
 
 { #category : #accessing }
@@ -57,6 +60,18 @@ GolapApiClient >> cancel: aString [
 		get: self url / 'cancel' / aString
 		authenticateBlock: self authenticateBlock.
 	^ response entity contents
+]
+
+{ #category : #accessing }
+GolapApiClient >> comment [
+
+	^ comment
+]
+
+{ #category : #accessing }
+GolapApiClient >> comment: aString [
+
+	comment := aString
 ]
 
 { #category : #private }

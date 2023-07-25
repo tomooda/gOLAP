@@ -30,7 +30,7 @@ Class {
 { #category : #layout }
 GolapQueryPresenter class >> defaultLayout [
 
-	<script: 'GolapQueryPresenter new openWithSpec'>
+	<script: 'GolapQueryPresenter new open'>
 	<spec>
 	^ SpBoxLayout newVertical
 		  add: (SpPanedLayout newHorizontal

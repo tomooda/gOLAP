@@ -16,7 +16,8 @@ Class {
 		'usesRawQuery',
 		'queryNotebook',
 		'usesRawQueryText',
-		'query'
+		'query',
+		'commentText'
 	],
 	#classInstVars : [
 		'current'
@@ -31,17 +32,23 @@ GolapNetworkClientPresenter class >> current [
 
 { #category : #layout }
 GolapNetworkClientPresenter class >> defaultLayout [
+
+	<script: 'self new open'>
 	<spec>
 	^ SpBoxLayout newVertical
-		add:
-			(SpBoxLayout newHorizontal
-				add: #urlInput;
-				add: #presetUrlButton width: 20)
-			height: self inputTextHeight;
-		add:
-			(SpBoxLayout newHorizontal
-				add: #queryNotebook;
-				add: #serverConfigTree width: 200)
+		  add: (SpBoxLayout newHorizontal
+				   add: #urlInput;
+				   add: #presetUrlButton width: 20)
+		  height: self inputTextHeight;
+		  add: (SpBoxLayout newHorizontal
+				   add: #queryNotebook;
+				   add: (SpBoxLayout newVertical
+						    add: 'サーバパラメータ' expand: false;
+						    add: #serverConfigTree;
+						    add: 'コメント' expand: false;
+						    add: #commentText height: self inputTextHeight * 4;
+						    yourself)
+				   width: 200)
 ]
 
 { #category : #'sole instance' }
@@ -92,6 +99,18 @@ GolapNetworkClientPresenter >> authenticateBlock [
 				ifNil: [ username := nil ] ] ]
 ]
 
+{ #category : #accessing }
+GolapNetworkClientPresenter >> comment [
+
+	^ commentText text
+]
+
+{ #category : #accessing }
+GolapNetworkClientPresenter >> comment: aString [
+
+	commentText text: aString
+]
+
 { #category : #defaults }
 GolapNetworkClientPresenter >> defaultQuery [
 	^ Dictionary new
@@ -124,28 +143,29 @@ GolapNetworkClientPresenter >> defaultUrl [
 
 { #category : #operations }
 GolapNetworkClientPresenter >> dumpToFile [
-	UIManager default
-		informUserDuring: [ :progress | 
-			| readStream |
-			readStream := (GolapApiClient
-				url: self url
-				query: self query
-				serverConfig: self serverConfig
-				itemFieldQuerySpec: self itemFieldQuerySpec
-				authenticateBlock: self authenticateBlock) readStream.
-			readStream
-				ifNil: [ ^ UIManager default alert: 'Failed to get server response.' ].
-			(UIManager default
-				chooseForSaveFileReference: 'Save gOLAP data'
-				extensions: #('csv')
-				path: GolapModel coocurrenceDataDirectory absolutePath)
-				ifNotNil: [ :ref | 
-					ref
-						writeStreamDo: [ :writeStream | 
-							[ readStream atEnd ]
-								whileFalse: [ writeStream
-										nextPutAll: (readStream upTo: Character lf);
-										nextPut: Character lf ] ] ] ]
+
+	UIManager default informUserDuring: [ :progress |
+		| readStream |
+		readStream := (GolapApiClient
+			               url: self url
+			               query: self query
+			               comment: self comment
+			               serverConfig: self serverConfig
+			               itemFieldQuerySpec: self itemFieldQuerySpec
+			               authenticateBlock: self authenticateBlock)
+			              readStream.
+		readStream ifNil: [
+			^ UIManager default alert: 'Failed to get server response.' ].
+		(UIManager default
+			 chooseForSaveFileReference: 'Save gOLAP data'
+			 extensions: #( 'csv' )
+			 path: GolapModel coocurrenceDataDirectory absolutePath) ifNotNil: [
+			:ref |
+			ref writeStreamDo: [ :writeStream |
+				[ readStream atEnd ] whileFalse: [
+					writeStream
+						nextPutAll: (readStream upTo: Character lf);
+						nextPut: Character lf ] ] ] ]
 ]
 
 { #category : #accessing }
@@ -197,7 +217,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 	<script: 'GolapQueryPresenter new openWithSpec'>
 	urlInput := self newTextInput
 		            text: self defaultUrl;
-		            whenTextChangedDo: [ :old :new | 
+		            whenTextChangedDo: [ :old :new |
 			            old ~= new ifTrue: [ self flushAuth ] ];
 		            whenSubmitDo: [ :text |
 			            self updateServerConfig.
@@ -211,17 +231,17 @@ GolapNetworkClientPresenter >> initializePresenters [
 		                   yourself.
 	query := self defaultQuery.
 	queryTree := self newTreeTable
-		             addColumn: (SpStringTableColumn evaluated: [ :assoc | 
+		             addColumn: (SpStringTableColumn evaluated: [ :assoc |
 					              assoc key , ' : '
 					              , (STONJSON toString: assoc value) ]);
-		             children: [ :assoc | 
+		             children: [ :assoc |
 			             assoc value isDictionary
-				             ifTrue: [ 
-					             assoc value keys asSortedCollection collect: [ :k | 
+				             ifTrue: [
+					             assoc value keys asSortedCollection collect: [ :k |
 							             k -> (assoc value at: k) ] ]
 				             ifFalse: [ Array new ] ];
 		             roots:
-			             (query keys asSortedCollection collect: [ :key | 
+			             (query keys asSortedCollection collect: [ :key |
 					              key -> (query at: key) ]);
 		             contextMenu: [ self queryTreeMenu ];
 		             yourself.
@@ -240,8 +260,8 @@ GolapNetworkClientPresenter >> initializePresenters [
 		                 addPage: (self newNotebookPage
 				                  title: '高度な条件';
 				                  presenterProvider: [ queryText ];
-				                  whenRetrievedDo: [ 
-					                  queryText text asString trim ifEmpty: [ 
+				                  whenRetrievedDo: [
+					                  queryText text asString trim ifEmpty: [
 							                  self generateQueryText ].
 					                  usesRawQuery := true ];
 				                  yourself);
@@ -253,40 +273,42 @@ GolapNetworkClientPresenter >> initializePresenters [
 	usesRawQueryText := false.
 	serverConfigTree := self newTreeTable
 		                    addColumn:
-			                    (SpStringTableColumn evaluated: [ :assoc | 
+			                    (SpStringTableColumn evaluated: [ :assoc |
 					                     assoc key , ' : '
 					                     , (STONJSON toString: assoc value) ]);
-		                    children: [ :assoc | 
+		                    children: [ :assoc |
 			                    assoc value isDictionary
-				                    ifTrue: [ 
-					                    assoc value keys asSortedCollection collect: [ 
+				                    ifTrue: [
+					                    assoc value keys asSortedCollection collect: [
 							                    :k | k -> (assoc value at: k) ] ]
 				                    ifFalse: [ Array new ] ];
 		                    roots:
-			                    (serverConfig ifNil: [ #(  ) ] ifNotNil: [ 
-					                     serverConfig keys asSortedCollection 
-						                     collect: [ :key | 
+			                    (serverConfig ifNil: [ #(  ) ] ifNotNil: [
+					                     serverConfig keys asSortedCollection
+						                     collect: [ :key |
 							                     key -> (serverConfig at: key) ] ]);
 		                    yourself.
-	self whenBuiltDo: [ 
-		okButton := self window buttons first.
-		okButton enabled: false.
-		self window buttons
-			addFirst: (self newButton
-					 label: 'Save';
-					 action: [ self dumpToFile ];
-					 yourself);
-			addFirst: (self newButton
-					 label: 'Reset';
-					 action: [ self resetQuery ]).
+	commentText := self newText.
+	self whenBuiltDo: [
+		self window isDialog ifTrue: [
+			okButton := self window buttons first.
+			okButton enabled: false.
+			self window buttons
+				addFirst: (self newButton
+						 label: 'Save';
+						 action: [ self dumpToFile ];
+						 yourself);
+				addFirst: (self newButton
+						 label: 'Reset';
+						 action: [ self resetQuery ]) ].
 		self updateServerConfig ].
 	self focusOrder
 		add: urlInput;
 		add: serverConfigTree.
-	self whenBuiltDo: [ :w | 
+	self whenBuiltDo: [ :w |
 		| font |
 		font := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m | 
+		w widget allMorphsDo: [ :m |
 			(m respondsTo: #font:) ifTrue: [ m font: font ] ] ]
 ]
 
@@ -339,11 +361,12 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
 
 	self openDialog
-		okAction: [ 
-			[ 
+		okAction: [
+			[
 			aBlock cull: (GolapApiClient
 						 url: self url
 						 query: self query
+						 comment: self comment
 						 serverConfig: self serverConfig
 						 itemFieldQuerySpec: self itemFieldQuerySpec
 						 authenticateBlock: self authenticateBlock) ] forkAt:
