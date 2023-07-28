@@ -116,6 +116,13 @@ GolapQueryPresenter >> authenticateBlock [
 	^ networkClient ifNotNil: #authenticateBlock
 ]
 
+{ #category : #operations }
+GolapQueryPresenter >> clearPreviewFilterField [
+
+	itemFilterPresenter clearPreviewFilterField.
+	transactionFilterPresenter clearPreviewFilterField
+]
+
 { #category : #defaults }
 GolapQueryPresenter >> defaultInitialExtent [
 	^ 800@600

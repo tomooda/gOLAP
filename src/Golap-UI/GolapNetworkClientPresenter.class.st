@@ -99,6 +99,12 @@ GolapNetworkClientPresenter >> authenticateBlock [
 				ifNil: [ username := nil ] ] ]
 ]
 
+{ #category : #operations }
+GolapNetworkClientPresenter >> clearPreviewFilterField [
+
+	queryPresenter clearPreviewFilterField
+]
+
 { #category : #accessing }
 GolapNetworkClientPresenter >> comment [
 
@@ -360,6 +366,7 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 { #category : #operations }
 GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
 
+	self clearPreviewFilterField.
 	self openDialog
 		okAction: [
 			[

@@ -188,6 +188,13 @@ GolapFilterPresenter >> clearClause [
 ]
 
 { #category : #operations }
+GolapFilterPresenter >> clearPreviewFilterField [
+
+	previewFilterField text: ''.
+	previewFilterBlock := [ :items | items ]
+]
+
+{ #category : #operations }
 GolapFilterPresenter >> copyPreviewListSelection [
 	Clipboard clipboardText: (',' join: previewList selectedItems)
 ]
