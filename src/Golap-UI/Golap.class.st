@@ -47,7 +47,8 @@ Class {
 		'photoImageRetrievingProcess',
 		'retrievalProcessCount',
 		'drawingSemaphore',
-		'commentText'
+		'commentText',
+		'openSunburstButton'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -88,6 +89,7 @@ Golap class >> defaultLayout [
 				   height: self buttonHeight;
 				   add: (SpBoxLayout newHorizontal
 						    add: #layoutButton expand: true;
+						    add: #openSunburstButton expand: false;
 						    add: (SpBoxLayout newVertical
 								     add: #overridesYWithFrequencyCheckbox expand: false;
 								     add: #overridesYWithFrequencyOrderCheckbox expand: false)
@@ -922,6 +924,10 @@ Golap >> initializePresenters [
 	layoutButton
 		label: 'layout';
 		action: [ self updateGlobalImageAfter: [  ] layout: true ].
+	openSunburstButton := self newButton
+		                      label: '系統樹';
+		                      action: [ self openSunburst ];
+		                      yourself.
 	overridesYWithFrequencyCheckbox := self newCheckBox
 		                                   label: 'Y=freq';
 		                                   labelOnRight;
@@ -1261,6 +1267,12 @@ Golap >> openPresetQueryDialog [
 				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection | 
 					itemList queryField text: selection ] ];
 		openModalWithSpec
+]
+
+{ #category : #operations }
+Golap >> openSunburst [
+
+	^ model openSunburst
 ]
 
 { #category : #'accessing-widgets' }

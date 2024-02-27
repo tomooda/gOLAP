@@ -795,6 +795,19 @@ GolapModel >> nodeNameKey2: aString [
 	nodeNameKey2 := aString
 ]
 
+{ #category : #visualization }
+GolapModel >> openSunburst [
+
+	(GolapHierarchicalClustering on: self)
+		rank: 2;
+		rank: 4;
+		rank: 8;
+		rank: 16;
+		rank: 32;
+		rank: 64;
+		openSunburst
+]
+
 { #category : #'accessing-keys' }
 GolapModel >> pmiKey [
 	^ pmiKey ifNil: [ pmiKey := self defaultPMIKey ]

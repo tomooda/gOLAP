@@ -33,11 +33,28 @@ GolapHierarchicalClusteringLeaf >> nodesDo: aBlock [
 	
 ]
 
+{ #category : #accessing }
+GolapHierarchicalClusteringLeaf >> oneVertex [
+
+	^ vertex
+]
+
+{ #category : #printing }
+GolapHierarchicalClusteringLeaf >> printOn: aStream [
+	aStream nextPutAll: vertex name
+]
+
 { #category : #private }
 GolapHierarchicalClusteringLeaf >> setVertex: aGolapVertex score: aNumber [
 
 	vertex := aGolapVertex.
 	score := aNumber
+]
+
+{ #category : #accessing }
+GolapHierarchicalClusteringLeaf >> trees [
+
+	^ #(  )
 ]
 
 { #category : #accessing }
