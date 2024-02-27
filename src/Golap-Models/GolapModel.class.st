@@ -334,6 +334,23 @@ GolapModel >> bindingEdgesDo: aBlock [
 	positivePolishEdges do: aBlock
 ]
 
+{ #category : #private }
+GolapModel >> computeFriendsEdges: anInteger [
+
+	| edges |
+	edges := IdentityBag new: self vertices size * anInteger.
+	self verticesDo: [ :v |
+		edges addAll: ((((Array streamContents: [ :stream |
+				    v edgesDo: [ :e |
+					    e data ifNotNil: [
+						    stream nextPut: e -> (self valueAtEdge: e) ] ] ])
+				   asSortedCollection: [ :more :less | less value <= more value ])
+				  readStream next: anInteger) collect: #key) ].
+	^ Array streamContents: [ :stream |
+		  edges doWithOccurrences: [ :e :n |
+			  n >= 2 ifTrue: [ stream nextPut: e ] ] ]
+]
+
 { #category : #'accessing-vertex' }
 GolapModel >> createVertex: anInteger name: aString [
 	^ GolapVertex on: anInteger name: aString
@@ -539,36 +556,17 @@ GolapModel >> friendsEdges [
 
 { #category : #accessing }
 GolapModel >> friendsEdges: anInteger [
+
 	| num |
-	anInteger
-		ifNil: [ friendsEdges := nil.
-			friendsRank := nil.
-			^ Array new ].
+	anInteger ifNil: [
+		friendsEdges := nil.
+		friendsRank := nil.
+		^ Array new ].
 	num := anInteger asInteger max: 1.
-	friendsRank ~= num
-		ifTrue: [ friendsEdges := nil ].
-	^ friendsEdges
-		ifNil: [ | edges edgeSet |
-			edges := IdentityBag new: self vertices size * num.
-			self
-				verticesDo: [ :v | 
-					edges
-						addAll:
-							((((Array
-								streamContents: [ :stream | 
-									v
-										edgesDo: [ :e | e data ifNotNil: [ stream nextPut: e -> (self valueAtEdge: e) ] ] ])
-								asSortedCollection: [ :more :less | less value <= more value ])
-								readStream next: num) collect: #key) ].
-			friendsEdges := Array
-				new: self vertices size * num
-				streamContents: [ :stream | 
-					edges
-						doWithOccurrences: [ :v :n | 
-							n >= 2
-								ifTrue: [ stream nextPut: v ] ] ].
-			friendsRank := num.
-			friendsEdges ]
+	friendsRank ~= num ifTrue: [ friendsEdges := nil ].
+	^ friendsEdges ifNil: [
+		  friendsRank := num.
+		  friendsEdges := self computeFriendsEdges: friendsRank ]
 ]
 
 { #category : #accessing }
