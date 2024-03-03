@@ -50,6 +50,12 @@ GolapEdge >> frequency [
 	^ data at: 'frequency'
 ]
 
+{ #category : #testing }
+GolapEdge >> hasVertex: aGolapVertex [
+
+	^ vertex1 == aGolapVertex or: [ vertex2 == aGolapVertex ]
+]
+
 { #category : #accessing }
 GolapEdge >> peerOf: aGolapVertex [
 	aGolapVertex = vertex1

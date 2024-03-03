@@ -80,6 +80,12 @@ GolapVertex >> asPoint [
 		  ifFalse: [ nil ]
 ]
 
+{ #category : #enumerating }
+GolapVertex >> basicEdgesAndVerticesDo: aBlock [
+
+	edges do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
+]
+
 { #category : #accessing }
 GolapVertex >> basicPhotoimage [
 
