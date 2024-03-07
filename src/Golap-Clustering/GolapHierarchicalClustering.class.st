@@ -91,28 +91,31 @@ GolapHierarchicalClustering >> initializeWith: aGolapModel [
 { #category : #visualization }
 GolapHierarchicalClustering >> openSunburst [
 
-	| sb |
-	sb := RSSunburstBuilder new.
-	sb sliceColor: [ :tree |
-		tree model isLeaf
+	| sb tree |
+	sb := GolapSunburstBuilder new.
+	sb sliceColor: [ :slice |
+		slice model isLeaf
 			ifTrue: [ Color darkGray ]
 			ifFalse: [ Color transparent ] ].
 	sb
-		explore: (GolapHierarchicalClusteringNode withAll: trees)
+		explore: (tree := GolapHierarchicalClusteringNode withAll: trees)
 		using: #trees.
 	sb build.
 	sb canvas @ RSCanvasController.
 	sb shapes @ RSPopup.
 	RSLineBuilder sunburstBezier
-		width: 2;
+		width: 3;
 		color: Color black;
 		markerEnd: (RSEllipse new
-				 size: 10;
+				 size: 6;
 				 color: Color white;
 				 withBorder;
 				 yourself);
 		canvas: sb canvas;
 		connectFrom: #parent.
+	sb canvas shapes do: [ :shape |
+		shape isLine ifTrue: [
+			shape width: 100.0 * shape model value score / tree score ] ].
 	sb canvas open.
 	^ sb
 ]
