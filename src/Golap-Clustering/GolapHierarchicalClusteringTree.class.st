@@ -101,7 +101,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 			shape
 				capRound;
 				width: 100.0 * shape model value score / self score ] ].
-	sb canvas open.
+	sb canvas open maximize.
 	^ sb
 ]
 
