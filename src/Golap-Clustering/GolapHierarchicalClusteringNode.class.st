@@ -36,6 +36,12 @@ GolapHierarchicalClusteringNode >> empty [
 	score := 0
 ]
 
+{ #category : #controlling }
+GolapHierarchicalClusteringNode >> ifNode: aBlock [
+
+	aBlock cull: self
+]
+
 { #category : #testing }
 GolapHierarchicalClusteringNode >> isNode [
 

@@ -32,6 +32,10 @@ GolapHierarchicalClusteringTree class >> friendsClusterFrom: aGolapModel depth: 
 		 ]
 ]
 
+{ #category : #controlling }
+GolapHierarchicalClusteringTree >> ifNode: aBlock [
+]
+
 { #category : #testing }
 GolapHierarchicalClusteringTree >> includesVertex: aGolapVertex [
 
@@ -75,9 +79,29 @@ GolapHierarchicalClusteringTree >> openSunburst [
 
 	| sb |
 	sb := RSSunburstBuilder new.
+	sb sliceColor: [ :slice |
+		slice model isLeaf
+			ifTrue: [ Color darkGray ]
+			ifFalse: [ Color transparent ] ].
 	sb explore: self using: #trees.
+	sb build.
 	sb canvas @ RSCanvasController.
-	sb open.
+	sb shapes @ GolapPopupAndClick.
+	RSLineBuilder sunburstBezier
+		color: Color black;
+		markerEnd: (RSEllipse new
+				 size: 6;
+				 color: Color white;
+				 withBorder;
+				 yourself);
+		canvas: sb canvas;
+		connectFrom: #parent.
+	sb canvas shapes do: [ :shape |
+		shape isLine ifTrue: [
+			shape
+				capRound;
+				width: 100.0 * shape model value score / self score ] ].
+	sb canvas open.
 	^ sb
 ]
 
