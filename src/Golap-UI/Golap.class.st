@@ -2332,7 +2332,8 @@ Golap >> updateItemView [
 
 { #category : #operations }
 Golap >> updateModel [
-	self model: self selectedModel
+	self model: self selectedModel.
+	itemList modelChanged
 ]
 
 { #category : #private }

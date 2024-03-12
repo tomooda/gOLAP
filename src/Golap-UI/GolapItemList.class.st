@@ -33,39 +33,43 @@ GolapItemList class >> defaultLayout [
 { #category : #adding }
 GolapItemList >> add: aGolapVertex toMarker: aColor [
 
-	self updateGlobalImageAfter: [ 
-		aGolapVertex dataDo: [ :data | 
-			(markers at: aColor ifAbsentPut: [ Set new ]) add: data ].
-		markerDropList items do: [ :assoc | 
-			assoc key = aColor ifTrue: [ 
+	self updateGlobalImageAfter: [
+		aGolapVertex
+			dataDo: [ :data |
+				(markers at: aColor ifAbsentPut: [ Set new ]) add: data ];
+			addMarker: aColor.
+		markerDropList items do: [ :assoc |
+			assoc key = aColor ifTrue: [
 				| patterns regexs |
 				patterns := (assoc value substrings: ',')
 					            collect: #trim
 					            thenSelect: #notEmpty.
 				regexs := patterns collect: [ :pattern | self regexFor: pattern ].
-				(regexs anySatisfy: [ :regex | regex matches: aGolapVertex name ]) 
+				(regexs anySatisfy: [ :regex | regex matches: aGolapVertex name ])
 					ifFalse: [ patterns := patterns copyWith: aGolapVertex name ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
 		self updateVertexList ]
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : #adding }
 GolapItemList >> addAll: aCollectionOfGolapVertex toMarker: aColor [
 
-	self updateGlobalImageAfter: [ 
-		aCollectionOfGolapVertex do: [ :vertex | 
-			vertex dataDo: [ :data | 
-				(markers at: aColor ifAbsentPut: [ Set new ]) add: data ] ].
-		markerDropList items do: [ :assoc | 
-			assoc key = aColor ifTrue: [ 
+	self updateGlobalImageAfter: [
+		aCollectionOfGolapVertex do: [ :vertex |
+			vertex
+				dataDo: [ :data |
+					(markers at: aColor ifAbsentPut: [ Set new ]) add: data ];
+				addMarker: aColor ].
+		markerDropList items do: [ :assoc |
+			assoc key = aColor ifTrue: [
 				| patterns regexs |
 				patterns := (assoc value substrings: ',')
 					            collect: #trim
 					            thenSelect: #notEmpty.
 				regexs := patterns collect: [ :pattern | self regexFor: pattern ].
-				aCollectionOfGolapVertex do: [ :vertex | 
-					(regexs anySatisfy: [ :regex | regex matches: vertex name ]) 
+				aCollectionOfGolapVertex do: [ :vertex |
+					(regexs anySatisfy: [ :regex | regex matches: vertex name ])
 						ifFalse: [ patterns := patterns copyWith: vertex name ] ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
@@ -224,15 +228,20 @@ GolapItemList >> initializePresenters [
 				              ifEmpty: [
 				              markers removeKey: selectedMarker key ifAbsent: [  ] ]
 				              ifNotEmpty: [ :q |
-					              | regexs |
+					              | regexs vertices |
 					              regexs := (q substrings: ',') collect: [ :pattern |
 						                        self regexFor: pattern trim ].
-					              markers at: selectedMarker key put: (self vertices
-							               select: [ :v |
-							               regexs anySatisfy: [ :regex |
-								               regex matches: v name ] ]
-							               thenCollect: #data) asSet ].
-			              self updateVertexList ] ].
+					              vertices := self vertices select: [ :v |
+						                          regexs anySatisfy: [ :regex |
+							                          regex matches: v name ] ].
+					              markers
+						              at: selectedMarker key
+						              put: (vertices collect: #data) asSet.
+					              self vertices do: [ :vertex |
+						              vertex removeMarker: selectedMarker key ].
+					              vertices do: [ :vertex |
+						              vertex addMarker: selectedMarker key ] ] ].
+		              self updateVertexList ].
 	presetQueryButton := self newButton
 		                     icon: (Smalltalk ui icons iconNamed: #back);
 		                     action: [ golap openPresetQueryDialog ];
@@ -335,6 +344,15 @@ GolapItemList >> model [
 	^ golap ifNotNil: #model
 ]
 
+{ #category : #updating }
+GolapItemList >> modelChanged [
+
+	self model ifNotNil: [ :model |
+		model verticesDo: [ :vertex | vertex removeAllMarkers ].
+		self markersAndVerticesDo: [ :marker :vertices |
+			vertices do: [ :vertex | vertex addMarker: marker ] ] ]
+]
+
 { #category : #accessing }
 GolapItemList >> modelDo: aBlock [
 
@@ -361,19 +379,21 @@ GolapItemList >> regexFor: aString [
 { #category : #removing }
 GolapItemList >> remove: aGolapVertex fromMarker: aColor [
 
-	self updateGlobalImageAfter: [ 
+	self updateGlobalImageAfter: [
 		markers
 			at: aColor
-			ifPresent: [ :set | 
-			aGolapVertex dataDo: [ :data | set remove: data ] ]
+			ifPresent: [ :set |
+				aGolapVertex
+					dataDo: [ :data | set remove: data ];
+					removeMarker: aColor ]
 			ifAbsent: [ ^ self ].
-		markerDropList items do: [ :assoc | 
-			assoc key = aColor ifTrue: [ 
+		markerDropList items do: [ :assoc |
+			assoc key = aColor ifTrue: [
 				| patterns |
 				patterns := (assoc value substrings: ',')
 					            collect: #trim
 					            thenSelect: #notEmpty.
-				patterns := patterns copyWithout:  aGolapVertex name.
+				patterns := patterns copyWithout: aGolapVertex name.
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
 		self updateVertexList ]
@@ -382,21 +402,25 @@ GolapItemList >> remove: aGolapVertex fromMarker: aColor [
 { #category : #removing }
 GolapItemList >> removeAll: aCollectionOfGolapVertex fromMarker: aColor [
 
-	self updateGlobalImageAfter: [ 
+	self updateGlobalImageAfter: [
 		markers
 			at: aColor
-			ifPresent: [ :set | 
-				aCollectionOfGolapVertex do: [ :v | 
-					v dataDo: [ :data | set remove: data ifAbsent: [  ] ] ] ]
+			ifPresent: [ :set |
+				aCollectionOfGolapVertex do: [ :v |
+					v
+						dataDo: [ :data | set remove: data ifAbsent: [  ] ];
+						removeMarker: aColor ] ]
 			ifAbsent: [ ^ self ].
 		(markers at: aColor) ifEmpty: [ markers removeKey: aColor ].
-		markerDropList items do: [ :assoc | 
-			assoc key = aColor ifTrue: [ 
+		markerDropList items do: [ :assoc |
+			assoc key = aColor ifTrue: [
 				| patterns |
 				patterns := (assoc value substrings: ',')
 					            collect: #trim
 					            thenSelect: #notEmpty.
-				patterns := patterns reject: [ :pattern | aCollectionOfGolapVertex anySatisfy: [ :vertex | vertex name = pattern ]].
+				patterns := patterns reject: [ :pattern |
+					            aCollectionOfGolapVertex anySatisfy: [ :vertex |
+						            vertex name = pattern ] ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
 		self updateVertexList ]

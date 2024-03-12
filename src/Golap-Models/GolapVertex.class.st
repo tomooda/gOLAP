@@ -14,7 +14,8 @@ Class {
 		'label',
 		'rectangles',
 		'frequency',
-		'photoimage'
+		'photoimage',
+		'markers'
 	],
 	#category : #'Golap-Models'
 }
@@ -27,14 +28,20 @@ GolapVertex class >> on: anObject name: aString [
 		yourself
 ]
 
-{ #category : #adding }
+{ #category : #'adding-removing' }
 GolapVertex >> addEdge: aGolapEdge [
 	^ edges add: aGolapEdge
 ]
 
-{ #category : #adding }
+{ #category : #'adding-removing' }
 GolapVertex >> addHiddenEdge: aGolapEdge [
 	^ hiddenEdges add: aGolapEdge
+]
+
+{ #category : #'adding-removing' }
+GolapVertex >> addMarker: aColor [
+
+	^ markers add: aColor
 ]
 
 { #category : #polishing }
@@ -47,12 +54,12 @@ GolapVertex >> addPositivePolishEdge: aGolapEdge [
 	positivePolishEdges add: aGolapEdge
 ]
 
-{ #category : #adding }
+{ #category : #'adding-removing' }
 GolapVertex >> addRectangle: aRectangle with: aGolapVertex [
 	rectangles at: aGolapVertex put: aRectangle
 ]
 
-{ #category : #adding }
+{ #category : #'adding-removing' }
 GolapVertex >> addScore: aNumber vertex: aGolapVertex [
 	^ scores at: aGolapVertex put: aNumber
 ]
@@ -99,7 +106,7 @@ GolapVertex >> basicRemoveEdge: aGolapEdge [
 	negativePolishEdges remove: aGolapEdge ifAbsent: [  ]
 ]
 
-{ #category : #adding }
+{ #category : #'adding-removing' }
 GolapVertex >> createEdgeTo: aGolapVertex data: aDataSeries [
 	| edge |
 	edge := GolapEdge on: aDataSeries between: self and: aGolapVertex.
@@ -107,7 +114,7 @@ GolapVertex >> createEdgeTo: aGolapVertex data: aDataSeries [
 	^ aGolapVertex addEdge: edge
 ]
 
-{ #category : #adding }
+{ #category : #'adding-removing' }
 GolapVertex >> createHiddenEdgeTo: aGolapVertex data: aDataSeries [
 	| edge |
 	edge := GolapEdge on: aDataSeries between: self and: aGolapVertex.
@@ -201,6 +208,12 @@ GolapVertex >> hasEdgeSuchThat: aBlock [
 	^ false
 ]
 
+{ #category : #testing }
+GolapVertex >> hasMarker: aColor [
+
+	^ markers includes: aColor
+]
+
 { #category : #polishing }
 GolapVertex >> hasNegativePolishEdgeWith: aGolapVertex [
 	negativePolishEdges
@@ -245,13 +258,15 @@ GolapVertex >> hiddenEdgesAndVerticesDo: aBlock [
 
 { #category : #'initialize-release' }
 GolapVertex >> initialize [
+
 	super initialize.
 	edges := OrderedCollection new.
 	hiddenEdges := OrderedCollection new.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	scores := Dictionary new.
-	rectangles := Dictionary new
+	rectangles := Dictionary new.
+	markers := OrderedCollection new
 ]
 
 { #category : #testing }
@@ -272,6 +287,18 @@ GolapVertex >> label [
 { #category : #accessing }
 GolapVertex >> label: aForm [
 	label := aForm
+]
+
+{ #category : #accessing }
+GolapVertex >> markers [
+
+	^ markers
+]
+
+{ #category : #enumerating }
+GolapVertex >> markersDo: aBlock [
+
+	markers do: aBlock
 ]
 
 { #category : #accessing }
@@ -361,11 +388,23 @@ GolapVertex >> rectanglesAndVerticesAndScoresAt: aPoint do: aBlock [
 						value: (self scoreWith: vertex) ] ]
 ]
 
-{ #category : #adding }
+{ #category : #'adding-removing' }
+GolapVertex >> removeAllMarkers [
+
+	markers removeAll
+]
+
+{ #category : #'adding-removing' }
 GolapVertex >> removeEdge: aGolapEdge [
 	^ aGolapEdge
 		remove;
 		yourself
+]
+
+{ #category : #'adding-removing' }
+GolapVertex >> removeMarker: aColor [
+
+	^ markers remove: aColor ifAbsent: [  ]
 ]
 
 { #category : #polishing }

@@ -77,32 +77,49 @@ GolapHierarchicalClusteringTree >> oneVertex [
 { #category : #visualization }
 GolapHierarchicalClusteringTree >> openSunburst [
 
-	| sb |
-	sb := RSSunburstBuilder new.
-	sb sliceColor: [ :slice |
-		slice model isLeaf
-			ifTrue: [ Color darkGray ]
-			ifFalse: [ Color transparent ] ].
-	sb explore: self using: #trees.
-	sb build.
-	sb canvas @ RSCanvasController.
-	sb shapes @ GolapPopupAndClick.
-	RSLineBuilder sunburstBezier
+	| markers sunburstBuilder bezierBuilder |
+	markers := OrderedCollection new.
+	self verticesDo: [ :vertex |
+		vertex markers do: [ :color |
+			(markers includes: color) ifFalse: [ markers add: color ] ] ].
+	sunburstBuilder := RSSunburstBuilder new.
+	sunburstBuilder
+		sliceColor: [ :slice |
+			slice model isLeaf
+				ifTrue: [ Color lightGray ]
+				ifFalse: [ Color transparent ] ];
+		explore: self using: #trees;
+		build.
+	sunburstBuilder shapes do: [ :shape |
+		shape model isLeaf ifTrue: [
+			| radius |
+			radius := shape externalRadius + 1.
+			markers do: [ :color |
+				(shape model vertex hasMarker: color)
+					ifTrue: [
+						sunburstBuilder canvas addShape: (shape copy
+								 innerRadius: radius;
+								 externalRadius: (radius := radius + 10);
+								 color: color) ]
+					ifFalse: [ radius := radius + 10 ] ] ] ].
+	sunburstBuilder canvas @ RSCanvasController.
+	sunburstBuilder shapes @ GolapLeafPopup.
+	bezierBuilder := RSLineBuilder sunburstBezier.
+	bezierBuilder
 		color: Color black;
+		capRound;
 		markerEnd: (RSEllipse new
 				 size: 6;
 				 color: Color white;
 				 withBorder;
 				 yourself);
-		canvas: sb canvas;
-		connectFrom: #parent.
-	sb canvas shapes do: [ :shape |
-		shape isLine ifTrue: [
-			shape
-				capRound;
-				width: 100.0 * shape model value score / self score ] ].
-	sb canvas open maximize.
-	^ sb
+		canvas: sunburstBuilder canvas.
+	(bezierBuilder connectFrom: #parent)
+		do: [ :bezier |
+			bezier width: 100.0 * bezier model value score / self score ];
+		@ GolapNodePopupAndClick.
+	sunburstBuilder canvas open maximize.
+	^ sunburstBuilder
 ]
 
 { #category : #accessing }
