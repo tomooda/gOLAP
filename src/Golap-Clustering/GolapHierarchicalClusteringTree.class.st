@@ -108,11 +108,6 @@ GolapHierarchicalClusteringTree >> openSunburst [
 	bezierBuilder
 		color: Color black;
 		capRound;
-		markerEnd: (RSEllipse new
-				 size: 6;
-				 color: Color white;
-				 withBorder;
-				 yourself);
 		canvas: sunburstBuilder canvas.
 	(bezierBuilder connectFrom: #parent)
 		do: [ :bezier |
