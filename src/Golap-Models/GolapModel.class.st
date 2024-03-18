@@ -805,6 +805,8 @@ GolapModel >> openSunburst [
 		rank: 16;
 		rank: 32;
 		rank: 64;
+		rank: 128;
+		rank: 256;
 		openSunburst
 ]
 

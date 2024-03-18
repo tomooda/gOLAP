@@ -20,7 +20,6 @@ GolapLeafPopup >> createPopupFor: aShape event: event [
 			  labelShape := shapeBuilder shapeFor: aShape model vertex name.
 			  imageShape translateBottomLeftTo: 0 @ 0.
 			  labelShape translateTopLeftTo: 0 @ 0.
-			  imageShape position + (0 @ imageShape extent y).
 			  popupShape := RSComposite new
 				                shapes: {
 						                imageShape.

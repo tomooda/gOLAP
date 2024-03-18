@@ -77,11 +77,12 @@ GolapHierarchicalClusteringTree >> oneVertex [
 { #category : #visualization }
 GolapHierarchicalClusteringTree >> openSunburst [
 
-	| markers sunburstBuilder bezierBuilder |
+	| markers photoOffset sunburstBuilder bezierBuilder |
 	markers := OrderedCollection new.
 	self verticesDo: [ :vertex |
 		vertex markers do: [ :color |
 			(markers includes: color) ifFalse: [ markers add: color ] ] ].
+	photoOffset := markers size * 10 + 20.
 	sunburstBuilder := RSSunburstBuilder new.
 	sunburstBuilder
 		sliceColor: [ :slice |
@@ -93,6 +94,14 @@ GolapHierarchicalClusteringTree >> openSunburst [
 	sunburstBuilder shapes do: [ :shape |
 		shape model isLeaf ifTrue: [
 			| radius |
+			shape model vertex photoimage ifNotNil: [ :photoimage |
+				sunburstBuilder canvas addShape: ((RSBitmap newFrom: photoimage)
+						 position: (shape centroid:
+									  shape externalRadius - shape innerRadius / 2 + photoOffset);
+						 extent: (shape externalRadius
+							  * ((shape alphaAngle - shape betaAngle) abs / 90.0 * 3.14)
+								  min: shape externalRadius - shape innerRadius) asPoint
+								 yourself) ].
 			radius := shape externalRadius + 1.
 			markers do: [ :color |
 				(shape model vertex hasMarker: color)
