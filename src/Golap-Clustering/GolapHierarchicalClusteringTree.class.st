@@ -115,12 +115,15 @@ GolapHierarchicalClusteringTree >> openSunburst [
 	sunburstBuilder shapes @ GolapLeafPopup.
 	bezierBuilder := RSLineBuilder sunburstBezier.
 	bezierBuilder
-		color: Color black;
 		capRound;
 		canvas: sunburstBuilder canvas.
 	(bezierBuilder connectFrom: #parent)
 		do: [ :bezier |
-			bezier width: 100.0 * bezier model value score / self score ];
+			bezier
+				width: (100.0 * bezier model value score / self score) abs;
+				color: (bezier model value score >= 0
+						 ifTrue: [ Color black ]
+						 ifFalse: [ Color red ]) ];
 		@ GolapNodePopupAndClick.
 	sunburstBuilder canvas open maximize.
 	^ sunburstBuilder
