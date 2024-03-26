@@ -172,7 +172,7 @@ GolapItemsAppearance >> restore: aStream [
 GolapItemsAppearance >> setGolap: aGolap [
 
 	golap := aGolap.
-	self updateMaxFrequency
+	self updateMinMaxFrequency
 ]
 
 { #category : #accessing }
@@ -207,15 +207,6 @@ GolapItemsAppearance >> snapshotInto: aStream [
 			('show-connected-vertices' -> showConnectedVerticesCheckBox state).
 			('max-display-labels' -> numLabelsSlider value) }
 			asOrderedDictionary
-]
-
-{ #category : #updating }
-GolapItemsAppearance >> updateMaxFrequency [
-
-	golap ifNotNil: [
-		self maxFrequency: ((golap vertices collect: #frequency)
-				 ifEmpty: [ 100 ]
-				 ifNotEmpty: #max) ]
 ]
 
 { #category : #updating }
