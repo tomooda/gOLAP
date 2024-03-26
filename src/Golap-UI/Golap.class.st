@@ -1178,7 +1178,7 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 			self overviewRenderer layouter model: model.
 			self unselectAll.
 			model ifNotNil: [
-				itemsAppearancePresenter updateMaxFrequency.
+				itemsAppearancePresenter updateMinMaxFrequency.
 				edgesAppearancePresenter updateModel: model.
 				itemList updateVertexList ] ]
 		layout: true

@@ -217,3 +217,17 @@ GolapItemsAppearance >> updateMaxFrequency [
 				 ifEmpty: [ 100 ]
 				 ifNotEmpty: #max) ]
 ]
+
+{ #category : #updating }
+GolapItemsAppearance >> updateMinMaxFrequency [
+
+	golap ifNotNil: [
+		(golap vertices collect: #frequency)
+			ifEmpty: [
+				self
+					minFrequency: 0;
+					maxFrequency: 100 ]
+			ifNotEmpty: [ :freqs |
+				self minFrequency: freqs min.
+				self maxFrequency: freqs max ] ]
+]
