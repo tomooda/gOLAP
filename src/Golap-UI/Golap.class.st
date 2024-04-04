@@ -1003,11 +1003,7 @@ Golap >> initializePresenters [
 	self whenBuiltDo: [ :w |
 		| f |
 		f := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m | "self window
-			bindKeyCombination: Character arrowUp asKeyCombination
-			toAction: [ self zoomIn ];
-			bindKeyCombination: Character arrowDown asKeyCombination
-			toAction: [ self zoomOut ]"
+		w widget allMorphsDo: [ :m |
 			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
@@ -1272,7 +1268,9 @@ Golap >> openPresetQueryDialog [
 { #category : #operations }
 Golap >> openSunburst [
 
-	^ model openSunburst
+	(GolapDandelionChartPresenter new
+		 golap: self;
+		 yourself) open maximize
 ]
 
 { #category : #'accessing-widgets' }

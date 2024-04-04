@@ -107,6 +107,12 @@ GolapHierarchicalClustering >> rank: anInteger [
 	trees := self computeTrees
 ]
 
+{ #category : #accessing }
+GolapHierarchicalClustering >> tree [
+
+	^ GolapHierarchicalClusteringNode withAll: trees
+]
+
 { #category : #enumerating }
 GolapHierarchicalClustering >> verticesDo: aBlock [
 

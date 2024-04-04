@@ -797,8 +797,7 @@ GolapModel >> nodeNameKey2: aString [
 
 { #category : #visualization }
 GolapModel >> openSunburst [
-
-	(GolapHierarchicalClustering on: self)
+	"(GolapHierarchicalClustering on: self)
 		rank: 2;
 		rank: 4;
 		rank: 8;
@@ -807,7 +806,11 @@ GolapModel >> openSunburst [
 		rank: 64;
 		rank: 128;
 		rank: 256;
-		openSunburst
+		openSunburst"
+
+	(GolapDandelionChartPresenter new
+		 golap: self;
+		 yourself) open
 ]
 
 { #category : #'accessing-keys' }

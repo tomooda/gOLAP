@@ -112,7 +112,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 								 color: color) ]
 					ifFalse: [ radius := radius + 10 ] ] ] ].
 	sunburstBuilder canvas @ RSCanvasController.
-	sunburstBuilder shapes @ GolapLeafPopup.
+	sunburstBuilder shapes @ GolapDandelionNodeInteraction.
 	bezierBuilder := RSLineBuilder sunburstBezier.
 	bezierBuilder
 		capRound;
@@ -124,7 +124,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 				color: (bezier model value score >= 0
 						 ifTrue: [ Color black ]
 						 ifFalse: [ Color red ]) ];
-		@ GolapNodePopupAndClick.
+		@ GolapDandelionChartInteraction.
 	sunburstBuilder canvas open maximize.
 	^ sunburstBuilder
 ]

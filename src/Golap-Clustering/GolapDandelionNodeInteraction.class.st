@@ -1,17 +1,23 @@
 Class {
-	#name : #GolapLeafPopup,
-	#superclass : #RSPopup,
+	#name : #GolapDandelionNodeInteraction,
+	#superclass : #GolapDandelionChartInteraction,
 	#category : #'Golap-Clustering'
 }
 
 { #category : #hooks }
-GolapLeafPopup >> activePopupWith: event [
+GolapDandelionNodeInteraction >> activePopupWith: event [
 
 	event shape model isLeaf ifTrue: [ super activePopupWith: event ]
 ]
 
 { #category : #hooks }
-GolapLeafPopup >> createPopupFor: aShape event: event [
+GolapDandelionNodeInteraction >> clicked: event [
+
+	presenter toggleSelection: event shape model vertex
+]
+
+{ #category : #hooks }
+GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
 
 	^ aShape model vertex photoimage
 		  ifNotNil: [ :photoimage |
