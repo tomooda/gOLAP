@@ -7,6 +7,7 @@ Class {
 		'query',
 		'overviewRenderer',
 		'elaborationRenderer',
+		'viewsNotebook',
 		'globalImagePane',
 		'pins',
 		'selections',
@@ -48,7 +49,8 @@ Class {
 		'retrievalProcessCount',
 		'drawingSemaphore',
 		'commentText',
-		'openSunburstButton'
+		'openSunburstButton',
+		'dandelionPresenter'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -70,45 +72,17 @@ Golap class >> defaultFont: aFont [
 Golap class >> defaultLayout [
 
 	<spec>
-	^ SpBoxLayout newHorizontal
+	^ SpPanedLayout newHorizontal
+		  positionOfSlider: 0.75;
+		  add: #viewsNotebook;
 		  add: (SpBoxLayout newVertical
-				   add: #globalMapPane height: 200;
-				   add: (SpBoxLayout newHorizontal
-						    add: #zoomInButton width: 110;
-						    add: #resetZoomButton width: 80;
-						    add: #zoomOutButton width: 110)
-				   height: self buttonHeight;
-				   add: (SpBoxLayout newHorizontal
-						    add: #frontList width: 150;
-						    add: #baseList)
-				   height: self buttonHeight;
-				   add: #appearanceNotebook height: 300;
-				   add: (SpBoxLayout newHorizontal
-						    add: #overviewRendererButton;
-						    add: #elaborationRendererButton)
-				   height: self buttonHeight;
-				   add: (SpBoxLayout newHorizontal
-						    add: #layoutButton expand: true;
-						    add: #openSunburstButton expand: false;
-						    add: (SpBoxLayout newVertical
-								     add: #overridesYWithFrequencyCheckbox expand: false;
-								     add: #overridesYWithFrequencyOrderCheckbox expand: false)
-						    width: 100)
-				   expand: false;
-				   add: 'コメント' expand: false;
-				   add: #commentText;
-				   yourself)
-		  width: 350;
-		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.75;
-				   add: #globalImagePane;
-				   add: (SpBoxLayout newVertical
-						    add: #saveSnapshotButton height: self buttonHeight;
-						    add: #saveAsSvgButton height: self buttonHeight;
-						    add: #saveAsPngButton height: self buttonHeight;
-						    add: #resentQueryButton height: self buttonHeight;
-						    add: #queryViewTree height: 200;
-						    add: #itemNotebook))
+				   add: #saveSnapshotButton height: self buttonHeight;
+				   add: #saveAsSvgButton height: self buttonHeight;
+				   add: #saveAsPngButton height: self buttonHeight;
+				   add: #resentQueryButton height: self buttonHeight;
+				   add: #queryViewTree height: 200;
+				   add: #itemNotebook);
+		  yourself
 ]
 
 { #category : #utilities }
@@ -343,6 +317,12 @@ Golap >> addDimension: aGolapOverviewModel named: aString [
 	^ aGolapOverviewModel
 ]
 
+{ #category : #'accessing-markers' }
+Golap >> allMarkerColors [
+
+	^ itemList allMarkerColors
+]
+
 { #category : #merging }
 Golap >> applyMergesToModel: aGolapModel [
 	| positions |
@@ -430,6 +410,12 @@ Golap >> basicLayout [
 Golap >> basicSnapshotDirectory [
 
 	^ snapshotDirectory
+]
+
+{ #category : #layouts }
+Golap >> buttonHeight [
+
+	^ self class buttonHeight
 ]
 
 { #category : #'accessing-colors' }
@@ -629,76 +615,77 @@ Golap >> globalImageMenu: aGolapVertex [
 
 	| menu |
 	menu := self newMenu.
-	menu addGroup: [ :group | 
-		aGolapVertex ifNotNil: [ 
+	menu addGroup: [ :group |
+		aGolapVertex ifNotNil: [
 			(self includesSelection: aGolapVertex)
-				ifTrue: [ 
-					group addItem: [ :item | 
+				ifTrue: [
+					group addItem: [ :item |
 						item
 							name: 'Unselect';
 							action: [ self toggleSelection: aGolapVertex ] ] ]
-				ifFalse: [ 
-					group addItem: [ :item | 
+				ifFalse: [
+					group addItem: [ :item |
 						item
 							name: 'Select';
 							action: [ self toggleSelection: aGolapVertex ] ] ] ].
-		self selections ifNotEmpty: [ 
-			group addItem: [ :item | 
+		self selections ifNotEmpty: [
+			group addItem: [ :item |
 				item
 					name: 'Unselect all';
 					action: [ self unselectAll ] ] ] ].
-	aGolapVertex ifNotNil: [ 
+	menu addGroup: [ :group |
+		aGolapVertex ifNotNil: [
+			(itemList markMenu: aGolapVertex) ifNotNil: [ :submenu |
+				group addItem: [ :item |
+					item
+						name: 'Mark';
+						subMenu: submenu ] ].
+			(itemList unmarkMenu: aGolapVertex) ifNotNil: [ :submenu |
+				group addItem: [ :item |
+					item
+						name: 'Unmark';
+						subMenu: submenu ] ] ].
+		self selections ifNotEmpty: [
+			group
+				addItem: [ :item |
+					item
+						name: 'Mark selections';
+						subMenu: itemList markSelectionsMenu ];
+				addItem: [ :item |
+					item
+						name: 'Unmark selections';
+						subMenu: itemList unmarkSelectionsMenu ] ] ].
+	aGolapVertex ifNotNil: [
 		menu
-			addGroup: [ :group | 
-				(itemList markMenu: aGolapVertex) ifNotNil: [ :submenu | 
-						group addItem: [ :item | 
-								item
-									name: 'Mark';
-									subMenu: submenu ] ].
-				(itemList unmarkMenu: aGolapVertex) ifNotNil: [ :submenu | 
-					group addItem: [ :item | 
-						item
-							name: 'Unmark';
-							subMenu: submenu ] ].
-				self selections ifNotEmpty: [ 
-					group
-						addItem: [ :item | 
-							item
-								name: 'Mark selections';
-								subMenu: itemList markSelectionsMenu ];
-						addItem: [ :item | 
-							item
-								name: 'Unmark selections';
-								subMenu: itemList unmarkSelectionsMenu ] ] ];
-			addGroup: [ :group | 
+			addGroup: [ :group |
 				(self includesPin: aGolapVertex)
-					ifTrue: [ 
-						group addItem: [ :item | 
-							item
-								name: 'Unpin';
-								action: [ self togglePin: aGolapVertex ] ] ]
-					ifFalse: [ 
-						group addItem: [ :item | 
+					ifTrue: [
+						group addItem: [ :item |
+								item
+									name: 'Unpin';
+									action: [ self togglePin: aGolapVertex ] ] ]
+					ifFalse: [
+						group addItem: [ :item |
 							item
 								name: 'Pin';
 								action: [ self togglePin: aGolapVertex ] ] ] ];
-			addGroup: [ :group | 
-				group addItem: [ :item | 
+			addGroup: [ :group |
+				group addItem: [ :item |
 					item
 						name: 'Show info';
 						action: [ itemView vertex: aGolapVertex ] ] ] ].
-	menu addGroup: [ :group | 
-		group addItem: [ :item | 
+	menu addGroup: [ :group |
+		group addItem: [ :item |
 			item
 				name: 'merge';
 				subMenu: self mergeMenu ].
-		merges ifNotEmpty: [ 
-			group addItem: [ :item | 
+		merges ifNotEmpty: [
+			group addItem: [ :item |
 				item
 					name: 'unmerge';
 					subMenu: self unmergeMenu ] ] ].
-	menu addGroup: [ :group | 
-		group addItem: [ :item | 
+	menu addGroup: [ :group |
+		group addItem: [ :item |
 			item
 				name: 'Inspect';
 				action: [ self inspect ] ] ].
@@ -765,6 +752,42 @@ Golap >> golapDirectory [
 { #category : #accessing }
 Golap >> graphEdges [
 	^ model ifNotNil: [ model graphEdges ] ifNil: [ Array new ]
+]
+
+{ #category : #layouts }
+Golap >> graphLayout [
+
+	<spec>
+	^ SpBoxLayout newHorizontal
+		  add: (SpBoxLayout newVertical
+				   add: globalMapPane height: 200;
+				   add: (SpBoxLayout newHorizontal
+						    add: zoomInButton width: 110;
+						    add: resetZoomButton width: 80;
+						    add: zoomOutButton width: 110)
+				   height: self buttonHeight;
+				   add: (SpBoxLayout newHorizontal
+						    add: frontList width: 150;
+						    add: baseList)
+				   height: self buttonHeight;
+				   add: appearanceNotebook height: 300;
+				   add: (SpBoxLayout newHorizontal
+						    add: overviewRendererButton;
+						    add: elaborationRendererButton)
+				   height: self buttonHeight;
+				   add: (SpBoxLayout newHorizontal
+						    add: layoutButton expand: true;
+						    add: (SpBoxLayout newVertical
+								     add: overridesYWithFrequencyCheckbox expand: false;
+								     add: overridesYWithFrequencyOrderCheckbox expand: false)
+						    width: 100)
+				   expand: false;
+				   add: 'コメント' expand: false;
+				   add: commentText;
+				   yourself)
+		  width: 350;
+		  add: globalImagePane;
+		  yourself
 ]
 
 { #category : #'accessing-colors' }
@@ -924,10 +947,6 @@ Golap >> initializePresenters [
 	layoutButton
 		label: 'layout';
 		action: [ self updateGlobalImageAfter: [  ] layout: true ].
-	openSunburstButton := self newButton
-		                      label: '系統樹';
-		                      action: [ self openSunburst ];
-		                      yourself.
 	overridesYWithFrequencyCheckbox := self newCheckBox
 		                                   label: 'Y=freq';
 		                                   labelOnRight;
@@ -999,6 +1018,17 @@ Golap >> initializePresenters [
 				                 presenterProvider: [ itemView ];
 				                 yourself);
 		                yourself.
+
+	dandelionPresenter := self instantiate:
+		                      (GolapDandelionChartPresenter new golap: self).
+	viewsNotebook := self newNotebook
+		                 addPageTitle: 'グラフ' provider: [
+			                 SpPresenter new
+				                 layout: self graphLayout;
+				                 yourself ];
+		                 addPageTitle: '樹形図'
+		                 provider: [ dandelionPresenter ];
+		                 yourself.
 
 	self whenBuiltDo: [ :w |
 		| f |
@@ -1177,7 +1207,8 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 				itemsAppearancePresenter updateMinMaxFrequency.
 				edgesAppearancePresenter updateModel: model.
 				itemList updateVertexList ] ]
-		layout: true
+		layout: true.
+	self announcer announce: GolapModelUpdated new
 ]
 
 { #category : #'accessing-colors' }
@@ -1840,6 +1871,16 @@ Golap >> select: aGolapVertex [
 	self updateSelection
 ]
 
+{ #category : #'accessing-selection' }
+Golap >> selectAll: aCollectionOfGolapVertex [
+
+	aCollectionOfGolapVertex do: [ :vertex |
+		vertex dataDo: [ :data | selections add: data ] ].
+	selectedEdges := nil.
+	self showItemView: aCollectionOfGolapVertex anyOne.
+	self updateSelection
+]
+
 { #category : #'accessing-dimensions' }
 Golap >> selectedBaseDimension [
 	^ dimensions at: baseList selectedItem ifAbsent: [ nil ]
@@ -2281,6 +2322,15 @@ Golap >> unselectAll [
 	self updateSelection
 ]
 
+{ #category : #'accessing-selection' }
+Golap >> unselectAll: aCollectionOfGolapVertex [
+
+	aCollectionOfGolapVertex do: [ :vertex |
+		vertex dataDo: [ :data | selections remove: data ifAbsent: [  ] ] ].
+	selectedEdges := nil.
+	self updateSelection
+]
+
 { #category : #'accessing-dimensions' }
 Golap >> updateDimensions [
 	frontList
@@ -2291,12 +2341,13 @@ Golap >> updateDimensions [
 { #category : #drawing }
 Golap >> updateGlobalImage [
 
-	drawingSemaphore critical: [ 
+	drawingSemaphore critical: [
 		| imageAndMap |
 		imageAndMap := self renderer globalImageAndMap.
 		globalImagePane image: imageAndMap first.
 		globalMapPane image: imageAndMap second ].
-	self ensurePhotoimageRetrievingProcess
+	self ensurePhotoimageRetrievingProcess.
+	self announcer announce: GolapViewUpdated new
 ]
 
 { #category : #drawing }
@@ -2343,7 +2394,8 @@ Golap >> updateQuery [
 Golap >> updateSelection [
 
 	self updateGlobalImageAfter: [
-		itemList ifNotNil: [ itemList selectedItems: selections ] ]
+		itemList ifNotNil: [ itemList selectedItems: selections ] ].
+	self announcer announce: GolapViewUpdated new
 ]
 
 { #category : #accessing }

@@ -1,7 +1,7 @@
 Class {
 	#name : #GolapDandelionNodeInteraction,
 	#superclass : #GolapDandelionChartInteraction,
-	#category : #'Golap-Clustering'
+	#category : #'Golap-Clustering-Dandelion'
 }
 
 { #category : #hooks }
@@ -13,7 +13,8 @@ GolapDandelionNodeInteraction >> activePopupWith: event [
 { #category : #hooks }
 GolapDandelionNodeInteraction >> clicked: event [
 
-	presenter toggleSelection: event shape model vertex
+	(event shape model respondsTo: #vertex) ifTrue: [
+		presenter toggleSelection: event shape model vertex ]
 ]
 
 { #category : #hooks }
@@ -35,4 +36,13 @@ GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
 			  event canvas addShape: popupShape.
 			  popupShape ]
 		  ifNil: [ super createPopupFor: aShape event: event ]
+]
+
+{ #category : #hooks }
+GolapDandelionNodeInteraction >> rightClicked: event [
+
+	(event shape model respondsTo: #vertex) ifTrue: [
+		(presenter golap globalImageMenu: event shape model vertex)
+			openWithSpecAt: (presenter withAdapterDo: [ :a |
+					 a widgetDo: [ :w | w activeHand position ] ]) ]
 ]

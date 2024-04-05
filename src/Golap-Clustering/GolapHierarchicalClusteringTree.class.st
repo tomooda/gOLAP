@@ -5,7 +5,7 @@ Class {
 		'parent',
 		'score'
 	],
-	#category : #'Golap-Clustering'
+	#category : #'Golap-Clustering-Core'
 }
 
 { #category : #'instance creation' }

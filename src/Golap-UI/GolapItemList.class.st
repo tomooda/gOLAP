@@ -118,6 +118,12 @@ GolapItemList >> addSelectionsToMarker: aColor [
 ]
 
 { #category : #'accessing-markers' }
+GolapItemList >> allMarkerColors [
+
+	^ markerDropList items collect: #key thenSelect: #notNil
+]
+
+{ #category : #'accessing-markers' }
 GolapItemList >> currentMarker [
 	^ markerDropList selectedItem ifNotNil: #key
 ]
@@ -591,41 +597,50 @@ GolapItemList >> vertexList [
 
 { #category : #menu }
 GolapItemList >> vertexListMenu [
+
 	| menu selectedVertex |
 	menu := self newMenu.
 	selectedVertex := self model
-		vertexAt: (vertexList selection selectedItem ifNil: [ ^ menu ])
-		ifAbsent: [ ^ menu ].
-	(self markMenu: selectedVertex)
-		ifNotNil: [ :submenu | 
-			menu
-				addItem: [ :item | 
-					item
-						name: 'mark';
-						subMenu: submenu ] ].
-	(self unmarkMenu: selectedVertex)
-		ifNotNil: [ :submenu | 
-			menu
-				addItem: [ :item | 
-					item
-						name: 'unmark';
-						subMenu: submenu ] ].
-	(golap includesPin: selectedVertex)
-		ifTrue: [ menu
-				addItem: [ :item | 
-					item
-						name: 'Unpin';
-						action: [ golap togglePin: selectedVertex ] ] ]
-		ifFalse: [ menu
-				addItem: [ :item | 
-					item
-						name: 'Pin';
-						action: [ golap togglePin: selectedVertex ] ] ].
-	menu
-		addItem: [ :item | 
+		                  vertexAt:
+		                  (vertexList selection selectedItem ifNil: [
+			                   ^ menu ])
+		                  ifAbsent: [ ^ menu ].
+	(self markMenu: selectedVertex) ifNotNil: [ :submenu |
+		menu addItem: [ :item |
 			item
-				name: 'Show info';
-				action: [ golap showItemView: selectedVertex ] ].
+				name: 'mark';
+				subMenu: submenu ] ].
+	(self unmarkMenu: selectedVertex) ifNotNil: [ :submenu |
+		menu addItem: [ :item |
+			item
+				name: 'unmark';
+				subMenu: submenu ] ].
+	vertexList selectedItems ifNotEmpty: [
+		menu
+			addItem: [ :item |
+				item
+					name: 'Mark selections';
+					subMenu: self markSelectionsMenu ];
+			addItem: [ :item |
+				item
+					name: 'Unmark selections';
+					subMenu: self unmarkSelectionsMenu ] ].
+
+	(golap includesPin: selectedVertex)
+		ifTrue: [
+			menu addItem: [ :item |
+				item
+					name: 'Unpin';
+					action: [ golap togglePin: selectedVertex ] ] ]
+		ifFalse: [
+			menu addItem: [ :item |
+				item
+					name: 'Pin';
+					action: [ golap togglePin: selectedVertex ] ] ].
+	menu addItem: [ :item |
+		item
+			name: 'Show info';
+			action: [ golap showItemView: selectedVertex ] ].
 	^ menu
 ]
 

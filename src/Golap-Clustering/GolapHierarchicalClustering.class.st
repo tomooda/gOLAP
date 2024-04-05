@@ -7,7 +7,7 @@ Class {
 		'trees',
 		'rank'
 	],
-	#category : #'Golap-Clustering'
+	#category : #'Golap-Clustering-Core'
 }
 
 { #category : #'instance creation' }
