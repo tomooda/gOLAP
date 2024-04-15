@@ -132,7 +132,7 @@ GolapLayouter >> layout [
 
 	| vertices boundVertices bindings reps isolatedVertices |
 	vertices := self model vertices asSortedCollection: [ :v1 :v2 |
-		            v2 frequency < v1 frequency or: [ v2 data <= v1 data ] ].
+		            v2 frequency < v1 frequency or: [ v2 id <= v1 id ] ].
 	boundVertices := vertices reject: [ :vertex | vertex isIsolated ].
 	divisions := (boundVertices size sqrt * 1.4) ceiling max: 1.
 	softDivisions := divisions asFloat - 1.0e-8.
@@ -268,80 +268,70 @@ GolapLayouter >> overridesYWithFrequencyOrder: aBoolean [
 
 { #category : #layouting }
 GolapLayouter >> repulseParticles: aCollectionOfGolapVertex bindings: bindings [
+
 	| cells |
-	cells := (1 to: divisions)
-		collect: [ :i | 
-			(1 to: divisions)
-				collect: [ :j | 
-					(OrderedCollection
-						new: (aCollectionOfGolapVertex size // divisions squared + 10 max: 10))
-						->
-							(OrderedCollection
-								new: (aCollectionOfGolapVertex size // divisions squared + 10 max: 10)) ] ].
-	aCollectionOfGolapVertex
-		do: [ :v | 
-			| x y pair |
-			x := v x ceiling min: divisions max: 1.
-			y := v y ceiling min: divisions max: 1.
-			pair := {v asPoint.
-			v data}.
-			((cells at: x) at: y) key add: v.
-			((cells at: x) at: y) value add: pair.
-			y >= 2
-				ifTrue: [ ((cells at: x) at: y - 1) value add: pair ].
-			y < divisions
-				ifTrue: [ ((cells at: x) at: y + 1) value add: pair ].
-			x >= 2
-				ifTrue: [ | c |
-					c := cells at: x - 1.
-					(c at: y) value add: pair.
-					y >= 2
-						ifTrue: [ (c at: y - 1) value add: pair ].
-					y < divisions
-						ifTrue: [ (c at: y + 1) value add: pair ] ].
-			x < divisions
-				ifTrue: [ | c |
-					c := cells at: x + 1.
-					(c at: y) value add: pair.
-					y >= 2
-						ifTrue: [ (c at: y - 1) value add: pair ].
-					y < divisions
-						ifTrue: [ (c at: y + 1) value add: pair ] ] ].
-	cells
-		do: [ :cs | 
-			cs
-				do: [ :pair | 
-					pair key
-						do: [ :v1 | 
-							| v c p1 |
-							v := 0.0.
-							c := 0.
-							p1 := v1 asPoint.
-							pair value
-								do: [ :v2pair | 
-									| p2 |
-									p2 := v2pair first.
-									p1 = p2
-										ifFalse: [ | dx dy r |
-											((dx := p1 x - p2 x) < 1.0
-												and: [ (dy := p1 y - p2 y) < 1.0
-														and: [ (r := (dx squared + dy squared) sqrt) < 0.5 ] ])
-												ifTrue: [ c := c + 1.
-													r > 1.0e-8
-														ifTrue: [ v := v + ((dx * (1.0 - r) * 0.1 / r) @ (dy * (1.0 - r) * 0.1 / r)) ]
-														ifFalse: [ v1 data <= v2pair second
-																ifTrue: [ v := v + 1.0e-4 asPoint ]
-																ifFalse: [ v := v + -1.0e-4 asPoint ] ] ] ] ].
-							c > 0
-								ifTrue: [ v1
-										x:
-											(v1 x + (v x / c asFloat min: 1.0 max: -1.0)
-												min: softDivisions
-												max: 1.0e-8);
-										y:
-											(v1 y + (v y / c asFloat min: 1.0 max: -1.0)
-												min: softDivisions
-												max: 1.0e-8) ] ] ] ]
+	cells := (1 to: divisions) collect: [ :i |
+		         (1 to: divisions) collect: [ :j |
+			         (OrderedCollection new:
+				          (aCollectionOfGolapVertex size // divisions squared + 10
+					           max: 10)) -> (OrderedCollection new:
+				          (aCollectionOfGolapVertex size // divisions squared + 10
+					           max: 10)) ] ].
+	aCollectionOfGolapVertex do: [ :v |
+		| x y pair |
+		x := v x ceiling min: divisions max: 1.
+		y := v y ceiling min: divisions max: 1.
+		pair := {
+			        v asPoint.
+			        v id }.
+		((cells at: x) at: y) key add: v.
+		((cells at: x) at: y) value add: pair.
+		y >= 2 ifTrue: [ ((cells at: x) at: y - 1) value add: pair ].
+		y < divisions ifTrue: [ ((cells at: x) at: y + 1) value add: pair ].
+		x >= 2 ifTrue: [
+			| c |
+			c := cells at: x - 1.
+			(c at: y) value add: pair.
+			y >= 2 ifTrue: [ (c at: y - 1) value add: pair ].
+			y < divisions ifTrue: [ (c at: y + 1) value add: pair ] ].
+		x < divisions ifTrue: [
+			| c |
+			c := cells at: x + 1.
+			(c at: y) value add: pair.
+			y >= 2 ifTrue: [ (c at: y - 1) value add: pair ].
+			y < divisions ifTrue: [ (c at: y + 1) value add: pair ] ] ].
+	cells do: [ :cs |
+		cs do: [ :pair |
+			pair key do: [ :v1 |
+				| v c p1 |
+				v := 0.0.
+				c := 0.
+				p1 := v1 asPoint.
+				pair value do: [ :v2pair |
+					| p2 |
+					p2 := v2pair first.
+					p1 = p2 ifFalse: [
+						| dx dy r |
+						((dx := p1 x - p2 x) < 1.0 and: [
+							 (dy := p1 y - p2 y) < 1.0 and: [
+								 (r := (dx squared + dy squared) sqrt) < 0.5 ] ]) ifTrue: [
+							c := c + 1.
+							r > 1.0e-8
+								ifTrue: [
+								v := v
+								     + (dx * (1.0 - r) * 0.1 / r @ (dy * (1.0 - r) * 0.1 / r)) ]
+								ifFalse: [
+									v1 id <= v2pair second
+										ifTrue: [ v := v + 1.0e-4 asPoint ]
+										ifFalse: [ v := v + -1.0e-4 asPoint ] ] ] ] ].
+				c > 0 ifTrue: [
+					v1
+						x: (v1 x + (v x / c asFloat min: 1.0 max: -1.0)
+								 min: softDivisions
+								 max: 1.0e-8);
+						y: (v1 y + (v y / c asFloat min: 1.0 max: -1.0)
+								 min: softDivisions
+								 max: 1.0e-8) ] ] ] ]
 ]
 
 { #category : #layouting }

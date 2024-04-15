@@ -35,7 +35,7 @@ GolapItemList >> add: aGolapVertex toMarker: aColor [
 
 	self updateGlobalImageAfter: [
 		aGolapVertex
-			dataDo: [ :data |
+			idDo: [ :data |
 				(markers at: aColor ifAbsentPut: [ Set new ]) add: data ];
 			addMarker: aColor.
 		markerDropList items do: [ :assoc |
@@ -58,8 +58,8 @@ GolapItemList >> addAll: aCollectionOfGolapVertex toMarker: aColor [
 	self updateGlobalImageAfter: [
 		aCollectionOfGolapVertex do: [ :vertex |
 			vertex
-				dataDo: [ :data |
-					(markers at: aColor ifAbsentPut: [ Set new ]) add: data ];
+				idDo: [ :id |
+					(markers at: aColor ifAbsentPut: [ Set new ]) add: id ];
 				addMarker: aColor ].
 		markerDropList items do: [ :assoc |
 			assoc key = aColor ifTrue: [
@@ -242,7 +242,7 @@ GolapItemList >> initializePresenters [
 							                          regex matches: v name ] ].
 					              markers
 						              at: selectedMarker key
-						              put: (vertices collect: #data) asSet.
+						              put: (vertices collect: #id) asSet.
 					              self vertices do: [ :vertex |
 						              vertex removeMarker: selectedMarker key ].
 					              vertices do: [ :vertex |
@@ -283,17 +283,17 @@ GolapItemList >> markMenu: aGolapVertex [
 
 	| markMenu |
 	markMenu := self newMenu.
-	markerDropList listItems do: [ :listItem | 
+	markerDropList listItems do: [ :listItem |
 		| color |
 		color := listItem key.
-		color isSymbol ifFalse: [ 
-			((markers at: color ifAbsent: [ #(  ) ]) includes:
-				 aGolapVertex data) ifFalse: [ 
-				markMenu addItem: [ :menuItem | 
-					menuItem
-						name: '';
-						icon: (self iconForCircleColor: color);
-						action: [ self add: aGolapVertex toMarker: color ] ] ] ] ].
+		color isSymbol ifFalse: [
+			((markers at: color ifAbsent: [ #(  ) ]) includes: aGolapVertex id)
+				ifFalse: [
+					markMenu addItem: [ :menuItem |
+						menuItem
+							name: '';
+							icon: (self iconForCircleColor: color);
+							action: [ self add: aGolapVertex toMarker: color ] ] ] ] ].
 	^ markMenu
 ]
 
@@ -322,7 +322,7 @@ GolapItemList >> markedVertices [
 		       at: (markerDropList selectedItem ifNotNil: #key)
 		       ifAbsent: [ Array new ].
 	^ self model vertices asArray select: [ :v | 
-		  ids anySatisfy: [ :id | v hasData: id ] ]
+		  ids anySatisfy: [ :id | v includesId: id ] ]
 ]
 
 { #category : #private }
@@ -341,7 +341,7 @@ GolapItemList >> markersAndVerticesDo: aBlock [
 	self modelDo: [ :model | 
 		markers keysAndValuesDo: [ :key :ids | 
 			aBlock value: key value: (model vertices asArray select: [ :v | 
-					 ids anySatisfy: [ :id | v hasData: id ] ]) ] ]
+					 ids anySatisfy: [ :id | v includesId: id ] ]) ] ]
 ]
 
 { #category : #accessing }
@@ -390,7 +390,7 @@ GolapItemList >> remove: aGolapVertex fromMarker: aColor [
 			at: aColor
 			ifPresent: [ :set |
 				aGolapVertex
-					dataDo: [ :data | set remove: data ];
+					idDo: [ :id | set remove: id ];
 					removeMarker: aColor ]
 			ifAbsent: [ ^ self ].
 		markerDropList items do: [ :assoc |
@@ -414,7 +414,7 @@ GolapItemList >> removeAll: aCollectionOfGolapVertex fromMarker: aColor [
 			ifPresent: [ :set |
 				aCollectionOfGolapVertex do: [ :v |
 					v
-						dataDo: [ :data | set remove: data ifAbsent: [  ] ];
+						idDo: [ :id | set remove: id ifAbsent: [  ] ];
 						removeMarker: aColor ] ]
 			ifAbsent: [ ^ self ].
 		(markers at: aColor) ifEmpty: [ markers removeKey: aColor ].
@@ -519,19 +519,19 @@ GolapItemList >> snapshotInto: aStream [
 
 { #category : #menu }
 GolapItemList >> unmarkMenu: aGolapVertex [
+
 	| unmarkMenu |
 	unmarkMenu := self newMenu.
-	markerDropList listItems
-		do: [ :listItem | 
-			| color |
-			color := listItem key.
-			((markers at: color ifAbsent: [ #() ]) includes: aGolapVertex data)
-				ifTrue: [ unmarkMenu
-						addItem: [ :menuItem | 
-							menuItem
-								name: '';
-								icon: (self iconForCircleColor: color);
-								action: [ self remove: aGolapVertex fromMarker: color ] ] ] ].
+	markerDropList listItems do: [ :listItem |
+		| color |
+		color := listItem key.
+		((markers at: color ifAbsent: [ #(  ) ]) includes: aGolapVertex id)
+			ifTrue: [
+				unmarkMenu addItem: [ :menuItem |
+					menuItem
+						name: '';
+						icon: (self iconForCircleColor: color);
+						action: [ self remove: aGolapVertex fromMarker: color ] ] ] ].
 	^ unmarkMenu
 ]
 
@@ -582,7 +582,7 @@ GolapItemList >> updateVertexList [
 		markers at: selectedMarker key ifPresent: [ :markedIds | 
 			vertices := vertices select: [ :id | 
 				            markedIds anySatisfy: [ :m | 
-					            (model vertexAt: id) hasData: m ] ] ].
+					            (model vertexAt: id) includesId: m ] ] ].
 		vertexList items: (vertices asSortedCollection: [ :id | 
 				 [ model valueAtVertex: (model vertexAt: id) ]
 					 on: Error

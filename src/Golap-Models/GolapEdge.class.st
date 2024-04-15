@@ -12,7 +12,7 @@ Class {
 { #category : #'instance creation' }
 GolapEdge class >> on: aDataSeries between: aGolapVertex1 and: aGolapVertex2 [
 	^ self new
-		data: aDataSeries;
+		setData: aDataSeries;
 		vertex1: aGolapVertex1;
 		vertex2: aGolapVertex2;
 		yourself
@@ -22,6 +22,12 @@ GolapEdge class >> on: aDataSeries between: aGolapVertex1 and: aGolapVertex2 [
 GolapEdge >> at: aString [
 
 	^ self data ifNotNil: [ :d | d at: aString ]
+]
+
+{ #category : #accessing }
+GolapEdge >> at: aString put: anObject [
+
+	^ self data ifNotNil: [ :d | d at: aString put: anObject ]
 ]
 
 { #category : #operations }
@@ -38,16 +44,6 @@ GolapEdge >> basicReplaceVertex: aGolapVertex1 with: aGolapVertex2 [
 { #category : #accessing }
 GolapEdge >> data [
 	^ data
-]
-
-{ #category : #accessing }
-GolapEdge >> data: aDataSeries [
-	data := aDataSeries
-]
-
-{ #category : #accessing }
-GolapEdge >> frequency [
-	^ data at: 'frequency'
 ]
 
 { #category : #testing }
@@ -83,6 +79,12 @@ GolapEdge >> replaceVertex: aGolapVertex1 with: aGolapVertex2 [
 	self basicReplaceVertex: aGolapVertex1 with: aGolapVertex2.
 	aGolapVertex1 addEdge: self.
 	^ aGolapVertex2
+]
+
+{ #category : #private }
+GolapEdge >> setData: aDataSeries [
+
+	data := aDataSeries
 ]
 
 { #category : #accessing }

@@ -8,48 +8,23 @@ Class {
 	#category : #'Golap-Models'
 }
 
-{ #category : #enumerating }
-GolapMergedVertex >> dataDo: aBlock [
-
-	aBlock value: self data.
-	oldVertices do: [ :v | v dataDo: aBlock ]
-]
-
-{ #category : #accessing }
-GolapMergedVertex >> frequency: aNumber [
-	frequency := aNumber.
-	edges
-		do: [ :edge | 
-			self == edge vertex1
-				ifTrue: [ edge data at: 'frequency1' put: frequency ]
-				ifFalse: [ edge data at: 'frequency2' put: frequency ] ].
-	hiddenEdges
-		do: [ :edge | 
-			self == edge vertex1
-				ifTrue: [ edge data at: 'frequency1' put: frequency ]
-				ifFalse: [ edge data at: 'frequency2' put: frequency ] ].
-	positivePolishEdges
-		do: [ :edge | 
-			self == edge vertex1
-				ifTrue: [ edge data at: 'frequency1' put: frequency ]
-				ifFalse: [ edge data at: 'frequency2' put: frequency ] ].
-	negativePolishEdges
-		do: [ :edge | 
-			self == edge vertex1
-				ifTrue: [ edge data at: 'frequency1' put: frequency ]
-				ifFalse: [ edge data at: 'frequency2' put: frequency ] ]
-]
-
-{ #category : #testing }
-GolapMergedVertex >> hasData: anObject [
-	^ (super hasData: anObject)
-		or: [ oldVertices contains: [ :v | v hasData: anObject ] ]
-]
-
 { #category : #testing }
 GolapMergedVertex >> hasVertex: aGolapVertex [
 	^ (super hasVertex: aGolapVertex)
 		or: [ oldVertices contains: [ :v | v hasVertex: aGolapVertex ] ]
+]
+
+{ #category : #enumerating }
+GolapMergedVertex >> idDo: aBlock [
+
+	aBlock value: self id.
+	oldVertices do: [ :v | v idDo: aBlock ]
+]
+
+{ #category : #testing }
+GolapMergedVertex >> includesId: anObject [
+	^ (super includesId: anObject)
+		or: [ oldVertices contains: [ :v | v includesId: anObject ] ]
 ]
 
 { #category : #testing }
@@ -88,11 +63,11 @@ GolapMergedVertex >> oldVerticesDo: aBlock [
 ]
 
 { #category : #accessing }
-GolapMergedVertex >> photoData [
+GolapMergedVertex >> photoId [
 
 	^ (oldVertices notNil and: [ oldVertices notEmpty ])
-		  ifTrue: [ (oldVertices maxWith: #frequency) photoData ]
-		  ifFalse: [ self data ]
+		  ifTrue: [ (oldVertices maxWith: #frequency) photoId ]
+		  ifFalse: [ self id ]
 ]
 
 { #category : #accessing }

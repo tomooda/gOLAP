@@ -199,7 +199,7 @@ GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale off
 			selected ifTrue: [
 				(vertex1 edgeTo: vertex2 ifAbsent: [ nil ]) ifNotNil: [ :edge |
 					| labelString labelForm |
-					labelString := edge frequency printString.
+					labelString := score printString.
 					labelForm := Form
 						             extent:
 						             (self font widthOfString: labelString) + 6

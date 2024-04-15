@@ -347,10 +347,12 @@ GolapItemView >> url [
 
 { #category : #accessing }
 GolapItemView >> vertex: aGolapVertex [
+
 	vertex := aGolapVertex.
-	item := aGolapVertex data.
+	item := aGolapVertex id.
 	itemName := aGolapVertex name.
 	imageIndex rawValue: 1.
-	[ self updateImage.
+	[
+	self updateImage.
 	self updateItemInfo ] forkAt: Processor userBackgroundPriority
 ]

@@ -3,7 +3,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'data',
-		'name',
+		'nameKey',
+		'frequencyKey',
 		'edges',
 		'hiddenEdges',
 		'positivePolishEdges',
@@ -13,7 +14,6 @@ Class {
 		'y',
 		'label',
 		'rectangles',
-		'frequency',
 		'photoimage',
 		'markers'
 	],
@@ -21,11 +21,25 @@ Class {
 }
 
 { #category : #'instance creation' }
-GolapVertex class >> on: anObject name: aString [
+GolapVertex class >> id: anObject name: aString frequency: aNumber [
+
+	^ self
+		  on: (DataSeries
+				   withKeys: { 'name'. 'frequency' }
+				   values: {
+						   aString.
+						   aNumber }
+				   name: anObject)
+		  nameKey: 'name'
+		  frequencyKey: 'frequency'
+]
+
+{ #category : #'instance creation' }
+GolapVertex class >> on: aDataSeries nameKey: aString frequencyKey: anotherString [
+
 	^ self new
-		data: anObject;
-		name: aString;
-		yourself
+		  setData: aDataSeries nameKey: aString frequencyKey: anotherString;
+		  yourself
 ]
 
 { #category : #'adding-removing' }
@@ -87,6 +101,12 @@ GolapVertex >> asPoint [
 		  ifFalse: [ nil ]
 ]
 
+{ #category : #accessing }
+GolapVertex >> at: aString [
+
+	^ data at: aString
+]
+
 { #category : #enumerating }
 GolapVertex >> basicEdgesAndVerticesDo: aBlock [
 
@@ -120,21 +140,6 @@ GolapVertex >> createHiddenEdgeTo: aGolapVertex data: aDataSeries [
 	edge := GolapEdge on: aDataSeries between: self and: aGolapVertex.
 	self addHiddenEdge: edge.
 	^ aGolapVertex addHiddenEdge: edge
-]
-
-{ #category : #accessing }
-GolapVertex >> data [
-	^ data
-]
-
-{ #category : #accessing }
-GolapVertex >> data: anObject [
-	data := anObject
-]
-
-{ #category : #enumerating }
-GolapVertex >> dataDo: aBlock [
-	aBlock value: data
 ]
 
 { #category : #accessing }
@@ -173,25 +178,8 @@ GolapVertex >> flushPhotoimage [
 
 { #category : #accessing }
 GolapVertex >> frequency [
-	^ frequency
-		ifNil: [ frequency := edges
-				ifEmpty: [ hiddenEdges
-						ifEmpty: [ 0 ]
-						ifNotEmpty: [ | edge |
-							edge := hiddenEdges first.
-							data = (edge data at: 'node1')
-								ifTrue: [ edge data at: 'frequency1' ]
-								ifFalse: [ edge data at: 'frequency2' ] ] ]
-				ifNotEmpty: [ | edge |
-					edge := edges first.
-					data = (edge data at: 'node1')
-						ifTrue: [ edge data at: 'frequency1' ]
-						ifFalse: [ edge data at: 'frequency2' ] ] ]
-]
 
-{ #category : #testing }
-GolapVertex >> hasData: anObject [
-	^ data = anObject
+	^ data at: frequencyKey
 ]
 
 { #category : #enumerating }
@@ -256,6 +244,24 @@ GolapVertex >> hiddenEdgesAndVerticesDo: aBlock [
 		do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
 ]
 
+{ #category : #accessing }
+GolapVertex >> id [
+
+	^ data name
+]
+
+{ #category : #enumerating }
+GolapVertex >> idDo: aBlock [
+
+	aBlock value: self id
+]
+
+{ #category : #testing }
+GolapVertex >> includesId: anObject [
+
+	^ self id = anObject
+]
+
 { #category : #'initialize-release' }
 GolapVertex >> initialize [
 
@@ -303,12 +309,14 @@ GolapVertex >> markersDo: aBlock [
 
 { #category : #accessing }
 GolapVertex >> name [
-	^ name ifNil: [ name := data asString]
+
+	^ data at: self nameKey
 ]
 
 { #category : #accessing }
-GolapVertex >> name: aString [
-	name := aString ifNil: [ data asString ]
+GolapVertex >> nameKey [
+
+	^ nameKey
 ]
 
 { #category : #polishing }
@@ -332,9 +340,9 @@ GolapVertex >> numberOfEdges [
 ]
 
 { #category : #accessing }
-GolapVertex >> photoData [
+GolapVertex >> photoId [
 
-	^ self data
+	^ self id
 ]
 
 { #category : #accessing }
@@ -363,8 +371,9 @@ GolapVertex >> positivePolishEdgesDo: aBlock [
 
 { #category : #printing }
 GolapVertex >> printOn: aStream [
+
 	aStream nextPutAll: 'V('.
-	data printOn: aStream.
+	self id printOn: aStream.
 	aStream nextPutAll: ' '.
 	x printOn: aStream.
 	aStream nextPutAll: ', '.
@@ -436,6 +445,14 @@ GolapVertex >> scoreWith: aGolapVertex [
 { #category : #enumerating }
 GolapVertex >> scoresDo: aBlock [
 	scores valuesDo: aBlock
+]
+
+{ #category : #private }
+GolapVertex >> setData: aDataSeries nameKey: aString frequencyKey: anotherString [
+
+	data := aDataSeries.
+	nameKey := aString.
+	frequencyKey := anotherString
 ]
 
 { #category : #accessing }

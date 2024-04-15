@@ -325,42 +325,40 @@ Golap >> allMarkerColors [
 
 { #category : #merging }
 Golap >> applyMergesToModel: aGolapModel [
+
 	| positions |
-	positions := Dictionary
-		new: (model ifNil: [ 256 ] ifNotNil: [ model vertices size * 3 // 2 ]).
-	model
-		ifNotNil: [ model
-				verticesDo: [ :v | v asPoint ifNotNil: [ :p | positions at: v data put: p ] ] ].
+	positions := Dictionary new:
+		             (model
+			              ifNil: [ 256 ]
+			              ifNotNil: [ model vertices size * 3 // 2 ]).
+	model ifNotNil: [
+		model verticesDo: [ :v |
+			v asPoint ifNotNil: [ :p | positions at: v id put: p ] ] ].
 	aGolapModel recreateVertices.
-	aGolapModel
-		verticesDo: [ :v | 
-			positions
-				at: v data
-				ifPresent: [ :p | 
-					v
-						x: p x;
-						y: p y ] ].
-	merges
-		do: [ :assoc | 
-			| oldVertices newVertex |
-			oldVertices := assoc value
-				collect: [ :id | aGolapModel vertices at: id ifAbsent: [ nil ] ]
-				thenSelect: #notNil.
-			newVertex := aGolapModel
-				mergeVertices:
-					(assoc value
-						collect: [ :id | aGolapModel vertices at: id ifAbsent: [ nil ] ]
-						thenSelect: #notNil)
-				named: assoc key.
-			newVertex
-				x:
-					((oldVertices collect: #x thenSelect: #notNil)
-						ifEmpty: [ nil ]
-						ifNotEmpty: #average);
-				y:
-					((oldVertices collect: #y thenSelect: #notNil)
-						ifEmpty: [ nil ]
-						ifNotEmpty: #average) ].
+	aGolapModel verticesDo: [ :v |
+		positions at: v id ifPresent: [ :p |
+			v
+				x: p x;
+				y: p y ] ].
+	merges do: [ :assoc |
+		| oldVertices newVertex |
+		oldVertices := assoc value
+			               collect: [ :id |
+			               aGolapModel vertices at: id ifAbsent: [ nil ] ]
+			               thenSelect: #notNil.
+		newVertex := aGolapModel
+			             mergeVertices: (assoc value
+					              collect: [ :id |
+					              aGolapModel vertices at: id ifAbsent: [ nil ] ]
+					              thenSelect: #notNil)
+			             named: assoc key.
+		newVertex
+			x: ((oldVertices collect: #x thenSelect: #notNil)
+					 ifEmpty: [ nil ]
+					 ifNotEmpty: #average);
+			y: ((oldVertices collect: #y thenSelect: #notNil)
+					 ifEmpty: [ nil ]
+					 ifNotEmpty: #average) ].
 	^ aGolapModel
 ]
 
@@ -420,46 +418,44 @@ Golap >> buttonHeight [
 
 { #category : #'accessing-colors' }
 Golap >> colorForEdge: aGolapEdge [
-	self selectedBaseDimension
-		ifNotNil: [ | frontEdge baseEdge v |
-			frontEdge := self selectedFrontDimension
-				edgeBetween: aGolapEdge vertex1 data
-				and: aGolapEdge vertex2 data
-				ifAbsent: [  ].
-			baseEdge := self selectedBaseDimension
-				edgeBetween: aGolapEdge vertex1 data
-				and: aGolapEdge vertex2 data
-				ifAbsent: [  ].
-			(frontEdge isNil and: [ baseEdge notNil ])
-				ifTrue: [ ^ self retreatingColor ].
-			(frontEdge notNil and: [ baseEdge isNil ])
-				ifTrue: [ ^ self freshColor ].
-			v := model valueAtEdge: aGolapEdge.
-			v < 0
-				ifTrue: [ ^ self decliningColor ].
-			v > 0
-				ifTrue: [ ^ self growingColor ] ].
+
+	self selectedBaseDimension ifNotNil: [
+		| frontEdge baseEdge v |
+		frontEdge := self selectedFrontDimension
+			             edgeBetween: aGolapEdge vertex1 id
+			             and: aGolapEdge vertex2 id
+			             ifAbsent: [  ].
+		baseEdge := self selectedBaseDimension
+			            edgeBetween: aGolapEdge vertex1 id
+			            and: aGolapEdge vertex2 id
+			            ifAbsent: [  ].
+		(frontEdge isNil and: [ baseEdge notNil ]) ifTrue: [
+			^ self retreatingColor ].
+		(frontEdge notNil and: [ baseEdge isNil ]) ifTrue: [
+			^ self freshColor ].
+		v := model valueAtEdge: aGolapEdge.
+		v < 0 ifTrue: [ ^ self decliningColor ].
+		v > 0 ifTrue: [ ^ self growingColor ] ].
 	^ self normalColor
 ]
 
 { #category : #'accessing-colors' }
 Golap >> colorForVertex: aGolapVertex [
-	(self includesSelection: aGolapVertex)
-		ifTrue: [ ^ self selectionColor ].
-	self selectedBaseDimension
-		ifNotNil: [ | frontVertex baseVertex |
-			frontVertex := self selectedFrontDimension
-				ifNotNil: [ :dimension | dimension vertexAt: aGolapVertex data ifAbsent: [  ] ].
-			baseVertex := self selectedBaseDimension
-				ifNotNil: [ :dimension | dimension vertexAt: aGolapVertex data ifAbsent: [  ] ].
-			(frontVertex isNil and: [ baseVertex notNil ])
-				ifTrue: [ ^ self retreatingColor ].
-			(frontVertex notNil and: [ baseVertex isNil ])
-				ifTrue: [ ^ self freshColor ].
-			aGolapVertex frequency < 0
-				ifTrue: [ ^ self decliningColor ].
-			aGolapVertex frequency > 0
-				ifTrue: [ ^ self growingColor ] ].
+
+	(self includesSelection: aGolapVertex) ifTrue: [
+		^ self selectionColor ].
+	self selectedBaseDimension ifNotNil: [
+		| frontVertex baseVertex |
+		frontVertex := self selectedFrontDimension ifNotNil: [ :dimension |
+			               dimension vertexAt: aGolapVertex id ifAbsent: [  ] ].
+		baseVertex := self selectedBaseDimension ifNotNil: [ :dimension |
+			              dimension vertexAt: aGolapVertex id ifAbsent: [  ] ].
+		(frontVertex isNil and: [ baseVertex notNil ]) ifTrue: [
+			^ self retreatingColor ].
+		(frontVertex notNil and: [ baseVertex isNil ]) ifTrue: [
+			^ self freshColor ].
+		aGolapVertex frequency < 0 ifTrue: [ ^ self decliningColor ].
+		aGolapVertex frequency > 0 ifTrue: [ ^ self growingColor ] ].
 	^ self normalColorFor: aGolapVertex
 ]
 
@@ -822,12 +818,14 @@ Golap >> imageRepositoryUrl: aString [
 
 { #category : #'accessing-selection' }
 Golap >> includesPin: aGolapVertex [
-	^ pins includes: aGolapVertex data
+
+	^ pins includes: aGolapVertex id
 ]
 
 { #category : #'accessing-selection' }
 Golap >> includesSelection: aGolapVertex [
-	^ selections contains: [ :data | aGolapVertex hasData: data ]
+
+	^ selections contains: [ :id | aGolapVertex includesId: id ]
 ]
 
 { #category : #initialization }
@@ -1137,9 +1135,12 @@ Golap >> mergeMenu [
 
 { #category : #merging }
 Golap >> mergeSelectedVertices [
+
 	^ self selections
-		ifNotEmpty: [:vs | (self mergeVertices: (vs collect: #data)) ifNotNil: [ :newId | self select: (model vertexAt: newId) ] ]
-		ifEmpty: [ nil ]
+		  ifNotEmpty: [ :vs |
+			  (self mergeVertices: (vs collect: #id)) ifNotNil: [ :newId |
+				  self select: (model vertexAt: newId) ] ]
+		  ifEmpty: [ nil ]
 ]
 
 { #category : #merging }
@@ -1751,7 +1752,7 @@ Golap >> retrievePhotoimageFor: aGolapVertex [
 	[
 	itemView ifNotNil: [
 		[
-		(itemView retrieveSingleImageFor: aGolapVertex photoData value)
+		(itemView retrieveSingleImageFor: aGolapVertex photoId value)
 			ifNotNil: [ :image |
 				aGolapVertex photoimage:
 					(image scaledToSize: self photoimageSize asPoint).
@@ -1865,7 +1866,7 @@ Golap >> saveSnapshot [
 { #category : #'accessing-selection' }
 Golap >> select: aGolapVertex [
 
-	aGolapVertex dataDo: [ :data | selections add: data ].
+	aGolapVertex idDo: [ :id | selections add: id ].
 	selectedEdges := nil.
 	self showItemView: aGolapVertex.
 	self updateSelection
@@ -1875,7 +1876,7 @@ Golap >> select: aGolapVertex [
 Golap >> selectAll: aCollectionOfGolapVertex [
 
 	aCollectionOfGolapVertex do: [ :vertex |
-		vertex dataDo: [ :data | selections add: data ] ].
+		vertex idDo: [ :id | selections add: id ] ].
 	selectedEdges := nil.
 	self showItemView: aCollectionOfGolapVertex anyOne.
 	self updateSelection
@@ -1913,10 +1914,10 @@ Golap >> selectedModel [
 
 { #category : #enumerating }
 Golap >> selectedVerticesDo: aBlock [
-	model
-		verticesDo: [ :vertex | 
-			(selections anySatisfy: [ :data | vertex hasData: data ])
-				ifTrue: [ aBlock value: vertex ] ]
+
+	model verticesDo: [ :vertex |
+		(selections anySatisfy: [ :id | vertex includesId: id ]) ifTrue: [
+			aBlock value: vertex ] ]
 ]
 
 { #category : #'accessing-colors' }
@@ -1930,7 +1931,7 @@ Golap >> selections [
 		streamContents: [ :stream | 
 			model
 				verticesDo: [ :v | 
-					(selections anySatisfy: [ :id | v hasData: id ])
+					(selections anySatisfy: [ :id | v includesId: id ])
 						ifTrue: [ stream nextPut: v ] ] ]
 ]
 
@@ -1940,7 +1941,7 @@ Golap >> selections: aCollectionOfGolapVertex [
 	| newSelections |
 	newSelections := Set new: aCollectionOfGolapVertex size.
 	aCollectionOfGolapVertex do: [ :v |
-		v dataDo: [ :data | newSelections add: data ] ].
+		v idDo: [ :id | newSelections add: id ] ].
 	selections = newSelections ifFalse: [
 		selections := newSelections.
 		selectedEdges := nil.
@@ -2249,9 +2250,9 @@ Golap >> title [
 { #category : #'accessing-selection' }
 Golap >> togglePin: aGolapVertex [
 
-	self updateGlobalImageAfter: [ 
+	self updateGlobalImageAfter: [
 		| id |
-		id := aGolapVertex data.
+		id := aGolapVertex id.
 		(pins includes: id)
 			ifTrue: [ pins remove: id ]
 			ifFalse: [ pins add: id ] ]
@@ -2308,8 +2309,8 @@ Golap >> unmergeVertex: aString [
 { #category : #'accessing-selection' }
 Golap >> unselect: aGolapVertex [
 
-	aGolapVertex dataDo: [ :data |
-		selections remove: data ifAbsent: [  ] ].
+	aGolapVertex idDo: [ :id |
+		selections remove: id ifAbsent: [  ] ].
 	selectedEdges := nil.
 	self updateSelection
 ]
@@ -2326,7 +2327,7 @@ Golap >> unselectAll [
 Golap >> unselectAll: aCollectionOfGolapVertex [
 
 	aCollectionOfGolapVertex do: [ :vertex |
-		vertex dataDo: [ :data | selections remove: data ifAbsent: [  ] ] ].
+		vertex idDo: [ :id | selections remove: id ifAbsent: [  ] ] ].
 	selectedEdges := nil.
 	self updateSelection
 ]

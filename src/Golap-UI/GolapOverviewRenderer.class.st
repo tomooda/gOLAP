@@ -18,52 +18,52 @@ Class {
 
 { #category : #drawing }
 GolapOverviewRenderer >> drawEdgeLabelFor: aGolapEdge at: aPoint color: aColor on: aCanvas [
+
 	| string w h rect |
-	self
-		modelDo: [ :model | 
-			string := String
-				streamContents: [ :stream | 
-					stream
-						space;
-						nextPutAll: (self simpleStringFor: (model valueAtEdge: aGolapEdge)).
-					golap selectedFrontDimension
-						ifNotNil: [ :frontModel | 
-							golap selectedBaseDimension
-								ifNotNil: [ :baseModel | 
-									stream
-										nextPutAll: '=';
-										nextPutAll:
-											((frontModel
-												edgeBetween: aGolapEdge vertex1 data
-												and: aGolapEdge vertex2 data
-												ifAbsent: [ frontModel
-														hiddenEdgeBetween: aGolapEdge vertex1 data
-														and: aGolapEdge vertex2 data
-														ifAbsent: [ nil ] ])
-												ifNotNil: [ :e | self simpleStringFor: (frontModel valueAtEdge: e) ]
-												ifNil: [ '0' ]);
-										nextPutAll: '-';
-										nextPutAll:
-											((baseModel
-												edgeBetween: aGolapEdge vertex1 data
-												and: aGolapEdge vertex2 data
-												ifAbsent: [ baseModel
-														hiddenEdgeBetween: aGolapEdge vertex1 data
-														and: aGolapEdge vertex2 data
-														ifAbsent: [ nil ] ])
-												ifNotNil: [ :e | self simpleStringFor: (baseModel valueAtEdge: e) ]
-												ifNil: [ '0' ]);
-										space ] ] ].
-			w := self font widthOfString: string.
-			h := self font height.
-			rect := Rectangle center: aPoint extent: w @ h.
-			aCanvas fillRectangle: rect color: Color white.
-			aCanvas frameRectangle: rect width: 1 color: Color black.
-			aCanvas
-				drawString: string
-				at: aPoint - ((w // 2 + 1) @ (h // 2 + 1))
-				font: self font
-				color: aColor ]
+	self modelDo: [ :model |
+		string := String streamContents: [ :stream |
+			          stream
+				          space;
+				          nextPutAll:
+					          (self simpleStringFor: (model valueAtEdge: aGolapEdge)).
+			          golap selectedFrontDimension ifNotNil: [ :frontModel |
+				          golap selectedBaseDimension ifNotNil: [ :baseModel |
+					          stream
+						          nextPutAll: '=';
+						          nextPutAll: ((frontModel
+								            edgeBetween: aGolapEdge vertex1 id
+								            and: aGolapEdge vertex2 id
+								            ifAbsent: [
+									            frontModel
+										            hiddenEdgeBetween: aGolapEdge vertex1 id
+										            and: aGolapEdge vertex2 id
+										            ifAbsent: [ nil ] ])
+								           ifNotNil: [ :e |
+									           self simpleStringFor: (frontModel valueAtEdge: e) ]
+								           ifNil: [ '0' ]);
+						          nextPutAll: '-';
+						          nextPutAll: ((baseModel
+								            edgeBetween: aGolapEdge vertex1 id
+								            and: aGolapEdge vertex2 id
+								            ifAbsent: [
+									            baseModel
+										            hiddenEdgeBetween: aGolapEdge vertex1 id
+										            and: aGolapEdge vertex2 id
+										            ifAbsent: [ nil ] ])
+								           ifNotNil: [ :e |
+									           self simpleStringFor: (baseModel valueAtEdge: e) ]
+								           ifNil: [ '0' ]);
+						          space ] ] ].
+		w := self font widthOfString: string.
+		h := self font height.
+		rect := Rectangle center: aPoint extent: w @ h.
+		aCanvas fillRectangle: rect color: Color white.
+		aCanvas frameRectangle: rect width: 1 color: Color black.
+		aCanvas
+			drawString: string
+			at: aPoint - (w // 2 + 1 @ (h // 2 + 1))
+			font: self font
+			color: aColor ]
 ]
 
 { #category : #drawing }
@@ -153,7 +153,7 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 							 ifFalse: [ 1 ])
 					color: color ] ] ].
 	golap selectedEdges do: [ :edge | 
-		edge data ifNotNil: [ 
+		"edge data ifNotNil: [ "
 			| c p1 p2 |
 			c := Color black.
 			p1 := edge vertex1 asPoint * scale + offset.
@@ -167,7 +167,7 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 				drawEdgeLabelFor: edge
 				at: p1 + p2 / 2.0 + (5 @ 5)
 				color: c
-				on: aCanvas ] ]
+				on: aCanvas ] "]"
 ]
 
 { #category : #drawing }
@@ -241,54 +241,59 @@ GolapOverviewRenderer >> drawSelectionsOn: aCanvas extent: extent scale: scale o
 
 { #category : #drawing }
 GolapOverviewRenderer >> drawVertexLabelFor: aGolapVertex at: aPoint color: aColor fillColor: fillColor on: aCanvas [
+
 	| box |
 	box := nil.
-	self
-		modelDo: [ :model | 
-			| deltaString nameExtent |
-			deltaString := String
-				streamContents: [ :stream | 
-					stream
-						space;
-						nextPutAll: (self simpleStringFor: (model valueAtVertex: aGolapVertex)).
-					golap selectedFrontDimension
-						ifNotNil: [ :frontModel | 
-							golap selectedBaseDimension
-								ifNotNil: [ :baseModel | 
-									stream
-										nextPutAll: '=';
-										nextPutAll:
-											((frontModel vertexAt: aGolapVertex data ifAbsent: [ nil ])
-												ifNotNil: [ :v | self simpleStringFor: (frontModel valueAtVertex: v) ]
-												ifNil: [ '0' ]);
-										nextPutAll: '-';
-										nextPutAll:
-											((baseModel vertexAt: aGolapVertex data ifAbsent: [ nil ])
-												ifNotNil: [ :v | self simpleStringFor: (baseModel valueAtVertex: v) ]
-												ifNil: [ '0' ]) ] ].
-					stream space ].
-			nameExtent := self extentForName: aGolapVertex name.
-			fillColor
-				ifNotNil: [ | rect |
-					rect := aPoint
-						extent:
-							(nameExtent x max: (self font widthOfString: deltaString))
-								@ (nameExtent y + self font height).
-					aCanvas fillRectangle: rect color: Color white.
-					aCanvas frameRectangle: rect width: 1 color: Color black.
-					box := rect ].
-			(self nameIntoLines: aGolapVertex name)
-				doWithIndex: [ :line :y | 
-					aCanvas
-						drawString: line
-						at: aPoint x @ ((y - 1) * self font height + aPoint y)
-						font: self font
-						color: aColor ].
+	self modelDo: [ :model |
+		| deltaString nameExtent |
+		deltaString := String streamContents: [ :stream |
+			               stream
+				               space;
+				               nextPutAll:
+					               (self simpleStringFor:
+							                (model valueAtVertex: aGolapVertex)).
+			               golap selectedFrontDimension ifNotNil: [ :frontModel |
+				               golap selectedBaseDimension ifNotNil: [ :baseModel |
+					               stream
+						               nextPutAll: '=';
+						               nextPutAll:
+							               ((frontModel
+								                 vertexAt: aGolapVertex id
+								                 ifAbsent: [ nil ])
+								                ifNotNil: [ :v |
+									                self simpleStringFor:
+											                (frontModel valueAtVertex: v) ]
+								                ifNil: [ '0' ]);
+						               nextPutAll: '-';
+						               nextPutAll:
+							               ((baseModel
+								                 vertexAt: aGolapVertex id
+								                 ifAbsent: [ nil ])
+								                ifNotNil: [ :v |
+									                self simpleStringFor:
+											                (baseModel valueAtVertex: v) ]
+								                ifNil: [ '0' ]) ] ].
+			               stream space ].
+		nameExtent := self extentForName: aGolapVertex name.
+		fillColor ifNotNil: [
+			| rect |
+			rect := aPoint extent:
+				        (nameExtent x max: (self font widthOfString: deltaString))
+				        @ (nameExtent y + self font height).
+			aCanvas fillRectangle: rect color: Color white.
+			aCanvas frameRectangle: rect width: 1 color: Color black.
+			box := rect ].
+		(self nameIntoLines: aGolapVertex name) doWithIndex: [ :line :y |
 			aCanvas
-				drawString: deltaString
-				at: aPoint x @ (nameExtent y + aPoint y)
+				drawString: line
+				at: aPoint x @ (y - 1 * self font height + aPoint y)
 				font: self font
 				color: aColor ].
+		aCanvas
+			drawString: deltaString
+			at: aPoint x @ (nameExtent y + aPoint y)
+			font: self font
+			color: aColor ].
 	^ box
 ]
 
