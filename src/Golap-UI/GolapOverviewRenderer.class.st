@@ -300,36 +300,34 @@ GolapOverviewRenderer >> drawVertexLabelFor: aGolapVertex at: aPoint color: aCol
 { #category : #drawing }
 GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale offset: offset numLabels: numLabels [
 
-	self modelDo: [ :model | 
+	self modelDo: [ :model |
 		| freqScale labelOffset labelVertices markersAndVertices |
-		freqScale := 30.0
-		             /
-			             ((self vertices collect: [ :v | 
-				               (v frequency abs + 0.1) log - 1.0 log ])
-				              ifEmpty: [ 1 ]
-				              ifNotEmpty: #max).
+		freqScale := 30.0 / ((self vertices collect: [ :v |
+			               ((model valueAtVertex: v) abs + 0.1) log - 1.0 log ])
+			              ifEmpty: [ 1 ]
+			              ifNotEmpty: #max).
 		labelOffset := 15 @ (self font height * -0.5).
-		labelVertices := SortedCollection sortBlock: [ :more :less | 
+		labelVertices := SortedCollection sortBlock: [ :more :less |
 			                 less value <= more value ].
-		markersAndVertices := Array streamContents: [ :stream | 
-			                      golap markersAndVerticesDo: [ :color :vs | 
-				                      color ifNotNil: [ 
+		markersAndVertices := Array streamContents: [ :stream |
+			                      golap markersAndVerticesDo: [ :color :vs |
+				                      color ifNotNil: [
 					                      stream nextPut: color -> vs asIdentitySet ] ] ].
-		reallyVisibleVertices do: [ :vertex | 
+		reallyVisibleVertices do: [ :vertex |
 			| p |
-			(self colorForVertex: vertex) ifNotNil: [ :c | 
+			(self colorForVertex: vertex) ifNotNil: [ :c |
 				p := vertex asPoint * scale + offset.
-				((p x between: 0.0 and: extent x) and: [ 
-					 p y between: 0.0 and: extent y ]) ifTrue: [ 
+				((p x between: 0.0 and: extent x) and: [
+					 p y between: 0.0 and: extent y ]) ifTrue: [
 					| r |
-					r := (vertex frequency abs + 0.1) log - 1.0 log * freqScale max:
-						     10.
-					golap selectedBaseDimension ifNotNil: [ 
+					r := ((model valueAtVertex: vertex) abs + 0.1) log - 1.0 log
+					     * freqScale max: 10.
+					golap selectedBaseDimension ifNotNil: [
 						| pt pb |
-						pt := p x + 32 + 6 @ (p y - (r )).
+						pt := p x + 32 + 6 @ (p y - r).
 						pb := pt x @ (pt y + (r * 2)).
-						vertex frequency >= 0
-							ifTrue: [ 
+						(model valueAtVertex: vertex) >= 0
+							ifTrue: [
 								aCanvas
 									line: pt
 									to: pb
@@ -343,7 +341,7 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 									to: pt + (5 @ 5)
 									width: 3
 									color: c ]
-							ifFalse: [ 
+							ifFalse: [
 								aCanvas
 									line: pt
 									to: pb
@@ -358,49 +356,49 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 									width: 3
 									color: c ] ].
 					vertex photoimage
-						ifNotNil: [ :photo | 
+						ifNotNil: [ :photo |
 							| w h |
 							w := photo width.
 							h := photo height.
 							aCanvas drawImage: photo at: p x - (w // 2) @ (p y - (h // 2)).
 
-							markersAndVertices do: [ :colorAndVs | 
-								(colorAndVs value includes: vertex) ifTrue: [ 
+							markersAndVertices do: [ :colorAndVs |
+								(colorAndVs value includes: vertex) ifTrue: [
 									w := w + 8.
 									h := h + 8.
 									aCanvas
 										frameOval: (Rectangle center: p extent: w @ h)
 										width: 4
 										color: colorAndVs key ] ] ]
-						ifNil: [ 
+						ifNil: [
 							aCanvas
 								fillOval: (Rectangle center: p extent: r asPoint)
 								color: c.
-							markersAndVertices do: [ :colorAndVs | 
-								(colorAndVs value includes: vertex) ifTrue: [ 
+							markersAndVertices do: [ :colorAndVs |
+								(colorAndVs value includes: vertex) ifTrue: [
 									r := r + 8.
 									aCanvas
 										frameOval: (Rectangle center: p extent: r asPoint)
 										width: 4
 										color: colorAndVs key ] ].
 							labelVertices add: vertex -> (model valueAtVertex: vertex).
-							(numLabels notNil and: [ labelVertices size > numLabels ]) 
+							(numLabels notNil and: [ labelVertices size > numLabels ])
 								ifTrue: [ labelVertices removeLast ] ] ] ] ].
-		labelVertices do: [ :assoc | 
+		labelVertices do: [ :assoc |
 			| vertex |
 			vertex := assoc key.
-			vertex photoimage ifNil: [ 
-				(self colorForVertex: vertex) ifNotNil: [ :c | 
+			vertex photoimage ifNil: [
+				(self colorForVertex: vertex) ifNotNil: [ :c |
 					| p lp |
 					p := vertex asPoint * scale + offset.
-					lp := p + (((golap visibleEdges collect: [ :edge | 
+					lp := p + (((golap visibleEdges collect: [ :edge |
 						         (edge peerOf: vertex)
 							         ifNil: [ 0 ]
 							         ifNotNil: [ :peer | peer x - vertex x ] ])
 						        ifEmpty: [ 0 ]
 						        ifNotEmpty: #sum) <= 0.0
 						       ifTrue: [ labelOffset ]
-						       ifFalse: [ 
+						       ifFalse: [
 							       (self extentForName: vertex name) x + labelOffset x * -1
 							       @ labelOffset y ]).
 					self

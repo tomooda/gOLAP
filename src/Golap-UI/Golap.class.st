@@ -391,7 +391,9 @@ Golap >> authenticateBlock: aBlock [
 
 { #category : #operations }
 Golap >> averageMode [
-	edgesAppearancePresenter averageMode
+
+	edgesAppearancePresenter averageMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-renderer' }
@@ -454,8 +456,10 @@ Golap >> colorForVertex: aGolapVertex [
 			^ self retreatingColor ].
 		(frontVertex notNil and: [ baseVertex isNil ]) ifTrue: [
 			^ self freshColor ].
-		aGolapVertex frequency < 0 ifTrue: [ ^ self decliningColor ].
-		aGolapVertex frequency > 0 ifTrue: [ ^ self growingColor ] ].
+		(model valueAtVertex: aGolapVertex) < 0 ifTrue: [
+			^ self decliningColor ].
+		(model valueAtVertex: aGolapVertex) > 0 ifTrue: [
+			^ self growingColor ] ].
 	^ self normalColorFor: aGolapVertex
 ]
 
@@ -513,7 +517,9 @@ Golap >> decliningColor [
 
 { #category : #operations }
 Golap >> degreeMode [
-	edgesAppearancePresenter degreeMode
+
+	edgesAppearancePresenter degreeMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-dimensions' }
@@ -585,12 +591,16 @@ Golap >> font: aFont [
 
 { #category : #operations }
 Golap >> freqMode [
-	edgesAppearancePresenter freqMode
+
+	edgesAppearancePresenter freqMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #operations }
 Golap >> frequencyMode [
-	edgesAppearancePresenter frequencyMode
+
+	edgesAppearancePresenter frequencyMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-colors' }
@@ -1067,12 +1077,16 @@ Golap >> itemViewUrl: aString [
 
 { #category : #operations }
 Golap >> jaccardMode [
-	edgesAppearancePresenter jaccardMode
+
+	edgesAppearancePresenter jaccardMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #operations }
 Golap >> liftMode [
-	edgesAppearancePresenter liftMode
+
+	edgesAppearancePresenter liftMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-markers' }
@@ -1089,7 +1103,9 @@ Golap >> markersAndVerticesDo: aBlock [
 
 { #category : #operations }
 Golap >> maxMode [
-	edgesAppearancePresenter maxMode
+
+	edgesAppearancePresenter maxMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'operations-photoimages' }
@@ -1342,7 +1358,9 @@ Golap >> pinsDo: aBlock [
 
 { #category : #operations }
 Golap >> pmiMode [
-	edgesAppearancePresenter pmiMode
+
+	edgesAppearancePresenter pmiMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-colors' }
@@ -2229,7 +2247,9 @@ Golap >> stopPhotoimageRetrievingProcess [
 
 { #category : #operations }
 Golap >> sumMode [
-	edgesAppearancePresenter sumMode
+
+	edgesAppearancePresenter sumMode.
+	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #snapshot }
@@ -2264,17 +2284,6 @@ Golap >> toggleSelection: aGolapVertex [
 		updateGlobalImageAfter: [ (self includesSelection: aGolapVertex)
 				ifTrue: [ self unselect: aGolapVertex ]
 				ifFalse: [ self select: aGolapVertex ] ]
-]
-
-{ #category : #'accessing-dimensions' }
-Golap >> totalModel [
-	| models totalModel |
-	models := dimensions values asArray.
-	models isEmpty
-		ifTrue: [ ^ self ].
-	totalModel := models first copy.
-	2 to: models size do: [ :index | totalModel := totalModel + (models at: index) ].
-	self model: totalModel
 ]
 
 { #category : #accessing }

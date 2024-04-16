@@ -4,7 +4,6 @@ Class {
 	#instVars : [
 		'data',
 		'nameKey',
-		'frequencyKey',
 		'edges',
 		'hiddenEdges',
 		'positivePolishEdges',
@@ -17,28 +16,14 @@ Class {
 		'photoimage',
 		'markers'
 	],
-	#category : #'Golap-Models'
+	#category : #'Golap-Models-Graph'
 }
 
 { #category : #'instance creation' }
-GolapVertex class >> id: anObject name: aString frequency: aNumber [
-
-	^ self
-		  on: (DataSeries
-				   withKeys: { 'name'. 'frequency' }
-				   values: {
-						   aString.
-						   aNumber }
-				   name: anObject)
-		  nameKey: 'name'
-		  frequencyKey: 'frequency'
-]
-
-{ #category : #'instance creation' }
-GolapVertex class >> on: aDataSeries nameKey: aString frequencyKey: anotherString [
+GolapVertex class >> on: aDataSeries nameKey: aString [
 
 	^ self new
-		  setData: aDataSeries nameKey: aString frequencyKey: anotherString;
+		  setData: aDataSeries nameKey: aString;
 		  yourself
 ]
 
@@ -143,6 +128,12 @@ GolapVertex >> createHiddenEdgeTo: aGolapVertex data: aDataSeries [
 ]
 
 { #category : #accessing }
+GolapVertex >> data [
+
+	^ data
+]
+
+{ #category : #accessing }
 GolapVertex >> edgeTo: aGolapVertex ifAbsent: errorBlock [
 	self
 		edgesAndVerticesDo: [ :edge :vertex | 
@@ -174,12 +165,6 @@ GolapVertex >> edgesDo: aBlock [
 GolapVertex >> flushPhotoimage [
 
 	photoimage := nil
-]
-
-{ #category : #accessing }
-GolapVertex >> frequency [
-
-	^ data at: frequencyKey
 ]
 
 { #category : #enumerating }
@@ -448,11 +433,10 @@ GolapVertex >> scoresDo: aBlock [
 ]
 
 { #category : #private }
-GolapVertex >> setData: aDataSeries nameKey: aString frequencyKey: anotherString [
+GolapVertex >> setData: aDataSeries nameKey: aString [
 
 	data := aDataSeries.
-	nameKey := aString.
-	frequencyKey := anotherString
+	nameKey := aString
 ]
 
 { #category : #accessing }

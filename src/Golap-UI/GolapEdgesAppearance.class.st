@@ -566,20 +566,29 @@ GolapEdgesAppearance >> setGolap: aGolap [
 
 { #category : #operations }
 GolapEdgesAppearance >> setModelToAverageMode [
-	golap model ifNotNil: [ :model | model aggregation: #average ].
-	golap dimensionsDo: [ :m | m aggregation: #average ]
+
+	golap model ifNotNil: [ :model |
+		model vertexEvaluator: (GolapVertexAverageEvaluator on: model) ].
+	golap dimensionsDo: [ :m |
+		m vertexEvaluator: (GolapVertexAverageEvaluator on: m) ]
 ]
 
 { #category : #operations }
 GolapEdgesAppearance >> setModelToDegreeMode [
-	golap model ifNotNil: [ :model | model aggregation: #degree ].
-	golap dimensionsDo: [ :m | m aggregation: #degree ]
+
+	golap model ifNotNil: [ :model |
+		model vertexEvaluator: (GolapVertexNumEdgesEvaluator on: model) ].
+	golap dimensionsDo: [ :m |
+		m vertexEvaluator: (GolapVertexNumEdgesEvaluator on: m) ]
 ]
 
 { #category : #operations }
 GolapEdgesAppearance >> setModelToFreqMode [
-	golap model ifNotNil: [ :model | model aggregation: #frequency ].
-	golap dimensionsDo: [ :m | m aggregation: #frequency ]
+
+	golap model ifNotNil: [ :model |
+		model vertexEvaluator: (GolapVertexColumnEvaluator on: model column: 'frequency') ].
+	golap dimensionsDo: [ :m |
+		m vertexEvaluator: (GolapVertexColumnEvaluator on: m column: 'frequency') ]
 ]
 
 { #category : #operations }
@@ -602,8 +611,11 @@ GolapEdgesAppearance >> setModelToLiftMode [
 
 { #category : #operations }
 GolapEdgesAppearance >> setModelToMaxMode [
-	golap model ifNotNil: [ :model | model aggregation: #max ].
-	golap dimensionsDo: [ :m | m aggregation: #max ]
+
+	golap model ifNotNil: [ :model |
+		model vertexEvaluator: (GolapVertexMaxEvaluator on: model) ].
+	golap dimensionsDo: [ :m |
+		m vertexEvaluator: (GolapVertexMaxEvaluator on: m) ]
 ]
 
 { #category : #operations }
@@ -614,8 +626,11 @@ GolapEdgesAppearance >> setModelToPmiMode [
 
 { #category : #operations }
 GolapEdgesAppearance >> setModelToSumMode [
-	golap model ifNotNil: [ :model | model aggregation: #sum ].
-	golap dimensionsDo: [ :m | m aggregation: #sum ]
+
+	golap model ifNotNil: [ :model |
+		model vertexEvaluator: (GolapVertexSumEvaluator on: model) ].
+	golap dimensionsDo: [ :m |
+		m vertexEvaluator: (GolapVertexSumEvaluator on: m) ]
 ]
 
 { #category : #snapshot }
@@ -658,9 +673,9 @@ GolapEdgesAppearance >> snapshotInto: aStream [
 { #category : #operations }
 GolapEdgesAppearance >> sumMode [
 
-	golap model ifNotNil: [ :model | 
-		self updateGlobalImageAfter: [ 
-			model aggregation: #sum.
+	golap model ifNotNil: [ :model |
+		self updateGlobalImageAfter: [
+			model vertexEvaluator: (GolapVertexSumEvaluator on: model).
 			maxButton state: false.
 			sumButton state: true.
 			averageButton state: false.
@@ -713,23 +728,17 @@ GolapEdgesAppearance >> updateGlobalImageAfter: aBlock layout: aBoolean [
 
 { #category : #private }
 GolapEdgesAppearance >> updateModel: aGolapModel [
-	frequencyButton state
-		ifTrue: [ self frequencyMode ].
-	jaccardButton state
-		ifTrue: [ self jaccardMode ].
-	liftButton state
-		ifTrue: [self liftMode].
-	pmiButton state
-		ifTrue: [self pmiMode].
-	aGolapModel aggregation: #frequency.
-	maxButton state
-		ifTrue: [self maxMode].
-	sumButton state
-		ifTrue: [self sumMode].
-	averageButton state
-		ifTrue: [self averageMode].
-	degreeButton state
-		ifTrue: [self degreeMode]
+
+	frequencyButton state ifTrue: [ self frequencyMode ].
+	jaccardButton state ifTrue: [ self jaccardMode ].
+	liftButton state ifTrue: [ self liftMode ].
+	pmiButton state ifTrue: [ self pmiMode ].
+	aGolapModel vertexEvaluator:
+		(GolapVertexColumnEvaluator on: aGolapModel column: 'frequency').
+	maxButton state ifTrue: [ self maxMode ].
+	sumButton state ifTrue: [ self sumMode ].
+	averageButton state ifTrue: [ self averageMode ].
+	degreeButton state ifTrue: [ self degreeMode ]
 ]
 
 { #category : #accessing }

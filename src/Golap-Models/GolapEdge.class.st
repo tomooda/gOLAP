@@ -6,7 +6,7 @@ Class {
 		'vertex1',
 		'vertex2'
 	],
-	#category : #'Golap-Models'
+	#category : #'Golap-Models-Graph'
 }
 
 { #category : #'instance creation' }

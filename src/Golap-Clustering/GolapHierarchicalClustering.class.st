@@ -73,7 +73,7 @@ GolapHierarchicalClustering >> initializeWith: aGolapModel [
 
 	| done |
 	golapModel := aGolapModel.
-	edges := OrderedCollection new: golapModel dataframe numberOfRows.
+	edges := OrderedCollection new.
 	done := IdentitySet new: golapModel vertices size.
 	golapModel verticesDo: [ :vertex |
 		done add: vertex.

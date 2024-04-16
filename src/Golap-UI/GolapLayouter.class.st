@@ -132,7 +132,7 @@ GolapLayouter >> layout [
 
 	| vertices boundVertices bindings reps isolatedVertices |
 	vertices := self model vertices asSortedCollection: [ :v1 :v2 |
-		            v2 frequency < v1 frequency or: [ v2 id <= v1 id ] ].
+		            v2 id <= v1 id ].
 	boundVertices := vertices reject: [ :vertex | vertex isIsolated ].
 	divisions := (boundVertices size sqrt * 1.4) ceiling max: 1.
 	softDivisions := divisions asFloat - 1.0e-8.
@@ -164,18 +164,18 @@ GolapLayouter >> layout [
 		maxY := (boundVertices collect: #y thenSelect: #notNil)
 			        ifEmpty: [ 0.0 ]
 			        ifNotEmpty: #max.
-		minF := (boundVertices collect: #frequency thenSelect: #notNil)
-			        ifEmpty: [ 0.0 ]
-			        ifNotEmpty: #min.
-		maxF := (boundVertices collect: #frequency thenSelect: #notNil)
-			        ifEmpty: [ 0.0 ]
-			        ifNotEmpty: #max.
+		minF := (boundVertices
+			         collect: model vertexEvaluator
+			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #min.
+		maxF := (boundVertices
+			         collect: model vertexEvaluator
+			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #max.
 		(minY ~= maxY and: [ minF ~= maxF ]) ifTrue: [
 			| offset scale |
 			offset := minY.
 			scale := maxY - minY / (maxF - minF).
 			boundVertices do: [ :vertex |
-				vertex y: maxF - vertex frequency * scale + offset ] ] ].
+				vertex y: maxF - (model valueAtVertex: vertex) * scale + offset ] ] ].
 	self overridesYWithFrequencyOrder ifTrue: [
 		| minY maxY minF maxF |
 		minY := (boundVertices collect: #y thenSelect: #notNil)
@@ -184,22 +184,24 @@ GolapLayouter >> layout [
 		maxY := (boundVertices collect: #y thenSelect: #notNil)
 			        ifEmpty: [ 0.0 ]
 			        ifNotEmpty: #max.
-		minF := (boundVertices collect: #frequency thenSelect: #notNil)
-			        ifEmpty: [ 0.0 ]
-			        ifNotEmpty: #min.
-		maxF := (boundVertices collect: #frequency thenSelect: #notNil)
-			        ifEmpty: [ 0.0 ]
-			        ifNotEmpty: #max.
+		minF := (boundVertices
+			         collect: model vertexEvaluator
+			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #min.
+		maxF := (boundVertices
+			         collect: model vertexEvaluator
+			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #max.
 		(minY ~= maxY and: [ minF ~= maxF and: [ boundVertices size > 1 ] ])
 			ifTrue: [
 				| offset scale |
 				offset := minY.
 				scale := maxY - minY / (boundVertices size - 1).
 				(boundVertices asSortedCollection: [ :more :less |
-					 less frequency isNil or: [
-						 more frequency notNil and: [ more frequency >= less frequency ] ] ])
-					doWithIndex: [ :vertex :index |
-					vertex y: (index - 1) asFloat * scale + offset ] ] ].
+					 | v1 v2 |
+					 v1 := model valueAtVertex: more.
+					 v2 := model valueAtVertex: less.
+					 v2 isNil or: [ v1 notNil and: [ v1 >= v2 ] ] ]) doWithIndex: [
+					:vertex
+					:index | vertex y: (index - 1) asFloat * scale + offset ] ] ].
 	((boundVertices collect: #x thenSelect: #notNil)
 		 ifEmpty: [ 0.0 ]
 		 ifNotEmpty: #min) floor

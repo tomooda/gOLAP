@@ -213,12 +213,13 @@ GolapItemsAppearance >> snapshotInto: aStream [
 GolapItemsAppearance >> updateMinMaxFrequency [
 
 	golap ifNotNil: [
-		(golap vertices collect: #frequency)
-			ifEmpty: [
-				self
-					minFrequency: 0;
-					maxFrequency: 100 ]
-			ifNotEmpty: [ :freqs |
-				self minFrequency: freqs min.
-				self maxFrequency: freqs max ] ]
+		golap model ifNotNil: [ :model |
+			(golap vertices collect: golap model vertexEvaluator)
+				ifEmpty: [
+					self
+						minFrequency: 0;
+						maxFrequency: 1 ]
+				ifNotEmpty: [ :freqs |
+					self minFrequency: freqs min.
+					self maxFrequency: freqs max ] ] ]
 ]

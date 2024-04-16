@@ -5,7 +5,7 @@ Class {
 		'oldEdges',
 		'oldVertices'
 	],
-	#category : #'Golap-Models'
+	#category : #'Golap-Models-Graph'
 }
 
 { #category : #testing }
@@ -66,7 +66,7 @@ GolapMergedVertex >> oldVerticesDo: aBlock [
 GolapMergedVertex >> photoId [
 
 	^ (oldVertices notNil and: [ oldVertices notEmpty ])
-		  ifTrue: [ (oldVertices maxWith: #frequency) photoId ]
+		  ifTrue: [ oldVertices first photoId ]
 		  ifFalse: [ self id ]
 ]
 

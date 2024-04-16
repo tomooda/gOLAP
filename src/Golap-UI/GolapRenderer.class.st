@@ -196,15 +196,16 @@ GolapRenderer >> updateVisibleEdgeThresholds [
 		reallyVisibleEdges := golap visibleEdges select: [ :edge |
 			                      (edge vertex1 notNil and: [
 				                       edge vertex2 notNil and: [
-					                       edge vertex1 frequency >= minFreq and:
-						                       edge vertex2 frequency > minFreq ] ])
-				                      and: [
-					                      (model valueAtEdge: edge)
-						                      ifNil: [ true ]
-						                      ifNotNil: [ :v |
-						                      v
-							                      between: visibleEdgeMinValue
-							                      and: visibleEdgeMaxValue ] ] ].
+					                       (model valueAtVertex: edge vertex1)
+					                       >= minFreq and:
+						                       (model valueAtVertex: edge vertex2)
+						                       > minFreq ] ]) and: [
+				                      (model valueAtEdge: edge)
+					                      ifNil: [ true ]
+					                      ifNotNil: [ :v |
+					                      v
+						                      between: visibleEdgeMinValue
+						                      and: visibleEdgeMaxValue ] ] ].
 		connectedVertices := IdentitySet new: reallyVisibleEdges size.
 		reallyVisibleEdges do: [ :edge |
 			connectedVertices

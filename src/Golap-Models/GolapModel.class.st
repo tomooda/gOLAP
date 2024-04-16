@@ -2,30 +2,21 @@ Class {
 	#name : #GolapModel,
 	#superclass : #Model,
 	#instVars : [
+		'vertexEvaluator',
+		'edgeEvaluator',
 		'dataframe',
-		'nodeKey1',
-		'nodeKey2',
-		'nodeNameKey1',
-		'nodeNameKey2',
-		'frequencyKey',
-		'totalKey',
-		'liftKey',
-		'edgeKey',
-		'jaccardKey',
-		'pmiKey',
 		'vertices',
-		'frequencyKey1',
-		'frequencyKey2',
 		'treeEdges',
-		'aggregation',
 		'friendsEdges',
 		'friendsRank',
 		'graphEdges',
 		'positivePolishEdges',
 		'negativePolishEdges',
-		'mergedVertices'
+		'mergedVertices',
+		'vertexAggregationMap',
+		'edgeAggregationMap'
 	],
-	#category : #'Golap-Models'
+	#category : #'Golap-Models-Graph'
 }
 
 { #category : #storage }
@@ -107,129 +98,41 @@ GolapModel class >> stringColumns [
 ]
 
 { #category : #arithmetics }
-GolapModel >> + aGolapOverviewModel [
-	| dataframe2 sumDataframe frequencies1 frequencies2 sumFrequencies |
-	dataframe2 := aGolapOverviewModel dataframe.
-	sumDataframe := DataFrame withColumnNames: dataframe columnNames.
-	frequencies1 := Dictionary new.
-	dataframe
-		do: [ :row | 
-			frequencies1 at: (row at: 'node1') ifAbsentPut: (row at: 'frequency1').
-			frequencies1
-				at: (row at: 'node2')
-				ifAbsentPut: (row at: 'frequency2') ].
-	frequencies2 := Dictionary new.
-	dataframe2
-		do: [ :row | 
-			frequencies2 at: (row at: 'node1') ifAbsentPut: (row at: 'frequency1').
-			frequencies2
-				at: (row at: 'node2')
-				ifAbsentPut: (row at: 'frequency2') ].
-	sumFrequencies := frequencies1.
-	frequencies2
-		keysAndValuesDo: [ :node :freq | 
-			sumFrequencies
-				at: node
-				put: (sumFrequencies at: node ifAbsent: [ 0 ]) + freq ].
-	frequencies1 := nil.
-	frequencies2 := nil.
-	1 to: dataframe numberOfRows do: [ :index | 
-		| dataseries |
-		dataseries := DataSeries newFrom: (dataframe rowAt: index).
-		dataseries
-			name:
-				{(dataseries at: self nodeKey1).
-				(dataseries at: self nodeKey2)}.
-		dataseries
-			at: 'frequency1'
-			put: (sumFrequencies at: (dataseries at: 'node1')).
-		dataseries
-			at: 'frequency2'
-			put: (sumFrequencies at: (dataseries at: 'node2')).
-		sumDataframe addRow: dataseries ].
-	1 to: dataframe2 numberOfRows do: [ :index | 
-		| dataseries2 node1 node2 sumDataseries |
-		dataseries2 := dataframe2 rowAt: index.
-		node1 := dataseries2 at: self nodeKey1.
-		node2 := dataseries2 at: self nodeKey2.
-		sumDataseries := sumDataframe
-			row:
-				{node1.
-				node2}
-			ifAbsent: [ | ds |
-				ds := (DataSeries newFrom: dataseries2)
-					at: self frequencyKey put: 0;
-					at: self frequencyKey1 put: (sumFrequencies at: node1);
-					at: self frequencyKey2 put: (sumFrequencies at: node2);
-					at: self totalKey put: 0;
-					at: 'support' put: 0.0;
-					at: 'confidence' put: 0.0;
-					at: self liftKey put: 0.0;
-					at: self jaccardKey put: 0.0;
-					at: self pmiKey put: 0.0;
-					name:
-						{node1.
-						node2};
-					yourself.
-				sumDataframe addRow: ds.
-				ds ].
-		{self frequencyKey.
-		self totalKey.
-		'support'.
-		'confidence'.
-		self liftKey.
-		self jaccardKey.
-		self pmiKey}
-			do: [ :key | 
-				sumDataseries
-					at: key
-					transform: [ :v | v + (dataseries2 at: key) min: 1 ] ].
-		sumDataseries
-			at: 'effective'
-			transform: [ :v | v + (dataseries2 at: 'effective') ].
-		sumDataframe
-			row:
-				{node1.
-				node2}
-			put: sumDataseries asArray ].
-	^ self class dataframe: sumDataframe
-]
+GolapModel >> - aGolapModel [
 
-{ #category : #arithmetics }
-GolapModel >> - aGolapOverviewModel [
 	| dataframe2 diff rowNames diffDataframe frequencies1 frequencies2 diffFrequencies |
-	dataframe2 := aGolapOverviewModel dataframe.
-	diff := Dictionary
-		new: dataframe numberOfRows + dataframe2 numberOfRows.
+	dataframe2 := aGolapModel dataframe.
+	diff := Dictionary new:
+		        dataframe numberOfRows + dataframe2 numberOfRows.
 	frequencies1 := Dictionary new.
-	dataframe
-		do: [ :row | 
-			frequencies1 at: (row at: 'node1') ifAbsentPut: (row at: 'frequency1').
-			frequencies1
-				at: (row at: 'node2')
-				ifAbsentPut: (row at: 'frequency2') ].
+	dataframe do: [ :row |
+		frequencies1
+			at: (row at: 'node1')
+			ifAbsentPut: (row at: 'frequency1').
+		frequencies1
+			at: (row at: 'node2')
+			ifAbsentPut: (row at: 'frequency2') ].
 	frequencies2 := Dictionary new.
-	dataframe2
-		do: [ :row | 
-			frequencies2 at: (row at: 'node1') ifAbsentPut: (row at: 'frequency1').
-			frequencies2
-				at: (row at: 'node2')
-				ifAbsentPut: (row at: 'frequency2') ].
+	dataframe2 do: [ :row |
+		frequencies2
+			at: (row at: 'node1')
+			ifAbsentPut: (row at: 'frequency1').
+		frequencies2
+			at: (row at: 'node2')
+			ifAbsentPut: (row at: 'frequency2') ].
 	diffFrequencies := frequencies1.
-	frequencies2
-		keysAndValuesDo: [ :node :freq | 
-			diffFrequencies
-				at: node
-				put: (diffFrequencies at: node ifAbsent: [ 0 ]) - freq ].
+	frequencies2 keysAndValuesDo: [ :node :freq |
+		diffFrequencies
+			at: node
+			put: (diffFrequencies at: node ifAbsent: [ 0 ]) - freq ].
 	frequencies1 := nil.
 	frequencies2 := nil.
-	1 to: dataframe numberOfRows do: [ :index | 
+	1 to: dataframe numberOfRows do: [ :index |
 		| dataseries |
 		dataseries := DataSeries newFrom: (dataframe rowAt: index).
-		dataseries
-			name:
-				{(dataseries at: self nodeKey1).
-				(dataseries at: self nodeKey2)}.
+		dataseries name: {
+				(dataseries at: 'node1').
+				(dataseries at: 'node2') }.
 		dataseries
 			at: 'frequency1'
 			put: (diffFrequencies at: (dataseries at: 'node1')).
@@ -237,65 +140,60 @@ GolapModel >> - aGolapOverviewModel [
 			at: 'frequency2'
 			put: (diffFrequencies at: (dataseries at: 'node2')).
 		diff at: dataseries name put: dataseries ].
-	1 to: dataframe2 numberOfRows do: [ :index | 
+	1 to: dataframe2 numberOfRows do: [ :index |
 		| dataseries2 node1 node2 diffDataseries |
 		dataseries2 := dataframe2 rowAt: index.
-		node1 := dataseries2 at: self nodeKey1.
-		node2 := dataseries2 at: self nodeKey2.
+		node1 := dataseries2 at: 'node1'.
+		node2 := dataseries2 at: 'node2'.
 		diffDataseries := diff
-			at:
-				{node1.
-				node2}
-			ifAbsent: [ | ds |
-				ds := (DataSeries newFrom: dataseries2)
-					at: self frequencyKey put: 0;
-					at: self frequencyKey1 put: (diffFrequencies at: node1);
-					at: self frequencyKey2 put: (diffFrequencies at: node2);
-					at: self totalKey put: 0;
-					at: 'support' put: 0.0;
-					at: 'confidence' put: 0.0;
-					at: self liftKey put: 0.0;
-					at: self jaccardKey put: 0.0;
-					at: self pmiKey put: 0.0;
-					at: 'effective' put: 0;
-					name:
-						{node1.
-						node2};
-					yourself.
-				diff at: ds name put: ds.
-				ds ].
-		{self frequencyKey.
-		self totalKey.
-		'support'.
-		'confidence'.
-		self liftKey.
-		self jaccardKey.
-		self pmiKey}
-			do: [ :key | 
-				diffDataseries
-					at: key
-					transform: [ :v | 
-						v
-							ifNil: [ (dataseries2 at: key) ifNil: [ 0.0 ] ]
-							ifNotNil: [ v - ((dataseries2 at: key) ifNil: [ 0.0 ]) ] ] ].
+			                  at: {
+					                  node1.
+					                  node2 }
+			                  ifAbsent: [
+				                  | ds |
+				                  ds := (DataSeries newFrom: dataseries2)
+					                        at: 'frequency' put: 0;
+					                        at: 'frequency1'
+					                        put: (diffFrequencies at: node1);
+					                        at: 'frequency2'
+					                        put: (diffFrequencies at: node2);
+					                        at: 'total' put: 0;
+					                        at: 'support' put: 0.0;
+					                        at: 'confidence' put: 0.0;
+					                        at: 'lift' put: 0.0;
+					                        at: 'jaccard' put: 0.0;
+					                        at: 'PMI' put: 0.0;
+					                        at: 'effective' put: 0;
+					                        name: {
+							                        node1.
+							                        node2 };
+					                        yourself.
+				                  diff at: ds name put: ds.
+				                  ds ].
+		{ 'frequency'. 'total'. 'support'. 'confidence'. 'lift'. 'jaccard'.
+		'PMI' } do: [ :key |
+			diffDataseries at: key transform: [ :v |
+				v
+					ifNil: [ (dataseries2 at: key) ifNil: [ 0.0 ] ]
+					ifNotNil: [ v - ((dataseries2 at: key) ifNil: [ 0.0 ]) ] ] ].
 		diffDataseries
 			at: 'effective'
 			transform: [ :v | v + (dataseries2 at: 'effective') ].
 		diff
-			at:
-				{node1.
-				node2}
+			at: {
+					node1.
+					node2 }
 			put: diffDataseries ].
-	rowNames := (diff keys
-		asSortedCollection: [ :less :more | 
-			less first < more first
-				or: [ more second isNil
-						or: [ less second notNil and: [ less second <= more second ] ] ] ])
-		asArray.
+	rowNames := (diff keys asSortedCollection: [ :less :more |
+		             less first < more first or: [
+			             more second isNil or: [
+				             less second notNil and: [ less second <= more second ] ] ] ])
+		            asArray.
 	diffDataframe := DataFrame
-		withRows: (rowNames collect: [ :key | (diff at: key) asArray ])
-		rowNames: rowNames
-		columnNames: dataframe columnNames.
+		                 withRows:
+		                 (rowNames collect: [ :key | (diff at: key) asArray ])
+		                 rowNames: rowNames
+		                 columnNames: dataframe columnNames.
 	^ self class dataframe: diffDataframe
 ]
 
@@ -307,22 +205,6 @@ GolapModel >> addNegativePolishEdge: aGolapEdge [
 { #category : #polishing }
 GolapModel >> addPositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges add: aGolapEdge
-]
-
-{ #category : #accessing }
-GolapModel >> aggregation [
-	^ aggregation
-]
-
-{ #category : #accessing }
-GolapModel >> aggregation: aSymbol [
-	aggregation := aSymbol asSymbol
-]
-
-{ #category : #accessing }
-GolapModel >> averageEdgeValueAtVertex: aGolapVertex [
-	^ (self sumEdgeValueAtVertex: aGolapVertex)
-		/ (self vertices size - 1) asFloat
 ]
 
 { #category : #enumerating }
@@ -352,32 +234,58 @@ GolapModel >> computeFriendsEdges: anInteger [
 			  n >= 2 ifTrue: [ stream nextPut: e ] ] ]
 ]
 
-{ #category : #'accessing-vertex' }
-GolapModel >> createVertex: anInteger name: aString frequency: aNumber [
+{ #category : #private }
+GolapModel >> createMergedVertexFrom: aCollectionOfGolapVertex named: aString [
 
-	^ GolapVertex id: anInteger name: aString frequency: aNumber
+	^ aCollectionOfGolapVertex
+		  ifNotEmpty: [
+			  | oldData newData |
+			  oldData := aCollectionOfGolapVertex collect: #data.
+			  newData := vertexAggregationMap collect: [ :aggregation |
+				             aggregation value: oldData ].
+			  newData at: aCollectionOfGolapVertex first nameKey put: aString.
+			  GolapMergedVertex
+				  on: (DataSeries
+						   withKeys: newData keys
+						   values: newData values
+						   name: aString)
+				  nameKey: aCollectionOfGolapVertex first nameKey ]
+		  ifEmpty: [ nil ]
 ]
 
 { #category : #'accessing-vertex' }
-GolapModel >> createVerticesFromDataframe [
+GolapModel >> createVertex: anInteger name: aString frequency: aNumber [
+
+	^ GolapVertex
+		  on: (DataSeries
+				   withKeys: { 'name'. 'frequency' }
+				   values: {
+						   aString.
+						   aNumber }
+				   name: anInteger)
+		  nameKey: 'name'
+]
+
+{ #category : #'accessing-vertex' }
+GolapModel >> createVerticesFromServerDataframe: aDataFrame [
 
 	| newVertices |
 	newVertices := Dictionary new.
-	dataframe do: [ :data |
+	aDataFrame do: [ :data |
 		| node1 node2 vertex1 vertex2 |
-		node1 := data at: self nodeKey1.
-		node2 := data at: self nodeKey2.
+		node1 := data at: 'node1'.
+		node2 := data at: 'node2'.
 		vertex1 := newVertices at: node1 ifAbsentPut: [
 			           self
 				           createVertex: node1
-				           name: (data at: self nodeNameKey1)
-				           frequency: (data at: self frequencyKey1) ].
+				           name: (data at: 'node1n')
+				           frequency: (data at: 'frequency1') ].
 		node2 ifNotNil: [
 			vertex2 := newVertices at: node2 ifAbsentPut: [
 				           self
 					           createVertex: node2
-					           name: (data at: self nodeNameKey2)
-					           frequency: (data at: self frequencyKey2) ].
+					           name: (data at: 'node2n')
+					           frequency: (data at: 'frequency2') ].
 			(data at: 'effective' ifAbsent: [ 1 ]) > 0
 				ifTrue: [ vertex1 createEdgeTo: vertex2 data: data ]
 				ifFalse: [ vertex1 createHiddenEdgeTo: vertex2 data: data ] ] ].
@@ -391,84 +299,75 @@ GolapModel >> dataframe [
 
 { #category : #accessing }
 GolapModel >> dataframe: aDataFrame [
-	aDataFrame
-		columnNames:
-			(aDataFrame columnNames
-				collect: [ :string | 
-					(string includes: $%)
-						ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
-						ifFalse: [ string ] ]).
-	dataframe := aDataFrame
-]
 
-{ #category : #defaults }
-GolapModel >> defaultEdgeKey [
-	^ 'frequency'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultFrequencyKey [
-	^ 'frequency'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultFrequencyKey1 [
-	^ 'frequency1'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultFrequencyKey2 [
-	^ 'frequency2'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultJaccardKey [
-	^ 'jaccard'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultLiftKey [
-	^ 'lift'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultName [
-	^ 'vanilla' copy
-]
-
-{ #category : #defaults }
-GolapModel >> defaultNodeKey1 [
-	^ 'node1'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultNodeKey2 [
-	^ 'node2'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultNodeNameKey1 [
-	^ 'node1n'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultNodeNameKey2 [
-	^ 'node2n'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultPMIKey [
-	^ 'PMI'
-]
-
-{ #category : #defaults }
-GolapModel >> defaultTotalKey [
-	^ 'total'
+	| newVertices |
+	aDataFrame columnNames: (aDataFrame columnNames collect: [ :string |
+			 (string includes: $%)
+				 ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
+				 ifFalse: [ string ] ]).
+	dataframe := aDataFrame.
+	vertexEvaluator := GolapVertexColumnEvaluator
+		                   on: self
+		                   column: 'frequency'.
+	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
+	vertexAggregationMap := { ('frequency'
+	                         ->
+	                         (GolapSumDataAggregator column: 'frequency')) }
+		                        asOrderedDictionary.
+	edgeAggregationMap := {
+		                      ('frequency'
+		                       ->
+		                       (GolapSumDataAggregator column: 'frequency')).
+		                      ('total'
+		                       -> (GolapSumDataAggregator column: 'total')).
+		                      ('support'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'supoort'
+				                        weightColumn: 'frequency')).
+		                      ('jaccard'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'jaccard'
+				                        weightColumn: 'frequency')).
+		                      ('lift'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'lift'
+				                        weightColumn: 'frequency')).
+		                      ('PMI' -> (GolapWeightedAverageDataAggregator
+			                        column: 'PMI'
+			                        weightColumn: 'frequency')) }
+		                      asOrderedDictionary.
+	newVertices := Dictionary new.
+	aDataFrame do: [ :data |
+		| node1 node2 vertex1 vertex2 |
+		node1 := data at: 'node1'.
+		node2 := data at: 'node2'.
+		vertex1 := newVertices at: node1 ifAbsentPut: [
+			           self
+				           createVertex: node1
+				           name: (data at: 'node1n')
+				           frequency: (data at: 'frequency1') ].
+		node2 ifNotNil: [
+			vertex2 := newVertices at: node2 ifAbsentPut: [
+				           self
+					           createVertex: node2
+					           name: (data at: 'node2n')
+					           frequency: (data at: 'frequency2') ].
+			(data at: 'effective' ifAbsent: [ 1 ]) > 0
+				ifTrue: [ vertex1 createEdgeTo: vertex2 data: data ]
+				ifFalse: [ vertex1 createHiddenEdgeTo: vertex2 data: data ] ] ].
+	vertices := newVertices
 ]
 
 { #category : #accessing }
-GolapModel >> degreeEdgeValueAtVertex: aGolapVertex [
-	^ aGolapVertex numberOfEdges
+GolapModel >> edgeAggregationMap [
+
+	^ edgeAggregationMap
+]
+
+{ #category : #accessing }
+GolapModel >> edgeAggregationMap: aDictionary [
+
+	edgeAggregationMap := aDictionary
 ]
 
 { #category : #accessing }
@@ -498,54 +397,21 @@ GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlo
 	^ aBlock value: edge
 ]
 
-{ #category : #'accessing-keys' }
-GolapModel >> edgeKey [
-	^ edgeKey ifNil: [ edgeKey := self defaultEdgeKey ]
+{ #category : #accessing }
+GolapModel >> edgeEvaluator [
+
+	^ edgeEvaluator
 ]
 
-{ #category : #'accessing-keys' }
-GolapModel >> edgeKey: aString [
-	edgeKey := aString
+{ #category : #accessing }
+GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
+
+	edgeEvaluator := aGolapEdgeEvaluator
 ]
 
 { #category : #'visualizing-labels' }
 GolapModel >> font [
 	^ TextStyle defaultFont
-]
-
-{ #category : #accessing }
-GolapModel >> frequencyAtVertex: aGolapVertex [
-	^ aGolapVertex frequency
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> frequencyKey [
-	^ frequencyKey ifNil: [ frequencyKey := self defaultFrequencyKey ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> frequencyKey1 [
-	^ frequencyKey1 ifNil: [ frequencyKey1 := self defaultFrequencyKey1 ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> frequencyKey1: aString [
-	frequencyKey1 := aString
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> frequencyKey2 [
-	^ frequencyKey2 ifNil: [ frequencyKey2 := self defaultFrequencyKey2 ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> frequencyKey2: aString [
-	frequencyKey2 := aString
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> frequencyKey: aString [
-	frequencyKey := aString
 ]
 
 { #category : #operations }
@@ -623,28 +489,43 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 	^ aBlock value: edge
 ]
 
-{ #category : #'accessing-vertex' }
-GolapModel >> idForVertex: aGolapVertex [
-	^ self vertices keyAtValue: aGolapVertex
-]
-
 { #category : #initialization }
 GolapModel >> initialize [
+
 	super initialize.
-	aggregation := #frequency.
+	vertexEvaluator := GolapVertexColumnEvaluator
+		                   on: self
+		                   column: 'frequency'.
+	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
+	vertexAggregationMap := { ('frequency'
+	                         ->
+	                         (GolapSumDataAggregator column: 'frequency')) }
+		                        asOrderedDictionary.
+	edgeAggregationMap := {
+		                      ('frequency'
+		                       ->
+		                       (GolapSumDataAggregator column: 'frequency')).
+		                      ('total'
+		                       -> (GolapSumDataAggregator column: 'total')).
+		                      ('support'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'supoort'
+				                        weightColumn: 'frequency')).
+		                      ('jaccard'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'jaccard'
+				                        weightColumn: 'frequency')).
+		                      ('lift'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'lift'
+				                        weightColumn: 'frequency')).
+		                      ('PMI' -> (GolapWeightedAverageDataAggregator
+			                        column: 'PMI'
+			                        weightColumn: 'frequency')) }
+		                      asOrderedDictionary.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedVertices := IdentityDictionary new
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> jaccardKey [
-	^ jaccardKey ifNil: [ jaccardKey := self defaultJaccardKey ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> jaccardKey: aString [
-	jaccardKey := aString
 ]
 
 { #category : #operations }
@@ -654,16 +535,6 @@ GolapModel >> jaccardMode [
 	treeEdges := nil
 ]
 
-{ #category : #'accessing-keys' }
-GolapModel >> liftKey [
-	^ liftKey ifNil: [ liftKey := self defaultLiftKey ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> liftKey: aString [
-	liftKey := aString
-]
-
 { #category : #operations }
 GolapModel >> liftMode [
 	self setLiftMode.
@@ -671,131 +542,82 @@ GolapModel >> liftMode [
 	treeEdges := nil
 ]
 
-{ #category : #accessing }
-GolapModel >> maxEdgeValueAtVertex: aGolapVertex [
-	| value |
-	value := 0.
-	aGolapVertex
-		edgesDo: [ :edge | value := value max: (self valueAtEdge: edge) ].
-	^ value
-]
-
 { #category : #'accessing-vertex' }
 GolapModel >> mergeVertices: aCollectionOfGolapVertex named: aString [
 
-	| frequency newVertex newEdges oldEdges |
-	frequency := aCollectionOfGolapVertex
-		             inject: 0
-		             into: [ :subtotal :v | v frequency + subtotal ].
-	newVertex := GolapMergedVertex
-		             id: aString
-		             name: aString
-		             frequency: frequency.
-	newEdges := IdentityDictionary new.
-	oldEdges := OrderedCollection new:
-		            aCollectionOfGolapVertex size
-		            * aCollectionOfGolapVertex size.
-	aCollectionOfGolapVertex do: [ :vertex |
-		(Array streamContents: [ :stream |
-			 vertex edgesDo: [ :e | stream nextPut: e ] ]) do: [ :edge |
-			| peer |
-			peer := edge peerOf: vertex.
-			newVertex == peer
-				ifTrue: [
-					edge remove.
-					newEdges removeKey: vertex ]
-				ifFalse: [
-					(newEdges includesKey: peer)
-						ifTrue: [
-							| newEdge |
-							newEdge := newEdges at: peer.
-							newEdge
-								at: 'frequency'
-								put: (newEdge at: 'frequency') + (edge at: 'frequency').
-							#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
+	aCollectionOfGolapVertex ifNotEmpty: [
+		| newVertex newEdges oldEdges |
+		newVertex := self
+			             createMergedVertexFrom: aCollectionOfGolapVertex
+			             named: aString.
+		newEdges := IdentityDictionary new.
+		oldEdges := OrderedCollection new:
+			            aCollectionOfGolapVertex size
+			            * aCollectionOfGolapVertex size.
+		aCollectionOfGolapVertex do: [ :vertex |
+			(Array streamContents: [ :stream |
+				 vertex edgesDo: [ :e | stream nextPut: e ] ]) do: [ :edge |
+				| peer |
+				peer := edge peerOf: vertex.
+				newVertex == peer
+					ifTrue: [
+						edge remove.
+						newEdges removeKey: vertex ]
+					ifFalse: [
+						(newEdges includesKey: peer)
+							ifTrue: [
+								| newEdge |
+								newEdge := newEdges at: peer.
 								newEdge
-									at: key
-									put:
-									(newEdge at: key) + ((edge at: key) * (edge at: 'frequency')) ].
-							edge remove.
-							oldEdges add: edge ]
-						ifFalse: [
-							| newEdge |
-							newEdge := edge copy.
-							#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
-								newEdge
-									at: key
-									put: (newEdge at: key) * (newEdge at: 'frequency') ].
-							edge remove.
-							newEdge basicReplaceVertex: vertex with: newVertex.
-							newVertex addEdge: newEdge.
-							peer addEdge: newEdge.
-							oldEdges add: edge.
-							newEdges at: peer put: newEdge ] ] ].
-		self vertices removeKey: vertex id ].
-	newEdges do: [ :edge |
-		#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
-			edge at: key put: (edge at: key) / (edge at: 'frequency') ] ].
-	newVertex
-		x: ((aCollectionOfGolapVertex collect: #x thenSelect: #notNil)
-				 ifEmpty: [ nil ]
-				 ifNotEmpty: #average);
-		y: ((aCollectionOfGolapVertex collect: #y thenSelect: #notNil)
-				 ifEmpty: [ nil ]
-				 ifNotEmpty: #average);
-		oldEdges: oldEdges asArray;
-		oldVertices: aCollectionOfGolapVertex asArray.
-	self vertices at: aString put: newVertex.
-	treeEdges := nil.
-	graphEdges := nil.
-	friendsEdges := nil.
-	self friendsEdges: self friendsRank.
-	^ newVertex
+									at: 'frequency'
+									put: (newEdge at: 'frequency') + (edge at: 'frequency').
+								#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
+									newEdge
+										at: key
+										put:
+										(newEdge at: key)
+										+ ((edge at: key) * (edge at: 'frequency')) ].
+								edge remove.
+								oldEdges add: edge ]
+							ifFalse: [
+								| newEdge |
+								newEdge := edge copy.
+								#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
+									newEdge
+										at: key
+										put: (newEdge at: key) * (newEdge at: 'frequency') ].
+								edge remove.
+								newEdge basicReplaceVertex: vertex with: newVertex.
+								newVertex addEdge: newEdge.
+								peer addEdge: newEdge.
+								oldEdges add: edge.
+								newEdges at: peer put: newEdge ] ] ].
+			self vertices removeKey: vertex id ].
+		newEdges do: [ :edge |
+			#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
+				edge at: key put: (edge at: key) / (edge at: 'frequency') ] ].
+		newVertex
+			x: ((aCollectionOfGolapVertex collect: #x thenSelect: #notNil)
+					 ifEmpty: [ nil ]
+					 ifNotEmpty: #average);
+			y: ((aCollectionOfGolapVertex collect: #y thenSelect: #notNil)
+					 ifEmpty: [ nil ]
+					 ifNotEmpty: #average);
+			oldEdges: oldEdges asArray;
+			oldVertices:
+				(aCollectionOfGolapVertex asArray sorted:
+						 vertexEvaluator descending).
+		self vertices at: aString put: newVertex.
+		treeEdges := nil.
+		graphEdges := nil.
+		friendsEdges := nil.
+		self friendsEdges: self friendsRank.
+		^ newVertex ]
 ]
 
 { #category : #polishing }
 GolapModel >> negativePolishEdgesDo: aBlock [
 	negativePolishEdges do: aBlock
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeKey1 [
-	^ nodeKey1 ifNil: [ nodeKey1 := self defaultNodeKey1 ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeKey1: aString [
-	nodeKey1 := aString
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeKey2 [
-	^ nodeKey2 ifNil: [ nodeKey2 := self defaultNodeKey2 ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeKey2: aString [
-	nodeKey2 := aString
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeNameKey1 [
-	^ nodeNameKey1 ifNil: [ nodeNameKey1 := self defaultNodeNameKey1 ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeNameKey1: aString [
-	nodeNameKey1 := aString
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeNameKey2 [
-	^ nodeNameKey2 ifNil: [ nodeNameKey2 := self defaultNodeNameKey2 ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> nodeNameKey2: aString [
-	nodeNameKey2 := aString
 ]
 
 { #category : #visualization }
@@ -814,16 +636,6 @@ GolapModel >> openSunburst [
 	(GolapDandelionChartPresenter new
 		 golap: self;
 		 yourself) open
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> pmiKey [
-	^ pmiKey ifNil: [ pmiKey := self defaultPMIKey ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> pmiKey: aString [
-	pmiKey := aString
 ]
 
 { #category : #operations }
@@ -909,7 +721,8 @@ GolapModel >> postCopy [
 
 { #category : #'accessing-vertex' }
 GolapModel >> recreateVertices [
-	vertices := self createVerticesFromDataframe.
+
+	vertices := self createVerticesFromServerDataframe: dataframe.
 	self resetPolish
 ]
 
@@ -967,7 +780,9 @@ GolapModel >> resetPolish [
 
 { #category : #operations }
 GolapModel >> setFrequencyMode [
-	self edgeKey: self frequencyKey
+
+	self edgeEvaluator:
+		(GolapEdgeColumnEvaluator on: self column: 'frequency')
 ]
 
 { #category : #operations }
@@ -980,17 +795,22 @@ GolapModel >> setFullGraphMode [
 
 { #category : #operations }
 GolapModel >> setJaccardMode [
-	self edgeKey: self jaccardKey
+
+	self edgeEvaluator:
+		(GolapEdgeColumnEvaluator on: self column: 'jaccard')
 ]
 
 { #category : #operations }
 GolapModel >> setLiftMode [
-	self edgeKey: self liftKey
+
+	self edgeEvaluator:
+		(GolapEdgeColumnEvaluator on: self column: 'lift')
 ]
 
 { #category : #operations }
 GolapModel >> setPMIMode [
-	self edgeKey: self pmiKey
+
+	self edgeEvaluator: (GolapEdgeColumnEvaluator on: self column: 'PMI')
 ]
 
 { #category : #operations }
@@ -998,26 +818,6 @@ GolapModel >> setTreeMode [
 	self friendsEdges: nil.
 	friendsEdges := nil.
 	self treeEdges
-]
-
-{ #category : #accessing }
-GolapModel >> sumEdgeValueAtVertex: aGolapVertex [
-
-	| value |
-	value := 0.
-	aGolapVertex edgesDo: [ :edge | 
-		value := value + (self valueAtEdge: edge) ].
-	^ value
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> totalKey [
-	^ totalKey ifNil: [ totalKey := self defaultTotalKey ]
-]
-
-{ #category : #'accessing-keys' }
-GolapModel >> totalKey: aString [
-	totalKey := aString
 ]
 
 { #category : #accessing }
@@ -1059,20 +859,25 @@ GolapModel >> unmergeVertex: aGolapVertex [
 { #category : #accessing }
 GolapModel >> valueAtEdge: aGolapEdge [
 
-	^ aGolapEdge at: self edgeKey
+	^ edgeEvaluator value: aGolapEdge
 ]
 
 { #category : #accessing }
 GolapModel >> valueAtVertex: aGolapVertex [
-	aggregation = #max
-		ifTrue: [ ^ self maxEdgeValueAtVertex: aGolapVertex ].
-	aggregation = #sum
-		ifTrue: [ ^ self sumEdgeValueAtVertex: aGolapVertex ].
-	aggregation = #average
-		ifTrue: [ ^ self averageEdgeValueAtVertex: aGolapVertex ].
-	aggregation = #degree
-		ifTrue: [ ^ self degreeEdgeValueAtVertex: aGolapVertex ].
-	^ self frequencyAtVertex: aGolapVertex
+
+	^ vertexEvaluator value: aGolapVertex
+]
+
+{ #category : #accessing }
+GolapModel >> vertexAggregationMap [
+
+	^ vertexAggregationMap
+]
+
+{ #category : #accessing }
+GolapModel >> vertexAggregationMap: aDictionary [
+
+	vertexAggregationMap := aDictionary
 ]
 
 { #category : #'accessing-vertex' }
@@ -1086,37 +891,46 @@ GolapModel >> vertexAt: anInteger ifAbsent: errorBlock [
 ]
 
 { #category : #accessing }
+GolapModel >> vertexEvaluator [
+
+	^ vertexEvaluator
+]
+
+{ #category : #accessing }
+GolapModel >> vertexEvaluator: aGolapVertexEvaluator [
+
+	vertexEvaluator := aGolapVertexEvaluator
+]
+
+{ #category : #accessing }
 GolapModel >> vertexListWithKeyword: aString [
+
 	| list column |
 	list := DataFrame new: 0 @ 3.
-	self
-		verticesDo: [ :vertex :id | 
-			| name |
-			name := vertex name.
-			(aString isEmpty or: [ (name findString: aString) > 0 ])
-				ifTrue: [ list
-						addRow:
-							(DataSeries
-								newFrom:
-									{name.
-									(self valueAtVertex: vertex).
-									id})
-						named: id printString ] ].
-	column := self aggregation = #frequency
-		ifTrue: [ 'Frequency' ]
-		ifFalse: [ self aggregation asString , ' ' , self edgeKey ].
-	list
-		columnNames:
-			{'product'.
+	self verticesDo: [ :vertex :id |
+		| name |
+		name := vertex name.
+		(aString isEmpty or: [ (name findString: aString) > 0 ]) ifTrue: [
+			list
+				addRow: (DataSeries newFrom: {
+							 name.
+							 (self valueAtVertex: vertex).
+							 id })
+				named: id printString ] ].
+	column := self vertexEvaluator name.
+	list columnNames: {
+			'product'.
 			column.
-			'id'}.
+			'id' }.
 	list sortDescendingBy: column.
 	^ list
 ]
 
 { #category : #'accessing-vertex' }
 GolapModel >> vertices [
-	^ vertices ifNil: [ vertices := self createVerticesFromDataframe ]
+
+	^ vertices ifNil: [
+		  vertices := self createVerticesFromServerDataframe: dataframe ]
 ]
 
 { #category : #enumerating }

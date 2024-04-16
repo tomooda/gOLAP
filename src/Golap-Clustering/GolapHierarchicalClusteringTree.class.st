@@ -12,7 +12,7 @@ Class {
 GolapHierarchicalClusteringTree class >> friendsClusterFrom: aGolapModel depth: anInteger [
 
 	| done edges rank trees |
-	edges := OrderedCollection new: aGolapModel dataframe numberOfRows.
+	edges := OrderedCollection new.
 	done := IdentitySet new: aGolapModel vertices size.
 	aGolapModel verticesDo: [ :vertex |
 		done add: vertex.
@@ -25,11 +25,7 @@ GolapHierarchicalClusteringTree class >> friendsClusterFrom: aGolapModel depth: 
 		         GolapHierarchicalClusteringLeaf
 			         vertex: vertex
 			         score: (aGolapModel valueAtVertex: vertex) ].
-	anInteger timesRepeat: [ 
-		
-		
-		
-		 ]
+	anInteger timesRepeat: [  ]
 ]
 
 { #category : #controlling }
