@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'vertexEvaluator',
 		'edgeEvaluator',
-		'dataframe',
+		'vertexAggregationMap',
+		'edgeAggregationMap',
 		'vertices',
 		'treeEdges',
 		'friendsEdges',
@@ -12,9 +13,7 @@ Class {
 		'graphEdges',
 		'positivePolishEdges',
 		'negativePolishEdges',
-		'mergedVertices',
-		'vertexAggregationMap',
-		'edgeAggregationMap'
+		'mergedVertices'
 	],
 	#category : #'Golap-Models-Graph'
 }
@@ -25,16 +24,6 @@ GolapModel class >> chooseCoocurrenceDataDo: aBlock [
 		chooseExistingFileReference: 'Select a coocurrence file'
 		extensions: #('csv')
 		path: self coocurrenceDataDirectory) ifNotNil: aBlock
-]
-
-{ #category : #'instance creation' }
-GolapModel class >> chooseFromFile [
-	^ self
-		chooseCoocurrenceDataDo: [ :ref | 
-			ref isFile
-				ifTrue: [ self
-						dataframe: (DataFrame readFromCsv: ref forceStringColumns: self stringColumns) ]
-				ifFalse: [ nil ] ]
 ]
 
 { #category : #storage }
@@ -51,11 +40,10 @@ GolapModel class >> coocurrenceDataDirectory [
 ]
 
 { #category : #'instance creation' }
-GolapModel class >> dataframe: aDataFrame [
+GolapModel class >> fromServerDataframe: aDataFrame [
 	^ self new
-		dataframe: aDataFrame;
+		readServerDataframe: aDataFrame;
 		setJaccardMode;
-		vertices;
 		yourself
 ]
 
@@ -70,29 +58,6 @@ GolapModel class >> localDirectory [
 ]
 
 { #category : #defaults }
-GolapModel class >> queryFromArray: anArrayOfString [
-	^ (String lf join: anArrayOfString) , String lf
-]
-
-{ #category : #'instance creation' }
-GolapModel class >> readFrom: aFileReferenceOrReadStream [
-	| line |
-	line := aFileReferenceOrReadStream isStream
-		ifTrue: [ | position |
-			position := aFileReferenceOrReadStream position.
-			[ aFileReferenceOrReadStream upTo: Character lf ]
-				ensure: [ aFileReferenceOrReadStream position: position ] ]
-		ifFalse: [ aFileReferenceOrReadStream
-				readStreamDo: [ :stream | stream upTo: Character lf ] ].
-	(line includes: $:)
-		ifFalse: [ ^ self
-				dataframe:
-					(DataFrame
-						readFromCsv: aFileReferenceOrReadStream
-						forceStringColumns: self stringColumns) ]
-]
-
-{ #category : #defaults }
 GolapModel class >> stringColumns [
 	^ #('node1' 'node2' 'node1n' 'node2n') asSet
 ]
@@ -100,101 +65,7 @@ GolapModel class >> stringColumns [
 { #category : #arithmetics }
 GolapModel >> - aGolapModel [
 
-	| dataframe2 diff rowNames diffDataframe frequencies1 frequencies2 diffFrequencies |
-	dataframe2 := aGolapModel dataframe.
-	diff := Dictionary new:
-		        dataframe numberOfRows + dataframe2 numberOfRows.
-	frequencies1 := Dictionary new.
-	dataframe do: [ :row |
-		frequencies1
-			at: (row at: 'node1')
-			ifAbsentPut: (row at: 'frequency1').
-		frequencies1
-			at: (row at: 'node2')
-			ifAbsentPut: (row at: 'frequency2') ].
-	frequencies2 := Dictionary new.
-	dataframe2 do: [ :row |
-		frequencies2
-			at: (row at: 'node1')
-			ifAbsentPut: (row at: 'frequency1').
-		frequencies2
-			at: (row at: 'node2')
-			ifAbsentPut: (row at: 'frequency2') ].
-	diffFrequencies := frequencies1.
-	frequencies2 keysAndValuesDo: [ :node :freq |
-		diffFrequencies
-			at: node
-			put: (diffFrequencies at: node ifAbsent: [ 0 ]) - freq ].
-	frequencies1 := nil.
-	frequencies2 := nil.
-	1 to: dataframe numberOfRows do: [ :index |
-		| dataseries |
-		dataseries := DataSeries newFrom: (dataframe rowAt: index).
-		dataseries name: {
-				(dataseries at: 'node1').
-				(dataseries at: 'node2') }.
-		dataseries
-			at: 'frequency1'
-			put: (diffFrequencies at: (dataseries at: 'node1')).
-		dataseries
-			at: 'frequency2'
-			put: (diffFrequencies at: (dataseries at: 'node2')).
-		diff at: dataseries name put: dataseries ].
-	1 to: dataframe2 numberOfRows do: [ :index |
-		| dataseries2 node1 node2 diffDataseries |
-		dataseries2 := dataframe2 rowAt: index.
-		node1 := dataseries2 at: 'node1'.
-		node2 := dataseries2 at: 'node2'.
-		diffDataseries := diff
-			                  at: {
-					                  node1.
-					                  node2 }
-			                  ifAbsent: [
-				                  | ds |
-				                  ds := (DataSeries newFrom: dataseries2)
-					                        at: 'frequency' put: 0;
-					                        at: 'frequency1'
-					                        put: (diffFrequencies at: node1);
-					                        at: 'frequency2'
-					                        put: (diffFrequencies at: node2);
-					                        at: 'total' put: 0;
-					                        at: 'support' put: 0.0;
-					                        at: 'confidence' put: 0.0;
-					                        at: 'lift' put: 0.0;
-					                        at: 'jaccard' put: 0.0;
-					                        at: 'PMI' put: 0.0;
-					                        at: 'effective' put: 0;
-					                        name: {
-							                        node1.
-							                        node2 };
-					                        yourself.
-				                  diff at: ds name put: ds.
-				                  ds ].
-		{ 'frequency'. 'total'. 'support'. 'confidence'. 'lift'. 'jaccard'.
-		'PMI' } do: [ :key |
-			diffDataseries at: key transform: [ :v |
-				v
-					ifNil: [ (dataseries2 at: key) ifNil: [ 0.0 ] ]
-					ifNotNil: [ v - ((dataseries2 at: key) ifNil: [ 0.0 ]) ] ] ].
-		diffDataseries
-			at: 'effective'
-			transform: [ :v | v + (dataseries2 at: 'effective') ].
-		diff
-			at: {
-					node1.
-					node2 }
-			put: diffDataseries ].
-	rowNames := (diff keys asSortedCollection: [ :less :more |
-		             less first < more first or: [
-			             more second isNil or: [
-				             less second notNil and: [ less second <= more second ] ] ] ])
-		            asArray.
-	diffDataframe := DataFrame
-		                 withRows:
-		                 (rowNames collect: [ :key | (diff at: key) asArray ])
-		                 rowNames: rowNames
-		                 columnNames: dataframe columnNames.
-	^ self class dataframe: diffDataframe
+	^ self copy diff: aGolapModel
 ]
 
 { #category : #polishing }
@@ -243,119 +114,45 @@ GolapModel >> createMergedVertexFrom: aCollectionOfGolapVertex named: aString [
 			  oldData := aCollectionOfGolapVertex collect: #data.
 			  newData := vertexAggregationMap collect: [ :aggregation |
 				             aggregation value: oldData ].
-			  newData at: aCollectionOfGolapVertex first nameKey put: aString.
+			  newData name: aString.
 			  GolapMergedVertex
 				  on: (DataSeries
 						   withKeys: newData keys
 						   values: newData values
 						   name: aString)
-				  nameKey: aCollectionOfGolapVertex first nameKey ]
+				  name: aString ]
 		  ifEmpty: [ nil ]
 ]
 
 { #category : #'accessing-vertex' }
-GolapModel >> createVertex: anInteger name: aString frequency: aNumber [
+GolapModel >> createVertex: aDataSeries name: aString [
 
-	^ GolapVertex
-		  on: (DataSeries
-				   withKeys: { 'name'. 'frequency' }
-				   values: {
-						   aString.
-						   aNumber }
-				   name: anInteger)
-		  nameKey: 'name'
+	^ GolapVertex on: aDataSeries name: aString
 ]
 
-{ #category : #'accessing-vertex' }
-GolapModel >> createVerticesFromServerDataframe: aDataFrame [
+{ #category : #arithmetics }
+GolapModel >> diff: aGolapModel [
 
-	| newVertices |
-	newVertices := Dictionary new.
-	aDataFrame do: [ :data |
-		| node1 node2 vertex1 vertex2 |
-		node1 := data at: 'node1'.
-		node2 := data at: 'node2'.
-		vertex1 := newVertices at: node1 ifAbsentPut: [
-			           self
-				           createVertex: node1
-				           name: (data at: 'node1n')
-				           frequency: (data at: 'frequency1') ].
-		node2 ifNotNil: [
-			vertex2 := newVertices at: node2 ifAbsentPut: [
-				           self
-					           createVertex: node2
-					           name: (data at: 'node2n')
-					           frequency: (data at: 'frequency2') ].
-			(data at: 'effective' ifAbsent: [ 1 ]) > 0
-				ifTrue: [ vertex1 createEdgeTo: vertex2 data: data ]
-				ifFalse: [ vertex1 createHiddenEdgeTo: vertex2 data: data ] ] ].
-	^ newVertices
-]
+	| doneEdges |
+	doneEdges := IdentitySet new: 1024.
+	aGolapModel verticesDo: [ :vertex |
+		vertices
+			at: vertex id
+			ifPresent: [ :myVertex | myVertex diff: vertex ]
+			ifAbsentPut: [
+			(GolapVertex on: vertex data name: vertex name) negated ] ].
 
-{ #category : #accessing }
-GolapModel >> dataframe [
-	^ dataframe
-]
-
-{ #category : #accessing }
-GolapModel >> dataframe: aDataFrame [
-
-	| newVertices |
-	aDataFrame columnNames: (aDataFrame columnNames collect: [ :string |
-			 (string includes: $%)
-				 ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
-				 ifFalse: [ string ] ]).
-	dataframe := aDataFrame.
-	vertexEvaluator := GolapVertexColumnEvaluator
-		                   on: self
-		                   column: 'frequency'.
-	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
-	vertexAggregationMap := { ('frequency'
-	                         ->
-	                         (GolapSumDataAggregator column: 'frequency')) }
-		                        asOrderedDictionary.
-	edgeAggregationMap := {
-		                      ('frequency'
-		                       ->
-		                       (GolapSumDataAggregator column: 'frequency')).
-		                      ('total'
-		                       -> (GolapSumDataAggregator column: 'total')).
-		                      ('support'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'supoort'
-				                        weightColumn: 'frequency')).
-		                      ('jaccard'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'jaccard'
-				                        weightColumn: 'frequency')).
-		                      ('lift'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'lift'
-				                        weightColumn: 'frequency')).
-		                      ('PMI' -> (GolapWeightedAverageDataAggregator
-			                        column: 'PMI'
-			                        weightColumn: 'frequency')) }
-		                      asOrderedDictionary.
-	newVertices := Dictionary new.
-	aDataFrame do: [ :data |
-		| node1 node2 vertex1 vertex2 |
-		node1 := data at: 'node1'.
-		node2 := data at: 'node2'.
-		vertex1 := newVertices at: node1 ifAbsentPut: [
-			           self
-				           createVertex: node1
-				           name: (data at: 'node1n')
-				           frequency: (data at: 'frequency1') ].
-		node2 ifNotNil: [
-			vertex2 := newVertices at: node2 ifAbsentPut: [
-				           self
-					           createVertex: node2
-					           name: (data at: 'node2n')
-					           frequency: (data at: 'frequency2') ].
-			(data at: 'effective' ifAbsent: [ 1 ]) > 0
-				ifTrue: [ vertex1 createEdgeTo: vertex2 data: data ]
-				ifFalse: [ vertex1 createHiddenEdgeTo: vertex2 data: data ] ] ].
-	vertices := newVertices
+	aGolapModel verticesDo: [ :vertex |
+		vertex edgesDo: [ :edge |
+			(doneEdges includes: edge) ifFalse: [
+				| myVertex1 myVertex2 |
+				doneEdges add: edge.
+				myVertex1 := vertices at: edge vertex1 id.
+				myVertex2 := vertices at: edge vertex2 id.
+				(myVertex1 edgeTo: myVertex2 ifAbsent: [ nil ])
+					ifNotNil: [ :myEdge | myEdge diff: edge ]
+					ifNil: [
+					(myVertex1 createEdgeTo: myVertex2 data: edge data) negated ] ] ] ]
 ]
 
 { #category : #accessing }
@@ -711,19 +508,112 @@ GolapModel >> positivePolishEdgesDo: aBlock [
 ]
 
 { #category : #copying }
-GolapModel >> postCopy [
+GolapModel >> postCopy [ 
 	super postCopy.
+	vertexEvaluator := vertexEvaluator copy golapModel: self; yourself.
+	edgeEvaluator := edgeEvaluator copy golapModel: self; yourself.
+	vertexAggregationMap := vertexAggregationMap copy.
+	edgeAggregationMap := edgeAggregationMap copy.
+	self postCopyVertices.
+	positivePolishEdges := IdentitySet new.
+	negativePolishEdges := IdentitySet new.
+	mergedVertices := IdentityDictionary new.
 	friendsEdges := nil.
 	friendsRank := nil.
 	graphEdges := nil.
 	treeEdges := nil
 ]
 
-{ #category : #'accessing-vertex' }
-GolapModel >> recreateVertices [
+{ #category : #copying }
+GolapModel >> postCopyVertices [
 
-	vertices := self createVerticesFromServerDataframe: dataframe.
-	self resetPolish
+	| newVertices nextPutVertex newEdges |
+	newVertices := Dictionary new: vertices size.
+	nextPutVertex := [ :vertex |
+	                 vertex isMergedVertex
+		                 ifTrue: [ vertex oldVertices do: nextPutVertex ]
+		                 ifFalse: [
+		                 newVertices at: vertex id put: vertex copy ] ].
+	vertices valuesDo: nextPutVertex.
+	newEdges := IdentityDictionary new: 1024.
+	newVertices valuesDo: [ :vertex |
+		vertex edgesDo: [ :edge |
+			(edge vertex1 isMergedVertex or: [ edge vertex2 isMergedVertex ])
+				ifFalse: [
+					newEdges at: edge ifAbsentPut: [
+						edge copy
+							vertex1: (newVertices at: edge vertex1 id);
+							vertex2: (newVertices at: edge vertex2 id);
+							yourself ] ] ] ].
+	newVertices valuesDo: [ :vertex |
+		vertex edges: (vertex edges
+				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
+				 thenSelect: #notNil) ].
+	vertices := newVertices
+]
+
+{ #category : #private }
+GolapModel >> readServerDataframe: aDataFrame [
+
+	| newVertices |
+	aDataFrame columnNames: (aDataFrame columnNames collect: [ :string |
+			 (string includes: $%)
+				 ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
+				 ifFalse: [ string ] ]).
+	vertexEvaluator := GolapVertexColumnEvaluator
+		                   on: self
+		                   column: 'frequency'.
+	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
+	vertexAggregationMap := { ('frequency'
+	                         ->
+	                         (GolapSumDataAggregator column: 'frequency')) }
+		                        asOrderedDictionary.
+	edgeAggregationMap := {
+		                      ('frequency'
+		                       ->
+		                       (GolapSumDataAggregator column: 'frequency')).
+		                      ('total'
+		                       -> (GolapSumDataAggregator column: 'total')).
+		                      ('support'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'supoort'
+				                        weightColumn: 'frequency')).
+		                      ('jaccard'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'jaccard'
+				                        weightColumn: 'frequency')).
+		                      ('lift'
+		                       -> (GolapWeightedAverageDataAggregator
+				                        column: 'lift'
+				                        weightColumn: 'frequency')).
+		                      ('PMI' -> (GolapWeightedAverageDataAggregator
+			                        column: 'PMI'
+			                        weightColumn: 'frequency')) }
+		                      asOrderedDictionary.
+	newVertices := Dictionary new.
+	aDataFrame do: [ :data |
+		| node1 node2 vertex1 vertex2 |
+		node1 := data at: 'node1'.
+		node2 := data at: 'node2'.
+		vertex1 := newVertices at: node1 ifAbsentPut: [
+			           self
+				           createVertex: (DataSeries
+						            withKeys: { 'frequency' }
+						            values: { (data at: 'frequency1') }
+						            name: node1)
+				           name: (data at: 'node1n') ].
+		node2 ifNotNil: [
+			vertex2 := newVertices at: node2 ifAbsentPut: [
+				           self
+					           createVertex: (DataSeries
+							            withKeys: { 'frequency' }
+							            values: { (data at: 'frequency2') }
+							            name: node2)
+					           name: (data at: 'node2n') ].
+			(data at: 'effective' ifAbsent: [ 1 ]) > 0
+				ifTrue: [ vertex1 createEdgeTo: vertex2 data: data ]
+				ifFalse: [ vertex1 createHiddenEdgeTo: vertex2 data: data ] ] ].
+	vertices := newVertices
 ]
 
 { #category : #polishing }
@@ -771,11 +661,47 @@ GolapModel >> repeat: anInteger1 polishAddAbove: aNumber1 removeBelow: aNumber2 
 				ifFalse: [ ^ self ] ]
 ]
 
+{ #category : #'accessing-vertex' }
+GolapModel >> resetMerges [
+
+	| newVertices nextPutVertex newEdges |
+	newVertices := Dictionary new: vertices size.
+	nextPutVertex := [ :vertex |
+	                 vertex isMergedVertex
+		                 ifTrue: [ vertex oldVertices do: nextPutVertex ]
+		                 ifFalse: [
+		                 newVertices at: vertex id put: vertex copy ] ].
+	vertices valuesDo: nextPutVertex.
+	newEdges := IdentityDictionary new: 1024.
+	newVertices valuesDo: [ :vertex |
+		vertex edgesDo: [ :edge |
+			(edge vertex1 isMergedVertex or: [ edge vertex2 isMergedVertex ])
+				ifFalse: [
+					newEdges at: edge ifAbsentPut: [
+						edge copy
+							vertex1: (newVertices at: edge vertex1 id);
+							vertex2: (newVertices at: edge vertex2 id);
+							yourself ] ] ] ].
+	newVertices valuesDo: [ :vertex |
+		vertex edges: (vertex edges
+				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
+				 thenSelect: #notNil) ].
+	vertices := newVertices.
+	mergedVertices := IdentityDictionary new
+]
+
 { #category : #polishing }
 GolapModel >> resetPolish [
 	self verticesDo: [ :v | v resetPolish ].
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new
+]
+
+{ #category : #'accessing-vertex' }
+GolapModel >> resetVertices [
+
+	self resetMerges.
+	self resetPolish
 ]
 
 { #category : #operations }
@@ -929,12 +855,12 @@ GolapModel >> vertexListWithKeyword: aString [
 { #category : #'accessing-vertex' }
 GolapModel >> vertices [
 
-	^ vertices ifNil: [
-		  vertices := self createVerticesFromServerDataframe: dataframe ]
+	^ vertices ifNil: [ vertices := Dictionary new ]
 ]
 
 { #category : #enumerating }
 GolapModel >> verticesDo: aBlock [
-	self vertices
-		keysAndValuesDo: [ :key :vertex | aBlock cull: vertex cull: key ]
+
+	self vertices keys do: [ :id |
+		aBlock cull: (vertices at: id) cull: id ]
 ]

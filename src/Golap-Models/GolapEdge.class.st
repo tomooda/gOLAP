@@ -25,6 +25,14 @@ GolapEdge >> at: aString [
 ]
 
 { #category : #accessing }
+GolapEdge >> at: aString ifAbsent: errorBlock [
+
+	^ self data
+		  ifNotNil: [ :d | d at: aString ifAbsent: errorBlock ]
+		  ifNil: errorBlock
+]
+
+{ #category : #accessing }
 GolapEdge >> at: aString put: anObject [
 
 	^ self data ifNotNil: [ :d | d at: aString put: anObject ]
@@ -46,25 +54,45 @@ GolapEdge >> data [
 	^ data
 ]
 
+{ #category : #arithmetics }
+GolapEdge >> diff: aGolapEdge [
+
+	data keys do: [ :key |
+		| value1 value2 |
+		value1 := data at: key.
+		(value1 isNumber and: [
+			 value2 := aGolapEdge at: key ifAbsent: [ nil ].
+			 value2 isNumber ]) ifTrue: [ data at: key put: value1 - value2 ] ]
+]
+
 { #category : #testing }
 GolapEdge >> hasVertex: aGolapVertex [
 
 	^ vertex1 == aGolapVertex or: [ vertex2 == aGolapVertex ]
 ]
 
+{ #category : #arithmetics }
+GolapEdge >> negated [
+
+	data keys do: [ :key |
+		| value1 |
+		value1 := data at: key.
+		value1 isNumber ifTrue: [ data at: key put: value1 negated ] ]
+]
+
 { #category : #accessing }
 GolapEdge >> peerOf: aGolapVertex [
-	aGolapVertex = vertex1
-		ifTrue: [ ^ vertex2 ].
-	aGolapVertex = vertex2
-		ifTrue: [ ^ vertex1 ].
+
+	aGolapVertex id = vertex1 id ifTrue: [ ^ vertex2 ].
+	aGolapVertex id = vertex2 id ifTrue: [ ^ vertex1 ].
 	^ nil
 ]
 
 { #category : #copying }
 GolapEdge >> postCopy [
+
 	super postCopy.
-	data := Dictionary newFrom: data
+	data := data copy
 ]
 
 { #category : #operations }

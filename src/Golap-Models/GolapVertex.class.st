@@ -3,7 +3,7 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'data',
-		'nameKey',
+		'name',
 		'edges',
 		'hiddenEdges',
 		'positivePolishEdges',
@@ -20,10 +20,10 @@ Class {
 }
 
 { #category : #'instance creation' }
-GolapVertex class >> on: aDataSeries nameKey: aString [
+GolapVertex class >> on: aDataSeries name: aString [
 
 	^ self new
-		  setData: aDataSeries nameKey: aString;
+		  setData: aDataSeries name: aString;
 		  yourself
 ]
 
@@ -92,6 +92,12 @@ GolapVertex >> at: aString [
 	^ data at: aString
 ]
 
+{ #category : #accessing }
+GolapVertex >> at: aString ifAbsent: errorBlock [
+
+	^ data at: aString ifAbsent: errorBlock
+]
+
 { #category : #enumerating }
 GolapVertex >> basicEdgesAndVerticesDo: aBlock [
 
@@ -133,6 +139,17 @@ GolapVertex >> data [
 	^ data
 ]
 
+{ #category : #arithmetics }
+GolapVertex >> diff: aGolapVertex [
+
+	data keys do: [ :key |
+		| value1 value2 |
+		value1 := data at: key.
+		(value1 isNumber and: [
+			 value2 := aGolapVertex at: key ifAbsent: [ nil ].
+			 value2 isNumber ]) ifTrue: [ data at: key put: value1 - value2 ] ]
+]
+
 { #category : #accessing }
 GolapVertex >> edgeTo: aGolapVertex ifAbsent: errorBlock [
 	self
@@ -140,6 +157,18 @@ GolapVertex >> edgeTo: aGolapVertex ifAbsent: errorBlock [
 			aGolapVertex == vertex
 				ifTrue: [ ^ edge ] ].
 	^ errorBlock value
+]
+
+{ #category : #accessing }
+GolapVertex >> edges [
+
+	^ edges
+]
+
+{ #category : #accessing }
+GolapVertex >> edges: anOrderedCollection [
+
+	edges := anOrderedCollection
 ]
 
 { #category : #enumerating }
@@ -295,13 +324,16 @@ GolapVertex >> markersDo: aBlock [
 { #category : #accessing }
 GolapVertex >> name [
 
-	^ data at: self nameKey
+	^ name
 ]
 
-{ #category : #accessing }
-GolapVertex >> nameKey [
+{ #category : #arithmetics }
+GolapVertex >> negated [
 
-	^ nameKey
+	data keys do: [ :key |
+		| value1 |
+		value1 := data at: key.
+		value1 isNumber ifTrue: [ data at: key put: value1 negated ] ]
 ]
 
 { #category : #polishing }
@@ -352,6 +384,21 @@ GolapVertex >> position: aPoint [
 { #category : #polishing }
 GolapVertex >> positivePolishEdgesDo: aBlock [
 	positivePolishEdges do: aBlock
+]
+
+{ #category : #copying }
+GolapVertex >> postCopy [
+
+	super postCopy.
+	data := data copy.
+	edges := edges copy.
+	hiddenEdges := hiddenEdges copy.
+	positivePolishEdges := IdentitySet new.
+	negativePolishEdges := IdentitySet new.
+	scores := Dictionary new.
+	rectangles := Dictionary new.
+	markers := OrderedCollection new.
+	markers := markers copy
 ]
 
 { #category : #printing }
@@ -433,10 +480,10 @@ GolapVertex >> scoresDo: aBlock [
 ]
 
 { #category : #private }
-GolapVertex >> setData: aDataSeries nameKey: aString [
+GolapVertex >> setData: aDataSeries name: aString [
 
 	data := aDataSeries.
-	nameKey := aString
+	name := aString
 ]
 
 { #category : #accessing }

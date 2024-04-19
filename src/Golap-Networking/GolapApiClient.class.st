@@ -83,42 +83,6 @@ GolapApiClient >> createRunId [
 ]
 
 { #category : #accessing }
-GolapApiClient >> dataframe [
-	"GolapApiClient new dataframe"
-
-	| response stream header numItems lines |
-	[ response := GolapHttpClient
-		post: self url
-		data: (ZnStringEntity text: self query)
-		authenticateBlock: self authenticateBlock.
-	response isSuccess
-		ifFalse: [ ^ nil ].
-	stream := response entity readStream.
-	header := stream upTo: Character lf.
-	[ numItems := Integer
-		readFrom:
-			(header readStream
-				upToAll: 'sent:';
-				skipSeparators) ]
-		on: Error
-		do: [ :ex | 
-			UIManager default alert: 'Error message from the server: ' , header.
-			^ nil ].
-	lines := (0 to: numItems) collect: [ :i | stream upTo: Character lf ] ]
-		on: NetworkError
-		do: [ :ex | 
-			UIManager default alert: ex messageText.
-			^ nil ].
-	^ [ DataFrame
-		readFromCsv: (String lf join: lines)
-		forceStringColumns: GolapModel stringColumns ]
-		on: Error
-		do: [ :ex | 
-			UIManager default alert: 'Malformed CSV: ' , ex messageText.
-			^ nil ]
-]
-
-{ #category : #accessing }
 GolapApiClient >> imageUrl [
 	^ self serverConfig at: 'imageUrl' ifAbsent: [ nil ]
 ]

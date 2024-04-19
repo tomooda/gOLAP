@@ -334,7 +334,7 @@ Golap >> applyMergesToModel: aGolapModel [
 	model ifNotNil: [
 		model verticesDo: [ :v |
 			v asPoint ifNotNil: [ :p | positions at: v id put: p ] ] ].
-	aGolapModel recreateVertices.
+	aGolapModel resetVertices.
 	aGolapModel verticesDo: [ :v |
 		positions at: v id ifPresent: [ :p |
 			v
@@ -543,7 +543,7 @@ Golap >> disableSnapshotWhile: aBlock [
 
 { #category : #operations }
 Golap >> dumpToFile [
-	UIManager default
+	"UIManager default
 		informUserDuring: [ :progress | 
 			(UIManager default
 				chooseForSaveFileReference: 'Save gOLAP data'
@@ -552,7 +552,9 @@ Golap >> dumpToFile [
 				ifNotNil: [ :ref | 
 					ref
 						writeStreamDo:
-							[ :writeStream | self writeCSVOn: writeStream progressBlock: [ :v | progress value: v ] ] ] ]
+							[ :writeStream | self writeCSVOn: writeStream progressBlock: [ :v | progress value: v ] ] ] ]"
+
+	self notYetImplemented
 ]
 
 { #category : #accessing }
@@ -1503,7 +1505,7 @@ Golap >> readDimensionFrom: aReadStream [
 		column := dataframe column: key.
 		newColumn := column collect: [ :value | value ifNaN: [ 0.0 ] ].
 		dataframe column: key put: newColumn ].
-	dimension := GolapModel dataframe: dataframe.
+	dimension := GolapModel fromServerDataframe: dataframe.
 	edgesAppearancePresenter updateModel: dimension.
 	self silentAddDimension: dimension named: name.
 	[ aReadStream peekFor: Character lf ] whileTrue ]
@@ -2443,58 +2445,6 @@ Golap >> visibleEdgeMinPercentile [
 Golap >> visibleEdges [
 
 	^ edgesAppearancePresenter visibleEdges
-]
-
-{ #category : #private }
-Golap >> writeCSVOn: aStream [
-	self writeCSVOn: aStream progressBlock: [ :v |  ]
-]
-
-{ #category : #private }
-Golap >> writeCSVOn: aStream progressBlock: aBlock [
-	| writer scale base |
-	writer := (NeoCSVWriter on: aStream)
-		separator: $,;
-		lineEndConvention: #lf.
-	dimensions ifEmpty: [ ^ self ].
-	scale := 1.0 / dimensions size.
-	base := 0.0.
-	dimensions
-		keysAndValuesDo: [ :d :m | 
-			| dataframe numRows rowCount |
-			dataframe := m dataframe.
-			dimensions size > 1
-				ifTrue: [ aStream
-						nextPutAll: d;
-						nextPut: Character lf ].
-			aStream
-				nextPutAll: 'status:0 sent:';
-				nextPutAll: dataframe size printString;
-				nextPut: Character lf.
-			dataframe columnNames allButLast
-				do: [ :n | aStream nextPutAll: n ]
-				separatedBy: [ aStream nextPut: $, ].
-			aStream nextPut: Character lf.
-			numRows := dataframe size.
-			rowCount := 0.
-			dataframe
-				do: [ :rawRow | 
-					| row |
-					row := rawRow asDataSeries.
-					row removeKey: 'effective' ifAbsent: [  ].
-					(rowCount := rowCount + 1) \\ 100 = 0
-						ifTrue: [ aBlock value: rowCount asFloat / numRows asFloat * scale + base ].
-					aStream
-						nextPutAll:
-							(','
-								join:
-									(row
-										withKeyCollect: [ :v :k | 
-											k last = $n
-												ifTrue: [ '"' , (v copyReplaceAll: '"' with: '\"') , '"' ]
-												ifFalse: [ v asString ] ]));
-						nextPut: Character lf ] ].
-	writer close
 ]
 
 { #category : #'accessing-presets' }
