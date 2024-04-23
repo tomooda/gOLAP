@@ -16,11 +16,26 @@ GolapVertexColumnEvaluator class >> column: aString [
 ]
 
 { #category : #'instance creation' }
+GolapVertexColumnEvaluator class >> fromJSON: aDictionary [
+
+	^ aDictionary
+		  at: self tag
+		  ifPresent: [ :column | self column: column ]
+		  ifAbsent: [ nil ]
+]
+
+{ #category : #'instance creation' }
 GolapVertexColumnEvaluator class >> on: aGolapModel column: aString [
 
 	^ (self on: aGolapModel)
 		  column: aString;
 		  yourself
+]
+
+{ #category : #accessing }
+GolapVertexColumnEvaluator class >> tag [
+
+	^ 'column'
 ]
 
 { #category : #accessing }
@@ -39,6 +54,12 @@ GolapVertexColumnEvaluator >> column: aString [
 GolapVertexColumnEvaluator >> name [
 
 	^ column ifNil: [ '-' ]
+]
+
+{ #category : #accessing }
+GolapVertexColumnEvaluator >> subtag [
+
+	^ column
 ]
 
 { #category : #evaluating }

@@ -7,6 +7,16 @@ Class {
 	#category : #'Golap-Models-Evaluator'
 }
 
+{ #category : #'instance creation' }
+GolapEdgeEvaluator class >> fromJSON: aDictionary [
+
+	self allSubclassesDo: [ :subclass |
+		subclass isAbstract not ifTrue: [
+			(subclass fromJSON: aDictionary) ifNotNil: [ :evaluator |
+				^ evaluator ] ] ].
+	^ nil
+]
+
 { #category : #testing }
 GolapEdgeEvaluator class >> isAbstract [
 
@@ -19,6 +29,18 @@ GolapEdgeEvaluator class >> on: aGolapModel [
 	^ self new
 		  golapModel: aGolapModel;
 		  yourself
+]
+
+{ #category : #accessing }
+GolapEdgeEvaluator class >> tag [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #converting }
+GolapEdgeEvaluator >> asJSON [
+
+	^ { (self tag -> self subtag) } asOrderedDictionary
 ]
 
 { #category : #converting }
@@ -55,6 +77,18 @@ GolapEdgeEvaluator >> golapModel: aGolapModel [
 GolapEdgeEvaluator >> name [
 
 	^ self subclassResponsibility
+]
+
+{ #category : #accessing }
+GolapEdgeEvaluator >> subtag [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #accessing }
+GolapEdgeEvaluator >> tag [
+
+	^ self class tag
 ]
 
 { #category : #evaluating }

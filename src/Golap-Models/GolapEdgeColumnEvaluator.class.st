@@ -16,11 +16,26 @@ GolapEdgeColumnEvaluator class >> column: aString [
 ]
 
 { #category : #'instance creation' }
+GolapEdgeColumnEvaluator class >> fromJSON: aDictionary [
+
+	^ aDictionary
+		  at: self tag
+		  ifPresent: [ :column | self column: column ]
+		  ifAbsent: [ nil ]
+]
+
+{ #category : #'instance creation' }
 GolapEdgeColumnEvaluator class >> on: aGolapModel column: aString [
 
 	^ (self on: aGolapModel)
 		  column: aString;
 		  yourself
+]
+
+{ #category : #accessing }
+GolapEdgeColumnEvaluator class >> tag [
+
+	^ 'column'
 ]
 
 { #category : #accessing }
@@ -39,6 +54,12 @@ GolapEdgeColumnEvaluator >> column: aString [
 GolapEdgeColumnEvaluator >> name [
 
 	^ column ifNil: '-'
+]
+
+{ #category : #accessing }
+GolapEdgeColumnEvaluator >> subtag [
+
+	^ column
 ]
 
 { #category : #evaluating }

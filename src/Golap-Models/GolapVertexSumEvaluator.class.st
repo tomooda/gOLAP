@@ -1,19 +1,23 @@
 Class {
 	#name : #GolapVertexSumEvaluator,
-	#superclass : #GolapVertexEvaluator,
+	#superclass : #GolapVertexAggregationEvaluator,
 	#category : #'Golap-Models-Evaluator'
 }
 
 { #category : #accessing }
-GolapVertexSumEvaluator >> name [
+GolapVertexSumEvaluator class >> subtag [
 
-	^ 'sum ' , golapModel edgeEvaluator name
+	^ 'sum'
 ]
 
-{ #category : #evaluating }
-GolapVertexSumEvaluator >> value: aGolapVertex [
+{ #category : #accessing }
+GolapVertexSumEvaluator >> aggregation [
 
-	^ (self valuesAtEdgesOfVertex: aGolapVertex)
-		  ifNotEmpty: #sum
-		  ifEmpty: [ 0 ]
+	^ #sum
+]
+
+{ #category : #accessing }
+GolapVertexSumEvaluator >> aggregationName [
+
+	^ '合計 '
 ]

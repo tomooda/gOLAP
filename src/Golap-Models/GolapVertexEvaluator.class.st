@@ -7,6 +7,16 @@ Class {
 	#category : #'Golap-Models-Evaluator'
 }
 
+{ #category : #'instance creation' }
+GolapVertexEvaluator class >> fromJSON: aDictionary [
+
+	self allSubclassesDo: [ :subclass |
+		subclass isAbstract not ifTrue: [
+			(subclass fromJSON: aDictionary) ifNotNil: [ :evaluator |
+				^ evaluator ] ] ].
+	^ nil
+]
+
 { #category : #testing }
 GolapVertexEvaluator class >> isAbstract [
 
@@ -19,6 +29,17 @@ GolapVertexEvaluator class >> on: aGolapModel [
 	^ self new
 		  golapModel: aGolapModel;
 		  yourself
+]
+
+{ #category : #accessing }
+GolapVertexEvaluator class >> tag [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #converting }
+GolapVertexEvaluator >> asJSON [
+	^ { self tag -> self subtag }
 ]
 
 { #category : #converting }
@@ -55,6 +76,18 @@ GolapVertexEvaluator >> golapModel: aGolapModel [
 GolapVertexEvaluator >> name [
 
 	^ self subclassResponsibility
+]
+
+{ #category : #accessing }
+GolapVertexEvaluator >> subtag [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #accessing }
+GolapVertexEvaluator >> tag [
+
+	^ self class tag
 ]
 
 { #category : #evaluating }

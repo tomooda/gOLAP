@@ -1,19 +1,23 @@
 Class {
 	#name : #GolapVertexMaxEvaluator,
-	#superclass : #GolapVertexEvaluator,
+	#superclass : #GolapVertexAggregationEvaluator,
 	#category : #'Golap-Models-Evaluator'
 }
 
 { #category : #accessing }
-GolapVertexMaxEvaluator >> name [
+GolapVertexMaxEvaluator class >> subtag [
 
-	^ 'max ' , golapModel edgeEvaluator name
+	^ 'max'
 ]
 
 { #category : #evaluating }
-GolapVertexMaxEvaluator >> value: aGolapVertex [
+GolapVertexMaxEvaluator >> aggregation [
 
-	^ (self valuesAtEdgesOfVertex: aGolapVertex)
-		  ifNotEmpty: #max
-		  ifEmpty: [ 0 ]
+	^ #max
+]
+
+{ #category : #accessing }
+GolapVertexMaxEvaluator >> aggregationName [
+
+	^ '最大 '
 ]

@@ -87,16 +87,15 @@ Golap class >> defaultLayout [
 
 { #category : #utilities }
 Golap class >> deploy [
+
 	<script>
 	GolapNetworkClientPresenter flushCurrent.
-	Smalltalk cleanUp: true except: {} confirming: false.
-	MCRepositoryGroup
-		allSubInstancesDo:
-			[ :group | group repositories do: [ :repo | group removeRepository: repo ] ].
+	Smalltalk cleanUp: true except: {  } confirming: false.
+	MCRepositoryGroup allSubInstancesDo: [ :group |
+		group repositories do: [ :repo | group removeRepository: repo ] ].
 	IceRepository registry removeAll.
-	IceCredentialStore current
-		in:
-			[ :store | store allCredentials do: [ :each | each removeFrom: store ] ].
+	IceCredentialStore current in: [ :store |
+		store allCredentials do: [ :each | each removeFrom: store ] ].
 	World closeAllWindowsDiscardingChanges.
 	Deprecation
 		raiseWarning: false;
@@ -107,8 +106,9 @@ Golap class >> deploy [
 	Stdio useNullStreams.
 	MCCacheRepository uniqueInstance disable.
 	EpMonitor reset.
-	5 timesRepeat: [ Smalltalk garbageCollect ]
-	"PharoCommandLineHandler forcePreferencesOmission: true"
+	Golap allInstancesDo: [ :g | g becomeForward: Object new ].
+	5 timesRepeat: [ "PharoCommandLineHandler forcePreferencesOmission: true"
+		Smalltalk garbageCollect ]
 ]
 
 { #category : #settings }
@@ -184,11 +184,7 @@ Golap class >> open [
 	overview := Golap new.
 	overview open maximize.
 	^ overview
-		  updateGlobalImageAfter: [ 
-			  overview
-				  model: nil;
-				  minimalSpanningTree ]
-		  layout: true;
+		  updateGlobalImageAfter: [ overview model: nil ] layout: true;
 		  yourself
 ]
 
@@ -237,7 +233,6 @@ Golap class >> openClient [
 											bar label: 'updating models'.
 											overview updateModel.
 											overview numFriends: 5.
-											overview jaccardMode.
 											bar label: 'updating graph' ]
 										layout: true.
 									overview updateGlobalImageAfter: [  ] layout: true ] ] ] ] ] ]
@@ -279,7 +274,6 @@ Golap class >> openFile [
 											bar label: 'updating models'.
 											overview updateModel.
 											overview numFriends: 5.
-											overview jaccardMode.
 											bar label: 'updating graph' ]
 										layout: true ] ] ] ] ]
 			ifFalse: [ overview delete ] ].
@@ -387,13 +381,6 @@ Golap >> authenticateBlock [
 Golap >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock.
 	itemView ifNotNil: [ itemView authenticateBlock: aBlock ]
-]
-
-{ #category : #operations }
-Golap >> averageMode [
-
-	edgesAppearancePresenter averageMode.
-	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-renderer' }
@@ -515,13 +502,6 @@ Golap >> decliningColor [
 	^ colorsAppearancePresenter decliningColor
 ]
 
-{ #category : #operations }
-Golap >> degreeMode [
-
-	edgesAppearancePresenter degreeMode.
-	itemsAppearancePresenter updateMinMaxFrequency
-]
-
 { #category : #'accessing-dimensions' }
 Golap >> dimensionAt: aString [
 	^ dimensions at: aString ifAbsent: [ nil ]
@@ -589,20 +569,6 @@ Golap >> font [
 { #category : #accessing }
 Golap >> font: aFont [
 	self updateGlobalImageAfter: [ font := aFont ]
-]
-
-{ #category : #operations }
-Golap >> freqMode [
-
-	edgesAppearancePresenter freqMode.
-	itemsAppearancePresenter updateMinMaxFrequency
-]
-
-{ #category : #operations }
-Golap >> frequencyMode [
-
-	edgesAppearancePresenter frequencyMode.
-	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-colors' }
@@ -1077,20 +1043,6 @@ Golap >> itemViewUrl: aString [
 	itemView serverUrl: aString asString asText
 ]
 
-{ #category : #operations }
-Golap >> jaccardMode [
-
-	edgesAppearancePresenter jaccardMode.
-	itemsAppearancePresenter updateMinMaxFrequency
-]
-
-{ #category : #operations }
-Golap >> liftMode [
-
-	edgesAppearancePresenter liftMode.
-	itemsAppearancePresenter updateMinMaxFrequency
-]
-
 { #category : #'accessing-markers' }
 Golap >> markedVertices [
 
@@ -1101,13 +1053,6 @@ Golap >> markedVertices [
 Golap >> markersAndVerticesDo: aBlock [
 
 	itemList markersAndVerticesDo: aBlock
-]
-
-{ #category : #operations }
-Golap >> maxMode [
-
-	edgesAppearancePresenter maxMode.
-	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'operations-photoimages' }
@@ -1190,11 +1135,6 @@ Golap >> minFrequency [
 { #category : #private }
 Golap >> minScale [
 	^ 0.9
-]
-
-{ #category : #operations }
-Golap >> minimalSpanningTree [
-	edgesAppearancePresenter minimalSpanningTree
 ]
 
 { #category : #accessing }
@@ -1356,13 +1296,6 @@ Golap >> pinsDo: aBlock [
 		ifNotNil: [ pins
 				do:
 					[ :id | (model vertexAt: id ifAbsent: [  ]) ifNotNil: aBlock ] ]
-]
-
-{ #category : #operations }
-Golap >> pmiMode [
-
-	edgesAppearancePresenter pmiMode.
-	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #'accessing-colors' }
@@ -2245,13 +2178,6 @@ Golap >> stopPhotoimageRetrievingProcess [
 	photoImageRetrievingProcess ifNotNil: [ 
 		photoImageRetrievingProcess terminate.
 		photoImageRetrievingProcess := nil ]
-]
-
-{ #category : #operations }
-Golap >> sumMode [
-
-	edgesAppearancePresenter sumMode.
-	itemsAppearancePresenter updateMinMaxFrequency
 ]
 
 { #category : #snapshot }

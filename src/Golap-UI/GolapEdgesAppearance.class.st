@@ -7,23 +7,15 @@ Class {
 		'visibleEdgeMinPercentile',
 		'visibleEdgeMaxPercentile',
 		'golap',
-		'minimalSpanningTreeButton',
-		'fullGraphButton',
 		'friendsField',
-		'frequencyButton',
-		'liftButton',
-		'jaccardButton',
-		'pmiButton',
-		'maxButton',
-		'sumButton',
-		'averageButton',
-		'degreeButton',
 		'positivePolishField',
 		'positivePolishSlider',
 		'negativePolishField',
 		'negativePolishSlider',
 		'polishMinDenominatorField',
-		'polishIterationCheckbox'
+		'polishIterationCheckbox',
+		'edgeEvaluatorList',
+		'vertexEvaluatorList'
 	],
 	#classVars : [
 		'NamedColors'
@@ -65,53 +57,41 @@ GolapEdgesAppearance class >> colorNames [
 
 { #category : #layout }
 GolapEdgesAppearance class >> defaultLayout [
+
 	<spec>
 	^ SpBoxLayout newVertical
-		add: #edgeWidthSlider height: self buttonHeight;
-		add: #visibleEdgeMinPercentile height: self buttonHeight * 3 // 4;
-		add: #visibleEdgeMaxPercentile height: self buttonHeight * 3 // 4;
-		add:
-			(SpBoxLayout newHorizontal
-				add: #polishIterationCheckbox;
-				add: #polishMinDenominatorField)
-			height: self buttonHeight;
-		add:
-			(SpBoxLayout newHorizontal
-				add:
-					(SpBoxLayout newVertical
-						add: #negativePolishSlider
-						height: self buttonHeight * 3 // 4);
-				add: #negativePolishField width: 50)
-			height: self buttonHeight;
-		add:
-			(SpBoxLayout newHorizontal
-				add:
-					(SpBoxLayout newVertical
-						add: #positivePolishSlider
-						height: self buttonHeight * 3 // 4);
-				add: #positivePolishField width: 50)
-			height: self buttonHeight;
-		add:
-			(SpBoxLayout newHorizontal
-				add: #fullGraphButton;
-				add: #minimalSpanningTreeButton;
-				add: #friendsField)
-			height: self buttonHeight;
-		add:
-			(SpBoxLayout newHorizontal
-				add: #frequencyButton;
-				add: #jaccardButton;
-				add: #liftButton;
-				add: #pmiButton)
-			height: self buttonHeight;
-		add:
-			(SpBoxLayout newHorizontal
-				add: #maxButton;
-				add: #sumButton;
-				add: #averageButton;
-				add: #degreeButton)
-			height: self buttonHeight;
-		yourself
+		  add: #edgeWidthSlider height: self buttonHeight;
+		  add: #visibleEdgeMinPercentile height: self buttonHeight * 3 // 4;
+		  add: #visibleEdgeMaxPercentile height: self buttonHeight * 3 // 4;
+		  add: (SpBoxLayout newHorizontal
+				   add: #polishIterationCheckbox;
+				   add: #polishMinDenominatorField)
+		  height: self buttonHeight;
+		  add: (SpBoxLayout newHorizontal
+				   add: (SpBoxLayout newVertical
+						    add: #negativePolishSlider
+						    height: self buttonHeight * 3 // 4);
+				   add: #negativePolishField width: 50)
+		  height: self buttonHeight;
+		  add: (SpBoxLayout newHorizontal
+				   add: (SpBoxLayout newVertical
+						    add: #positivePolishSlider
+						    height: self buttonHeight * 3 // 4);
+				   add: #positivePolishField width: 50)
+		  height: self buttonHeight;
+		  add: (SpBoxLayout newHorizontal
+				   add: 'フレンドランク' asPresenter expand: true;
+				   add: #friendsField width: 150)
+		  expand: false;
+		  add: (SpBoxLayout newHorizontal
+				   add: '関連指標' asPresenter expand: true;
+				   add: #edgeEvaluatorList width: 150)
+		  height: self buttonHeight;
+		  add: (SpBoxLayout newHorizontal
+				   add: '商品指標' asPresenter expand: true;
+				   add: #vertexEvaluatorList width: 150)
+		  height: self buttonHeight;
+		  yourself
 ]
 
 { #category : #'instance creation' }
@@ -121,30 +101,20 @@ GolapEdgesAppearance class >> on: aGolap [
 		yourself
 ]
 
-{ #category : #operations }
-GolapEdgesAppearance >> averageMode [
+{ #category : #accessing }
+GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 
-	golap model ifNotNil: [ 
-		self updateGlobalImageAfter: [ 
-			self setModelToAverageMode.
-			maxButton state: false.
-			sumButton state: false.
-			averageButton state: true.
-			degreeButton state: false.
-			golap updateQuery ] ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> degreeMode [
-
-	golap model ifNotNil: [ 
-		self updateGlobalImageAfter: [ 
-			self setModelToDegreeMode.
-			maxButton state: false.
-			sumButton state: false.
-			averageButton state: false.
-			degreeButton state: true.
-			golap updateQuery ] ]
+	aGolapEdgeEvaluator ifNotNil: [
+		golap model ifNotNil: [ :model |
+			self updateGlobalImageAfter: [
+				model edgeEvaluator: (aGolapEdgeEvaluator
+						 golapModel: model;
+						 yourself).
+				model friendsEdges: nil.
+				self resetVisibleEdgeThresholds.
+				golap updateQuery.
+				vertexEvaluatorList withAdapterDo: [ :a |
+					a widgetDo: [ :w | w updateContents ] ] ] ] ]
 ]
 
 { #category : #accessing }
@@ -158,34 +128,6 @@ GolapEdgesAppearance >> edgeScale: aNumber [
 	self updateGlobalImageAfter: [ edgeScale := aNumber ]
 ]
 
-{ #category : #operations }
-GolapEdgesAppearance >> freqMode [
-
-	golap model ifNotNil: [ 
-		self updateGlobalImageAfter: [ 
-			self setModelToFreqMode.
-			maxButton state: false.
-			sumButton state: false.
-			averageButton state: false.
-			degreeButton state: false.
-			golap updateQuery ] ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> frequencyMode [
-
-	golap model ifNotNil: [ :model | 
-		self updateGlobalImageAfter: [ 
-			self setModelToFrequencyMode.
-			frequencyButton state: true.
-			jaccardButton state: false.
-			liftButton state: false.
-			pmiButton state: false.
-			model friendsEdges: nil.
-			self resetVisibleEdgeThresholds.
-			golap updateQuery ] ]
-]
-
 { #category : #accessing }
 GolapEdgesAppearance >> friendsEdges [
 	^ golap model
@@ -196,18 +138,7 @@ GolapEdgesAppearance >> friendsEdges [
 { #category : #operations }
 GolapEdgesAppearance >> friendsGraph [
 
-	self updateGlobalImageAfter: [
-		fullGraphButton state: false.
-		minimalSpanningTreeButton state: false ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> fullGraph [
-
-	self updateGlobalImageAfter: [
-		fullGraphButton state: true.
-		minimalSpanningTreeButton state: false.
-		golap model ifNotNil: [ :model | model setFullGraphMode ] ]
+	self updateGlobalImageAfter: [  ]
 ]
 
 { #category : #accessing }
@@ -258,7 +189,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                   min: 0.0;
 		                   max: 2.0;
 		                   value: 1.0;
-		                   whenValueChangedDo: [ :value | 
+		                   whenValueChangedDo: [ :value |
 			                   self edgeScale: 2.0 ** value - 1.0 * 3.0 ];
 		                   yourself.
 	visibleEdgeMinPercentile := self newSlider
@@ -267,7 +198,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                            max: 1.0;
 		                            value: 0.0;
 		                            quantum: 0.05;
-		                            whenValueChangedDo: [ 
+		                            whenValueChangedDo: [
 			                            self updateGlobalImageAfter: [  ] ];
 		                            borderWidth: 0;
 		                            yourself.
@@ -277,7 +208,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                            max: 1.0;
 		                            value: 1.0;
 		                            quantum: 0.05;
-		                            whenValueChangedDo: [ 
+		                            whenValueChangedDo: [
 			                            self updateGlobalImageAfter: [  ] ];
 		                            borderWidth: 0;
 		                            yourself.
@@ -292,7 +223,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                        max: 1.0;
 		                        value: 1.0;
 		                        quantum: 0.01;
-		                        whenValueChangedDo: [ 
+		                        whenValueChangedDo: [
 			                        positivePolishField number:
 					                        positivePolishSlider value.
 			                        self polish ];
@@ -304,7 +235,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                       minimum: 0.8;
 		                       maximum: 1.0;
 		                       number: 1.0;
-		                       whenSubmitDo: [ :txt | 
+		                       whenSubmitDo: [ :txt |
 			                       positivePolishSlider value:
 					                       positivePolishField number.
 			                       self polish ].
@@ -314,7 +245,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                        max: 0.2;
 		                        value: 0.0;
 		                        quantum: 0.01;
-		                        whenValueChangedDo: [ 
+		                        whenValueChangedDo: [
 			                        negativePolishField number:
 					                        negativePolishSlider value.
 			                        self polish ];
@@ -326,7 +257,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                       minimum: 0.0;
 		                       maximum: 0.2;
 		                       number: 0.0;
-		                       whenSubmitDo: [ :txt | 
+		                       whenSubmitDo: [ :txt |
 			                       negativePolishSlider value:
 					                       negativePolishField number.
 			                       self polish ].
@@ -336,68 +267,40 @@ GolapEdgesAppearance >> initializePresenters [
 		                             minimum: 1;
 		                             number: 3;
 		                             whenSubmitDo: [ :txt | self polish ].
-	minimalSpanningTreeButton := self newButton.
-	minimalSpanningTreeButton
-		state: false;
-		label: 'minimum spanning tree';
-		action: [ self minimalSpanningTree ].
-	fullGraphButton := self newButton.
-	fullGraphButton
-		state: false;
-		label: 'full graph';
-		action: [ self fullGraph ].
 	friendsField := self newNumberInput
 		                beInteger;
 		                placeholder: 'friend rank';
 		                minimum: 1;
 		                number: 5;
 		                autoAccept: true;
-		                whenSubmitDo: [ :txt | 
-			                self updateGlobalImageAfter: [ self friendsGraph ] ].
-	frequencyButton := self newButton
-		                   state: false;
-		                   label: 'freq';
-		                   action: [ self frequencyMode ];
-		                   yourself.
-	liftButton := self newButton
-		              state: false;
-		              label: 'lift';
-		              action: [ self liftMode ];
-		              yourself.
-	jaccardButton := self newButton
-		                 state: true;
-		                 label: 'jaccard';
-		                 action: [ self jaccardMode ];
-		                 yourself.
-	pmiButton := self newButton
-		             state: false;
-		             label: 'PMI';
-		             action: [ self pmiMode ];
-		             yourself.
-	maxButton := self newButton
-		             state: false;
-		             label: 'max';
-		             action: [ self toggleMaxMode ];
-		             yourself.
-	sumButton := self newButton
-		             state: false;
-		             label: 'sum';
-		             action: [ self toggleSumMode ];
-		             yourself.
-	averageButton := self newButton
-		                 state: false;
-		                 label: 'average';
-		                 action: [ self toggleAverageMode ];
-		                 yourself.
-	degreeButton := self newButton
-		                state: false;
-		                label: 'degree';
-		                action: [ self toggleDegreeMode ];
-		                yourself.
-	self whenBuiltDo: [ :w | 
+		                whenSubmitDo: [ :txt | self friendsGraph ].
+	edgeEvaluatorList := self newDropList
+		                     items:
+			                     (#( 'frequency' 'jaccard' 'lift' 'PMI' )
+				                      collect: [ :column |
+					                      GolapEdgeColumnEvaluator column: column ]);
+		                     display: [ :item | item name ];
+		                     startWithSelection;
+		                     whenSelectedItemChangedDo: [ :edgeEvaluator |
+			                     self edgeEvaluator: edgeEvaluator ];
+		                     yourself.
+	vertexEvaluatorList := self newDropList
+		                       items: {
+				                       (GolapVertexColumnEvaluator column:
+						                        'frequency').
+				                       GolapVertexMaxEvaluator new.
+				                       GolapVertexSumEvaluator new.
+				                       GolapVertexAverageEvaluator new.
+				                       GolapVertexNumEdgesEvaluator new };
+		                       display: [ :item | item name ];
+		                       startWithSelection;
+		                       whenSelectedItemChangedDo: [ :vertexEvaluator |
+			                       self vertexEvaluator: vertexEvaluator ];
+		                       yourself.
+	self whenBuiltDo: [ :w |
 		| f |
 		f := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m | 
+		w widget allMorphsDo: [ :m |
 			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
@@ -405,58 +308,6 @@ GolapEdgesAppearance >> initializePresenters [
 GolapEdgesAppearance >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter title: 'Edges'
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> jaccardMode [
-
-	golap model ifNotNil: [ :model |
-		self updateGlobalImageAfter: [
-			self setModelToJaccardMode.
-			frequencyButton state: false.
-			jaccardButton state: true.
-			liftButton state: false.
-			pmiButton state: false.
-			model friendsEdges: nil.
-			self resetVisibleEdgeThresholds.
-			golap updateQuery ] ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> liftMode [
-
-	golap model ifNotNil: [ :model |
-		self updateGlobalImageAfter: [
-			self setModelToLiftMode.
-			frequencyButton state: false.
-			jaccardButton state: false.
-			liftButton state: true.
-			pmiButton state: false.
-			model friendsEdges: nil.
-			self resetVisibleEdgeThresholds.
-			golap updateQuery ] ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> maxMode [
-
-	golap model ifNotNil: [ :model | 
-		self updateGlobalImageAfter: [ 
-			self setModelToMaxMode.
-			maxButton state: true.
-			sumButton state: false.
-			averageButton state: false.
-			degreeButton state: false.
-			golap updateQuery ] ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> minimalSpanningTree [
-
-	self updateGlobalImageAfter: [
-		fullGraphButton state: false.
-		minimalSpanningTreeButton state: true.
-		golap model ifNotNil: [ :model | model setTreeMode ] ]
 ]
 
 { #category : #accessing }
@@ -474,21 +325,6 @@ GolapEdgesAppearance >> numFriends [
 GolapEdgesAppearance >> numFriends: anInteger [
 
 	friendsField number: anInteger
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> pmiMode [
-
-	golap model ifNotNil: [ :model |
-		self updateGlobalImageAfter: [
-			self setModelToPmiMode.
-			frequencyButton state: false.
-			jaccardButton state: false.
-			liftButton state: false.
-			pmiButton state: true.
-			model friendsEdges: nil.
-			self resetVisibleEdgeThresholds.
-			golap updateQuery ] ]
 ]
 
 { #category : #operations }
@@ -523,7 +359,7 @@ GolapEdgesAppearance >> resetVisibleEdgeThresholds [
 { #category : #snapshot }
 GolapEdgesAppearance >> restore: aStream [
 
-	(NeoJSONReader on: aStream) next ifNotNil: [ :json | 
+	(NeoJSONReader on: aStream) next ifNotNil: [ :json |
 		json
 			at: 'edge-width'
 			ifPresent: [ :float | edgeWidthSlider value: float ];
@@ -539,23 +375,30 @@ GolapEdgesAppearance >> restore: aStream [
 			ifPresent: [ :float | negativePolishField number: float ];
 			at: 'polish-min-edges'
 			ifPresent: [ :int | polishMinDenominatorField number: int ];
-			at: 'tree' ifPresent: [ :string | 
-				string = 'tree' ifTrue: [ self minimalSpanningTree ].
-				string = 'graph' ifTrue: [ self fullGraph ].
-				string isNumber ifTrue: [ 
-						friendsField number: string.
+			at: 'rank' ifPresent: [ :number |
+				number isNumber ifTrue: [
+						friendsField number: number.
 						self friendsGraph ] ];
-			at: 'measure' ifPresent: [ :string | 
-				string = 'freq' ifTrue: [ self frequencyMode ].
-				string = 'lift' ifTrue: [ self liftMode ].
-				string = 'jaccard' ifTrue: [ self jaccardMode ].
-				string = 'pmi' ifTrue: [ self pmiMode ] ];
-			at: 'aggregation' ifPresent: [ :string | 
-				string = 'freq' ifTrue: [ self freqMode ].
-				string = 'max' ifTrue: [ self maxMode ].
-				string = 'sum' ifTrue: [ self sumMode ].
-				string = 'average' ifTrue: [ self averageMode ].
-				string = 'degree' ifTrue: [ self degreeMode ] ] ]
+			at: 'edge-evaluator'
+			ifPresent: [ :dict |
+				self edgeEvaluator: (GolapEdgeEvaluator fromJSON: dict) ];
+			at: 'vertex-evaluator'
+			ifPresent: [ :dict |
+				self vertexEvaluator: (GolapVertexEvaluator fromJSON: dict) ] ]
+]
+
+{ #category : #updating }
+GolapEdgesAppearance >> selectedEdgeEvaluatorChanged [
+
+	edgeEvaluatorList selectedItem ifNotNil: [ :edgeEvaluator |
+		self edgeEvaluator: edgeEvaluator ]
+]
+
+{ #category : #updating }
+GolapEdgesAppearance >> selectedVertexEvaluatorChanged [
+
+	vertexEvaluatorList selectedItem ifNotNil: [ :vertexEvaluator |
+		self vertexEvaluator: vertexEvaluator ]
 ]
 
 { #category : #private }
@@ -592,36 +435,12 @@ GolapEdgesAppearance >> setModelToFreqMode [
 ]
 
 { #category : #operations }
-GolapEdgesAppearance >> setModelToFrequencyMode [
-	golap model ifNotNil: [ :model | model frequencyMode ].
-	golap dimensionsDo: [ :m | m frequencyMode ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> setModelToJaccardMode [
-	golap model ifNotNil: [ :model | model jaccardMode ].
-	golap dimensionsDo: [ :m | m jaccardMode ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> setModelToLiftMode [
-	golap model ifNotNil: [ :model | model liftMode ].
-	golap dimensionsDo: [ :m | m liftMode ]
-]
-
-{ #category : #operations }
 GolapEdgesAppearance >> setModelToMaxMode [
 
 	golap model ifNotNil: [ :model |
 		model vertexEvaluator: (GolapVertexMaxEvaluator on: model) ].
 	golap dimensionsDo: [ :m |
 		m vertexEvaluator: (GolapVertexMaxEvaluator on: m) ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> setModelToPmiMode [
-	golap model ifNotNil: [ :model | model pmiMode ].
-	golap dimensionsDo: [ :m | m pmiMode ]
 ]
 
 { #category : #operations }
@@ -652,63 +471,12 @@ GolapEdgesAppearance >> snapshotInto: aStream [
 		at: 'polish-positive' put: positivePolishField number;
 		at: 'polish-negative' put: negativePolishField number;
 		at: 'polish-min-edges' put: polishMinDenominatorField number;
-		at: 'tree' put: (minimalSpanningTreeButton state
-				 ifTrue: [ 'tree' ]
-				 ifFalse: [ 
-					 fullGraphButton state
-						 ifTrue: [ 'graph' ]
-						 ifFalse: [ friendsField number ] ]).
-	frequencyButton state ifTrue: [ json at: 'measure' put: 'freq' ].
-	liftButton state ifTrue: [ json at: 'measure' put: 'lift' ].
-	jaccardButton state ifTrue: [ json at: 'measure' put: 'jaccard' ].
-	pmiButton state ifTrue: [ json at: 'measure' put: 'pmi' ].
-	json at: 'aggregation' put: 'freq'.
-	maxButton state ifTrue: [ json at: 'aggregation' put: 'max' ].
-	sumButton state ifTrue: [ json at: 'aggregation' put: 'sum' ].
-	averageButton state ifTrue: [ json at: 'aggregation' put: 'average' ].
-	degreeButton state ifTrue: [ json at: 'aggregation' put: 'degree' ].
+		at: 'rank' put: friendsField number.
+	edgeEvaluatorList selectedItem ifNotNil: [ :edgeEvaluator |
+		json at: 'edge-evaluator' put: edgeEvaluator asJSON ].
+	vertexEvaluatorList selectedItem ifNotNil: [ :vertexEvaluator |
+		json at: 'vertex-evaluator' put: vertexEvaluator asJSON ].
 	(NeoJSONWriter on: aStream) nextPut: json
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> sumMode [
-
-	golap model ifNotNil: [ :model |
-		self updateGlobalImageAfter: [
-			model vertexEvaluator: (GolapVertexSumEvaluator on: model).
-			maxButton state: false.
-			sumButton state: true.
-			averageButton state: false.
-			degreeButton state: false.
-			golap updateQuery ] ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> toggleAverageMode [
-	averageButton state
-		ifTrue: [ self freqMode ]
-		ifFalse: [ self averageMode ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> toggleDegreeMode [
-	degreeButton state
-		ifTrue: [ self freqMode ]
-		ifFalse: [ self degreeMode ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> toggleMaxMode [
-	maxButton state
-		ifTrue: [ self freqMode ]
-		ifFalse: [ self maxMode ]
-]
-
-{ #category : #operations }
-GolapEdgesAppearance >> toggleSumMode [
-	sumButton state
-		ifTrue: [ self freqMode ]
-		ifFalse: [ self sumMode ]
 ]
 
 { #category : #accessing }
@@ -729,16 +497,19 @@ GolapEdgesAppearance >> updateGlobalImageAfter: aBlock layout: aBoolean [
 { #category : #private }
 GolapEdgesAppearance >> updateModel: aGolapModel [
 
-	frequencyButton state ifTrue: [ self frequencyMode ].
-	jaccardButton state ifTrue: [ self jaccardMode ].
-	liftButton state ifTrue: [ self liftMode ].
-	pmiButton state ifTrue: [ self pmiMode ].
-	aGolapModel vertexEvaluator:
-		(GolapVertexColumnEvaluator on: aGolapModel column: 'frequency').
-	maxButton state ifTrue: [ self maxMode ].
-	sumButton state ifTrue: [ self sumMode ].
-	averageButton state ifTrue: [ self averageMode ].
-	degreeButton state ifTrue: [ self degreeMode ]
+	
+]
+
+{ #category : #accessing }
+GolapEdgesAppearance >> vertexEvaluator: aGolapVertexEvaluator [
+
+	aGolapVertexEvaluator ifNotNil: [
+		golap model ifNotNil: [ :model |
+			self updateGlobalImageAfter: [
+				model vertexEvaluator: (aGolapVertexEvaluator
+						 golapModel: model;
+						 yourself).
+				golap updateQuery ] ] ]
 ]
 
 { #category : #accessing }
@@ -753,9 +524,6 @@ GolapEdgesAppearance >> visibleEdgeMinPercentile [
 
 { #category : #accessing }
 GolapEdgesAppearance >> visibleEdges [
-	fullGraphButton state = true
-		ifTrue: [ ^ self graphEdges ].
-	minimalSpanningTreeButton state = true
-		ifTrue: [ ^ self treeEdges ].
+
 	^ self friendsEdges
 ]

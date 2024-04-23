@@ -1,19 +1,23 @@
 Class {
 	#name : #GolapVertexAverageEvaluator,
-	#superclass : #GolapVertexEvaluator,
+	#superclass : #GolapVertexAggregationEvaluator,
 	#category : #'Golap-Models-Evaluator'
 }
 
 { #category : #accessing }
-GolapVertexAverageEvaluator >> name [
+GolapVertexAverageEvaluator class >> subtag [
 
-	^ 'average ' , golapModel edgeEvaluator name
+	^ 'average'
 ]
 
 { #category : #evaluating }
-GolapVertexAverageEvaluator >> value: aGolapVertex [
+GolapVertexAverageEvaluator >> aggregation [
 
-	^ (self valuesAtEdgesOfVertex: aGolapVertex)
-		  ifNotEmpty: #average
-		  ifEmpty: [ 0 ]
+	^ #average
+]
+
+{ #category : #accessing }
+GolapVertexAverageEvaluator >> aggregationName [
+
+	^ '平均 '
 ]
