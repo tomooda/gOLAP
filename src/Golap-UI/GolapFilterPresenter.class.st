@@ -240,7 +240,6 @@ GolapFilterPresenter >> initializePresenters [
 		              addColumn:
 		              (SpStringTableColumn evaluated: [ :clauseSpec | 
 			               clauseSpec field ]);
-		              itemFilter: [ :clauses | clauses ];
 		              whenSelectionChangedDo: [ 
 		              self clauseListSelectionChanged ];
 		              contextMenu: [ self clauseListMenu ];
