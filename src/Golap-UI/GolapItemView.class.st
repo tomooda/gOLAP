@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapItemView,
-	#superclass : #SpPresenter,
+	#name : 'GolapItemView',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'item',
 		'cachedImages',
@@ -23,10 +23,12 @@ Class {
 		'EmptyImage',
 		'ImageRepositoryUrl'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapItemView class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newVertical
@@ -41,7 +43,7 @@ GolapItemView class >> defaultLayout [
 			height: self buttonHeight
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapItemView class >> on: aGolap [
 
 	^ self new
@@ -49,24 +51,24 @@ GolapItemView class >> on: aGolap [
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> authenticateBlock [
 	^ authenticateBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> basicImage [
 
 	^ self images ifNotNil: [ :images | 
 		  images at: imageIndex value ifAbsent: [ nil ] ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemView >> emptyImage [
 	^ EmptyImage
 		ifNil: [ | image |
@@ -75,36 +77,36 @@ GolapItemView >> emptyImage [
 			image ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> golap: aGolap [
 	golap := aGolap
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> image [
 
 	^ self basicImage ifNil: [ self emptyImage ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> imageRepositoryUrl: aString [
 
 	imageRepositoryField text: (aString ifNil: [ '' ])
 ]
 
-{ #category : #http }
+{ #category : 'http' }
 GolapItemView >> imageRequestJsonFor: aString [
 	^ '{"nodeimage": {"itemVal": "' , aString asString , '"},"deadlineTimer":0}'
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemView >> images [
 	^ cachedImages
 		at: item value
 		ifAbsentPut: [ self retrieveImagesFor: item value ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapItemView >> initialize [
 	super initialize.
 	cachedImages := Dictionary new.
@@ -118,7 +120,7 @@ GolapItemView >> initialize [
 	itemFieldQuerySpec := Dictionary new
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapItemView >> initializePresenters [
 	serverUrlField := self newTextInput
 		placeholder: 'Server URL';
@@ -155,24 +157,24 @@ GolapItemView >> initializePresenters [
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> itemFieldQuerySpec [
 	^ itemFieldQuerySpec
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> itemFieldQuerySpec: aDictionary [
 	itemFieldQuerySpec := aDictionary
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> itemInfo [
 	^ cachedItemInfos
 		at: item
 		ifAbsentPut: [ self retrieveItemInfoFor: item ]
 ]
 
-{ #category : #http }
+{ #category : 'http' }
 GolapItemView >> itemInfoRequestJsonFor: aString [
 	| q fields |
 	fields := itemFieldQuerySpec associations
@@ -199,17 +201,17 @@ GolapItemView >> itemInfoRequestJsonFor: aString [
 	^ NeoJSONWriter toString: q
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> query [
 	^ query
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> query: aDictionary [
 	query := aDictionary
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemView >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next ifNotNil: [ :json | 
@@ -224,7 +226,7 @@ GolapItemView >> restore: aStream [
 			at: 'item-query' ifPresent: [ :dict | itemFieldQuerySpec := dict ] ]
 ]
 
-{ #category : #http }
+{ #category : 'http' }
 GolapItemView >> retrieveImagesFor: aString [
 	| imageRepo filenames |
 	aString ifNil: [ ^ Array new ].
@@ -249,7 +251,7 @@ GolapItemView >> retrieveImagesFor: aString [
 		do: [ :ex | ^ Array new ]
 ]
 
-{ #category : #http }
+{ #category : 'http' }
 GolapItemView >> retrieveItemInfoFor: aString [
 	| itemInfo response stream header reader |
 	itemInfo := OrderedCollection new.
@@ -271,7 +273,7 @@ GolapItemView >> retrieveItemInfoFor: aString [
 	^ itemInfo
 ]
 
-{ #category : #http }
+{ #category : 'http' }
 GolapItemView >> retrieveSingleImageFor: aString [
 
 	| imageRepo filenames |
@@ -302,19 +304,19 @@ GolapItemView >> retrieveSingleImageFor: aString [
 	^ nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> serverUrl: aString [
 
 	serverUrlField text: aString
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemView >> snapshot [
 
 	golap snapshotItemView: [ :stream | self snapshotInto: stream ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemView >> snapshotInto: aStream [
 
 	(NeoJSONWriter on: aStream) nextPut: { 
@@ -326,7 +328,7 @@ GolapItemView >> snapshotInto: aStream [
 			('item-query' -> itemFieldQuerySpec) } asOrderedDictionary
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemView >> updateImage [
 
 	vertex ifNotNil: [
@@ -335,17 +337,17 @@ GolapItemView >> updateImage [
 	^ itemImage image: self image
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemView >> updateItemInfo [
 	^ infoList items: self itemInfo
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> url [
 	^ serverUrlField text asString asZnUrl
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemView >> vertex: aGolapVertex [
 
 	vertex := aGolapVertex.

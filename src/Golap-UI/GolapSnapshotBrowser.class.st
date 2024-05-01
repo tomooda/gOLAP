@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapSnapshotBrowser,
-	#superclass : #SpPresenter,
+	#name : 'GolapSnapshotBrowser',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'availableSnapshotList',
 		'emptyImage',
@@ -12,10 +12,12 @@ Class {
 		'refreshSnapshotButton',
 		'copySnapshotButton'
 	],
-	#category : #'Golap-UI-Snapshot'
+	#category : 'Golap-UI-Snapshot',
+	#package : 'Golap-UI',
+	#tag : 'Snapshot'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapSnapshotBrowser class >> defaultLayout [
 
 	^ SpBoxLayout newVertical
@@ -32,27 +34,27 @@ GolapSnapshotBrowser class >> defaultLayout [
 		  yourself
 ]
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 GolapSnapshotBrowser class >> open [
 
 	<script: 'GolapSnapshotBrowser open'>
 	^ self new open
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotBrowser >> addSnapshot [
 
 	Golap openClient
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotBrowser >> allSnapshotNames [
 
 	^ (self snapshotDirectory directoryNames reject: [ :name | 
 		   name first = $. ]) asSortedCollection
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotBrowser >> copySnapshot [
 
 	availableSnapshotList selectedItem ifNotNil: [ :item | 
@@ -60,12 +62,12 @@ GolapSnapshotBrowser >> copySnapshot [
 		self updateAvailableSnapshotList ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotBrowser >> golapDirectory [
 	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapSnapshotBrowser >> initializePresenters [
 
 	super initializePresenters.
@@ -109,19 +111,19 @@ GolapSnapshotBrowser >> initializePresenters [
 	self updateAvailableSnapshotList
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapSnapshotBrowser >> initializeWindow: aWindowPresenter [
 	aWindowPresenter title: 'Snapshot Browser'
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotBrowser >> openSnapshot [
 
 	availableSnapshotList selectedItem ifNotNil: [ :item | 
 		item openSnapshot ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotBrowser >> removeSnapshot [
 
 	availableSnapshotList selectedItem ifNotNil: [ :item | 
@@ -129,7 +131,7 @@ GolapSnapshotBrowser >> removeSnapshot [
 		self updateAvailableSnapshotList ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotBrowser >> renameSnapshot [
 
 	availableSnapshotList selectedItem ifNotNil: [ :item | 
@@ -137,13 +139,13 @@ GolapSnapshotBrowser >> renameSnapshot [
 		self updateAvailableSnapshotList ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotBrowser >> snapshotDirectory [
 
 	^ (self golapDirectory / 'snapshots') ensureCreateDirectory
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapSnapshotBrowser >> snapshotListMenu [
 
 	^ self newMenu
@@ -172,7 +174,7 @@ GolapSnapshotBrowser >> snapshotListMenu [
 						  action: [ self renameSnapshot ] ] ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapSnapshotBrowser >> updateAvailableSnapshotList [
 
 	availableSnapshotList items:
@@ -180,7 +182,7 @@ GolapSnapshotBrowser >> updateAvailableSnapshotList [
 			 GolapSnapshotListItemPresenter on: name ])
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapSnapshotBrowser >> updateButtons [
 
 	availableSnapshotList selectedItem

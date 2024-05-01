@@ -1,13 +1,15 @@
 Class {
-	#name : #GolapTransactionFilterPresenter,
-	#superclass : #GolapFilterPresenter,
+	#name : 'GolapTransactionFilterPresenter',
+	#superclass : 'GolapFilterPresenter',
 	#instVars : [
 		'subqueryDropList'
 	],
-	#category : #'Golap-UI-Query'
+	#category : 'Golap-UI-Query',
+	#package : 'Golap-UI',
+	#tag : 'Query'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapTransactionFilterPresenter class >> defaultLayout [
 
 	<script: 'GolapTransactionFilterPresenter forCurrent openWithSpec'>
@@ -33,18 +35,18 @@ GolapTransactionFilterPresenter class >> defaultLayout [
 				   add: #previewFilterField expand: false)
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapTransactionFilterPresenter >> clauseListSelectionChanged [
 	self updateSubqueryDropList.
 	super clauseListSelectionChanged
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapTransactionFilterPresenter >> filterSpec [
 	^ self query transactionFilterSpec
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapTransactionFilterPresenter >> initializePresenters [
 	super initializePresenters.
 	subqueryDropList := self newDropList
@@ -59,17 +61,17 @@ GolapTransactionFilterPresenter >> initializePresenters [
 		yourself
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapTransactionFilterPresenter >> isPredicateMode [
 	^ subqueryDropList selectedItem isNil
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapTransactionFilterPresenter >> isSubqueryMode [
 	^ subqueryDropList selectedItem notNil
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapTransactionFilterPresenter >> predicateFieldAccepted [
 	self isPredicateMode
 		ifTrue: [ ^ super predicateFieldAccepted ].
@@ -86,7 +88,7 @@ GolapTransactionFilterPresenter >> predicateFieldAccepted [
 			self updateClauseList ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapTransactionFilterPresenter >> predicateFieldDropped: anArrayOfString [
 	| patterns newPatterns |
 	(self isPredicateMode
@@ -106,7 +108,7 @@ GolapTransactionFilterPresenter >> predicateFieldDropped: anArrayOfString [
 				accept: predicateField text asString trim , ',' , (',' join: newPatterns) ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapTransactionFilterPresenter >> removePredicate [
 	self isPredicateMode
 		ifTrue: [ ^ super removePredicate ].
@@ -116,12 +118,12 @@ GolapTransactionFilterPresenter >> removePredicate [
 			self updateClauseList ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapTransactionFilterPresenter >> subqueryDropList [
 	^ subqueryDropList
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapTransactionFilterPresenter >> subqueryDropListChanged [
 	clauseList selection selectedItem
 		ifNotNil: [ :clause | 
@@ -139,7 +141,7 @@ GolapTransactionFilterPresenter >> subqueryDropListChanged [
 			self updateClauseList ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapTransactionFilterPresenter >> updateGuard [
 	self isPredicateMode
 		ifTrue: [ ^ super updateGuard ].
@@ -151,7 +153,7 @@ GolapTransactionFilterPresenter >> updateGuard [
 		disable
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapTransactionFilterPresenter >> updatePredicateField [
 	self isPredicateMode
 		ifTrue: [ ^ super updatePredicateField ].
@@ -165,7 +167,7 @@ GolapTransactionFilterPresenter >> updatePredicateField [
 	self updatePreviewList
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapTransactionFilterPresenter >> updatePredicateList [
 	self isPredicateMode
 		ifTrue: [ ^ super updatePredicateList ].
@@ -184,7 +186,7 @@ GolapTransactionFilterPresenter >> updatePredicateList [
 	self updatePreviewList
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapTransactionFilterPresenter >> updatePreviewList [
 	self isPredicateMode
 		ifTrue: [ ^ super updatePreviewList ].
@@ -197,7 +199,7 @@ GolapTransactionFilterPresenter >> updatePreviewList [
 						ifNil: [ #() ]) ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapTransactionFilterPresenter >> updateSubqueryDropList [
 	clauseList selection selectedItem
 		ifNil: [ subqueryDropList

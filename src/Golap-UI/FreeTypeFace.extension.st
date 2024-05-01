@@ -1,6 +1,6 @@
-Extension { #name : #FreeTypeFace }
+Extension { #name : 'FreeTypeFace' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 FreeTypeFace >> filename [
 
 	| fileRef basename provider |

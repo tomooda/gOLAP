@@ -1,6 +1,6 @@
-Extension { #name : #FTPluggableIconListMorphAdaptorDataSource }
+Extension { #name : 'FTPluggableIconListMorphAdaptorDataSource' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 FTPluggableIconListMorphAdaptorDataSource >> newDataSourceMatching: aFTFilter [
 	| newElements wrappedItem text newDataSource modelCopy |
 	UIManager default

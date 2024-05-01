@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapColorsAppearance,
-	#superclass : #SpPresenter,
+	#name : 'GolapColorsAppearance',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'normalColor',
 		'selectionColor',
@@ -20,15 +20,17 @@ Class {
 	#classVars : [
 		'NamedColors'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #colors }
+{ #category : 'colors' }
 GolapColorsAppearance class >> colorAt: aSymbol [
 	^ self colorMap at: aSymbol ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance class >> colorMap [
 	^ NamedColors
 		ifNil: [ NamedColors := OrderedDictionary new
@@ -50,12 +52,12 @@ GolapColorsAppearance class >> colorMap [
 				yourself ]
 ]
 
-{ #category : #colors }
+{ #category : 'colors' }
 GolapColorsAppearance class >> colorNames [
 	^ self colorMap keys
 ]
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapColorsAppearance class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newHorizontal
@@ -63,19 +65,19 @@ GolapColorsAppearance class >> defaultLayout [
 		add: #colorList width: 140
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapColorsAppearance class >> on: aGolap [
 	^ self new
 		setGolap: aGolap;
 		yourself
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapColorsAppearance >> colorList [
 	^ colorList
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> colorSelectors [
 
 	^ #( normalColor selectionColor #positivePolishColor
@@ -83,7 +85,7 @@ GolapColorsAppearance >> colorSelectors [
 	     retreatingColor )
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> colors [
 	^ {nil.
 	Color gray.
@@ -102,48 +104,48 @@ GolapColorsAppearance >> colors [
 	Color yellow muchDarker}
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> decliningColor [
 	^ decliningColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> decliningColor: aColor [
 	self updateGlobalImageAfter: [ decliningColor := aColor ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> freshColor [
 	^ freshColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> freshColor: aColor [
 	self updateGlobalImageAfter: [ freshColor := aColor ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> growingColor [
 	^ growingColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> growingColor: aColor [
 	self updateGlobalImageAfter: [ growingColor := aColor ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> iconExtent [
 	^ 30 @ 14
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> iconFor: aSymbol [
 
 	^ self iconForColor: (golap ifNotNil: [ golap perform: aSymbol ])
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> iconForColor: aColor [
 	^ aColor
 		ifNotNil: [ | icon |
@@ -157,12 +159,12 @@ GolapColorsAppearance >> iconForColor: aColor [
 		ifNil: [ self nilIcon ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapColorsAppearance >> initialExtent [
 	^ 500@250
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapColorsAppearance >> initialize [
 	super initialize.
 	normalColor := Color gray.
@@ -176,7 +178,7 @@ GolapColorsAppearance >> initialize [
 	retreatingColor := Color red
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapColorsAppearance >> initializePresenters [
 
 	nameList := self newList
@@ -196,13 +198,13 @@ GolapColorsAppearance >> initializePresenters [
 			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapColorsAppearance >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter title: 'Colors'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> nameForColorSelector: aSymbol [
 	aSymbol = #normalColor
 		ifTrue: [ ^ '通常' ].
@@ -223,24 +225,24 @@ GolapColorsAppearance >> nameForColorSelector: aSymbol [
 	^ aSymbol
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapColorsAppearance >> nameList [
 	^ nameList
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> negativePolishColor [
 
 	^ negativePolishColor
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> negativePolishColor: aColor [
 
 	negativePolishColor := aColor
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapColorsAppearance >> nilIcon [
 	^ nilIcon
 		ifNil: [ | icon |
@@ -257,17 +259,17 @@ GolapColorsAppearance >> nilIcon [
 			nilIcon := icon ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> normalColor [
 	^ normalColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> normalColor: aColor [
 	self updateGlobalImageAfter: [ normalColor := aColor ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> normalColorFor: aGolapVertex [
 	vertexColors
 		do: [ :triple | 
@@ -276,17 +278,17 @@ GolapColorsAppearance >> normalColorFor: aGolapVertex [
 	^ self normalColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> positivePolishColor [
 	^ positivePolishColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> positivePolishColor: aColor [
 	self updateGlobalImageAfter: [ positivePolishColor := aColor ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapColorsAppearance >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next keysAndValuesDo: [ 
@@ -298,40 +300,40 @@ GolapColorsAppearance >> restore: aStream [
 			(colorHexString ifNotNil: [ Color fromHexString: colorHexString ]) ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> retreatingColor [
 	^ retreatingColor 
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> retreatingColor: aColor [
 	self updateGlobalImageAfter: [ retreatingColor := aColor ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> selectionColor [
 	^ selectionColor 
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 GolapColorsAppearance >> selectionColor: aColor [
 	self updateGlobalImageAfter: [ selectionColor := aColor ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapColorsAppearance >> setGolap: aGolap [
 	golap := aGolap.
 	self updateNameList
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapColorsAppearance >> snapshot [
 
 	golap snapshotColorsAppearance: [ :stream | 
 		self snapshotInto: stream ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapColorsAppearance >> snapshotInto: aStream [
 
 	| json |
@@ -343,22 +345,22 @@ GolapColorsAppearance >> snapshotInto: aStream [
 	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapColorsAppearance >> updateGlobalImageAfter: aBlock [
 	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapColorsAppearance >> updateGlobalImageAfter: aBlock layout: aBoolean [
 	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock layout: aBoolean ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapColorsAppearance >> updateNameList [
 	nameList items: self colorSelectors
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapColorsAppearance >> updateSelectedColor [
 
 	nameList selection selectedItem ifNotNil: [ :item | 
@@ -370,7 +372,7 @@ GolapColorsAppearance >> updateSelectedColor [
 		golap updateGlobalImage ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapColorsAppearance >> updateSelectedName [
 
 	nameList selection selectedItem

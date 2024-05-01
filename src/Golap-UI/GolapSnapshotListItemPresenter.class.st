@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapSnapshotListItemPresenter,
-	#superclass : #SpPresenter,
+	#name : 'GolapSnapshotListItemPresenter',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'snapshotName',
 		'globalImage',
@@ -8,10 +8,12 @@ Class {
 		'modifiedTimeLabel',
 		'nameLabel'
 	],
-	#category : #'Golap-UI-Snapshot'
+	#category : 'Golap-UI-Snapshot',
+	#package : 'Golap-UI',
+	#tag : 'Snapshot'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapSnapshotListItemPresenter class >> defaultLayout [
 
 	<spec>
@@ -29,7 +31,7 @@ GolapSnapshotListItemPresenter class >> defaultLayout [
 		  yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapSnapshotListItemPresenter class >> on: aString [
 
 	^ self new
@@ -37,7 +39,7 @@ GolapSnapshotListItemPresenter class >> on: aString [
 		  yourself
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotListItemPresenter >> copySnapshot [
 
 	(UIManager default request: '新しい名前を入力してください') ifNotNil: [ :newName | 
@@ -47,7 +49,7 @@ GolapSnapshotListItemPresenter >> copySnapshot [
 			self snapshotDirectory / newName ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> emptyImage [
 
 	| form |
@@ -65,7 +67,7 @@ GolapSnapshotListItemPresenter >> emptyImage [
 	^ form
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> getCreatedTime [
 
 	^ snapshotName ifNil: [ '' ] ifNotNil: [ :name | 
@@ -84,7 +86,7 @@ GolapSnapshotListItemPresenter >> getCreatedTime [
 			  ifFalse: [ '' ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> getGlobalImage [
 
 	^ snapshotName ifNil: [ self emptyImage ] ifNotNil: [ :name | 
@@ -97,7 +99,7 @@ GolapSnapshotListItemPresenter >> getGlobalImage [
 			  ifFalse: [ self emptyImage ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> getModifiedTime [
 
 	^ snapshotName ifNil: [ '' ] ifNotNil: [ :name | 
@@ -111,23 +113,23 @@ GolapSnapshotListItemPresenter >> getModifiedTime [
 			  ifFalse: [ '' ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> getName [
 	^ snapshotName ifNil: [ '-' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> globalImageFilename [
 
 	^ 'globalImage.png'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> golapDirectory [
 	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapSnapshotListItemPresenter >> initializePresenters [
 
 	super initializePresenters.
@@ -138,7 +140,7 @@ GolapSnapshotListItemPresenter >> initializePresenters [
 	self update
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotListItemPresenter >> launchSnapshot [
 
 	| golap |
@@ -147,7 +149,7 @@ GolapSnapshotListItemPresenter >> launchSnapshot [
 	golap restoreSnapshot: self snapshotDirectory / snapshotName
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotListItemPresenter >> openSnapshot [
 
 	Golap allInstancesDo: [ :golap | 
@@ -156,7 +158,7 @@ GolapSnapshotListItemPresenter >> openSnapshot [
 	^ self launchSnapshot
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotListItemPresenter >> removeSnapshot [
 
 	(UIManager default confirm: snapshotName , 'を削除します') ifTrue: [ 
@@ -165,7 +167,7 @@ GolapSnapshotListItemPresenter >> removeSnapshot [
 			ensureDelete ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapSnapshotListItemPresenter >> renameSnapshot [
 
 	(UIManager default request: '新しい名前を入力してください') ifNotNil: [ :newName | 
@@ -174,26 +176,26 @@ GolapSnapshotListItemPresenter >> renameSnapshot [
 		self snapshotDirectory / snapshotName renameTo: newName ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> snapshotDirectory [
 
 	^ (self golapDirectory / 'snapshots') ensureCreateDirectory
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> snapshotName [
 
 	^ snapshotName
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> snapshotName: aString [
 
 	snapshotName := aString.
 	self snapshotNameChanged
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> snapshotNameChanged [
 
 	nameLabel ifNotNil: [ nameLabel label: self getName ].
@@ -204,7 +206,7 @@ GolapSnapshotListItemPresenter >> snapshotNameChanged [
 		modifiedTimeLabel label: self getModifiedTime ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSnapshotListItemPresenter >> update [
 
 	nameLabel ifNotNil: [ nameLabel label: self getName ].

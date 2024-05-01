@@ -1,6 +1,6 @@
-Extension { #name : #SpMorphicTextAdapter }
+Extension { #name : 'SpMorphicTextAdapter' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 SpMorphicTextAdapter >> buildWidget [
 	| newWidget |
 	

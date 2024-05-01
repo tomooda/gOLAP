@@ -1,6 +1,6 @@
-Extension { #name : #SpAbstractFormButtonPresenter }
+Extension { #name : 'SpAbstractFormButtonPresenter' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 SpAbstractFormButtonPresenter >> setState: aBoolean [
 
 	self property: #state rawValue: aBoolean

@@ -1,6 +1,6 @@
-Extension { #name : #PluggableListMorph }
+Extension { #name : 'PluggableListMorph' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 PluggableListMorph >> mouseDown: evt [
 	"Changed to only take focus if wanted."
 

@@ -1,6 +1,6 @@
-Extension { #name : #MorphicEventHandler }
+Extension { #name : 'MorphicEventHandler' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 MorphicEventHandler >> mouseWheel: event fromMorph: sourceMorph [
 	^self notifyMorphsOfEvent: event ofType: #mouseWheel from: sourceMorph
 ]

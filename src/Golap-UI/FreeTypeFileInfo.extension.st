@@ -1,6 +1,6 @@
-Extension { #name : #FreeTypeFileInfo }
+Extension { #name : 'FreeTypeFileInfo' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 FreeTypeFileInfo >> updateAbsolutePath [
 
 	| fileRef basename provider |

@@ -1,6 +1,6 @@
-Extension { #name : #Morph }
+Extension { #name : 'Morph' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 Morph >> handleMouseWheel: anEvent [
 
 	"System level event handling."
@@ -13,12 +13,12 @@ Morph >> handleMouseWheel: anEvent [
 		  handler mouseWheel: anEvent fromMorph: self ]
 ]
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 Morph >> handlesMouseWheel: anEvent [
 	^ false
 ]
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 Morph >> mouseWheel: anEvent [
 	| code keyEvent |
 	code := (anEvent isUp

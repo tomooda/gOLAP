@@ -1,6 +1,6 @@
-Extension { #name : #SpMorphicSliderAdapter }
+Extension { #name : 'SpMorphicSliderAdapter' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 SpMorphicSliderAdapter >> buildWidget [
 
 	| preWidget |

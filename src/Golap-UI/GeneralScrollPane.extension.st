@@ -1,6 +1,6 @@
-Extension { #name : #GeneralScrollPane }
+Extension { #name : 'GeneralScrollPane' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 GeneralScrollPane >> hScrollbarInterval [
 
 	"Answer the computed size of the thumb of the horizontal scrollbar."

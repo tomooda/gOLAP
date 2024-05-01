@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapOverviewRenderer,
-	#superclass : #GolapRenderer,
+	#name : 'GolapOverviewRenderer',
+	#superclass : 'GolapRenderer',
 	#instVars : [
 		'layouter',
 		'mapScale',
@@ -13,10 +13,12 @@ Class {
 		'activeMap',
 		'inactiveMap'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> drawEdgeLabelFor: aGolapEdge at: aPoint color: aColor on: aCanvas [
 
 	| string w h rect |
@@ -66,7 +68,7 @@ GolapOverviewRenderer >> drawEdgeLabelFor: aGolapEdge at: aPoint color: aColor o
 			color: aColor ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset: offset [
 
 	| maxValue lineScale |
@@ -170,7 +172,7 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 				on: aCanvas ] "]"
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> drawPinsOn: aCanvas extent: extent scale: scale offset: offset [
 
 	golap pinsDo: [ :vertex | 
@@ -186,7 +188,7 @@ GolapOverviewRenderer >> drawPinsOn: aCanvas extent: extent scale: scale offset:
 			fillOval: (p - (3 @ 16) extent: 6 @ 6) color: Color white ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> drawSelectionsOn: aCanvas extent: extent scale: scale offset: offset [
 
 	| labelOffset newLabelBoxes markersAndVertices |
@@ -239,7 +241,7 @@ GolapOverviewRenderer >> drawSelectionsOn: aCanvas extent: extent scale: scale o
 	labelBoxes := newLabelBoxes contents
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> drawVertexLabelFor: aGolapVertex at: aPoint color: aColor fillColor: fillColor on: aCanvas [
 
 	| box |
@@ -297,7 +299,7 @@ GolapOverviewRenderer >> drawVertexLabelFor: aGolapVertex at: aPoint color: aCol
 	^ box
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale offset: offset numLabels: numLabels [
 
 	self modelDo: [ :model |
@@ -409,7 +411,7 @@ GolapOverviewRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale off
 						on: aCanvas ] ] ] ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapOverviewRenderer >> fullBoundsWithMargin: aNumber [
 
 	| scale vs |
@@ -419,7 +421,7 @@ GolapOverviewRenderer >> fullBoundsWithMargin: aNumber [
 	^ vs min - aNumber asPoint corner: vs max + aNumber asPoint
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> fullImage [
 
 	| bounds extent form offset scale |
@@ -457,7 +459,7 @@ GolapOverviewRenderer >> fullImage [
 	^ form
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> globalImage [
 
 	| form |
@@ -494,7 +496,7 @@ GolapOverviewRenderer >> globalImage [
 	^ activeImage := form
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> globalMap [
 
 	| form canvas vs min max |
@@ -528,7 +530,7 @@ GolapOverviewRenderer >> globalMap [
 	^ activeMap := form
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapOverviewRenderer >> initialize [
 	super initialize.
 	mapScale := 1.0 @ 1.0.
@@ -537,27 +539,27 @@ GolapOverviewRenderer >> initialize [
 	viewOffset := 0.0 @ 0.0
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapOverviewRenderer >> layout [ 
 	^ self layouter layout
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> layouter [
 	^ layouter ifNil: [ layouter := GolapLayouter on: golap model ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> maxScale [
 	^ 50.0
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> minScale [
 	^ 0.9
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapOverviewRenderer >> moveImageOffset: aPoint [
 
 	| dx dy |
@@ -566,7 +568,7 @@ GolapOverviewRenderer >> moveImageOffset: aPoint [
 	viewOffset := dx @ dy + viewOffset
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapOverviewRenderer >> moveMapOffset: aPoint [
 
 	| dx dy |
@@ -577,26 +579,26 @@ GolapOverviewRenderer >> moveMapOffset: aPoint [
 	viewOffset := dx @ dy + viewOffset
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> overridesYWithFrequency: aBoolean [
 
 	self layouter overridesYWithFrequency: aBoolean
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> overridesYWithFrequencyOrder: aBoolean [
 
 	self layouter overridesYWithFrequencyOrder: aBoolean
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapOverviewRenderer >> resetZoom [
 
 	viewScale := 1.0.
 	viewOffset := 0 @ 0
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapOverviewRenderer >> restore: aStream [
 
 	| x y |
@@ -615,7 +617,7 @@ GolapOverviewRenderer >> restore: aStream [
 	(x notNil and: [ y notNil ]) ifTrue: [ viewOffset := x @ y ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> scale [
 	| extent |
 	extent := self globalImageExtent.
@@ -625,7 +627,7 @@ GolapOverviewRenderer >> scale [
 		* viewScale
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapOverviewRenderer >> simpleStringFor: aNumber [
 	aNumber isNil
 		ifTrue: [ ^ '' ].
@@ -642,7 +644,7 @@ GolapOverviewRenderer >> simpleStringFor: aNumber [
 	^ aNumber printShowingDecimalPlaces: 4
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapOverviewRenderer >> snapshotInto: aStream [
 
 	(NeoJSONWriter on: aStream) nextPut: {
@@ -654,13 +656,13 @@ GolapOverviewRenderer >> snapshotInto: aStream [
 			('scale' -> viewScale) } asOrderedDictionary
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapOverviewRenderer >> snapshotStreamDo: aBlock [
 
 	golap snapshotOverviewRenderer: aBlock
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapOverviewRenderer >> svg [
 
 	| bounds extent svg offset scale |
@@ -698,7 +700,7 @@ GolapOverviewRenderer >> svg [
 	^ svg
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapOverviewRenderer >> validateViewOffset: aPoint [
 	| min max d |
 	self vertices ifEmpty: [ ^ aPoint ].
@@ -714,7 +716,7 @@ GolapOverviewRenderer >> validateViewOffset: aPoint [
 		max: (250.0 / mapScale + mapOffset) * self scale negated
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> vertexAtPoint: aPoint [
 
 	| scale minD minV |
@@ -746,13 +748,13 @@ GolapOverviewRenderer >> vertexAtPoint: aPoint [
 	^ minV
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapOverviewRenderer >> vertexPointAtPoint: aPoint [
 
 	^ aPoint - viewOffset / self scale
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapOverviewRenderer >> zoom: aNumber [
 
 	| handPosition widget scale halfExtent center |
@@ -773,7 +775,7 @@ GolapOverviewRenderer >> zoom: aNumber [
 	viewOffset := halfExtent - (center * scale)
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapOverviewRenderer >> zoomCenter: aNumber [
 
 	| handPosition widget scale halfExtent center |

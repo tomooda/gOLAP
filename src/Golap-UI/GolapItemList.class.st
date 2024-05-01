@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapItemList,
-	#superclass : #SpPresenter,
+	#name : 'GolapItemList',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'golap',
 		'markerDropList',
@@ -14,10 +14,12 @@ Class {
 		'EmptyImage',
 		'ImageRepositoryUrl'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapItemList class >> defaultLayout [
 
 	<spec>
@@ -30,7 +32,7 @@ GolapItemList class >> defaultLayout [
 		  add: #vertexList
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapItemList >> add: aGolapVertex toMarker: aColor [
 
 	self updateGlobalImageAfter: [
@@ -52,7 +54,7 @@ GolapItemList >> add: aGolapVertex toMarker: aColor [
 		self updateVertexList ]
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapItemList >> addAll: aCollectionOfGolapVertex toMarker: aColor [
 
 	self updateGlobalImageAfter: [
@@ -76,7 +78,7 @@ GolapItemList >> addAll: aCollectionOfGolapVertex toMarker: aColor [
 		self updateVertexList ]
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 GolapItemList >> addMarkerColor [
 
 	self withAdapterDo: [ :a | 
@@ -94,7 +96,7 @@ GolapItemList >> addMarkerColor [
 						valueChanged: (lastSelectedMarkerIndex ifNil: [ 0 ]) ] ] ]
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 GolapItemList >> addMarkerColor: aColor [
 
 	| items |
@@ -111,24 +113,24 @@ GolapItemList >> addMarkerColor: aColor [
 		selectItem: aColor -> ''
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapItemList >> addSelectionsToMarker: aColor [
 
 	self golapDo: [ :g | self addAll: g selections toMarker: aColor ]
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 GolapItemList >> allMarkerColors [
 
 	^ markerDropList items collect: #key thenSelect: #notNil
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 GolapItemList >> currentMarker [
 	^ markerDropList selectedItem ifNotNil: #key
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 GolapItemList >> currentMarker: aColor [
 	| item |
 	item := markerDropList getList
@@ -140,18 +142,18 @@ GolapItemList >> currentMarker: aColor [
 	markerDropList selectItem: item model
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemList >> golap: aGolap [
 	golap := aGolap
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemList >> golapDo: aBlock [
 
 	^ golap ifNotNil: aBlock
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> iconForCircleColor: aColor [
 
 	| icon canvas |
@@ -163,7 +165,7 @@ GolapItemList >> iconForCircleColor: aColor [
 	^ icon
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> iconForSelector: aSymbol [
 	aSymbol = #addMarkerColor
 		ifTrue: [ ^ Smalltalk ui icons
@@ -184,14 +186,14 @@ GolapItemList >> iconForSelector: aSymbol [
 					form ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapItemList >> initialize [
 
 	super initialize.
 	markers := OrderedDictionary new
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapItemList >> initializePresenters [
 
 	markerDropList := self newDropList
@@ -278,7 +280,7 @@ GolapItemList >> initializePresenters [
 					allowsDeselection: true ] ] ]
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 GolapItemList >> markMenu: aGolapVertex [
 
 	| markMenu |
@@ -297,7 +299,7 @@ GolapItemList >> markMenu: aGolapVertex [
 	^ markMenu
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 GolapItemList >> markSelectionsMenu [
 
 	| markMenu |
@@ -314,7 +316,7 @@ GolapItemList >> markSelectionsMenu [
 	^ markMenu
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 GolapItemList >> markedVertices [
 
 	| ids |
@@ -325,17 +327,17 @@ GolapItemList >> markedVertices [
 		  ids anySatisfy: [ :id | v includesId: id ] ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> markerDropList [
 	^ markerDropList
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> markers [
 	^ markers
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapItemList >> markersAndVerticesDo: aBlock [
 
 	self modelDo: [ :model | 
@@ -344,13 +346,13 @@ GolapItemList >> markersAndVerticesDo: aBlock [
 					 ids anySatisfy: [ :id | v includesId: id ] ]) ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemList >> model [
 
 	^ golap ifNotNil: #model
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapItemList >> modelChanged [
 
 	self model ifNotNil: [ :model |
@@ -359,19 +361,19 @@ GolapItemList >> modelChanged [
 			vertices do: [ :vertex | vertex addMarker: marker ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemList >> modelDo: aBlock [
 
 	^ self golapDo: [ :g | g model ifNotNil: aBlock ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> queryField [
 
 	^ queryField
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> regexFor: aString [
 	| regex |
 	regex := #('\' '.' '[' ']' '(' ')' '!' '+')
@@ -382,7 +384,7 @@ GolapItemList >> regexFor: aString [
 		with: '[ -~]+') asRegex
 ]
 
-{ #category : #removing }
+{ #category : 'removing' }
 GolapItemList >> remove: aGolapVertex fromMarker: aColor [
 
 	self updateGlobalImageAfter: [
@@ -405,7 +407,7 @@ GolapItemList >> remove: aGolapVertex fromMarker: aColor [
 		self updateVertexList ]
 ]
 
-{ #category : #removing }
+{ #category : 'removing' }
 GolapItemList >> removeAll: aCollectionOfGolapVertex fromMarker: aColor [
 
 	self updateGlobalImageAfter: [
@@ -432,12 +434,12 @@ GolapItemList >> removeAll: aCollectionOfGolapVertex fromMarker: aColor [
 		self updateVertexList ]
 ]
 
-{ #category : #removing }
+{ #category : 'removing' }
 GolapItemList >> removeSelectionsFromMarker: aColor [
 	self removeAll: golap selections fromMarker: aColor
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemList >> restore: aStream [
 
 	((NeoJSONReader on: aStream)
@@ -467,31 +469,31 @@ GolapItemList >> restore: aStream [
 		self updateVertexList ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemList >> selectedItem [
 
 	^ vertexList selection selectedItem
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemList >> selectedItems: aCollectionOfString [
 
 	vertexList selectItems: aCollectionOfString
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> simpleStringFor: aNumber [
 
 	^ golap simpleStringFor: aNumber
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemList >> snapshot [
 
 	golap snapshotItemList: [ :stream | self snapshotInto: stream ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemList >> snapshotColor: aColor [
 
 	^ aColor ifNil: [ '' ] ifNotNil: [ 
@@ -500,7 +502,7 @@ GolapItemList >> snapshotColor: aColor [
 			  ifFalse: [ aColor ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemList >> snapshotInto: aStream [
 
 	| json |
@@ -517,7 +519,7 @@ GolapItemList >> snapshotInto: aStream [
 	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 GolapItemList >> unmarkMenu: aGolapVertex [
 
 	| unmarkMenu |
@@ -535,7 +537,7 @@ GolapItemList >> unmarkMenu: aGolapVertex [
 	^ unmarkMenu
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 GolapItemList >> unmarkSelectionsMenu [
 	| markMenu |
 	markMenu := self newMenu.
@@ -553,26 +555,26 @@ GolapItemList >> unmarkSelectionsMenu [
 	^ markMenu
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapItemList >> updateGlobalImage [
 
 	self golapDo: [ :g | g updateGlobalImage ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapItemList >> updateGlobalImageAfter: aBlock [
 
 	self golapDo: [ :g | g updateGlobalImageAfter: aBlock ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapItemList >> updateGlobalImageAfter: aBlock layout: aBoolean [
 
 	self golapDo: [ :g | 
 		g updateGlobalImageAfter: aBlock layout: aBoolean ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapItemList >> updateVertexList [
 
 	| vertices selectedMarker |
@@ -589,13 +591,13 @@ GolapItemList >> updateVertexList [
 					 do: [ :ex | 0 ] ] descending) ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemList >> vertexList [
 
 	^ vertexList
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 GolapItemList >> vertexListMenu [
 
 	| menu selectedVertex |
@@ -644,7 +646,7 @@ GolapItemList >> vertexListMenu [
 	^ menu
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemList >> vertices [
 	^ golap ifNotNil: #vertices
 ]

@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapEdgesAppearance,
-	#superclass : #SpPresenter,
+	#name : 'GolapEdgesAppearance',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'edgeWidthSlider',
 		'edgeScale',
@@ -20,15 +20,17 @@ Class {
 	#classVars : [
 		'NamedColors'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #colors }
+{ #category : 'colors' }
 GolapEdgesAppearance class >> colorAt: aSymbol [
 	^ self colorMap at: aSymbol ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance class >> colorMap [
 	^ NamedColors
 		ifNil: [ NamedColors := OrderedDictionary new
@@ -50,12 +52,12 @@ GolapEdgesAppearance class >> colorMap [
 				yourself ]
 ]
 
-{ #category : #colors }
+{ #category : 'colors' }
 GolapEdgesAppearance class >> colorNames [
 	^ self colorMap keys
 ]
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapEdgesAppearance class >> defaultLayout [
 
 	<spec>
@@ -94,14 +96,14 @@ GolapEdgesAppearance class >> defaultLayout [
 		  yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapEdgesAppearance class >> on: aGolap [
 	^ self new
 		setGolap: aGolap;
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 
 	aGolapEdgeEvaluator ifNotNil: [
@@ -117,41 +119,41 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 					a widgetDo: [ :w | w updateContents ] ] ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> edgeScale [
 	^ edgeScale ifNil: [ edgeScale := 1.0 ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> edgeScale: aNumber [
 
 	self updateGlobalImageAfter: [ edgeScale := aNumber ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> friendsEdges [
 	^ golap model
 		ifNotNil: [ :model | model friendsEdges: self numFriends ]
 		ifNil: [ Array new ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdgesAppearance >> friendsGraph [
 
 	self updateGlobalImageAfter: [  ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> graphEdges [
 	^ golap model ifNotNil: #graphEdges ifNil: [ Array new ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> iconExtent [
 	^ 30 @ 14
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> iconFor: aSymbol [
 	^ self
 		iconForColor:
@@ -161,7 +163,7 @@ GolapEdgesAppearance >> iconFor: aSymbol [
 						ifFalse: [ golap vertexColorWithPattern: aSymbol ] ])
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> iconForColor: aColor [
 	^ aColor
 		ifNotNil: [ | icon |
@@ -175,12 +177,12 @@ GolapEdgesAppearance >> iconForColor: aColor [
 		ifNil: [ self nilIcon ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapEdgesAppearance >> initialExtent [
 	^ 500@280
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapEdgesAppearance >> initializePresenters [
 
 	edgeWidthSlider := self newSlider
@@ -304,30 +306,30 @@ GolapEdgesAppearance >> initializePresenters [
 			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapEdgesAppearance >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter title: 'Edges'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> negativePolishFactor [
 	^ negativePolishField text asString asNumber ifNil: [ 0.0 ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> numFriends [
 
 	^ friendsField number
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> numFriends: anInteger [
 
 	friendsField number: anInteger
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdgesAppearance >> polish [
 	self
 		updateGlobalImageAfter: [ golap model
@@ -340,23 +342,23 @@ GolapEdgesAppearance >> polish [
 				minDenominator: polishMinDenominatorField text asString asInteger ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> positivePolishFactor [
 	^ positivePolishField text asString asNumber ifNil: [ 1.0 ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> positivePolishFactor: aNumber [
 	positivePolishField text: aNumber asString
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapEdgesAppearance >> resetVisibleEdgeThresholds [
 	visibleEdgeMinPercentile value: 0.0.
 	visibleEdgeMaxPercentile value: 1.0
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapEdgesAppearance >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next ifNotNil: [ :json |
@@ -387,27 +389,27 @@ GolapEdgesAppearance >> restore: aStream [
 				self vertexEvaluator: (GolapVertexEvaluator fromJSON: dict) ] ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapEdgesAppearance >> selectedEdgeEvaluatorChanged [
 
 	edgeEvaluatorList selectedItem ifNotNil: [ :edgeEvaluator |
 		self edgeEvaluator: edgeEvaluator ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapEdgesAppearance >> selectedVertexEvaluatorChanged [
 
 	vertexEvaluatorList selectedItem ifNotNil: [ :vertexEvaluator |
 		self vertexEvaluator: vertexEvaluator ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapEdgesAppearance >> setGolap: aGolap [
 	golap := aGolap.
 
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdgesAppearance >> setModelToAverageMode [
 
 	golap model ifNotNil: [ :model |
@@ -416,7 +418,7 @@ GolapEdgesAppearance >> setModelToAverageMode [
 		m vertexEvaluator: (GolapVertexAverageEvaluator on: m) ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdgesAppearance >> setModelToDegreeMode [
 
 	golap model ifNotNil: [ :model |
@@ -425,7 +427,7 @@ GolapEdgesAppearance >> setModelToDegreeMode [
 		m vertexEvaluator: (GolapVertexNumEdgesEvaluator on: m) ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdgesAppearance >> setModelToFreqMode [
 
 	golap model ifNotNil: [ :model |
@@ -434,7 +436,7 @@ GolapEdgesAppearance >> setModelToFreqMode [
 		m vertexEvaluator: (GolapVertexColumnEvaluator on: m column: 'frequency') ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdgesAppearance >> setModelToMaxMode [
 
 	golap model ifNotNil: [ :model |
@@ -443,7 +445,7 @@ GolapEdgesAppearance >> setModelToMaxMode [
 		m vertexEvaluator: (GolapVertexMaxEvaluator on: m) ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdgesAppearance >> setModelToSumMode [
 
 	golap model ifNotNil: [ :model |
@@ -452,13 +454,13 @@ GolapEdgesAppearance >> setModelToSumMode [
 		m vertexEvaluator: (GolapVertexSumEvaluator on: m) ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapEdgesAppearance >> snapshot [
 
 	golap snapshotEdgesAppearance: [ :stream | self snapshotInto: stream ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapEdgesAppearance >> snapshotInto: aStream [
 
 	| json |
@@ -479,28 +481,28 @@ GolapEdgesAppearance >> snapshotInto: aStream [
 	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> treeEdges [
 	^ golap model ifNotNil: #treeEdges ifNil: [ Array new ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapEdgesAppearance >> updateGlobalImageAfter: aBlock [
 	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapEdgesAppearance >> updateGlobalImageAfter: aBlock layout: aBoolean [
 	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock layout: aBoolean ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapEdgesAppearance >> updateModel: aGolapModel [
 
 	
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> vertexEvaluator: aGolapVertexEvaluator [
 
 	aGolapVertexEvaluator ifNotNil: [
@@ -512,17 +514,17 @@ GolapEdgesAppearance >> vertexEvaluator: aGolapVertexEvaluator [
 				golap updateQuery ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> visibleEdgeMaxPercentile [
 	^ visibleEdgeMaxPercentile
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> visibleEdgeMinPercentile [
 	^ visibleEdgeMinPercentile
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgesAppearance >> visibleEdges [
 
 	^ self friendsEdges

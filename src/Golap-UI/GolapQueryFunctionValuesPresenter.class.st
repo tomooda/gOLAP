@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapQueryFunctionValuesPresenter,
-	#superclass : #SpPresenter,
+	#name : 'GolapQueryFunctionValuesPresenter',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'allValues',
 		'availableValuesList',
@@ -10,10 +10,12 @@ Class {
 		'removeFromSelectionButton',
 		'functionName'
 	],
-	#category : #'Golap-UI-StructuredEditor'
+	#category : 'Golap-UI-StructuredEditor',
+	#package : 'Golap-UI',
+	#tag : 'StructuredEditor'
 }
 
-{ #category : #specs }
+{ #category : 'specs' }
 GolapQueryFunctionValuesPresenter class >> defaultSpec [
 	<spec>
 	^ SpBoxLayout newHorizontal
@@ -28,7 +30,7 @@ GolapQueryFunctionValuesPresenter class >> defaultSpec [
 		yourself
 ]
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 GolapQueryFunctionValuesPresenter class >> on: aGolapNetworkClientPresenter functionName: aString openDialogIfAccepted: aBlock [
 	| presenter |
 	presenter := self new
@@ -39,7 +41,7 @@ GolapQueryFunctionValuesPresenter class >> on: aGolapNetworkClientPresenter func
 	^ presenter
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapQueryFunctionValuesPresenter >> addToSelection [
 	availableValuesList selectedItems
 		ifNotEmpty: [ :items | 
@@ -52,22 +54,22 @@ GolapQueryFunctionValuesPresenter >> addToSelection [
 				items: (allValues copyWithoutAll: newSelections) ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionValuesPresenter >> field [
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionValuesPresenter >> functionName [
 	^ functionName
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionValuesPresenter >> functionName: aString [
 	functionName := aString
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryFunctionValuesPresenter >> initializePresenters [
 	availableValuesList := self newList
 		beMultipleSelection;
@@ -93,22 +95,22 @@ GolapQueryFunctionValuesPresenter >> initializePresenters [
 						ifTrue: [ m font: font ] ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryFunctionValuesPresenter >> initializeWindow: aWindowPresenter [
 	aWindowPresenter title: (functionName ifNil: [ '' ])
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionValuesPresenter >> networkClient [
 	^ networkClient
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionValuesPresenter >> networkClient: aGolapNetworkClientPresenter [
 	networkClient := aGolapNetworkClientPresenter
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapQueryFunctionValuesPresenter >> removeFromSelection [
 	selectedValuesList selectedItems
 		ifNotEmpty: [ :items | 
@@ -121,7 +123,7 @@ GolapQueryFunctionValuesPresenter >> removeFromSelection [
 				items: (allValues copyWithoutAll: newSelections) ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapQueryFunctionValuesPresenter >> resetValuesList [
 	networkClient
 		ifNotNil: [ availableValuesList
@@ -129,7 +131,7 @@ GolapQueryFunctionValuesPresenter >> resetValuesList [
 	selectedValuesList items: Array new
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionValuesPresenter >> selectedValues [
 	^ selectedValuesList items
 ]

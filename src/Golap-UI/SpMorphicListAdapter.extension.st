@@ -1,6 +1,6 @@
-Extension { #name : #SpMorphicListAdapter }
+Extension { #name : 'SpMorphicListAdapter' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 SpMorphicListAdapter >> buildWidget [
 
 	| datasource |

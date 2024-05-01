@@ -1,6 +1,6 @@
-Extension { #name : #SpMorphicTextInputFieldAdapter }
+Extension { #name : 'SpMorphicTextInputFieldAdapter' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 SpMorphicTextInputFieldAdapter >> buildWidget [
 	| newWidget |
 

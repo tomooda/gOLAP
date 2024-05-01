@@ -1,6 +1,6 @@
 Class {
-	#name : #Golap,
-	#superclass : #SpPresenter,
+	#name : 'Golap',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'model',
 		'url',
@@ -55,20 +55,22 @@ Class {
 	#classVars : [
 		'NameEndOfLineDelimiter'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 Golap class >> defaultFont [
 	^ StandardFonts defaultFont
 ]
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 Golap class >> defaultFont: aFont [
 	^ StandardFonts defaultFont: aFont
 ]
 
-{ #category : #layout }
+{ #category : 'layout' }
 Golap class >> defaultLayout [
 
 	<spec>
@@ -85,7 +87,7 @@ Golap class >> defaultLayout [
 		  yourself
 ]
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 Golap class >> deploy [
 
 	<script>
@@ -111,7 +113,7 @@ Golap class >> deploy [
 		Smalltalk garbageCollect ]
 ]
 
-{ #category : #settings }
+{ #category : 'settings' }
 Golap class >> gOLAPSettingsOn: aBuilder [
 	<systemsettings>
 	(aBuilder group: #gOLAP)
@@ -126,7 +128,7 @@ Golap class >> gOLAPSettingsOn: aBuilder [
 				label: 'End-of-Line for item name' ]
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 Golap class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
@@ -166,17 +168,17 @@ Golap class >> golapMenuOn: aBuilder [
 				help: 'Open a settings dialog for gOLAP' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap class >> nameEndOfLineDelimiter [
 	^ NameEndOfLineDelimiter ifNil: [ '||' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap class >> nameEndOfLineDelimiter: aString [
 	NameEndOfLineDelimiter := aString
 ]
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 Golap class >> open [
 
 	<script: 'GolapOverview open'>
@@ -188,7 +190,7 @@ Golap class >> open [
 		  yourself
 ]
 
-{ #category : #examples }
+{ #category : 'examples' }
 Golap class >> openClient [
 
 	<script: 'GolapOverview openClient'>
@@ -239,7 +241,7 @@ Golap class >> openClient [
 		ifCanceled: [ overview delete ]
 ]
 
-{ #category : #examples }
+{ #category : 'examples' }
 Golap class >> openFile [
 
 	<script: 'GolapOverview openFile'>
@@ -280,14 +282,14 @@ Golap class >> openFile [
 	^ overview
 ]
 
-{ #category : #examples }
+{ #category : 'examples' }
 Golap class >> openNewClient [
 	<script: 'GolapDimensionsOverview openNewClient'>
 	GolapNetworkClientPresenter flushCurrent.
 	^ self openClient
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 Golap class >> showSettingBrowser [
 	<script>
 	SettingBrowser new
@@ -297,7 +299,7 @@ Golap class >> showSettingBrowser [
 		open
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> addDimension: aGolapOverviewModel named: aString [
 	dimensions at: aString put: aGolapOverviewModel.
 	frontList items: dimensions keys.
@@ -311,13 +313,13 @@ Golap >> addDimension: aGolapOverviewModel named: aString [
 	^ aGolapOverviewModel
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 Golap >> allMarkerColors [
 
 	^ itemList allMarkerColors
 ]
 
-{ #category : #merging }
+{ #category : 'merging' }
 Golap >> applyMergesToModel: aGolapModel [
 
 	| positions |
@@ -356,7 +358,7 @@ Golap >> applyMergesToModel: aGolapModel [
 	^ aGolapModel
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> authenticateBlock [
 
 	^ authenticateBlock ifNil: [ 
@@ -377,13 +379,13 @@ Golap >> authenticateBlock [
 				                         ifNil: [ username := nil ] ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock.
 	itemView ifNotNil: [ itemView authenticateBlock: aBlock ]
 ]
 
-{ #category : #'accessing-renderer' }
+{ #category : 'accessing-renderer' }
 Golap >> basicLayout [
 
 	self renderer
@@ -393,19 +395,19 @@ Golap >> basicLayout [
 		layout
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> basicSnapshotDirectory [
 
 	^ snapshotDirectory
 ]
 
-{ #category : #layouts }
+{ #category : 'layouts' }
 Golap >> buttonHeight [
 
 	^ self class buttonHeight
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> colorForEdge: aGolapEdge [
 
 	self selectedBaseDimension ifNotNil: [
@@ -428,7 +430,7 @@ Golap >> colorForEdge: aGolapEdge [
 	^ self normalColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> colorForVertex: aGolapVertex [
 
 	(self includesSelection: aGolapVertex) ifTrue: [
@@ -450,25 +452,25 @@ Golap >> colorForVertex: aGolapVertex [
 	^ self normalColorFor: aGolapVertex
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> comment [
 
 	^ commentText text
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> comment: aString [
 
 	commentText text: aString
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> copyAllFromQueryViewTree [
 	Clipboard
 		clipboardText: (STONJSON toString: queryViewTree roots asDictionary)
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> copyFromQueryViewTree [
 	queryViewTree selectedItem
 		ifNotNil:
@@ -477,7 +479,7 @@ Golap >> copyFromQueryViewTree [
 				clipboardText: (STONJSON toString: queryViewTree roots asDictionary) ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> createTemporarySnapshotDirectory [
 
 	^ url ifNotNil: [ 
@@ -497,22 +499,22 @@ Golap >> createTemporarySnapshotDirectory [
 		  ref ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> decliningColor [
 	^ colorsAppearancePresenter decliningColor
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> dimensionAt: aString [
 	^ dimensions at: aString ifAbsent: [ nil ]
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> dimensionsDo: aBlock [
 	dimensions do: aBlock
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> disableSnapshotWhile: aBlock [
 
 	| oldSnapshotEnabled |
@@ -521,7 +523,7 @@ Golap >> disableSnapshotWhile: aBlock [
 	aBlock ensure: [ snapshotEnabled := oldSnapshotEnabled ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> dumpToFile [
 	"UIManager default
 		informUserDuring: [ :progress | 
@@ -537,23 +539,23 @@ Golap >> dumpToFile [
 	self notYetImplemented
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> edgeScale [
 	^ edgesAppearancePresenter edgeScale
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> edgeScale: aNumber [
 	edgesAppearancePresenter edgeScale: aNumber
 ]
 
-{ #category : #'accessing-renderer' }
+{ #category : 'accessing-renderer' }
 Golap >> elaborationRenderer [
 	^ elaborationRenderer
 		ifNil: [ elaborationRenderer := GolapElaborationRenderer on: self ]
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> ensurePhotoimageRetrievingProcess [
 
 	(photoImageRetrievingProcess isNil or: [ 
@@ -561,22 +563,22 @@ Golap >> ensurePhotoimageRetrievingProcess [
 		self startPhotoimageRetrievingProcess ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> font [
 	^ font ifNil: [ font := TextStyle defaultFont ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> font: aFont [
 	self updateGlobalImageAfter: [ font := aFont ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> freshColor [
 	^ colorsAppearancePresenter freshColor
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> friendsEdges [
 	| num |
 	model ifNil: [ ^ Array new ].
@@ -584,7 +586,7 @@ Golap >> friendsEdges [
 	^ model friendsEdges: num
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 Golap >> globalImageMenu: aGolapVertex [
 
 	| menu |
@@ -666,7 +668,7 @@ Golap >> globalImageMenu: aGolapVertex [
 	^ menu
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> globalImageMouseClick: anEvent [
 	| target |
 	anEvent wasHandled: true.
@@ -677,7 +679,7 @@ Golap >> globalImageMouseClick: anEvent [
 	target ifNotNil: [ self toggleSelection: target ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> globalImageMouseMove: anEvent [
 
 	anEvent anyButtonPressed ifFalse: [ ^ self ].
@@ -686,25 +688,25 @@ Golap >> globalImageMouseMove: anEvent [
 		self renderer moveImageOffset: anEvent endPoint - anEvent startPoint ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> globalImageMouseWheel: anEvent [
 
 	anEvent direction = Character arrowUp ifTrue: [ ^ self zoomIn ].
 	anEvent direction = Character arrowDown ifTrue: [ ^ self zoomOut ]
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 Golap >> globalImagePane [
 	^ globalImagePane
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> globalMapMouseClick: anEvent [
 
 	anEvent wasHandled: true
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> globalMapMouseMove: anEvent [
 
 	anEvent anyButtonPressed ifFalse: [ ^ self ].
@@ -713,22 +715,22 @@ Golap >> globalMapMouseMove: anEvent [
 		self renderer moveMapOffset: anEvent startPoint - anEvent endPoint ]
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 Golap >> globalMapPane [
 	^ globalMapPane
 ]
 
-{ #category : #'accessing-presets' }
+{ #category : 'accessing-presets' }
 Golap >> golapDirectory [
 	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> graphEdges [
 	^ model ifNotNil: [ model graphEdges ] ifNil: [ Array new ]
 ]
 
-{ #category : #layouts }
+{ #category : 'layouts' }
 Golap >> graphLayout [
 
 	<spec>
@@ -764,18 +766,18 @@ Golap >> graphLayout [
 		  yourself
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> growingColor [
 	^ colorsAppearancePresenter growingColor
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 Golap >> iconForCircleColor: aColor [
 
 	^ itemList iconForCircleColor: aColor
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> ifNotActive: aBlock [
 
 	adapter ifNil: [ ^ aBlock value ].
@@ -783,30 +785,30 @@ Golap >> ifNotActive: aBlock [
 	adapter widget world ifNil: [ ^ aBlock value ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> ifSnapshotEnabled: aBlock [
 
 	snapshotEnabled = true ifTrue: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> imageRepositoryUrl: aString [
 	itemView imageRepositoryUrl: aString
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> includesPin: aGolapVertex [
 
 	^ pins includes: aGolapVertex id
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> includesSelection: aGolapVertex [
 
 	^ selections contains: [ :id | aGolapVertex includesId: id ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 Golap >> initialize [
 
 	super initialize.
@@ -820,7 +822,7 @@ Golap >> initialize [
 	drawingSemaphore := Semaphore forMutualExclusion
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 Golap >> initializePresenters [
 
 	globalImagePane := self newImage
@@ -1013,7 +1015,7 @@ Golap >> initializePresenters [
 			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 Golap >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter
@@ -1021,52 +1023,52 @@ Golap >> initializeWindow: aWindowPresenter [
 		initialExtent: World extent
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> isTemporarySnapshot [
 
 	^ self snapshotDirectory parent basename
 	  = self temporaryDirectoryName
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> itemFieldQuerySpec: aDictionary [
 	itemView itemFieldQuerySpec: aDictionary
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 Golap >> itemView [
 	^ itemView
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> itemViewUrl: aString [
 	itemView serverUrl: aString asString asText
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 Golap >> markedVertices [
 
 	^ itemList markedVertices
 ]
 
-{ #category : #'accessing-markers' }
+{ #category : 'accessing-markers' }
 Golap >> markersAndVerticesDo: aBlock [
 
 	itemList markersAndVerticesDo: aBlock
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> maxPhotoimageRetrievalProcesses [
 
 	^ 3
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> maxScale [
 	^ 50.0
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 Golap >> mergeMenu [
 
 	| menu |
@@ -1096,7 +1098,7 @@ Golap >> mergeMenu [
 	^ menu
 ]
 
-{ #category : #merging }
+{ #category : 'merging' }
 Golap >> mergeSelectedVertices [
 
 	^ self selections
@@ -1106,7 +1108,7 @@ Golap >> mergeSelectedVertices [
 		  ifEmpty: [ nil ]
 ]
 
-{ #category : #merging }
+{ #category : 'merging' }
 Golap >> mergeVertices: aCollectionOfIds [
 
 	aCollectionOfIds size < 2 ifTrue: [ ^ nil ].
@@ -1126,28 +1128,28 @@ Golap >> mergeVertices: aCollectionOfIds [
 					  nodeName ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> minFrequency [
 
 	^ itemsAppearancePresenter minFrequency
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> minScale [
 	^ 0.9
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> model [
 	^ model
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> model: aGolapModel [
 	self model: aGolapModel forceUpdate: true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> model: aGolapModel forceUpdate: aBoolean [
 
 	(aBoolean == false and: [ aGolapModel == model ]) ifTrue: [ ^ self ].
@@ -1170,12 +1172,12 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 	self announcer announce: GolapModelUpdated new
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> negativePolishColor [
 	^ colorsAppearancePresenter negativePolishColor
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Golap >> newGolapItemList [
 
 	^ (self instantiate: GolapItemList)
@@ -1183,7 +1185,7 @@ Golap >> newGolapItemList [
 		  yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Golap >> newGolapItemView [
 
 	^ (self instantiate: GolapItemView)
@@ -1192,32 +1194,32 @@ Golap >> newGolapItemView [
 		  yourself
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> normalColor [
 	^ colorsAppearancePresenter normalColor
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> normalColorFor: aGolapVertex [
 	^ colorsAppearancePresenter normalColorFor: aGolapVertex
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> numFriends [
 	edgesAppearancePresenter numFriends
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> numFriends: anInteger [
 	edgesAppearancePresenter numFriends: anInteger
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> numLabels [
 	^ itemsAppearancePresenter numLabels
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 Golap >> open [
 
 	| window |
@@ -1226,7 +1228,7 @@ Golap >> open [
 	^ window
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> openPresetQueryDialog [
 
 	| presetQueries queryList |
@@ -1255,7 +1257,7 @@ Golap >> openPresetQueryDialog [
 		openModalWithSpec
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> openSunburst [
 
 	(GolapDandelionChartPresenter new
@@ -1263,34 +1265,34 @@ Golap >> openSunburst [
 		 yourself) open maximize
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 Golap >> overridesYWithFrequencyCheckbox [
 	^ overridesYWithFrequencyCheckbox
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 Golap >> overridesYWithFrequencyOrderCheckbox [
 	^ overridesYWithFrequencyOrderCheckbox
 ]
 
-{ #category : #'accessing-renderer' }
+{ #category : 'accessing-renderer' }
 Golap >> overviewRenderer [
 	^ overviewRenderer
 		ifNil: [ overviewRenderer := GolapOverviewRenderer on: self ]
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> photoimageSize [
 
 	^ 64
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> pinColor [
 	^ Color red
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 Golap >> pinsDo: aBlock [
 	model
 		ifNotNil: [ pins
@@ -1298,28 +1300,28 @@ Golap >> pinsDo: aBlock [
 					[ :id | (model vertexAt: id ifAbsent: [  ]) ifNotNil: aBlock ] ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> positivePolishColor [
 	^ colorsAppearancePresenter positivePolishColor
 ]
 
-{ #category : #'accessing-presets' }
+{ #category : 'accessing-presets' }
 Golap >> presetQueryFile [
 	^ self golapDirectory / 'presetQueries.json'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> query [
 	^ query
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> query: aDictionary [
 
 	self setQuery: aDictionary
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 Golap >> queryViewTreeMenu [
 	^ self newMenu
 		addGroup: [ :group | 
@@ -1334,7 +1336,7 @@ Golap >> queryViewTreeMenu [
 						action: [ self copyFromQueryViewTree ] ] ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> readDimensionFrom: aReadStream [
 
 	[
@@ -1448,7 +1450,7 @@ Golap >> readDimensionFrom: aReadStream [
 			Processor activeProcess terminate ]
 ]
 
-{ #category : #'accessing-presets' }
+{ #category : 'accessing-presets' }
 Golap >> readPresetQueries [
 	[ self presetQueryFile ensureCreateFile
 		readStreamDo: [ :stream | ^ (NeoJSONReader on: stream) next ] ]
@@ -1456,7 +1458,7 @@ Golap >> readPresetQueries [
 		do: [ :ex | ^ Array new ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> regexFor: aString [
 	| regex |
 	regex := #('\' '.' '[' ']' '(' ')' '!' '+')
@@ -1467,7 +1469,7 @@ Golap >> regexFor: aString [
 		with: '[ -~]+') asRegex
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 Golap >> release [
 
 	dimensions := nil.
@@ -1489,12 +1491,12 @@ Golap >> release [
 	super release
 ]
 
-{ #category : #'accessing-renderer' }
+{ #category : 'accessing-renderer' }
 Golap >> renderer [
 	^ self perform: rendererSelector
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> resendQuery [
 
 	| client overview |
@@ -1516,18 +1518,18 @@ Golap >> resendQuery [
 	overview restoreSnapshot: overview snapshotDirectory
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> resetVisibleEdgeThresholds [
 	edgesAppearancePresenter resetVisibleEdgeThresholds 
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> resetZoom [
 	self
 		updateGlobalImageAfter: [ self renderer resetZoom]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreColorsAppearance [
 
 	| ref |
@@ -1537,7 +1539,7 @@ Golap >> restoreColorsAppearance [
 			colorsAppearancePresenter restore: stream ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreData [
 
 	| ref |
@@ -1549,7 +1551,7 @@ Golap >> restoreData [
 		self updateDimensions ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreEdgesAppearance [
 
 	| ref |
@@ -1559,7 +1561,7 @@ Golap >> restoreEdgesAppearance [
 			edgesAppearancePresenter restore: stream ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreElaborationRenderer [
 
 	| ref |
@@ -1569,7 +1571,7 @@ Golap >> restoreElaborationRenderer [
 			self elaborationRenderer restore: stream ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreItemList [
 
 	| ref |
@@ -1578,7 +1580,7 @@ Golap >> restoreItemList [
 		ref readStreamDo: [ :stream | itemList restore: stream ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreItemView [
 
 	| ref |
@@ -1587,7 +1589,7 @@ Golap >> restoreItemView [
 		ref readStreamDo: [ :stream | itemView restore: stream ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreItemsAppearance [
 
 	| ref |
@@ -1597,7 +1599,7 @@ Golap >> restoreItemsAppearance [
 			itemsAppearancePresenter restore: stream ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreMerges [
 
 	| ref |
@@ -1608,7 +1610,7 @@ Golap >> restoreMerges [
 				merges := json collect: [ :pair | pair first -> pair second ] ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreOverviewRenderer [
 
 	| ref |
@@ -1618,7 +1620,7 @@ Golap >> restoreOverviewRenderer [
 			self overviewRenderer restore: stream ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreQuery [
 
 	| ref |
@@ -1634,7 +1636,7 @@ Golap >> restoreQuery [
 					self comment: comment ] ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreSelections [
 
 	| ref |
@@ -1656,7 +1658,7 @@ Golap >> restoreSelections [
 					selectedEdges := nil ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> restoreSnapshot: aFileReference [
 
 	self window ifNotNil: [ :w | w title: aFileReference basename ].
@@ -1681,12 +1683,12 @@ Golap >> restoreSnapshot: aFileReference [
 	self updateGlobalImageAfter: [  ] layout: true
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> retreatingColor [
 	^ colorsAppearancePresenter retreatingColor
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> retrievePhotoimage [
 
 	rendererSelector = #overviewRenderer ifTrue: [ 
@@ -1695,7 +1697,7 @@ Golap >> retrievePhotoimage [
 		self retrievePhotoimageOnElaborationRenderer ]
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> retrievePhotoimageFor: aGolapVertex [
 
 	aGolapVertex photoimage: false.
@@ -1714,7 +1716,7 @@ Golap >> retrievePhotoimageFor: aGolapVertex [
 		Processor userBackgroundPriority - 5
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> retrievePhotoimageOnElaborationRenderer [
 
 	[ 
@@ -1727,7 +1729,7 @@ Golap >> retrievePhotoimageOnElaborationRenderer [
 		do: [ :ex |  ]
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> retrievePhotoimageOnOverviewRenderer [
 
 	[ 
@@ -1761,7 +1763,7 @@ Golap >> retrievePhotoimageOnOverviewRenderer [
 		do: [ :ex | ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> saveAsSVG [
 	(UIManager default
 		chooseForSaveFileReference: 'Save as a SVG file'
@@ -1772,7 +1774,7 @@ Golap >> saveAsSVG [
 				writeStreamDo: [ :stream | self renderer svg printWithPrologOn: stream ] ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> saveFullImage [
 
 	(UIManager default
@@ -1784,7 +1786,7 @@ Golap >> saveFullImage [
 				PNGReadWriter putForm: self renderer fullImage onStream: stream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> saveSnapshot [
 
 	| newSnapshotRef |
@@ -1816,7 +1818,7 @@ Golap >> saveSnapshot [
 	overviewRenderer ifNotNil: #snapshot
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> select: aGolapVertex [
 
 	aGolapVertex idDo: [ :id | selections add: id ].
@@ -1825,7 +1827,7 @@ Golap >> select: aGolapVertex [
 	self updateSelection
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> selectAll: aCollectionOfGolapVertex [
 
 	aCollectionOfGolapVertex do: [ :vertex |
@@ -1835,12 +1837,12 @@ Golap >> selectAll: aCollectionOfGolapVertex [
 	self updateSelection
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> selectedBaseDimension [
 	^ dimensions at: baseList selectedItem ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> selectedEdges [
 	^ selectedEdges
 		ifNil: [ | edges |
@@ -1849,12 +1851,12 @@ Golap >> selectedEdges [
 			selectedEdges := edges asArray ]
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> selectedFrontDimension [
 	^ dimensions at: frontList selectedItem ifAbsent: [ nil ]
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> selectedModel [
 
 	^ (self selectedFrontDimension ifNil: [ nil ] ifNotNil: [ :front | 
@@ -1865,7 +1867,7 @@ Golap >> selectedModel [
 			   front - base ] ]) ifNotNil: [ :m | self applyMergesToModel: m ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 Golap >> selectedVerticesDo: aBlock [
 
 	model verticesDo: [ :vertex |
@@ -1873,12 +1875,12 @@ Golap >> selectedVerticesDo: aBlock [
 			aBlock value: vertex ] ]
 ]
 
-{ #category : #'accessing-colors' }
+{ #category : 'accessing-colors' }
 Golap >> selectionColor [
 	^ colorsAppearancePresenter selectionColor
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> selections [
 	^ Array
 		streamContents: [ :stream | 
@@ -1888,7 +1890,7 @@ Golap >> selections [
 						ifTrue: [ stream nextPut: v ] ] ]
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> selections: aCollectionOfGolapVertex [
 
 	| newSelections |
@@ -1902,7 +1904,7 @@ Golap >> selections: aCollectionOfGolapVertex [
 		self updateSelection ]
 ]
 
-{ #category : #'accessing-renderer' }
+{ #category : 'accessing-renderer' }
 Golap >> setElaborationRenderer [
 
 	self updateGlobalImageAfter: [ 
@@ -1911,7 +1913,7 @@ Golap >> setElaborationRenderer [
 		overviewRendererButton state: false ]
 ]
 
-{ #category : #'accessing-renderer' }
+{ #category : 'accessing-renderer' }
 Golap >> setOverviewRenderer [
 
 	self
@@ -1922,7 +1924,7 @@ Golap >> setOverviewRenderer [
 		layout: (self vertices anySatisfy: [ :v | v asPoint isNil ])
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> setQuery: aDictionary [
 
 	query := aDictionary.
@@ -1933,7 +1935,7 @@ Golap >> setQuery: aDictionary [
 	itemView ifNotNil: [ itemView query: aDictionary ]
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> setSelections: aCollectionOfString [
 
 	| newSelections |
@@ -1946,33 +1948,33 @@ Golap >> setSelections: aCollectionOfString [
 		self updateSelection ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> showItemView: aGolapVertex [
 	aGolapVertex ifNotNil: [ itemView vertex: aGolapVertex ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> showsConnectedVertices [
 	^ itemsAppearancePresenter showsConnectedVertices
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> showsHiddenConnectionVertices [
 	^ itemsAppearancePresenter showsHiddenConnectionVertices
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> showsIsolatedVertices [
 	^ itemsAppearancePresenter showsIsolatedVertices
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> silentAddDimension: aGolapOverviewModel named: aString [
 	dimensions at: aString put: aGolapOverviewModel.
 	^ aGolapOverviewModel
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> simpleStringFor: aNumber [
 	aNumber isNil
 		ifTrue: [ ^ '' ].
@@ -1989,7 +1991,7 @@ Golap >> simpleStringFor: aNumber [
 	^ aNumber printShowingDecimalPlaces: 4
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotBaseDirectory [
 
 	^ (self golapDirectory / self snapshotBaseDirectoryName)
@@ -1997,13 +1999,13 @@ Golap >> snapshotBaseDirectory [
 		  yourself
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotBaseDirectoryName [
 
 	^ 'snapshots'
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotColorsAppearance: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2012,7 +2014,7 @@ Golap >> snapshotColorsAppearance: aBlock [
 				:writeStream | aBlock value: writeStream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotData: aReadStream do: aBlock [
 
 	self snapshotQuery.
@@ -2036,7 +2038,7 @@ Golap >> snapshotData: aReadStream do: aBlock [
 		ifFalse: [ aBlock value: nil ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotDirectory [
 
 	^ (snapshotDirectory ifNil: [ 
@@ -2044,7 +2046,7 @@ Golap >> snapshotDirectory [
 		  ensureCreateDirectory
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotEdgesAppearance: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2053,7 +2055,7 @@ Golap >> snapshotEdgesAppearance: aBlock [
 				:writeStream | aBlock value: writeStream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotElaborationRenderer: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2062,7 +2064,7 @@ Golap >> snapshotElaborationRenderer: aBlock [
 				writeStreamDo: [ :writeStream | aBlock value: writeStream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotGlobalImage [
 
 	self ifSnapshotEnabled: [ 
@@ -2078,7 +2080,7 @@ Golap >> snapshotGlobalImage [
 					do: [ :ex |  ] ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotItemList: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2087,7 +2089,7 @@ Golap >> snapshotItemList: aBlock [
 				:writeStream | aBlock value: writeStream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotItemView: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2096,7 +2098,7 @@ Golap >> snapshotItemView: aBlock [
 				:writeStream | aBlock value: writeStream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotItemsAppearance: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2105,7 +2107,7 @@ Golap >> snapshotItemsAppearance: aBlock [
 				:writeStream | aBlock value: writeStream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotMerges [
 
 	self ifSnapshotEnabled: [ 
@@ -2117,7 +2119,7 @@ Golap >> snapshotMerges [
 							 assoc value } ]) ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotOverviewRenderer: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2126,7 +2128,7 @@ Golap >> snapshotOverviewRenderer: aBlock [
 				:writeStream | aBlock value: writeStream ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotQuery [
 
 	self ifSnapshotEnabled: [
@@ -2141,7 +2143,7 @@ Golap >> snapshotQuery [
 				(NeoJSONWriter on: stream) nextPut: queryJson ] ] ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> snapshotSelections [
 
 	self ifSnapshotEnabled: [ 
@@ -2156,7 +2158,7 @@ Golap >> snapshotSelections [
 						('baseDimension' -> baseList selectedItem) } asOrderedDictionary ] ] ]
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> startPhotoimageRetrievingProcess [
 
 	self stopPhotoimageRetrievingProcess.
@@ -2172,7 +2174,7 @@ Golap >> startPhotoimageRetrievingProcess [
 		                               Processor userBackgroundPriority
 ]
 
-{ #category : #'operations-photoimages' }
+{ #category : 'operations-photoimages' }
 Golap >> stopPhotoimageRetrievingProcess [
 
 	photoImageRetrievingProcess ifNotNil: [ 
@@ -2180,13 +2182,13 @@ Golap >> stopPhotoimageRetrievingProcess [
 		photoImageRetrievingProcess := nil ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 Golap >> temporaryDirectoryName [
 
 	^ 'temporary'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> title [
 
 	^ (self basicSnapshotDirectory notNil and: [ 
@@ -2195,7 +2197,7 @@ Golap >> title [
 		  ifFalse: [ 'gOLAP' ]
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> togglePin: aGolapVertex [
 
 	self updateGlobalImageAfter: [
@@ -2206,7 +2208,7 @@ Golap >> togglePin: aGolapVertex [
 			ifFalse: [ pins add: id ] ]
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> toggleSelection: aGolapVertex [
 	self
 		updateGlobalImageAfter: [ (self includesSelection: aGolapVertex)
@@ -2214,12 +2216,12 @@ Golap >> toggleSelection: aGolapVertex [
 				ifFalse: [ self select: aGolapVertex ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> treeEdges [
 	^ model ifNotNil: [ model treeEdges ] ifNil: [ Array new ]
 ]
 
-{ #category : #menu }
+{ #category : 'menu' }
 Golap >> unmergeMenu [
 	| menu |
 	menu := self newMenu.
@@ -2235,7 +2237,7 @@ Golap >> unmergeMenu [
 	^ menu
 ]
 
-{ #category : #merging }
+{ #category : 'merging' }
 Golap >> unmergeVertex: aString [
 
 	merges removeAllSuchThat: [ :assoc | assoc key = aString ].
@@ -2243,7 +2245,7 @@ Golap >> unmergeVertex: aString [
 	itemList updateVertexList
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> unselect: aGolapVertex [
 
 	aGolapVertex idDo: [ :id |
@@ -2252,7 +2254,7 @@ Golap >> unselect: aGolapVertex [
 	self updateSelection
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> unselectAll [
 
 	selections removeAll.
@@ -2260,7 +2262,7 @@ Golap >> unselectAll [
 	self updateSelection
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> unselectAll: aCollectionOfGolapVertex [
 
 	aCollectionOfGolapVertex do: [ :vertex |
@@ -2269,14 +2271,14 @@ Golap >> unselectAll: aCollectionOfGolapVertex [
 	self updateSelection
 ]
 
-{ #category : #'accessing-dimensions' }
+{ #category : 'accessing-dimensions' }
 Golap >> updateDimensions [
 	frontList
 		items: dimensions keys;
 		selectItem: dimensions keys last
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 Golap >> updateGlobalImage [
 
 	drawingSemaphore critical: [
@@ -2288,12 +2290,12 @@ Golap >> updateGlobalImage [
 	self announcer announce: GolapViewUpdated new
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 Golap >> updateGlobalImageAfter: aBlock [
 	^ self updateGlobalImageAfter: aBlock layout: false
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 Golap >> updateGlobalImageAfter: aBlock layout: aBoolean [
 
 	| sender |
@@ -2308,7 +2310,7 @@ Golap >> updateGlobalImageAfter: aBlock layout: aBoolean [
 			self updateGlobalImage ] ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> updateItemView [
 	self
 		showItemView:
@@ -2317,18 +2319,18 @@ Golap >> updateItemView [
 				ifAbsent: [ ^ self ])
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> updateModel [
 	self model: self selectedModel.
 	itemList modelChanged
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 Golap >> updateQuery [
 	itemList updateVertexList
 ]
 
-{ #category : #'accessing-selection' }
+{ #category : 'accessing-selection' }
 Golap >> updateSelection [
 
 	self updateGlobalImageAfter: [
@@ -2336,50 +2338,50 @@ Golap >> updateSelection [
 	self announcer announce: GolapViewUpdated new
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> url [
 	^ url
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> url: aZnUrl [
 
 	url := aZnUrl asUrl
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> vertices [
 	^ model ifNil: [ #() ] ifNotNil: [ model vertices values ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 Golap >> verticesDo: aBlock [
 	model ifNotNil: [ model vertices valuesDo: aBlock ]
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 Golap >> visibleEdgeMaxPercentile [
 	^ edgesAppearancePresenter ifNotNil: #visibleEdgeMaxPercentile
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 Golap >> visibleEdgeMinPercentile [
 	^ edgesAppearancePresenter ifNotNil: #visibleEdgeMinPercentile
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 Golap >> visibleEdges [
 
 	^ edgesAppearancePresenter visibleEdges
 ]
 
-{ #category : #'accessing-presets' }
+{ #category : 'accessing-presets' }
 Golap >> writePresetQueries: anArrayOfString [
 	self presetQueryFile ensureDelete
 		writeStreamDo: [ :stream | ^ (NeoJSONWriter on: stream) nextPut: anArrayOfString ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> zoomIn [
 
 	(lastZoomTimestamp notNil and: [ 
@@ -2389,7 +2391,7 @@ Golap >> zoomIn [
 	self updateGlobalImageAfter: [ self renderer zoomIn ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> zoomInCenter [
 
 	(lastZoomTimestamp notNil and: [ 
@@ -2399,7 +2401,7 @@ Golap >> zoomInCenter [
 	self updateGlobalImageAfter: [ self renderer zoomInCenter ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> zoomOut [
 
 	(lastZoomTimestamp notNil and: [ 
@@ -2409,7 +2411,7 @@ Golap >> zoomOut [
 	self updateGlobalImageAfter: [ self renderer zoomOut ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 Golap >> zoomOutCenter [
 
 	(lastZoomTimestamp notNil and: [ 

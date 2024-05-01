@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapLayouter,
-	#superclass : #Object,
+	#name : 'GolapLayouter',
+	#superclass : 'Object',
 	#instVars : [
 		'divisions',
 		'model',
@@ -8,17 +8,19 @@ Class {
 		'overridesYWithFrequency',
 		'overridesYWithFrequencyOrder'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapLayouter class >> on: aGolapModel [
 	^ self new
 		model: aGolapModel;
 		yourself
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> adjustCenter: aCollectionOfGolapVertex [
 	| numVertices minX minY maxX maxY meanX meanY |
 	numVertices := aCollectionOfGolapVertex size.
@@ -50,7 +52,7 @@ GolapLayouter >> adjustCenter: aCollectionOfGolapVertex [
 				y: vertex y + meanY ]
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> bindParticles: aCollectionOfGolapVertex bindings: bindings [
 	| velocities |
 	velocities := IdentityDictionary new: aCollectionOfGolapVertex size.
@@ -85,7 +87,7 @@ GolapLayouter >> bindParticles: aCollectionOfGolapVertex bindings: bindings [
 								max: 1.0e-8) ] ]
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> bindings [
 	| bindings |
 	bindings := IdentityDictionary new.
@@ -104,7 +106,7 @@ GolapLayouter >> bindings [
 	^ bindings
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> centralize: aCollectionOfGolapVertex [
 	aCollectionOfGolapVertex
 		do: [ :v | 
@@ -113,12 +115,12 @@ GolapLayouter >> centralize: aCollectionOfGolapVertex [
 				y: (v y - (divisions * 0.5)) * 0.99 + (divisions * 0.5) ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapLayouter >> divisions [
 	^ divisions ifNil: [ 1 ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapLayouter >> initialize [
 
 	super initialize.
@@ -127,7 +129,7 @@ GolapLayouter >> initialize [
 	overridesYWithFrequencyOrder := false
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> layout [
 
 	| vertices boundVertices bindings reps isolatedVertices |
@@ -238,37 +240,37 @@ GolapLayouter >> layout [
 			y: y - 0.25 ] ] repeat
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapLayouter >> model [
 	^ model
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapLayouter >> model: aGolapModel [
 	model := aGolapModel
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapLayouter >> overridesYWithFrequency [
 	^ overridesYWithFrequency = true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapLayouter >> overridesYWithFrequency: aBoolean [
 	overridesYWithFrequency := aBoolean = true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapLayouter >> overridesYWithFrequencyOrder [
 	^ overridesYWithFrequencyOrder = true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapLayouter >> overridesYWithFrequencyOrder: aBoolean [
 	overridesYWithFrequencyOrder := aBoolean = true
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> repulseParticles: aCollectionOfGolapVertex bindings: bindings [
 
 	| cells |
@@ -336,7 +338,7 @@ GolapLayouter >> repulseParticles: aCollectionOfGolapVertex bindings: bindings [
 								 max: 1.0e-8) ] ] ] ]
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> swirlLayout: aCollectionOfGolapVertex [
 	| width |
 	width := divisions // 2 * 2 + 1.
@@ -350,7 +352,7 @@ GolapLayouter >> swirlLayout: aCollectionOfGolapVertex [
 				y: y - 0.5 ]
 ]
 
-{ #category : #layouting }
+{ #category : 'layouting' }
 GolapLayouter >> wall: aCollectionOfGolapVertex [
 	| min max |
 	min := 0.0.

@@ -1,6 +1,6 @@
-Extension { #name : #PluggableMultiColumnListMorph }
+Extension { #name : 'PluggableMultiColumnListMorph' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 PluggableMultiColumnListMorph >> click: aMouseEvent [
 	| row |
 	row := self rowAtLocation: aMouseEvent position.

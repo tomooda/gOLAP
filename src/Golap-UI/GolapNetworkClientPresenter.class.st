@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapNetworkClientPresenter,
-	#superclass : #SpPresenter,
+	#name : 'GolapNetworkClientPresenter',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'urlInput',
 		'presetUrlButton',
@@ -22,15 +22,17 @@ Class {
 	#classInstVars : [
 		'current'
 	],
-	#category : #'Golap-UI-Query'
+	#category : 'Golap-UI-Query',
+	#package : 'Golap-UI',
+	#tag : 'Query'
 }
 
-{ #category : #'sole instance' }
+{ #category : 'sole instance' }
 GolapNetworkClientPresenter class >> current [
 	^ current ifNil: [ current := self new ]
 ]
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapNetworkClientPresenter class >> defaultLayout [
 
 	<script: 'self new open'>
@@ -51,19 +53,19 @@ GolapNetworkClientPresenter class >> defaultLayout [
 				   width: 200)
 ]
 
-{ #category : #'sole instance' }
+{ #category : 'sole instance' }
 GolapNetworkClientPresenter class >> flushCurrent [
 	<script: 'GolapNetworkClientPresenter flushCurrent'>
 	current := nil
 ]
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock [
 	<script: 'GolapNetworkClientPresenter openDialogIfAccepted: []'>
 	^ self openDialogIfAccepted: aBlock ifCanceled: [  ]
 ]
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
 
 	^ self current
@@ -71,7 +73,7 @@ GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock ifCanceled: an
 		  openDialogIfAccepted: aBlock ifCanceled: anotherBlock
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapNetworkClientPresenter >> asJSON [
 	^ urlInput text asString trim
 		ifNotEmpty: [ :urlString | 
@@ -87,7 +89,7 @@ GolapNetworkClientPresenter >> asJSON [
 		ifEmpty: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> authenticateBlock [
 	^ [ :auth | 
 	username ifNil: [ username := UIManager default request: 'username' ].
@@ -99,25 +101,25 @@ GolapNetworkClientPresenter >> authenticateBlock [
 				ifNil: [ username := nil ] ] ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapNetworkClientPresenter >> clearPreviewFilterField [
 
 	queryPresenter clearPreviewFilterField
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> comment [
 
 	^ commentText text
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> comment: aString [
 
 	commentText text: aString
 ]
 
-{ #category : #defaults }
+{ #category : 'defaults' }
 GolapNetworkClientPresenter >> defaultQuery [
 	^ Dictionary new
 		at: 'query'
@@ -142,12 +144,12 @@ GolapNetworkClientPresenter >> defaultQuery [
 		yourself
 ]
 
-{ #category : #defaults }
+{ #category : 'defaults' }
 GolapNetworkClientPresenter >> defaultUrl [
 	^ 'http://' copy
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapNetworkClientPresenter >> dumpToFile [
 
 	UIManager default informUserDuring: [ :progress |
@@ -174,50 +176,50 @@ GolapNetworkClientPresenter >> dumpToFile [
 						nextPut: Character lf ] ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> flushAuth [
 	username := nil.
 	password := nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> flushFieldsAndValuesCache [
 	fieldsAndValuesCache removeAll
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapNetworkClientPresenter >> flushServerConfig [
 	serverConfig := nil.
 	queryPresenter ifNotNil: #flushServerConfig
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapNetworkClientPresenter >> generateQueryText [
 	queryText text: queryPresenter query
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> golapDirectory [
 	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> imageUrl [
 	^ self serverConfig at: 'imageUrl' ifAbsent: [ nil ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapNetworkClientPresenter >> initialExtent [
 	^ 1200 @ 700
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapNetworkClientPresenter >> initialize [
 	super initialize.
 	fieldsAndValuesCache := Dictionary new
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapNetworkClientPresenter >> initializePresenters [
 
 	<script: 'GolapQueryPresenter new openWithSpec'>
@@ -318,19 +320,19 @@ GolapNetworkClientPresenter >> initializePresenters [
 			(m respondsTo: #font:) ifTrue: [ m font: font ] ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapNetworkClientPresenter >> initializeWindow: aWindowPresenter [
 	aWindowPresenter
 		title: 'Connect to gOLAP server';
 		initialExtent: self initialExtent
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> itemFieldQuerySpec [
 	^ queryPresenter ifNotNil: #itemFieldQuerySpec
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> itemFields [
 	^ self serverConfig
 		ifNotNil: [ :config | 
@@ -344,7 +346,7 @@ GolapNetworkClientPresenter >> itemFields [
 		ifNil: [ Array new ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapNetworkClientPresenter >> loadPreset: aDictionary [
 
 	aDictionary
@@ -363,7 +365,7 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 		resetTransactionFilterSpec
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
 
 	self clearPreviewFilterField.
@@ -381,7 +383,7 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 		cancelAction: anotherBlock
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapNetworkClientPresenter >> openPresetUrlDialog [
 
 	| presetUrls urlList |
@@ -415,19 +417,19 @@ GolapNetworkClientPresenter >> openPresetUrlDialog [
 		openModal
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> presetUrlFile [
 	^ self golapDirectory / 'presetUrls.json'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> query [
 	^ usesRawQuery = true
 		ifTrue: [ queryText text asString trim ]
 		ifFalse: [ queryPresenter query ]
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapNetworkClientPresenter >> queryTextMenu [
 	^ self newMenu
 		addGroup: [ :menuGroup | 
@@ -439,7 +441,7 @@ GolapNetworkClientPresenter >> queryTextMenu [
 		yourself
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapNetworkClientPresenter >> queryTreeMenu [
 	| item |
 	item := queryTree selectedItem ifNil: [ ^ self newMenu ].
@@ -448,7 +450,7 @@ GolapNetworkClientPresenter >> queryTreeMenu [
 		with: item
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapNetworkClientPresenter >> queryTree_isolatedNodesMenu: anAssociation [
 	^ self newMenu
 		addGroup: [ :group | 
@@ -467,7 +469,7 @@ GolapNetworkClientPresenter >> queryTree_isolatedNodesMenu: anAssociation [
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> readPresetUrls [
 	[ self presetUrlFile ensureCreateFile
 		readStreamDo: [ :stream | ^ (NeoJSONReader on: stream) next ] ]
@@ -475,13 +477,13 @@ GolapNetworkClientPresenter >> readPresetUrls [
 		do: [ :ex | ^ Array new ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapNetworkClientPresenter >> resetQuery [
 	queryText text: ''.
 	queryPresenter ifNotNil: #resetQuery
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> retrieveConfig: aString field: anotherString ifError: errorBlock [
 	[ | response |
 	UIManager default
@@ -507,7 +509,7 @@ GolapNetworkClientPresenter >> retrieveConfig: aString field: anotherString ifEr
 		do: [ :ex | ^ errorBlock value ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> serverConfig [
 	^ serverConfig
 		ifNil: [ okButton ifNotNil: #disable.
@@ -536,12 +538,12 @@ GolapNetworkClientPresenter >> serverConfig [
 						do: [ :ex | ^ nil ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> timeout [
 	^ 3
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> transactionFields [
 	^ self serverConfig
 		ifNotNil: [ :config | 
@@ -555,7 +557,7 @@ GolapNetworkClientPresenter >> transactionFields [
 		ifNil: [ Array new ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapNetworkClientPresenter >> updateQueryTree [
 	queryTree
 		roots:
@@ -563,7 +565,7 @@ GolapNetworkClientPresenter >> updateQueryTree [
 				collect: [ :key | key -> (query at: key) ])
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapNetworkClientPresenter >> updateServerConfig [
 	fieldsAndValuesCache removeAll.
 	serverConfigTree
@@ -580,17 +582,17 @@ GolapNetworkClientPresenter >> updateServerConfig [
 	queryPresenter ifNotNil: #updateServerConfig
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> url [
 	^ urlInput text asString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> url: aString [
 	urlInput text: aString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> valuesAtField: aString [
 
 	fieldsAndValuesCache
@@ -609,7 +611,7 @@ GolapNetworkClientPresenter >> valuesAtField: aString [
 	^ Array new
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> writePreset: anArrayOfDictionary [
 	self presetUrlFile ensureDelete
 		writeStreamDo: [ :stream | ^ (NeoJSONWriter on: stream) nextPut: anArrayOfDictionary ]

@@ -1,14 +1,16 @@
 Class {
-	#name : #GolapQueryFunctionFieldValuesPresenter,
-	#superclass : #GolapQueryFunctionValuesPresenter,
+	#name : 'GolapQueryFunctionFieldValuesPresenter',
+	#superclass : 'GolapQueryFunctionValuesPresenter',
 	#instVars : [
 		'fieldDropList',
 		'serverConfigFieldsKey'
 	],
-	#category : #'Golap-UI-StructuredEditor'
+	#category : 'Golap-UI-StructuredEditor',
+	#package : 'Golap-UI',
+	#tag : 'StructuredEditor'
 }
 
-{ #category : #specs }
+{ #category : 'specs' }
 GolapQueryFunctionFieldValuesPresenter class >> defaultSpec [
 	<spec>
 	^ SpBoxLayout newVertical
@@ -17,41 +19,41 @@ GolapQueryFunctionFieldValuesPresenter class >> defaultSpec [
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionFieldValuesPresenter >> beItemQuery [
 	serverConfigFieldsKey := 'itemAttFile'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionFieldValuesPresenter >> beTransactionQuery [
 	serverConfigFieldsKey := 'traAttFile'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionFieldValuesPresenter >> field [
 	^ fieldDropList selectedItem
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryFunctionFieldValuesPresenter >> initialize [
 	super initialize.
 	serverConfigFieldsKey := 'itemAttFile'
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryFunctionFieldValuesPresenter >> initializePresenters [
 	super initializePresenters.
 	fieldDropList := self newDropList
 		whenSelectedItemChangedDo: [ self resetValuesList ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryFunctionFieldValuesPresenter >> networkClient: aGolapNetworkClientPresenter [
 	super networkClient: aGolapNetworkClientPresenter.
 	self updateFieldDropList
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapQueryFunctionFieldValuesPresenter >> updateFieldDropList [
 	networkClient
 		ifNotNil: [ fieldDropList

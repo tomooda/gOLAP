@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapElaborationRenderer,
-	#superclass : #GolapRenderer,
+	#name : 'GolapElaborationRenderer',
+	#superclass : 'GolapRenderer',
 	#instVars : [
 		'imageScale',
 		'mapScale',
@@ -9,32 +9,34 @@ Class {
 		'imageOffset',
 		'maxLabelWidth'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> associateX [
 
 	^ self globalImageExtent x - self maxLabelWidth - 10
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> associateX: extent [
 
 	^ extent x - self maxLabelWidth - 10
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> barWidth [
 	^ 300
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> baseX [
 	^ 100.0
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> createAssociatedVertexLabel: aGolapVertex [
 
 	| height barWidth totalBarHeight margin frameWidth labelString scale boxTop boxRight form canvas |
@@ -103,7 +105,7 @@ GolapElaborationRenderer >> createAssociatedVertexLabel: aGolapVertex [
 	^ form
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> createNameLabel: aGolapVertex [
 
 	^ aGolapVertex photoimage
@@ -153,13 +155,13 @@ GolapElaborationRenderer >> createNameLabel: aGolapVertex [
 			  form ]
 ]
 
-{ #category : #defaults }
+{ #category : 'defaults' }
 GolapElaborationRenderer >> defaultImageScale [
 
 	^ 80.0
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset: offset [
 
 	| maxScore scoreScale rootIndices |
@@ -219,7 +221,7 @@ GolapElaborationRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale off
 						at: point1 + point2 - labelForm extent // 2 ] ] ] ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> drawLabelForVertex: aGolapVertex on: aCanvas at: aPoint [
 
 	| extent margin frameWidth labelString |
@@ -238,7 +240,7 @@ GolapElaborationRenderer >> drawLabelForVertex: aGolapVertex on: aCanvas at: aPo
 		flush"
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale offset: offset [
 
 	| font x point bounds |
@@ -286,7 +288,7 @@ GolapElaborationRenderer >> drawVerticesOn: aCanvas extent: extent scale: scale 
 						aCanvas frameRectangle: bounds width: 4 color: color ] ] ] ] ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> fullBoundsWithMargin: aNumber [
 
 	^ 0 @ 0 extent:
@@ -295,7 +297,7 @@ GolapElaborationRenderer >> fullBoundsWithMargin: aNumber [
 			   + TextStyle defaultFont height + (aNumber * 2.0))
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> fullImage [
 
 	| bounds form canvas |
@@ -318,7 +320,7 @@ GolapElaborationRenderer >> fullImage [
 	^ form
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> globalImage [
 
 	| form canvas |
@@ -340,13 +342,13 @@ GolapElaborationRenderer >> globalImage [
 	^ form
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> globalImageAndMap [
 	self updateRootsAndAssociates.
 	^  super globalImageAndMap
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> globalMap [
 	| form canvas height x |
 	form := Form extent: self globalMapExtent depth: 32.
@@ -371,14 +373,14 @@ GolapElaborationRenderer >> globalMap [
 	^ form
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapElaborationRenderer >> golap: aGolap [
 	super golap: aGolap.
 	self updateRootsAndAssociates.
 	self resetZoom
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapElaborationRenderer >> initialize [
 	super initialize.
 	mapScale := 1.0.
@@ -386,18 +388,18 @@ GolapElaborationRenderer >> initialize [
 	imageOffset := 0.0
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> labelExtentForVertex: aGolapVertex [
 
 	^ aGolapVertex label extent
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapElaborationRenderer >> layout [ 
 
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapElaborationRenderer >> maxLabelWidth [
 
 	^ maxLabelWidth ifNil: [ 
@@ -407,38 +409,38 @@ GolapElaborationRenderer >> maxLabelWidth [
 		  maxLabelWidth := max ]
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapElaborationRenderer >> moveImageOffset: aPoint [
 
 	imageOffset := (aPoint y negated / imageScale / 2.0 min: 3.0 max: -3.0)
 	               + imageOffset
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapElaborationRenderer >> moveMapOffset: aPoint [
 
 	imageOffset := (aPoint y negated / mapScale / 2.0 min: 3.0 max: -3.0)
 	               + imageOffset
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapElaborationRenderer >> overridesYWithFrequency: aBoolean [
 	
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapElaborationRenderer >> overridesYWithFrequencyOrder: aBoolean [
 	
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapElaborationRenderer >> resetZoom [
 
 	imageScale := self defaultImageScale.
 	imageOffset := 0.0.
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapElaborationRenderer >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next
@@ -446,12 +448,12 @@ GolapElaborationRenderer >> restore: aStream [
 		at: 'scale' ifPresent: [ :float | imageScale := float ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> rootX [
 	^ self baseX
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapElaborationRenderer >> snapshotInto: aStream [
 
 	(NeoJSONWriter on: aStream) nextPut: { 
@@ -459,13 +461,13 @@ GolapElaborationRenderer >> snapshotInto: aStream [
 			('scale' -> imageScale) } asOrderedDictionary
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapElaborationRenderer >> snapshotStreamDo: aBlock [
 
 	golap snapshotElaborationRenderer: aBlock
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapElaborationRenderer >> svg [
 
 	| bounds svg canvas |
@@ -488,7 +490,7 @@ GolapElaborationRenderer >> svg [
 	^ svg
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapElaborationRenderer >> updateRootsAndAssociates [
 	| oldRoots rootSet associateSet |
 	oldRoots := roots.
@@ -524,7 +526,7 @@ GolapElaborationRenderer >> updateRootsAndAssociates [
 	maxLabelWidth := nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapElaborationRenderer >> vertexAtPoint: aPoint [
 
 	| index |
@@ -556,14 +558,14 @@ GolapElaborationRenderer >> vertexAtPoint: aPoint [
 				  ifFalse: [ nil ] ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapElaborationRenderer >> verticesDo: aBlock [
 
 	roots do: aBlock.
 	associates do: aBlock
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapElaborationRenderer >> zoom: aNumber [
 
 	| handPosition oldCenterIndex newCenterIndex |
@@ -592,7 +594,7 @@ GolapElaborationRenderer >> zoom: aNumber [
 	imageOffset := oldCenterIndex - newCenterIndex + imageOffset
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapElaborationRenderer >> zoomCenter: aNumber [
 
 	imageScale := imageScale * aNumber

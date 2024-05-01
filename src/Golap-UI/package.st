@@ -1,1 +1,1 @@
-Package { #name : #'Golap-UI' }
+Package { #name : 'Golap-UI' }

@@ -1,11 +1,11 @@
-Extension { #name : #PanelMorph }
+Extension { #name : 'PanelMorph' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 PanelMorph >> handlesMouseWheel: anEvent [
 	^ true
 ]
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 PanelMorph >> mouseWheel: anEvent [
 	| code keyEvent |
 	code := (anEvent isUp

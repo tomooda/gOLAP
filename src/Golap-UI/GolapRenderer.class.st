@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapRenderer,
-	#superclass : #Object,
+	#name : 'GolapRenderer',
+	#superclass : 'Object',
 	#instVars : [
 		'golap',
 		'visibleEdgeMinValue',
@@ -8,17 +8,19 @@ Class {
 		'reallyVisibleEdges',
 		'reallyVisibleVertices'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapRenderer class >> on: aGolap [
 	^ self new
 		golap: aGolap;
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> colorForEdge: aGolapEdge [
 	| v |
 	v := golap model valueAtEdge: aGolapEdge.
@@ -30,17 +32,17 @@ GolapRenderer >> colorForEdge: aGolapEdge [
 	^ golap colorForEdge: aGolapEdge
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> colorForVertex: aGolapVertex [
 	^ golap colorForVertex: aGolapVertex
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> edgeScale [
 	^ golap edgeScale
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> extentForLines: lines [
 	^ (lines
 		inject: 0
@@ -48,28 +50,28 @@ GolapRenderer >> extentForLines: lines [
 		@ (lines size * self font height)
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> extentForName: aString [
 	^ self extentForLines: (self nameIntoLines: aString)
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> font [
 	^ golap ifNotNil: #font ifNil: [ TextStyle defaultFont ]
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapRenderer >> globalImage [
 	^ self subclassResponsibility
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapRenderer >> globalImageAndMap [
 	^ {self globalImage.
 	self globalMap}
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> globalImageExtent [
 	golap globalImagePane adapter
 		ifNotNil: [ :w | 
@@ -80,12 +82,12 @@ GolapRenderer >> globalImageExtent [
 	^ 500 @ 500
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapRenderer >> globalMap [
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> globalMapExtent [
 	golap globalMapPane adapter
 		ifNotNil: [ :w | 
@@ -96,76 +98,76 @@ GolapRenderer >> globalMapExtent [
 	^ 300 @ 200
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> golap [
 	^ golap
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> golap: aGolap [
 	golap := aGolap
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> layout [ 
 	^ self subclassResponsibility 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> modelDo: aBlock [
 	golap ifNotNil: [ golap model ifNotNil: aBlock ]
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> moveImageOffset: aPoint [
 	^ self subclassResponsibility
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> moveMapOffset: aPoint [
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> nameIntoLines: aString [
 	^ aString substrings: golap class nameEndOfLineDelimiter
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapRenderer >> reallyVisibleVerticesDo: aBlock [
 
 	reallyVisibleVertices ifNotNil: [ reallyVisibleVertices do: aBlock ]
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> resetZoom [
 	^ self subclassResponsibility 
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapRenderer >> snapshot [
 
 	self snapshotStreamDo: [ :stream | self snapshotInto: stream ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapRenderer >> snapshotInto: aStream [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapRenderer >> snapshotStreamDo: aBlock [
 
 	self subclassResponsibility
 ]
 
-{ #category : #drawing }
+{ #category : 'drawing' }
 GolapRenderer >> svg [
 	^ self subclassResponsibility
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapRenderer >> updateVisibleEdgeThresholds [
 
 	self modelDo: [ :model |
@@ -225,48 +227,48 @@ GolapRenderer >> updateVisibleEdgeThresholds [
 							                         ifTrue: [ stream nextPut: v ] ] ] ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> vertexAtPoint: aPoint [
 	^ self subclassResponsibility 
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> vertices [
 	^ golap vertices
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapRenderer >> verticesDo: aBlock [
 	golap verticesDo: aBlock
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> zoom: aNumber [
 	^ self subclassResponsibility 
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> zoomCenter: aNumber [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> zoomIn [
 	self zoom: 1.1
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> zoomInCenter [
 	self zoomCenter: 1.1
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> zoomOut [
 	self zoom: 1.1 reciprocal
 ]
 
-{ #category : #'view manipulation' }
+{ #category : 'view manipulation' }
 GolapRenderer >> zoomOutCenter [
 	self zoomCenter: 1.1 reciprocal
 ]

@@ -1,6 +1,6 @@
-Extension { #name : #AlphaImageMorph }
+Extension { #name : 'AlphaImageMorph' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 AlphaImageMorph >> handlesMouseWheel: anEvent [
 
 	^ true

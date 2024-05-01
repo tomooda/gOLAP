@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapFilterPresenter,
-	#superclass : #SpPresenter,
+	#name : 'GolapFilterPresenter',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'query',
 		'clauseList',
@@ -12,10 +12,12 @@ Class {
 		'previewFilterField',
 		'previewFilterBlock'
 	],
-	#category : #'Golap-UI-Query'
+	#category : 'Golap-UI-Query',
+	#package : 'Golap-UI',
+	#tag : 'Query'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapFilterPresenter class >> defaultLayout [
 
 	<script: 'GolapItemFilterPresenter forCurrent openWithSpec'>
@@ -38,20 +40,20 @@ GolapFilterPresenter class >> defaultLayout [
 				   add: #previewFilterField expand: false)
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterPresenter class >> for: aGolapQueryPresenter [
 	^ self new
 		query: aGolapQueryPresenter;
 		yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterPresenter class >> forCurrent [
 	<script: 'GolapItemFilterPresenter forCurrent inspect'>
 	^ self for: GolapNetworkClientPresenter current
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> addGuard [
 	predicateList selection selectedItem
 		ifNotNil: [ :predicate | 
@@ -69,12 +71,12 @@ GolapFilterPresenter >> addGuard [
 				ifNil: [ guardPredicatesField text: '' ] ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> addPredicate [
 	self addPredicate: predicateField text asString
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> addPredicate: aString [
 	| clause predicates oldPredicate newPredicate |
 	clause := clauseList selection selectedItem.
@@ -100,7 +102,7 @@ GolapFilterPresenter >> addPredicate: aString [
 	predicateList selectItem: newPredicate
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> addPredicateSilent: aString [
 	| clause predicates oldPredicate |
 	clause := clauseList selection selectedItem.
@@ -122,31 +124,31 @@ GolapFilterPresenter >> addPredicateSilent: aString [
 	clauseList selectItem: clause
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> authenticateBlock [
 	^ query ifNotNil: #authenticateBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> availableItemsFor: aGolapQueryClauseSpec [
 	^ self networkClient
 		ifNotNil: [ :client | client valuesAtField: aGolapQueryClauseSpec field ]
 		ifNil: [ Array new ]
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapFilterPresenter >> clauseHasPredicates [
 	^ clauseList selection selectedItem
 		ifNotNil: [ :clause | clause hasPredicates ]
 		ifNil: [ false ]
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapFilterPresenter >> clauseList [
 	^ clauseList
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapFilterPresenter >> clauseListMenu [
 	| menu |
 	menu := self newMenu.
@@ -172,13 +174,13 @@ GolapFilterPresenter >> clauseListMenu [
 	^ menu
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> clauseListSelectionChanged [
 
 	self updatePredicateList
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> clearClause [
 	| clause |
 	clause := clauseList selection selectedItem ifNil: [ ^ nil ].
@@ -187,39 +189,39 @@ GolapFilterPresenter >> clearClause [
 	predicateList unselectAll
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> clearPreviewFilterField [
 
 	previewFilterField text: ''.
 	previewFilterBlock := [ :items | items ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> copyPreviewListSelection [
 	Clipboard clipboardText: (',' join: previewList selectedItems)
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> filterSpec [
 	^ self subclassResponsibility
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapFilterPresenter >> guardFieldDropList [
 	^ guardFieldDropList
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapFilterPresenter >> guardPredicatesField [
 	^ guardPredicatesField
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> guardPredicatesFieldAccepted [
 	self addGuard
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapFilterPresenter >> initializePresenters [
 
 	clauseList := self newTable
@@ -371,32 +373,32 @@ GolapFilterPresenter >> initializePresenters [
 			(m respondsTo: #font:) ifTrue: [ m font: font ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> networkClient [
 	^ query ifNotNil: #networkClient
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapFilterPresenter >> predicateField [
 	^ predicateField
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> predicateFieldAccepted [
 	self addPredicate
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> predicateFieldDropped: anArrayOfString [
 	predicateField text: (',' join: anArrayOfString)
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapFilterPresenter >> predicateList [
 	^ predicateList
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapFilterPresenter >> predicateListMenu [
 	^ self newMenu
 		addGroup: [ :menuGroup | 
@@ -411,22 +413,22 @@ GolapFilterPresenter >> predicateListMenu [
 						action: [ self removeAllPredicates ] ] ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> predicateListSelectionChanged [
 	self updatePredicateField
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapFilterPresenter >> previewFilterField [
 	^ previewFilterField
 ]
 
-{ #category : #'accessing-widgets' }
+{ #category : 'accessing-widgets' }
 GolapFilterPresenter >> previewList [ 
 	^ previewList
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapFilterPresenter >> previewListMenu [
 	^ self newMenu
 		addItem: [ :menuItem | 
@@ -435,25 +437,25 @@ GolapFilterPresenter >> previewListMenu [
 				action: [ self copyPreviewListSelection ] ]
 ]
 
-{ #category : #menus }
+{ #category : 'menus' }
 GolapFilterPresenter >> previewListMenu: aMenu shifted: shifted [ 
 	^ aMenu
 		add: 'copy' target: self selector: #copyPreviewListSelection;
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> query [
 	^ query
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> query: aGolapQueryPresenter [
 	query := aGolapQueryPresenter.
 	self updateClauseList
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> removeAllPredicates [
 	| clause |
 	clause := clauseList selection selectedItem ifNil: [ ^ nil ].
@@ -464,7 +466,7 @@ GolapFilterPresenter >> removeAllPredicates [
 	predicateList unselectAll
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> removePredicate [
 	| clause predicate |
 	clause := clauseList selection selectedItem ifNil: [ ^ nil ].
@@ -477,12 +479,12 @@ GolapFilterPresenter >> removePredicate [
 	^ predicate
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> timeout [
 	^ query timeout
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterPresenter >> toggleNegative [
 	clauseList selection selectedItem
 		ifNotNil: [ :clause | 
@@ -491,7 +493,7 @@ GolapFilterPresenter >> toggleNegative [
 			clauseList selectItem: clause ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapFilterPresenter >> updateClauseList [
 	| oldSelection items |
 	oldSelection := clauseList selection selectedItem.
@@ -501,7 +503,7 @@ GolapFilterPresenter >> updateClauseList [
 	self updatePredicateList
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapFilterPresenter >> updateGuard [
 	predicateList selection selectedItem
 		ifNotNil: [ :predicate | 
@@ -530,7 +532,7 @@ GolapFilterPresenter >> updateGuard [
 				disable ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapFilterPresenter >> updatePredicateField [
 	predicateList selection selectedItem
 		ifNotNil: [ :predicate | 
@@ -542,7 +544,7 @@ GolapFilterPresenter >> updatePredicateField [
 	self updatePreviewList
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapFilterPresenter >> updatePredicateList [
 	clauseList selection selectedItem
 		ifNotNil: [ :clause | 
@@ -556,7 +558,7 @@ GolapFilterPresenter >> updatePredicateList [
 	self updatePreviewList
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapFilterPresenter >> updatePreviewList [
 
 	Cursor wait showWhile: [ 
@@ -566,7 +568,7 @@ GolapFilterPresenter >> updatePreviewList [
 				 ifNil: [ #(  ) ]) ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterPresenter >> url [
 	^ self query url
 ]

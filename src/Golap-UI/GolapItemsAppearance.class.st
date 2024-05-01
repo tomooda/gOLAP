@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapItemsAppearance,
-	#superclass : #SpPresenter,
+	#name : 'GolapItemsAppearance',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'minFreqSlider',
 		'minFreqField',
@@ -14,10 +14,12 @@ Class {
 	#classVars : [
 		'NameEndOfLineDelimiter'
 	],
-	#category : #'Golap-UI-Graph'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapItemsAppearance class >> defaultLayout [
 
 	<spec>
@@ -36,14 +38,14 @@ GolapItemsAppearance class >> defaultLayout [
 		  yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapItemsAppearance class >> on: aGolap [
 	^ self new
 		setGolap: aGolap;
 		yourself
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemsAppearance >> chooseFont [
 	golap
 		ifNotNil: [ StandardFonts
@@ -53,12 +55,12 @@ GolapItemsAppearance >> chooseFont [
 				getSelector: #font ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapItemsAppearance >> initialExtent [
 	^ 500@200
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapItemsAppearance >> initializePresenters [
 
 	minFreqSlider := self newSlider
@@ -117,26 +119,26 @@ GolapItemsAppearance >> initializePresenters [
 		              yourself
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapItemsAppearance >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter title: 'Items'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemsAppearance >> maxFrequency: anInteger [
 
 	minFreqSlider max: anInteger.
 	minFreqField maximum: anInteger
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemsAppearance >> minFrequency [
 
 	^ minFreqField number
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemsAppearance >> minFrequency: anInteger [
 
 	minFreqSlider value rounded = anInteger ifFalse: [
@@ -146,12 +148,12 @@ GolapItemsAppearance >> minFrequency: anInteger [
 	golap updateGlobalImageAfter: [  ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemsAppearance >> numLabels [
 	^ numLabelsSlider value
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemsAppearance >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next
@@ -168,35 +170,35 @@ GolapItemsAppearance >> restore: aStream [
 		ifPresent: [ :float | numLabelsSlider value: float ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapItemsAppearance >> setGolap: aGolap [
 
 	golap := aGolap.
 	self updateMinMaxFrequency
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemsAppearance >> showsConnectedVertices [
 	^ showConnectedVerticesCheckBox state
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemsAppearance >> showsHiddenConnectionVertices [
 	^ showHiddenConnectionVerticesCheckBox state
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapItemsAppearance >> showsIsolatedVertices [
 	^ showIsolatedVerticesCheckBox state
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemsAppearance >> snapshot [
 
 	golap snapshotItemsAppearance: [ :stream | self snapshotInto: stream ]
 ]
 
-{ #category : #snapshot }
+{ #category : 'snapshot' }
 GolapItemsAppearance >> snapshotInto: aStream [
 
 	(NeoJSONWriter on: aStream) nextPut: {
@@ -209,7 +211,7 @@ GolapItemsAppearance >> snapshotInto: aStream [
 			asOrderedDictionary
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapItemsAppearance >> updateMinMaxFrequency [
 
 	golap ifNotNil: [

@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapQueryLowerBoundsPresenter,
-	#superclass : #SpPresenter,
+	#name : 'GolapQueryLowerBoundsPresenter',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'minSupport',
 		'minConfidence',
@@ -8,10 +8,12 @@ Class {
 		'minJaccard',
 		'minPMI'
 	],
-	#category : #'Golap-UI-Query'
+	#category : 'Golap-UI-Query',
+	#package : 'Golap-UI',
+	#tag : 'Query'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapQueryLowerBoundsPresenter class >> defaultLayout [
 	<script: 'GolapQueryLowerBoundsPresenter new openWithSpec'>
 	<spec>
@@ -38,14 +40,14 @@ GolapQueryLowerBoundsPresenter class >> defaultLayout [
 		yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryLowerBoundsPresenter class >> for: aGolapQueryPresenter [
 	^ self new
 		query: aGolapQueryPresenter;
 		yourself
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryLowerBoundsPresenter >> initializePresenters [
 	super initializePresenters.
 	minSupport := self newNumberInput
@@ -83,58 +85,58 @@ GolapQueryLowerBoundsPresenter >> initializePresenters [
 						ifTrue: [ m font: font ] ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryLowerBoundsPresenter >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter title: 'しきい値設定'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minConfidence [
 	^ minConfidence number
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minConfidence: aNumber [
 	minConfidence number: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minJaccard [
 	^ minJaccard number
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minJaccard: aNumber [
 	minJaccard number: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minLift [
 	^ minLift number
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minLift: aNumber [
 	minLift number: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minPMI [
 	^ minPMI number
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minPMI: aNumber [
 	minPMI number: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minSupport [
 	^ minSupport number
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryLowerBoundsPresenter >> minSupport: aNumber [
 	^ minSupport number: aNumber
 ]

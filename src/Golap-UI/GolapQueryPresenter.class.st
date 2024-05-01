@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapQueryPresenter,
-	#superclass : #SpPresenter,
+	#name : 'GolapQueryPresenter',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'networkClient',
 		'serverConfigTree',
@@ -24,10 +24,12 @@ Class {
 		'isolatedNodesCheckBox',
 		'dimensionsPreview'
 	],
-	#category : #'Golap-UI-Query'
+	#category : 'Golap-UI-Query',
+	#package : 'Golap-UI',
+	#tag : 'Query'
 }
 
-{ #category : #layout }
+{ #category : 'layout' }
 GolapQueryPresenter class >> defaultLayout [
 
 	<script: 'GolapQueryPresenter new open'>
@@ -75,14 +77,14 @@ GolapQueryPresenter class >> defaultLayout [
 		  height: 180
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryPresenter class >> on: aGolapNetworkClientPresenter [
 	^ self new
 		networkClient: aGolapNetworkClientPresenter;
 		yourself
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> asJSON [
 	^ Dictionary new
 		at: 'transactionFilter' put: self transactionFilterSpec asJSON;
@@ -111,24 +113,24 @@ GolapQueryPresenter >> asJSON [
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> authenticateBlock [
 	^ networkClient ifNotNil: #authenticateBlock
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapQueryPresenter >> clearPreviewFilterField [
 
 	itemFilterPresenter clearPreviewFilterField.
 	transactionFilterPresenter clearPreviewFilterField
 ]
 
-{ #category : #defaults }
+{ #category : 'defaults' }
 GolapQueryPresenter >> defaultInitialExtent [
 	^ 800@600
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapQueryPresenter >> flushServerConfig [
 	networkClient flushFieldsAndValuesCache.
 	transactionFields := nil.
@@ -138,7 +140,7 @@ GolapQueryPresenter >> flushServerConfig [
 	granularityFields := nil
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> granularityFields [
 	^ granularityFields
 		ifNil: [ granularityFields := self serverConfig
@@ -149,7 +151,7 @@ GolapQueryPresenter >> granularityFields [
 				ifNil: [ Array new ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryPresenter >> initializePresenters [
 	<script: 'GolapQueryPresenter new openWithSpec'>
 	transactionFilterPresenter := GolapTransactionFilterPresenter
@@ -223,14 +225,14 @@ GolapQueryPresenter >> initializePresenters [
 						ifTrue: [ m font: font ] ] ]
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> itemFieldQuerySpec [
 	^ self serverConfig
 		ifNotNil: [ :config | config at: 'statsFunc' ifAbsent: [ Dictionary new ] ]
 		ifNil: [ Dictionary new ]
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> itemFields [
 	^ itemFields
 		ifNil: [ itemFields := self serverConfig
@@ -245,7 +247,7 @@ GolapQueryPresenter >> itemFields [
 				ifNil: [ Array new ] ]
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> itemFilterSpec [
 	^ itemFilterSpec
 		ifNil: [ itemFilterSpec := GolapItemFilterSpec
@@ -254,13 +256,13 @@ GolapQueryPresenter >> itemFilterSpec [
 						collect: [ :field | GolapQueryItemClauseSpec on: field ]) ]
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> itemFilterSpec: aGolapItemFilterSpec [
 	itemFilterSpec := aGolapItemFilterSpec.
 	itemFilterPresenter updateClauseList
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> loadJSON: aDicitonary [
 	aDicitonary
 		at: 'transactionFilter'
@@ -296,73 +298,73 @@ GolapQueryPresenter >> loadJSON: aDicitonary [
 			ifPresent: [ :string | deadlineTimer text: string ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minConfidence [
 	^ lowerBoundsPresenter minConfidence
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minConfidence: aNumber [
 	lowerBoundsPresenter minConfidence: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minJaccard [
 	^ lowerBoundsPresenter minJaccard
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minJaccard: aNumber [
 	lowerBoundsPresenter minJaccard: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minLift [
 	^ lowerBoundsPresenter minLift
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minLift: aNumber [
 	lowerBoundsPresenter minLift: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minPMI [
 	^ lowerBoundsPresenter minPMI
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minPMI: aNumber [
 	lowerBoundsPresenter minPMI: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minSupport [
 	^ lowerBoundsPresenter minSupport
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> minSupport: aNumber [
 	lowerBoundsPresenter minSupport: aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> networkClient [
 	^ networkClient
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> networkClient: aGolapNetworkClientPresenter [
 	networkClient := aGolapNetworkClientPresenter
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapQueryPresenter >> openLowerBoundsDialog [
 
 	^ lowerBoundsPresenter openDialog
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> query [
 
 	| q granularity |
@@ -406,13 +408,13 @@ GolapQueryPresenter >> query [
 			   yourself)
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapQueryPresenter >> resetItemFilterSpec [
 	itemFilterSpec := nil.
 	itemFilterPresenter updateClauseList
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapQueryPresenter >> resetQuery [
 	networkClient flushFieldsAndValuesCache.
 	itemFilterPresenter updatePreviewList.
@@ -426,23 +428,23 @@ GolapQueryPresenter >> resetQuery [
 		resetTransactionFilterSpec
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapQueryPresenter >> resetTransactionFilterSpec [
 	transactionFilterSpec := nil.
 	transactionFilterPresenter updateClauseList
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> serverConfig [
 	^ networkClient ifNotNil: #serverConfig
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> timeout [
 	^ 3
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> transactionFields [
 	^ transactionFields
 		ifNil: [ transactionFields := self serverConfig
@@ -457,7 +459,7 @@ GolapQueryPresenter >> transactionFields [
 				ifNil: [ Array new ] ]
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> transactionFilterSpec [
 	^ transactionFilterSpec
 		ifNil: [ transactionFilterSpec := GolapTransactionFilterSpec
@@ -471,13 +473,13 @@ GolapQueryPresenter >> transactionFilterSpec [
 								do: [ :field | stream nextPut: (GolapQueryItemClauseSpec on: field) ] ]) ]
 ]
 
-{ #category : #'accessing-query' }
+{ #category : 'accessing-query' }
 GolapQueryPresenter >> transactionFilterSpec: aGolapTransactionFilterSpec [
 	transactionFilterSpec := aGolapTransactionFilterSpec.
 	transactionFilterPresenter updateClauseList
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapQueryPresenter >> updateDimensionsPreview [
 	dimensionsKey selectedItem
 		ifNotNil: [ :key | 
@@ -487,7 +489,7 @@ GolapQueryPresenter >> updateDimensionsPreview [
 						availableItemsFor: (GolapQueryTransactionClauseSpec on: key)) ]
 ]
 
-{ #category : #'private-query' }
+{ #category : 'private-query' }
 GolapQueryPresenter >> updateQuery [
 	networkClient ifNil: [ ^ self ].
 	networkClient serverConfig
@@ -516,7 +518,7 @@ GolapQueryPresenter >> updateQuery [
 						at: 'minLift' ifPresent: [ :value | self minLift: value ] ] ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapQueryPresenter >> updateServerConfig [
 	self updateQuery.
 	networkClient flushFieldsAndValuesCache.
@@ -536,7 +538,7 @@ GolapQueryPresenter >> updateServerConfig [
 				ifFalse: [ dimensionsKey items: items ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPresenter >> url [
 	^ networkClient ifNotNil: #url
 ]

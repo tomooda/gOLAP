@@ -1,6 +1,6 @@
-Extension { #name : #SpMorphicTableAdapter }
+Extension { #name : 'SpMorphicTableAdapter' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 SpMorphicTableAdapter >> buildWidget [
 
 	widget := SpFTTableMorph new

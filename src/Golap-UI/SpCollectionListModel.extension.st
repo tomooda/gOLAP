@@ -1,6 +1,6 @@
-Extension { #name : #SpCollectionListModel }
+Extension { #name : 'SpCollectionListModel' }
 
-{ #category : #'*Golap-UI' }
+{ #category : '*Golap-UI' }
 SpCollectionListModel >> at: anIndex [
 
 	^ collection at: anIndex ifAbsent: [ nil ]
