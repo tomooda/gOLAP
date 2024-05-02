@@ -1,10 +1,12 @@
 Class {
-	#name : #GolapVertexAggregationEvaluator,
-	#superclass : #GolapVertexEvaluator,
-	#category : #'Golap-Models-Evaluator'
+	#name : 'GolapVertexAggregationEvaluator',
+	#superclass : 'GolapVertexEvaluator',
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapVertexAggregationEvaluator class >> fromJSON: aDictionary [
 
 	^ aDictionary
@@ -16,37 +18,37 @@ GolapVertexAggregationEvaluator class >> fromJSON: aDictionary [
 		  ifAbsent: [ nil ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapVertexAggregationEvaluator class >> isAbstract [
 
 	^ self = GolapVertexAggregationEvaluator
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAggregationEvaluator class >> subtag [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAggregationEvaluator class >> tag [
 
 	^ 'aggregation'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAggregationEvaluator >> aggregation [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAggregationEvaluator >> aggregationName [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAggregationEvaluator >> name [
 
 	^ self aggregationName
@@ -54,13 +56,13 @@ GolapVertexAggregationEvaluator >> name [
 	  (golapModel ifNotNil: [ :m | m edgeEvaluator name ] ifNil: [ '' ])
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAggregationEvaluator >> subtag [
 
 	^ self class subtag
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapVertexAggregationEvaluator >> value: aGolapVertex [
 
 	^ (self valuesAtEdgesOfVertex: aGolapVertex)

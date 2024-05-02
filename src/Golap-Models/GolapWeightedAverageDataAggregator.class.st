@@ -1,14 +1,16 @@
 Class {
-	#name : #GolapWeightedAverageDataAggregator,
-	#superclass : #GolapDataAggregator,
+	#name : 'GolapWeightedAverageDataAggregator',
+	#superclass : 'GolapDataAggregator',
 	#instVars : [
 		'column',
 		'weightColumn'
 	],
-	#category : #'Golap-Models-Evaluator'
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapWeightedAverageDataAggregator class >> column: aString weightColumn: anotherString [
 
 	^ self new
@@ -17,19 +19,19 @@ GolapWeightedAverageDataAggregator class >> column: aString weightColumn: anothe
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapWeightedAverageDataAggregator >> column [
 
 	^ column
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapWeightedAverageDataAggregator >> column: aString [
 
 	column := aString
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapWeightedAverageDataAggregator >> value: aCollectionOfDataSeries [
 
 	| sum weightSum |
@@ -46,13 +48,13 @@ GolapWeightedAverageDataAggregator >> value: aCollectionOfDataSeries [
 		  ifFalse: [ 0 ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapWeightedAverageDataAggregator >> weightColumn [
 
 	^ weightColumn
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapWeightedAverageDataAggregator >> weightColumn: aString [
 
 	weightColumn := aString

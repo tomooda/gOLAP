@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapModel,
-	#superclass : #Model,
+	#name : 'GolapModel',
+	#superclass : 'Model',
 	#instVars : [
 		'vertexEvaluator',
 		'edgeEvaluator',
@@ -15,10 +15,12 @@ Class {
 		'negativePolishEdges',
 		'mergedVertices'
 	],
-	#category : #'Golap-Models-Graph'
+	#category : 'Golap-Models-Graph',
+	#package : 'Golap-Models',
+	#tag : 'Graph'
 }
 
-{ #category : #storage }
+{ #category : 'storage' }
 GolapModel class >> chooseCoocurrenceDataDo: aBlock [
 	^ (UIManager default
 		chooseExistingFileReference: 'Select a coocurrence file'
@@ -26,7 +28,7 @@ GolapModel class >> chooseCoocurrenceDataDo: aBlock [
 		path: self coocurrenceDataDirectory) ifNotNil: aBlock
 ]
 
-{ #category : #storage }
+{ #category : 'storage' }
 GolapModel class >> chooseItemsDataDo: aBlock [
 	^ (UIManager default
 		chooseExistingFileReference: 'Select an items file'
@@ -34,12 +36,12 @@ GolapModel class >> chooseItemsDataDo: aBlock [
 		path: self itemsDataDirectory) ifNotNil: aBlock
 ]
 
-{ #category : #storage }
+{ #category : 'storage' }
 GolapModel class >> coocurrenceDataDirectory [
 	^ self localDirectory
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapModel class >> fromServerDataframe: aDataFrame [
 	^ self new
 		readServerDataframe: aDataFrame;
@@ -47,38 +49,38 @@ GolapModel class >> fromServerDataframe: aDataFrame [
 		yourself
 ]
 
-{ #category : #storage }
+{ #category : 'storage' }
 GolapModel class >> itemsDataDirectory [
 	^ self localDirectory
 ]
 
-{ #category : #storage }
+{ #category : 'storage' }
 GolapModel class >> localDirectory [
 	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
-{ #category : #defaults }
+{ #category : 'defaults' }
 GolapModel class >> stringColumns [
 	^ #('node1' 'node2' 'node1n' 'node2n') asSet
 ]
 
-{ #category : #arithmetics }
+{ #category : 'arithmetics' }
 GolapModel >> - aGolapModel [
 
 	^ self copy diff: aGolapModel
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> addNegativePolishEdge: aGolapEdge [
 	^ negativePolishEdges add: aGolapEdge
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> addPositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges add: aGolapEdge
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapModel >> bindingEdgesDo: aBlock [
 	(friendsEdges ifNil: [ treeEdges ifNil: [ self graphEdges ] ])
 		do: [ :edge | 
@@ -87,7 +89,7 @@ GolapModel >> bindingEdgesDo: aBlock [
 	positivePolishEdges do: aBlock
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapModel >> computeFriendsEdges: anInteger [
 
 	| edges |
@@ -105,7 +107,7 @@ GolapModel >> computeFriendsEdges: anInteger [
 			  n >= 2 ifTrue: [ stream nextPut: e ] ] ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapModel >> createMergedVertexFrom: aCollectionOfGolapVertex named: aString [
 
 	^ aCollectionOfGolapVertex
@@ -124,13 +126,13 @@ GolapModel >> createMergedVertexFrom: aCollectionOfGolapVertex named: aString [
 		  ifEmpty: [ nil ]
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> createVertex: aDataSeries name: aString [
 
 	^ GolapVertex on: aDataSeries name: aString
 ]
 
-{ #category : #arithmetics }
+{ #category : 'arithmetics' }
 GolapModel >> diff: aGolapModel [
 
 	| doneEdges |
@@ -155,19 +157,19 @@ GolapModel >> diff: aGolapModel [
 					(myVertex1 createEdgeTo: myVertex2 data: edge data) negated ] ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> edgeAggregationMap [
 
 	^ edgeAggregationMap
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> edgeAggregationMap: aDictionary [
 
 	edgeAggregationMap := aDictionary
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> edgeBetween: data1 and: data2 ifAbsent: errorBlock [
 	^ self
 		edgeBetween: data1
@@ -176,7 +178,7 @@ GolapModel >> edgeBetween: data1 and: data2 ifAbsent: errorBlock [
 		ifAbsent: errorBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock [
 	^ self
 		edgeBetween: data1
@@ -185,7 +187,7 @@ GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock [
 		ifAbsent: [  ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlock [
 	| vertex1 vertex2 edge |
 	vertex1 := self vertexAt: data1 ifAbsent: [ ^ errorBlock value ].
@@ -194,36 +196,36 @@ GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlo
 	^ aBlock value: edge
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> edgeEvaluator [
 
 	^ edgeEvaluator
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
 
 	edgeEvaluator := aGolapEdgeEvaluator
 ]
 
-{ #category : #'visualizing-labels' }
+{ #category : 'visualizing-labels' }
 GolapModel >> font [
 	^ TextStyle defaultFont
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> frequencyMode [
 	self setFrequencyMode.
 	graphEdges := nil.
 	treeEdges := nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> friendsEdges [
 	^ self friendsEdges: self friendsRank
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> friendsEdges: anInteger [
 
 	| num |
@@ -238,12 +240,12 @@ GolapModel >> friendsEdges: anInteger [
 		  friendsEdges := self computeFriendsEdges: friendsRank ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> friendsRank [
 	^ friendsRank
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> graphEdges [
 	^ graphEdges
 		ifNil: [ | edges |
@@ -259,7 +261,7 @@ GolapModel >> graphEdges [
 			graphEdges := edges ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> hiddenEdgeBetween: data1 and: data2 ifAbsent: errorBlock [
 	^ self
 		hiddenEdgeBetween: data1
@@ -268,7 +270,7 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifAbsent: errorBlock [
 		ifAbsent: errorBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock [
 	^ self
 		hiddenEdgeBetween: data1
@@ -277,7 +279,7 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock [
 		ifAbsent: [  ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlock [
 	| vertex1 vertex2 edge |
 	vertex1 := self vertexAt: data1 ifAbsent: [ ^ errorBlock value ].
@@ -286,7 +288,7 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 	^ aBlock value: edge
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapModel >> initialize [
 
 	super initialize.
@@ -325,21 +327,21 @@ GolapModel >> initialize [
 	mergedVertices := IdentityDictionary new
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> jaccardMode [
 	self setJaccardMode.
 	graphEdges := nil.
 	treeEdges := nil
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> liftMode [
 	self setLiftMode.
 	graphEdges := nil.
 	treeEdges := nil
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> mergeVertices: aCollectionOfGolapVertex named: aString [
 
 	aCollectionOfGolapVertex ifNotEmpty: [
@@ -412,12 +414,12 @@ GolapModel >> mergeVertices: aCollectionOfGolapVertex named: aString [
 		^ newVertex ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> negativePolishEdgesDo: aBlock [
 	negativePolishEdges do: aBlock
 ]
 
-{ #category : #visualization }
+{ #category : 'visualization' }
 GolapModel >> openSunburst [
 	"(GolapHierarchicalClustering on: self)
 		rank: 2;
@@ -435,14 +437,14 @@ GolapModel >> openSunburst [
 		 yourself) open
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> pmiMode [
 	self setPMIMode.
 	graphEdges := nil.
 	treeEdges := nil
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anInteger [
 
 	| changed hop2peers edges |
@@ -502,12 +504,12 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 	^ changed
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> positivePolishEdgesDo: aBlock [
 	positivePolishEdges do: aBlock
 ]
 
-{ #category : #copying }
+{ #category : 'copying' }
 GolapModel >> postCopy [ 
 	super postCopy.
 	vertexEvaluator := vertexEvaluator copy golapModel: self; yourself.
@@ -524,7 +526,7 @@ GolapModel >> postCopy [
 	treeEdges := nil
 ]
 
-{ #category : #copying }
+{ #category : 'copying' }
 GolapModel >> postCopyVertices [
 
 	| newVertices nextPutVertex newEdges |
@@ -552,7 +554,7 @@ GolapModel >> postCopyVertices [
 	vertices := newVertices
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapModel >> readServerDataframe: aDataFrame [
 
 	| newVertices |
@@ -616,12 +618,12 @@ GolapModel >> readServerDataframe: aDataFrame [
 	vertices := newVertices
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> removeNegativePolishEdge: aGolapEdge [
 	^ negativePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> removeNegativePolishEdgeBetween: aGolapVertex1 and: aGolapVertex2 [
 	^ (aGolapVertex1 negativePolishEdgeWith: aGolapVertex2)
 		ifNotNil: [ :edge | 
@@ -631,12 +633,12 @@ GolapModel >> removeNegativePolishEdgeBetween: aGolapVertex1 and: aGolapVertex2 
 			edge ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> removePositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> removePositivePolishEdgeBetween: aGolapVertex1 and: aGolapVertex2 [
 	self
 		positivePolishEdgesDo: [ :edge | 
@@ -650,7 +652,7 @@ GolapModel >> removePositivePolishEdgeBetween: aGolapVertex1 and: aGolapVertex2 
 	^ nil
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> repeat: anInteger1 polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anInteger2 [
 	self resetPolish.
 	anInteger1
@@ -661,7 +663,7 @@ GolapModel >> repeat: anInteger1 polishAddAbove: aNumber1 removeBelow: aNumber2 
 				ifFalse: [ ^ self ] ]
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> resetMerges [
 
 	| newVertices nextPutVertex newEdges |
@@ -690,28 +692,28 @@ GolapModel >> resetMerges [
 	mergedVertices := IdentityDictionary new
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapModel >> resetPolish [
 	self verticesDo: [ :v | v resetPolish ].
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> resetVertices [
 
 	self resetMerges.
 	self resetPolish
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> setFrequencyMode [
 
 	self edgeEvaluator:
 		(GolapEdgeColumnEvaluator on: self column: 'frequency')
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> setFullGraphMode [
 	self friendsEdges: nil.
 	friendsEdges := nil.
@@ -719,34 +721,34 @@ GolapModel >> setFullGraphMode [
 	self graphEdges
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> setJaccardMode [
 
 	self edgeEvaluator:
 		(GolapEdgeColumnEvaluator on: self column: 'jaccard')
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> setLiftMode [
 
 	self edgeEvaluator:
 		(GolapEdgeColumnEvaluator on: self column: 'lift')
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> setPMIMode [
 
 	self edgeEvaluator: (GolapEdgeColumnEvaluator on: self column: 'PMI')
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapModel >> setTreeMode [
 	self friendsEdges: nil.
 	friendsEdges := nil.
 	self treeEdges
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> treeEdges [
 	^ treeEdges
 		ifNil: [ | edges subgraphs spanEdges |
@@ -767,7 +769,7 @@ GolapModel >> treeEdges [
 			treeEdges := spanEdges ]
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> unmergeVertex: aGolapVertex [
 
 	aGolapVertex isMergedVertex ifFalse: [ ^ self ].
@@ -782,53 +784,53 @@ GolapModel >> unmergeVertex: aGolapVertex [
 	^ aGolapVertex
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> valueAtEdge: aGolapEdge [
 
 	^ edgeEvaluator value: aGolapEdge
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> valueAtVertex: aGolapVertex [
 
 	^ vertexEvaluator value: aGolapVertex
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> vertexAggregationMap [
 
 	^ vertexAggregationMap
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> vertexAggregationMap: aDictionary [
 
 	vertexAggregationMap := aDictionary
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> vertexAt: anInteger [
 	^ self vertices at: anInteger
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> vertexAt: anInteger ifAbsent: errorBlock [
 	^ self vertices at: anInteger ifAbsent: errorBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> vertexEvaluator [
 
 	^ vertexEvaluator
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> vertexEvaluator: aGolapVertexEvaluator [
 
 	vertexEvaluator := aGolapVertexEvaluator
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapModel >> vertexListWithKeyword: aString [
 
 	| list column |
@@ -852,13 +854,13 @@ GolapModel >> vertexListWithKeyword: aString [
 	^ list
 ]
 
-{ #category : #'accessing-vertex' }
+{ #category : 'accessing-vertex' }
 GolapModel >> vertices [
 
 	^ vertices ifNil: [ vertices := Dictionary new ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapModel >> verticesDo: aBlock [
 
 	self vertices keys do: [ :id |

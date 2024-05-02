@@ -1,13 +1,15 @@
 Class {
-	#name : #GolapEdgeColumnEvaluator,
-	#superclass : #GolapEdgeEvaluator,
+	#name : 'GolapEdgeColumnEvaluator',
+	#superclass : 'GolapEdgeEvaluator',
 	#instVars : [
 		'column'
 	],
-	#category : #'Golap-Models-Evaluator'
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapEdgeColumnEvaluator class >> column: aString [
 
 	^ self new
@@ -15,7 +17,7 @@ GolapEdgeColumnEvaluator class >> column: aString [
 		  yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapEdgeColumnEvaluator class >> fromJSON: aDictionary [
 
 	^ aDictionary
@@ -24,7 +26,7 @@ GolapEdgeColumnEvaluator class >> fromJSON: aDictionary [
 		  ifAbsent: [ nil ]
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapEdgeColumnEvaluator class >> on: aGolapModel column: aString [
 
 	^ (self on: aGolapModel)
@@ -32,37 +34,37 @@ GolapEdgeColumnEvaluator class >> on: aGolapModel column: aString [
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeColumnEvaluator class >> tag [
 
 	^ 'column'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeColumnEvaluator >> column [
 
 	^ column
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeColumnEvaluator >> column: aString [
 
 	column := aString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeColumnEvaluator >> name [
 
 	^ column ifNil: '-'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeColumnEvaluator >> subtag [
 
 	^ column
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapEdgeColumnEvaluator >> value: aGolapEdge [
 
 	^ aGolapEdge at: column

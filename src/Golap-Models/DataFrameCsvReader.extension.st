@@ -1,6 +1,6 @@
-Extension { #name : #DataFrameCsvReader }
+Extension { #name : 'DataFrameCsvReader' }
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 DataFrameCsvReader >> readFrom: aFileReference forceStringColumns: aCollectionOfString [
 	"Read data frame from a CSV file"
 	| stream reader df |

@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapVertex,
-	#superclass : #Object,
+	#name : 'GolapVertex',
+	#superclass : 'Object',
 	#instVars : [
 		'data',
 		'name',
@@ -16,10 +16,12 @@ Class {
 		'photoimage',
 		'markers'
 	],
-	#category : #'Golap-Models-Graph'
+	#category : 'Golap-Models-Graph',
+	#package : 'Golap-Models',
+	#tag : 'Graph'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapVertex class >> on: aDataSeries name: aString [
 
 	^ self new
@@ -27,43 +29,43 @@ GolapVertex class >> on: aDataSeries name: aString [
 		  yourself
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> addEdge: aGolapEdge [
 	^ edges add: aGolapEdge
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> addHiddenEdge: aGolapEdge [
 	^ hiddenEdges add: aGolapEdge
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> addMarker: aColor [
 
 	^ markers add: aColor
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> addNegativePolishEdge: aGolapEdge [
 	^ negativePolishEdges add: aGolapEdge
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> addPositivePolishEdge: aGolapEdge [
 	positivePolishEdges add: aGolapEdge
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> addRectangle: aRectangle with: aGolapVertex [
 	rectangles at: aGolapVertex put: aRectangle
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> addScore: aNumber vertex: aGolapVertex [
 	^ scores at: aGolapVertex put: aNumber
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> argmaxEdge: aBlock [
 	| max argmax |
 	max := Float negativeInfinity.
@@ -78,7 +80,7 @@ GolapVertex >> argmaxEdge: aBlock [
 	^ argmax
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapVertex >> asPoint [
 
 	^ (x notNil and: [ y notNil ])
@@ -86,38 +88,38 @@ GolapVertex >> asPoint [
 		  ifFalse: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> at: aString [
 
 	^ data at: aString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> at: aString ifAbsent: errorBlock [
 
 	^ data at: aString ifAbsent: errorBlock
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> basicEdgesAndVerticesDo: aBlock [
 
 	edges do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> basicPhotoimage [
 
 	^ photoimage
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapVertex >> basicRemoveEdge: aGolapEdge [
 	edges remove: aGolapEdge ifAbsent: [  ].
 	positivePolishEdges remove: aGolapEdge ifAbsent: [  ].
 	negativePolishEdges remove: aGolapEdge ifAbsent: [  ]
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> createEdgeTo: aGolapVertex data: aDataSeries [
 	| edge |
 	edge := GolapEdge on: aDataSeries between: self and: aGolapVertex.
@@ -125,7 +127,7 @@ GolapVertex >> createEdgeTo: aGolapVertex data: aDataSeries [
 	^ aGolapVertex addEdge: edge
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> createHiddenEdgeTo: aGolapVertex data: aDataSeries [
 	| edge |
 	edge := GolapEdge on: aDataSeries between: self and: aGolapVertex.
@@ -133,13 +135,13 @@ GolapVertex >> createHiddenEdgeTo: aGolapVertex data: aDataSeries [
 	^ aGolapVertex addHiddenEdge: edge
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> data [
 
 	^ data
 ]
 
-{ #category : #arithmetics }
+{ #category : 'arithmetics' }
 GolapVertex >> diff: aGolapVertex [
 
 	data keys do: [ :key |
@@ -150,7 +152,7 @@ GolapVertex >> diff: aGolapVertex [
 			 value2 isNumber ]) ifTrue: [ data at: key put: value1 - value2 ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> edgeTo: aGolapVertex ifAbsent: errorBlock [
 	self
 		edgesAndVerticesDo: [ :edge :vertex | 
@@ -159,19 +161,19 @@ GolapVertex >> edgeTo: aGolapVertex ifAbsent: errorBlock [
 	^ errorBlock value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> edges [
 
 	^ edges
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> edges: anOrderedCollection [
 
 	edges := anOrderedCollection
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> edgesAndVerticesDo: aBlock [
 	edges
 		do: [ :edge | 
@@ -181,7 +183,7 @@ GolapVertex >> edgesAndVerticesDo: aBlock [
 		do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> edgesDo: aBlock [
 	edges
 		do: [ :edge | 
@@ -190,18 +192,18 @@ GolapVertex >> edgesDo: aBlock [
 	positivePolishEdges do: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> flushPhotoimage [
 
 	photoimage := nil
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> hasEdge: aGolapEdge [
 	^ edges includes: aGolapEdge
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> hasEdgeSuchThat: aBlock [
 	self
 		edgesDo: [ :edge | 
@@ -210,13 +212,13 @@ GolapVertex >> hasEdgeSuchThat: aBlock [
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapVertex >> hasMarker: aColor [
 
 	^ markers includes: aColor
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> hasNegativePolishEdgeWith: aGolapVertex [
 	negativePolishEdges
 		do: [ :edge | 
@@ -229,7 +231,7 @@ GolapVertex >> hasNegativePolishEdgeWith: aGolapVertex [
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapVertex >> hasPeerVertex: aGolapVertex [
 	self
 		edgesDo: [ :edge | 
@@ -238,12 +240,12 @@ GolapVertex >> hasPeerVertex: aGolapVertex [
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapVertex >> hasVertex: aGolapVertex [
 	^ self == aGolapVertex
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> hiddenEdgeTo: aGolapVertex ifAbsent: errorBlock [
 	self
 		hiddenEdgesAndVerticesDo: [ :edge :vertex | 
@@ -252,31 +254,31 @@ GolapVertex >> hiddenEdgeTo: aGolapVertex ifAbsent: errorBlock [
 	^ errorBlock value
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> hiddenEdgesAndVerticesDo: aBlock [
 	hiddenEdges
 		do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> id [
 
 	^ data name
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> idDo: aBlock [
 
 	aBlock value: self id
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapVertex >> includesId: anObject [
 
 	^ self id = anObject
 ]
 
-{ #category : #'initialize-release' }
+{ #category : 'initialize-release' }
 GolapVertex >> initialize [
 
 	super initialize.
@@ -289,45 +291,45 @@ GolapVertex >> initialize [
 	markers := OrderedCollection new
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapVertex >> isIsolated [
 	^ edges isEmpty
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapVertex >> isMergedVertex [
 	^ false
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> label [
 	^ label
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> label: aForm [
 	label := aForm
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> markers [
 
 	^ markers
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> markersDo: aBlock [
 
 	markers do: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> name [
 
 	^ name
 ]
 
-{ #category : #arithmetics }
+{ #category : 'arithmetics' }
 GolapVertex >> negated [
 
 	data keys do: [ :key |
@@ -336,7 +338,7 @@ GolapVertex >> negated [
 		value1 isNumber ifTrue: [ data at: key put: value1 negated ] ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> negativePolishEdgeWith: aGolapVertex [
 	negativePolishEdges
 		do: [ :edge | 
@@ -346,23 +348,23 @@ GolapVertex >> negativePolishEdgeWith: aGolapVertex [
 	^ nil
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> negativePolishEdgesDo: aBlock [
 	negativePolishEdges do: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> numberOfEdges [
 	^ edges size
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> photoId [
 
 	^ self id
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> photoimage [
 
 	^ photoimage isForm
@@ -370,23 +372,23 @@ GolapVertex >> photoimage [
 		  ifFalse: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> photoimage: aFormOrAny [
 	photoimage := aFormOrAny
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> position: aPoint [
 	self x: aPoint x.
 	self y: aPoint y
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> positivePolishEdgesDo: aBlock [
 	positivePolishEdges do: aBlock
 ]
 
-{ #category : #copying }
+{ #category : 'copying' }
 GolapVertex >> postCopy [
 
 	super postCopy.
@@ -401,7 +403,7 @@ GolapVertex >> postCopy [
 	markers := markers copy
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapVertex >> printOn: aStream [
 
 	aStream nextPutAll: 'V('.
@@ -413,12 +415,12 @@ GolapVertex >> printOn: aStream [
 	aStream nextPutAll: ') '
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> rectangles [
 	^ rectangles
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> rectanglesAndVerticesAndScoresAt: aPoint do: aBlock [
 	rectangles
 		keysAndValuesDo: [ :vertex :rect | 
@@ -429,69 +431,69 @@ GolapVertex >> rectanglesAndVerticesAndScoresAt: aPoint do: aBlock [
 						value: (self scoreWith: vertex) ] ]
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> removeAllMarkers [
 
 	markers removeAll
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> removeEdge: aGolapEdge [
 	^ aGolapEdge
 		remove;
 		yourself
 ]
 
-{ #category : #'adding-removing' }
+{ #category : 'adding-removing' }
 GolapVertex >> removeMarker: aColor [
 
 	^ markers remove: aColor ifAbsent: [  ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> removeNegativePolishEdge: aGolapEdge [
 	^ negativePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> removePositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
 ]
 
-{ #category : #polishing }
+{ #category : 'polishing' }
 GolapVertex >> resetPolish [
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> resetScores [
 	scores := Dictionary new
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> scoreWith: aGolapVertex [
 	^ scores at: aGolapVertex ifAbsent: [ 0 ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> scoresDo: aBlock [
 	scores valuesDo: aBlock
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapVertex >> setData: aDataSeries name: aString [
 
 	data := aDataSeries.
 	name := aString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> totalScore [
 	^ scores ifEmpty: [ 0 ] ifNotEmpty: #sum
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> vertexAtPoint: aPoint [
 	rectangles
 		keysAndValuesDo: [ :vertex :rect | 
@@ -500,27 +502,27 @@ GolapVertex >> vertexAtPoint: aPoint [
 	^ nil
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapVertex >> verticesAndScoresDo: aBlock [
 	scores keysAndValuesDo: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> x [
 	^ x
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> x: aNumber [
 	x := aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> y [
 	^ y
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertex >> y: aNumber [
 	y := aNumber
 ]

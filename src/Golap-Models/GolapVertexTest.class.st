@@ -1,15 +1,17 @@
 Class {
-	#name : #GolapVertexTest,
-	#superclass : #TestCase,
+	#name : 'GolapVertexTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'vertex1',
 		'vertex2',
 		'vertex3'
 	],
-	#category : #'Golap-Models-Tests'
+	#category : 'Golap-Models-Tests',
+	#package : 'Golap-Models',
+	#tag : 'Tests'
 }
 
-{ #category : #running }
+{ #category : 'running' }
 GolapVertexTest >> setUp [
 
 	vertex1 := GolapVertex
@@ -26,7 +28,7 @@ GolapVertexTest >> setUp [
 		           name: 'v3'
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GolapVertexTest >> testCopy [
 
 	| copy |
@@ -39,7 +41,7 @@ GolapVertexTest >> testCopy [
 	self assert: (copy at: 'value') equals: 10
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GolapVertexTest >> testDiff [
 
 	self assert: (vertex1 at: 'value') equals: 10.

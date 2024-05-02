@@ -1,13 +1,15 @@
 Class {
-	#name : #GolapEdgeEvaluator,
-	#superclass : #Object,
+	#name : 'GolapEdgeEvaluator',
+	#superclass : 'Object',
 	#instVars : [
 		'golapModel'
 	],
-	#category : #'Golap-Models-Evaluator'
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapEdgeEvaluator class >> fromJSON: aDictionary [
 
 	self allSubclassesDo: [ :subclass |
@@ -17,13 +19,13 @@ GolapEdgeEvaluator class >> fromJSON: aDictionary [
 	^ nil
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapEdgeEvaluator class >> isAbstract [
 
 	^ self = GolapEdgeEvaluator
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapEdgeEvaluator class >> on: aGolapModel [
 
 	^ self new
@@ -31,67 +33,67 @@ GolapEdgeEvaluator class >> on: aGolapModel [
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeEvaluator class >> tag [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapEdgeEvaluator >> asJSON [
 
 	^ { (self tag -> self subtag) } asOrderedDictionary
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapEdgeEvaluator >> asSortFunction [
 
 	^ PropertySortFunction property: self
 ]
 
-{ #category : #sorting }
+{ #category : 'sorting' }
 GolapEdgeEvaluator >> ascending [
 
 	^ self asSortFunction
 ]
 
-{ #category : #sorting }
+{ #category : 'sorting' }
 GolapEdgeEvaluator >> descending [
 
 	^ self asSortFunction reversed
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeEvaluator >> golapModel [
 
 	^ golapModel
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeEvaluator >> golapModel: aGolapModel [
 
 	golapModel := aGolapModel
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeEvaluator >> name [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeEvaluator >> subtag [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdgeEvaluator >> tag [
 
 	^ self class tag
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapEdgeEvaluator >> value: aGolapEdge [
 
 	^ self subclassResponsibility

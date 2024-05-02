@@ -1,6 +1,6 @@
-Extension { #name : #Collection }
+Extension { #name : 'Collection' }
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 Collection >> maxWith: aBlock [
 
 	| maxMember maxValue |

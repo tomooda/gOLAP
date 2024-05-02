@@ -1,13 +1,15 @@
 Class {
-	#name : #GolapSumDataAggregator,
-	#superclass : #GolapDataAggregator,
+	#name : 'GolapSumDataAggregator',
+	#superclass : 'GolapDataAggregator',
 	#instVars : [
 		'column'
 	],
-	#category : #'Golap-Models-Evaluator'
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapSumDataAggregator class >> column: aString [
 
 	^ self new
@@ -15,19 +17,19 @@ GolapSumDataAggregator class >> column: aString [
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSumDataAggregator >> column [
 
 	^ column
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapSumDataAggregator >> column: aString [
 
 	column := aString
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapSumDataAggregator >> value: aCollectionOfDataSeries [
 
 	| sum |

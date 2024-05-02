@@ -1,34 +1,36 @@
 Class {
-	#name : #GolapVertexNumEdgesEvaluator,
-	#superclass : #GolapVertexEvaluator,
-	#category : #'Golap-Models-Evaluator'
+	#name : 'GolapVertexNumEdgesEvaluator',
+	#superclass : 'GolapVertexEvaluator',
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapVertexNumEdgesEvaluator class >> fromJSON: aDictionary [
 
 	^ aDictionary at: self tag ifPresent: [ self new ] ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexNumEdgesEvaluator class >> tag [
 
 	^ 'degree'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexNumEdgesEvaluator >> name [
 
 	^ '関連数 (degree)'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexNumEdgesEvaluator >> subtag [
 
 	^ true
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapVertexNumEdgesEvaluator >> value: aGolapVertex [
 
 	^ aGolapVertex numberOfEdges

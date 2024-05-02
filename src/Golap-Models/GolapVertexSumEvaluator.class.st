@@ -1,22 +1,24 @@
 Class {
-	#name : #GolapVertexSumEvaluator,
-	#superclass : #GolapVertexAggregationEvaluator,
-	#category : #'Golap-Models-Evaluator'
+	#name : 'GolapVertexSumEvaluator',
+	#superclass : 'GolapVertexAggregationEvaluator',
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexSumEvaluator class >> subtag [
 
 	^ 'sum'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexSumEvaluator >> aggregation [
 
 	^ #sum
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexSumEvaluator >> aggregationName [
 
 	^ '合計 '

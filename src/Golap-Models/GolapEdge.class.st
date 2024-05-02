@@ -1,15 +1,17 @@
 Class {
-	#name : #GolapEdge,
-	#superclass : #Object,
+	#name : 'GolapEdge',
+	#superclass : 'Object',
 	#instVars : [
 		'data',
 		'vertex1',
 		'vertex2'
 	],
-	#category : #'Golap-Models-Graph'
+	#category : 'Golap-Models-Graph',
+	#package : 'Golap-Models',
+	#tag : 'Graph'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapEdge class >> on: aDataSeries between: aGolapVertex1 and: aGolapVertex2 [
 	^ self new
 		setData: aDataSeries;
@@ -18,13 +20,13 @@ GolapEdge class >> on: aDataSeries between: aGolapVertex1 and: aGolapVertex2 [
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> at: aString [
 
 	^ self data ifNotNil: [ :d | d at: aString ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> at: aString ifAbsent: errorBlock [
 
 	^ self data
@@ -32,13 +34,13 @@ GolapEdge >> at: aString ifAbsent: errorBlock [
 		  ifNil: errorBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> at: aString put: anObject [
 
 	^ self data ifNotNil: [ :d | d at: aString put: anObject ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdge >> basicReplaceVertex: aGolapVertex1 with: aGolapVertex2 [
 	vertex1 == aGolapVertex1
 		ifTrue: [ vertex1 := aGolapVertex2.
@@ -49,12 +51,12 @@ GolapEdge >> basicReplaceVertex: aGolapVertex1 with: aGolapVertex2 [
 	^ nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> data [
 	^ data
 ]
 
-{ #category : #arithmetics }
+{ #category : 'arithmetics' }
 GolapEdge >> diff: aGolapEdge [
 
 	data keys do: [ :key |
@@ -65,13 +67,13 @@ GolapEdge >> diff: aGolapEdge [
 			 value2 isNumber ]) ifTrue: [ data at: key put: value1 - value2 ] ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapEdge >> hasVertex: aGolapVertex [
 
 	^ vertex1 == aGolapVertex or: [ vertex2 == aGolapVertex ]
 ]
 
-{ #category : #arithmetics }
+{ #category : 'arithmetics' }
 GolapEdge >> negated [
 
 	data keys do: [ :key |
@@ -80,7 +82,7 @@ GolapEdge >> negated [
 		value1 isNumber ifTrue: [ data at: key put: value1 negated ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> peerOf: aGolapVertex [
 
 	aGolapVertex id = vertex1 id ifTrue: [ ^ vertex2 ].
@@ -88,20 +90,20 @@ GolapEdge >> peerOf: aGolapVertex [
 	^ nil
 ]
 
-{ #category : #copying }
+{ #category : 'copying' }
 GolapEdge >> postCopy [
 
 	super postCopy.
 	data := data copy
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdge >> remove [
 	vertex1 ifNotNil: [ :v | v basicRemoveEdge: self ].
 	vertex2 ifNotNil: [ :v | v basicRemoveEdge: self ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapEdge >> replaceVertex: aGolapVertex1 with: aGolapVertex2 [
 	aGolapVertex1 basicRemoveEdge: self.
 	self basicReplaceVertex: aGolapVertex1 with: aGolapVertex2.
@@ -109,28 +111,28 @@ GolapEdge >> replaceVertex: aGolapVertex1 with: aGolapVertex2 [
 	^ aGolapVertex2
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapEdge >> setData: aDataSeries [
 
 	data := aDataSeries
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> vertex1 [
 	^ vertex1
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> vertex1: aGolapVertex [
 	vertex1 := aGolapVertex
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> vertex2 [
 	^ vertex2
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapEdge >> vertex2: aGolapVertex [
 	vertex2 := aGolapVertex
 ]

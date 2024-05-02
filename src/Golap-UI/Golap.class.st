@@ -3,6 +3,7 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'model',
+		'productInfoRetriever',
 		'url',
 		'query',
 		'overviewRenderer',
@@ -201,6 +202,8 @@ Golap class >> openClient [
 		openDialogIfAccepted: [ :client |
 			[
 			overview
+				productInfoRetriever:
+					(GolapServerProductInfoRetriever fromApiClient: client);
 				authenticateBlock: client authenticateBlock;
 				query: (NeoJSONReader fromString: client query);
 				url: client url;
@@ -381,8 +384,10 @@ Golap >> authenticateBlock [
 
 { #category : 'accessing' }
 Golap >> authenticateBlock: aBlock [
+
 	authenticateBlock := aBlock.
-	itemView ifNotNil: [ itemView authenticateBlock: aBlock ]
+	productInfoRetriever ifNotNil: [
+		productInfoRetriever authenticateBlock: aBlock ]
 ]
 
 { #category : 'accessing-renderer' }
@@ -793,7 +798,8 @@ Golap >> ifSnapshotEnabled: aBlock [
 
 { #category : 'accessing' }
 Golap >> imageRepositoryUrl: aString [
-	itemView imageRepositoryUrl: aString
+
+	productInfoRetriever imageRepositoryUrl: aString
 ]
 
 { #category : 'accessing-selection' }
@@ -1032,7 +1038,8 @@ Golap >> isTemporarySnapshot [
 
 { #category : 'accessing' }
 Golap >> itemFieldQuerySpec: aDictionary [
-	itemView itemFieldQuerySpec: aDictionary
+
+	productInfoRetriever itemFieldQuerySpec: aDictionary
 ]
 
 { #category : 'accessing-widgets' }
@@ -1042,7 +1049,8 @@ Golap >> itemView [
 
 { #category : 'accessing' }
 Golap >> itemViewUrl: aString [
-	itemView serverUrl: aString asString asText
+
+	productInfoRetriever golapServerUrl: aString
 ]
 
 { #category : 'accessing-markers' }
@@ -1190,7 +1198,6 @@ Golap >> newGolapItemView [
 
 	^ (self instantiate: GolapItemView)
 		  golap: self;
-		  authenticateBlock: self authenticateBlock;
 		  yourself
 ]
 
@@ -1308,6 +1315,18 @@ Golap >> positivePolishColor [
 { #category : 'accessing-presets' }
 Golap >> presetQueryFile [
 	^ self golapDirectory / 'presetQueries.json'
+]
+
+{ #category : 'accessing' }
+Golap >> productInfoRetriever [
+
+	^ productInfoRetriever
+]
+
+{ #category : 'accessing' }
+Golap >> productInfoRetriever: aGolapProductInfoRetriever [
+
+	productInfoRetriever := aGolapProductInfoRetriever
 ]
 
 { #category : 'accessing' }
@@ -1705,13 +1724,13 @@ Golap >> retrievePhotoimageFor: aGolapVertex [
 		whileTrue: [ 300 milliSecond wait ].
 	retrievalProcessCount := retrievalProcessCount + 1.
 	[
-	itemView ifNotNil: [
+	productInfoRetriever ifNotNil: [
 		[
-		(itemView retrieveSingleImageFor: aGolapVertex photoId value)
-			ifNotNil: [ :image |
-				aGolapVertex photoimage:
-					(image scaledToSize: self photoimageSize asPoint).
-				self updateGlobalImageAfter: [  ] ] ] ensure: [
+		(productInfoRetriever photoimageFor: aGolapVertex) ifNotNil: [
+			:image |
+			aGolapVertex photoimage:
+				(image scaledToSize: self photoimageSize asPoint).
+			self updateGlobalImageAfter: [  ] ] ] ensure: [
 			retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
 		Processor userBackgroundPriority - 5
 ]
@@ -1930,9 +1949,10 @@ Golap >> setQuery: aDictionary [
 	query := aDictionary.
 
 	queryViewTree roots:
-		(query keys asSortedCollection collect: [ :key | 
+		(query keys asSortedCollection collect: [ :key |
 			 key -> (query at: key) ]).
-	itemView ifNotNil: [ itemView query: aDictionary ]
+	productInfoRetriever ifNotNil: [
+		productInfoRetriever query: aDictionary ]
 ]
 
 { #category : 'accessing-selection' }

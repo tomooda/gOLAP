@@ -1,6 +1,6 @@
-Extension { #name : #ZnBufferedWriteStream }
+Extension { #name : 'ZnBufferedWriteStream' }
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 ZnBufferedWriteStream >> asFileReference [
 	^ stream name asFileReference
 ]

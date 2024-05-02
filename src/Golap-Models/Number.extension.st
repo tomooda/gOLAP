@@ -1,6 +1,6 @@
-Extension { #name : #Number }
+Extension { #name : 'Number' }
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 Number >> ifNaN: aBlock [
 	self isNaN
 		ifTrue: [ ^ aBlock value ]

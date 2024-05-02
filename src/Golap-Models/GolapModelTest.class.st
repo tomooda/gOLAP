@@ -1,13 +1,15 @@
 Class {
-	#name : #GolapModelTest,
-	#superclass : #TestCase,
+	#name : 'GolapModelTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'model'
 	],
-	#category : #'Golap-Models-Tests'
+	#category : 'Golap-Models-Tests',
+	#package : 'Golap-Models',
+	#tag : 'Tests'
 }
 
-{ #category : #running }
+{ #category : 'running' }
 GolapModelTest >> setUp [
 
 	| v1 v2 v3 v4 v5 v6 |
@@ -54,7 +56,7 @@ GolapModelTest >> setUp [
 		(DataSeries withKeys: { 'name'. 'value' } values: { 'e45'. 45 })
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GolapModelTest >> testDiff [
 
 	| baseModel v1 v2 v4 v8 |
@@ -127,7 +129,7 @@ GolapModelTest >> testDiff [
 		equals: -180
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GolapModelTest >> testPostCopy [
 
 	| copy |

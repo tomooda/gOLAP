@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapEdgeTest,
-	#superclass : #TestCase,
+	#name : 'GolapEdgeTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'vertex1',
 		'vertex2',
@@ -8,10 +8,12 @@ Class {
 		'edge12',
 		'edge23'
 	],
-	#category : #'Golap-Models-Tests'
+	#category : 'Golap-Models-Tests',
+	#package : 'Golap-Models',
+	#tag : 'Tests'
 }
 
-{ #category : #running }
+{ #category : 'running' }
 GolapEdgeTest >> setUp [
 
 	vertex1 := GolapVertex
@@ -34,7 +36,7 @@ GolapEdgeTest >> setUp [
 		          data: (DataSeries withKeys: { 'value' } values: { 23 })
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GolapEdgeTest >> testCopy [
 
 	| copy |
@@ -45,7 +47,7 @@ GolapEdgeTest >> testCopy [
 	self assert: (copy at: 'value') equals: 12
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 GolapEdgeTest >> testDiff [
 
 	self assert: (edge12 at: 'value') equals: 12.

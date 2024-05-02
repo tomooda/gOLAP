@@ -1,16 +1,18 @@
 Class {
-	#name : #GolapDataAggregator,
-	#superclass : #Object,
-	#category : #'Golap-Models-Evaluator'
+	#name : 'GolapDataAggregator',
+	#superclass : 'Object',
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapDataAggregator class >> isAbstract [
 
 	^ self = GolapDataAggregator
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapDataAggregator >> value: aCollectionOfDataSeries [
 
 	^ self subclassResponsibility

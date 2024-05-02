@@ -1,22 +1,24 @@
 Class {
-	#name : #GolapVertexAverageEvaluator,
-	#superclass : #GolapVertexAggregationEvaluator,
-	#category : #'Golap-Models-Evaluator'
+	#name : 'GolapVertexAverageEvaluator',
+	#superclass : 'GolapVertexAggregationEvaluator',
+	#category : 'Golap-Models-Evaluators',
+	#package : 'Golap-Models',
+	#tag : 'Evaluators'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAverageEvaluator class >> subtag [
 
 	^ 'average'
 ]
 
-{ #category : #evaluating }
+{ #category : 'evaluating' }
 GolapVertexAverageEvaluator >> aggregation [
 
 	^ #average
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapVertexAverageEvaluator >> aggregationName [
 
 	^ '平均 '

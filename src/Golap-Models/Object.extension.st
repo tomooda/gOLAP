@@ -1,6 +1,6 @@
-Extension { #name : #Object }
+Extension { #name : 'Object' }
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 Object >> ifNaN: aBlock [
 
 ]

@@ -1,68 +1,70 @@
 Class {
-	#name : #GolapMergedVertex,
-	#superclass : #GolapVertex,
+	#name : 'GolapMergedVertex',
+	#superclass : 'GolapVertex',
 	#instVars : [
 		'oldEdges',
 		'oldVertices'
 	],
-	#category : #'Golap-Models-Graph'
+	#category : 'Golap-Models-Graph',
+	#package : 'Golap-Models',
+	#tag : 'Graph'
 }
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapMergedVertex >> hasVertex: aGolapVertex [
 	^ (super hasVertex: aGolapVertex)
 		or: [ oldVertices contains: [ :v | v hasVertex: aGolapVertex ] ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapMergedVertex >> idDo: aBlock [
 
 	aBlock value: self id.
 	oldVertices do: [ :v | v idDo: aBlock ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapMergedVertex >> includesId: anObject [
 	^ (super includesId: anObject)
 		or: [ oldVertices contains: [ :v | v includesId: anObject ] ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapMergedVertex >> isMergedVertex [
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapMergedVertex >> oldEdges [
 	^ oldEdges
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapMergedVertex >> oldEdges: aCollectionOfGolapEdges [
 	oldEdges := aCollectionOfGolapEdges
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapMergedVertex >> oldEdgesDo: aBlock [
 	oldEdges do: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapMergedVertex >> oldVertices [
 	^ oldVertices
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapMergedVertex >> oldVertices: aCollectionOfGolapVertices [
 	oldVertices := aCollectionOfGolapVertices
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapMergedVertex >> oldVerticesDo: aBlock [
 	oldVertices do: aBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapMergedVertex >> photoId [
 
 	^ (oldVertices notNil and: [ oldVertices notEmpty ])
@@ -70,7 +72,7 @@ GolapMergedVertex >> photoId [
 		  ifFalse: [ self id ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapMergedVertex >> photoimage: aFormOrAny [
 
 	aFormOrAny isForm

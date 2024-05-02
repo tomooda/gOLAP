@@ -1,11 +1,11 @@
-Extension { #name : #DataFrameTypeDetector }
+Extension { #name : 'DataFrameTypeDetector' }
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 DataFrameTypeDetector >> canAllBeDateAndTime: aDataSeries [
 	^ false
 ]
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 DataFrameTypeDetector >> canAllBeNumber: aDataSeries [
 	| regex |
 	regex := '^nan|-nan|NaN|-NaN|inf|[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$'
@@ -21,12 +21,12 @@ DataFrameTypeDetector >> canAllBeNumber: aDataSeries [
 		ifNone: [ true ]
 ]
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 DataFrameTypeDetector >> canAllBeTime: aDataSeries [
 	^ false
 ]
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 DataFrameTypeDetector >> canAnyBeFloat: aDataSeries [
 	^ aDataSeries
 		anySatisfy: [ :each | 
@@ -35,7 +35,7 @@ DataFrameTypeDetector >> canAnyBeFloat: aDataSeries [
 						or: [ each asNumber isFloat ] ] ]
 ]
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 DataFrameTypeDetector >> convertToFloat: aDataSeries [
 	| map |
 	map := {('inf' -> Float infinity).
@@ -51,7 +51,7 @@ DataFrameTypeDetector >> convertToFloat: aDataSeries [
 				ifNil: [ Float nan ] ]
 ]
 
-{ #category : #'*Golap-Models' }
+{ #category : '*Golap-Models' }
 DataFrameTypeDetector >> detectTypesAndConvert: aDataFrame exceptColumns: aCollectionOfString [
 	aDataFrame columnNames
 		do: [ :columnName | 
