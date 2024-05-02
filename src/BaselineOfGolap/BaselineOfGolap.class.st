@@ -1,10 +1,11 @@
 Class {
-	#name : #BaselineOfGolap,
-	#superclass : #BaselineOf,
-	#category : #BaselineOfGolap
+	#name : 'BaselineOfGolap',
+	#superclass : 'BaselineOf',
+	#category : 'BaselineOfGolap',
+	#package : 'BaselineOfGolap'
 }
 
-{ #category : #baseline }
+{ #category : 'baseline' }
 BaselineOfGolap >> baseline: spec [
 
 	<baseline>
@@ -39,4 +40,28 @@ BaselineOfGolap >> baseline: spec [
 				#( 'Golap-Models' 'Golap-UI' 'Golap-Query' 'Golap-Networking'
 				   'Golap-Clustering' );
 			group: 'default' with: #( 'Core' ) ]
+]
+
+{ #category : 'utilities' }
+BaselineOfGolap >> installDesktopLogo [
+
+	<script: 'BaselineOfGolap new installDesktopLogo'>
+	| backgroundImage response |
+	backgroundImage := FileLocator localDirectory / 'gOLAP'
+	                   / 'gOLAP-logo.png'.
+	PharoLightTheme beCurrent.
+	response := ZnClient new
+		            url:
+			            'https://github.com/tomooda/gOLAP/raw/main/resources/gOLAP-logo.png';
+		            get;
+		            response.
+	(response isSuccess and: [ response entity contentType sub = 'png' ])
+		ifTrue: [
+			backgroundImage parent ensureCreateDirectory.
+			backgroundImage ensureDelete.
+			backgroundImage binaryWriteStreamDo: [ :writeStream |
+				response entity writeOn: writeStream ].
+			PolymorphSystemSettings desktopLogoFileName: ''.
+			PolymorphSystemSettings desktopLogoFileName:
+				backgroundImage fullName ]
 ]
