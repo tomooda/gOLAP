@@ -1,1 +1,1 @@
-Package { #name : #'Golap-Clustering' }
+Package { #name : 'Golap-Clustering' }

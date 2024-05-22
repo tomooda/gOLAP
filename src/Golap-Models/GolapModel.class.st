@@ -2,18 +2,18 @@ Class {
 	#name : 'GolapModel',
 	#superclass : 'Model',
 	#instVars : [
-		'vertexEvaluator',
 		'edgeEvaluator',
-		'vertices',
 		'treeEdges',
 		'friendsEdges',
 		'friendsRank',
 		'graphEdges',
 		'positivePolishEdges',
 		'negativePolishEdges',
-		'mergedVertices',
 		'edgeAggregators',
-		'vertexAggregators'
+		'mergedNodes',
+		'nodeAggregators',
+		'nodeEvaluator',
+		'nodes'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -93,8 +93,8 @@ GolapModel >> bindingEdgesDo: aBlock [
 GolapModel >> computeFriendsEdges: anInteger [
 
 	| edges |
-	edges := IdentityBag new: self vertices size * anInteger.
-	self verticesDo: [ :v |
+	edges := IdentityBag new: self nodes size * anInteger.
+	self nodesDo: [ :v |
 		edges addAll: ((((Array streamContents: [ :stream |
 				    v edgesDo: [ :e |
 					    (self valueAtEdge: e) ifNotNil: [ :value |
@@ -108,16 +108,16 @@ GolapModel >> computeFriendsEdges: anInteger [
 ]
 
 { #category : 'private' }
-GolapModel >> createMergedVertexFrom: aCollectionOfGolapVertex named: aString [
+GolapModel >> createMergedNodeFrom: aCollectionOfGolapNode named: aString [
 
-	^ aCollectionOfGolapVertex
+	^ aCollectionOfGolapNode
 		  ifNotEmpty: [
 			  | oldData newData |
-			  oldData := aCollectionOfGolapVertex collect: #data.
-			  newData := (vertexAggregators collect: [ :aggregation |
+			  oldData := aCollectionOfGolapNode collect: #data.
+			  newData := (nodeAggregators collect: [ :aggregation |
 				              aggregation value: oldData ]) asOrderedDictionary.
 			  newData name: aString.
-			  GolapMergedVertex
+			  GolapMergedNode
 				  on: (DataSeries
 						   withKeys: newData keys
 						   values: newData values
@@ -127,9 +127,9 @@ GolapModel >> createMergedVertexFrom: aCollectionOfGolapVertex named: aString [
 ]
 
 { #category : 'accessing-vertex' }
-GolapModel >> createVertex: aDataSeries name: aString [
+GolapModel >> createNode: aDataSeries name: aString [
 
-	^ GolapVertex on: aDataSeries name: aString
+	^ GolapNode on: aDataSeries name: aString
 ]
 
 { #category : 'arithmetics' }
@@ -137,24 +137,22 @@ GolapModel >> diff: aGolapModel [
 
 	| doneEdges |
 	doneEdges := IdentitySet new: 1024.
-	aGolapModel verticesDo: [ :vertex |
-		vertices
-			at: vertex id
-			ifPresent: [ :myVertex | myVertex diff: vertex ]
-			ifAbsentPut: [
-			(GolapVertex on: vertex data name: vertex name) negated ] ].
+	aGolapModel nodesDo: [ :node |
+		nodes
+			at: node id
+			ifPresent: [ :myNode | myNode diff: node ]
+			ifAbsentPut: [ (GolapNode on: node data name: node name) negated ] ].
 
-	aGolapModel verticesDo: [ :vertex |
-		vertex edgesDo: [ :edge |
+	aGolapModel nodesDo: [ :node |
+		node edgesDo: [ :edge |
 			(doneEdges includes: edge) ifFalse: [
-				| myVertex1 myVertex2 |
+				| myNode1 myNode2 |
 				doneEdges add: edge.
-				myVertex1 := vertices at: edge vertex1 id.
-				myVertex2 := vertices at: edge vertex2 id.
-				(myVertex1 edgeTo: myVertex2 ifAbsent: [ nil ])
+				myNode1 := nodes at: edge node1 id.
+				myNode2 := nodes at: edge node2 id.
+				(myNode1 edgeTo: myNode2 ifAbsent: [ nil ])
 					ifNotNil: [ :myEdge | myEdge diff: edge ]
-					ifNil: [
-					(myVertex1 createEdgeTo: myVertex2 data: edge data) negated ] ] ] ]
+					ifNil: [ (myNode1 createEdgeTo: myNode2 data: edge data) negated ] ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -189,10 +187,11 @@ GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock [
 
 { #category : 'accessing' }
 GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlock [
-	| vertex1 vertex2 edge |
-	vertex1 := self vertexAt: data1 ifAbsent: [ ^ errorBlock value ].
-	vertex2 := self vertexAt: data2 ifAbsent: [ ^ errorBlock value ].
-	edge := vertex1 edgeTo: vertex2 ifAbsent: [ ^ errorBlock value ].
+
+	| node1 node2 edge |
+	node1 := self nodeAt: data1 ifAbsent: [ ^ errorBlock value ].
+	node2 := self nodeAt: data2 ifAbsent: [ ^ errorBlock value ].
+	edge := node1 edgeTo: node2 ifAbsent: [ ^ errorBlock value ].
 	^ aBlock value: edge
 ]
 
@@ -251,7 +250,7 @@ GolapModel >> graphEdges [
 		ifNil: [ | edges |
 			edges := IdentitySet new.
 			self
-				verticesDo: [ :vertex | vertex edgesDo: [ :edge | edges add: edge ] ].
+				nodesDo: [ :node | node edgesDo: [ :edge | edges add: edge ] ].
 			edges := edges
 				asSortedCollection: [ :more :less | 
 					(self valueAtEdge: less)
@@ -281,10 +280,11 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock [
 
 { #category : 'accessing' }
 GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlock [
-	| vertex1 vertex2 edge |
-	vertex1 := self vertexAt: data1 ifAbsent: [ ^ errorBlock value ].
-	vertex2 := self vertexAt: data2 ifAbsent: [ ^ errorBlock value ].
-	edge := vertex1 hiddenEdgeTo: vertex2 ifAbsent: [ ^ errorBlock value ].
+
+	| node1 node2 edge |
+	node1 := self nodeAt: data1 ifAbsent: [ ^ errorBlock value ].
+	node2 := self nodeAt: data2 ifAbsent: [ ^ errorBlock value ].
+	edge := node1 hiddenEdgeTo: node2 ifAbsent: [ ^ errorBlock value ].
 	^ aBlock value: edge
 ]
 
@@ -292,11 +292,11 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 GolapModel >> initialize [
 
 	super initialize.
-	vertexEvaluator := GolapVertexColumnEvaluator
+	nodeEvaluator := GolapNodeColumnEvaluator
 		                   on: self
 		                   column: 'frequency'.
 	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
-	vertexAggregators := { (GolapSumDataAggregator column: 'frequency') }.
+	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
 	edgeAggregators := {
 		                   (GolapSumDataAggregator column: 'frequency').
 		                   (GolapSumDataAggregator column: 'total').
@@ -314,7 +314,7 @@ GolapModel >> initialize [
 			                    weightColumn: 'frequency') }.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	mergedVertices := IdentityDictionary new
+	mergedNodes := IdentityDictionary new
 ]
 
 { #category : 'operations' }
@@ -332,26 +332,26 @@ GolapModel >> liftMode [
 ]
 
 { #category : 'accessing-vertex' }
-GolapModel >> mergeVertices: aCollectionOfGolapVertex named: aString [
+GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
-	aCollectionOfGolapVertex ifNotEmpty: [
-		| newVertex newEdges oldEdges |
-		newVertex := self
-			             createMergedVertexFrom: aCollectionOfGolapVertex
+	aCollectionOfGolapNode ifNotEmpty: [
+		| newNode newEdges oldEdges |
+		newNode := self
+			             createMergedNodeFrom: aCollectionOfGolapNode
 			             named: aString.
 		newEdges := IdentityDictionary new.
 		oldEdges := OrderedCollection new:
-			            aCollectionOfGolapVertex size
-			            * aCollectionOfGolapVertex size.
-		aCollectionOfGolapVertex do: [ :vertex |
+			            aCollectionOfGolapNode size
+			            * aCollectionOfGolapNode size.
+		aCollectionOfGolapNode do: [ :node |
 			(Array streamContents: [ :stream |
-				 vertex edgesDo: [ :e | stream nextPut: e ] ]) do: [ :edge |
+				 node edgesDo: [ :e | stream nextPut: e ] ]) do: [ :edge |
 				| peer |
-				peer := edge peerOf: vertex.
-				newVertex == peer
+				peer := edge peerOf: node.
+				newNode == peer
 					ifTrue: [
 						edge remove.
-						newEdges removeKey: vertex ]
+						newEdges removeKey: node ]
 					ifFalse: [
 						(newEdges includesKey: peer)
 							ifTrue: [
@@ -376,37 +376,108 @@ GolapModel >> mergeVertices: aCollectionOfGolapVertex named: aString [
 										at: key
 										put: (newEdge at: key) * (newEdge at: 'frequency') ].
 								edge remove.
-								newEdge basicReplaceVertex: vertex with: newVertex.
-								newVertex addEdge: newEdge.
+								newEdge basicReplaceNode: node with: newNode.
+								newNode addEdge: newEdge.
 								peer addEdge: newEdge.
 								oldEdges add: edge.
 								newEdges at: peer put: newEdge ] ] ].
-			self vertices removeKey: vertex id ].
+			self nodes removeKey: node id ].
 		newEdges do: [ :edge |
 			#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
 				edge at: key put: (edge at: key) / (edge at: 'frequency') ] ].
-		newVertex
-			x: ((aCollectionOfGolapVertex collect: #x thenSelect: #notNil)
+		newNode
+			x: ((aCollectionOfGolapNode collect: #x thenSelect: #notNil)
 					 ifEmpty: [ nil ]
 					 ifNotEmpty: #average);
-			y: ((aCollectionOfGolapVertex collect: #y thenSelect: #notNil)
+			y: ((aCollectionOfGolapNode collect: #y thenSelect: #notNil)
 					 ifEmpty: [ nil ]
 					 ifNotEmpty: #average);
 			oldEdges: oldEdges asArray;
-			oldVertices:
-				(aCollectionOfGolapVertex asArray sorted:
-						 vertexEvaluator descending).
-		self vertices at: aString put: newVertex.
+			oldNodes:
+				(aCollectionOfGolapNode asArray sorted:
+						 nodeEvaluator descending).
+		self nodes at: aString put: newNode.
 		treeEdges := nil.
 		graphEdges := nil.
 		friendsEdges := nil.
 		self friendsEdges: self friendsRank.
-		^ newVertex ]
+		^ newNode ]
 ]
 
 { #category : 'polishing' }
 GolapModel >> negativePolishEdgesDo: aBlock [
 	negativePolishEdges do: aBlock
+]
+
+{ #category : 'accessing' }
+GolapModel >> nodeAggregators [
+
+	^ nodeAggregators
+]
+
+{ #category : 'accessing' }
+GolapModel >> nodeAggregators: aCollectionOfGolapDataAggregator [
+
+	nodeAggregators := aCollectionOfGolapDataAggregator
+]
+
+{ #category : 'accessing-vertex' }
+GolapModel >> nodeAt: anInteger [
+	^ self nodes at: anInteger
+]
+
+{ #category : 'accessing-vertex' }
+GolapModel >> nodeAt: anInteger ifAbsent: errorBlock [
+	^ self nodes at: anInteger ifAbsent: errorBlock
+]
+
+{ #category : 'accessing' }
+GolapModel >> nodeEvaluator [
+
+	^ nodeEvaluator
+]
+
+{ #category : 'accessing' }
+GolapModel >> nodeEvaluator: aGolapNodeEvaluator [
+
+	nodeEvaluator := aGolapNodeEvaluator
+]
+
+{ #category : 'accessing' }
+GolapModel >> nodeListWithKeyword: aString [
+
+	| list column |
+	list := DataFrame new: 0 @ 3.
+	self nodesDo: [ :node :id |
+		| name |
+		name := node name.
+		(aString isEmpty or: [ (name findString: aString) > 0 ]) ifTrue: [
+			list
+				addRow: (DataSeries newFrom: {
+							 name.
+							 (self valueAtNode: node).
+							 id })
+				named: id printString ] ].
+	column := self nodeEvaluator name.
+	list columnNames: {
+			'product'.
+			column.
+			'id' }.
+	list sortDescendingBy: column.
+	^ list
+]
+
+{ #category : 'accessing-vertex' }
+GolapModel >> nodes [
+
+	^ nodes ifNil: [ nodes := Dictionary new ]
+]
+
+{ #category : 'enumerating' }
+GolapModel >> nodesDo: aBlock [
+
+	self nodes keys do: [ :id |
+		aBlock cull: (nodes at: id) cull: id ]
 ]
 
 { #category : 'visualization' }
@@ -441,17 +512,17 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 	changed := false.
 	hop2peers := IdentityDictionary new.
 	edges := IdentitySet new.
-	self verticesDo: [ :v1 |
+	self nodesDo: [ :v1 |
 		| peers |
 		peers := hop2peers at: v1 put: IdentityDictionary new.
-		v1 edgesAndVerticesDo: [ :e1 :v2 |
+		v1 edgesAndNodeDo: [ :e1 :v2 |
 			edges add: e1.
-			v2 edgesAndVerticesDo: [ :e2 :v3 |
+			v2 edgesAndNodeDo: [ :e2 :v3 |
 				v1 id < v3 id ifTrue: [
 					peers at: v3 put: (peers at: v3 ifAbsent: [ 0 ]) + 1 ] ] ] ].
 	hop2peers keysAndValuesDo: [ :v1 :peersAndDups |
 		peersAndDups keysAndValuesDo: [ :v2 :dups |
-			(v1 hasPeerVertex: v2) ifFalse: [
+			(v1 hasPeerNode: v2) ifFalse: [
 				| denominator |
 				denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
 				denominator > anInteger ifTrue: [
@@ -467,13 +538,13 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 								self addPositivePolishEdge: newEdge ] ] ] ] ] ].
 	edges do: [ :edge |
 		| v1 v2 peersAndDups |
-		edge vertex1 id <= edge vertex2 id
+		edge node1 id <= edge node2 id
 			ifTrue: [
-				v1 := edge vertex1.
-				v2 := edge vertex2 ]
+				v1 := edge node1.
+				v2 := edge node2 ]
 			ifFalse: [
-				v1 := edge vertex2.
-				v2 := edge vertex1 ].
+				v1 := edge node2.
+				v2 := edge node1 ].
 		peersAndDups := hop2peers at: v1.
 		((peersAndDups includesKey: v2) not or: [
 			 | dups denominator |
@@ -503,18 +574,18 @@ GolapModel >> positivePolishEdgesDo: aBlock [
 GolapModel >> postCopy [
 
 	super postCopy.
-	vertexEvaluator := vertexEvaluator copy
+	nodeEvaluator := nodeEvaluator copy
 		                   golapModel: self;
 		                   yourself.
 	edgeEvaluator := edgeEvaluator copy
 		                 golapModel: self;
 		                 yourself.
-	vertexAggregators := vertexAggregators copy.
+	nodeAggregators := nodeAggregators copy.
 	edgeAggregators := edgeAggregators copy.
-	self postCopyVertices.
+	self postCopyNodes.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	mergedVertices := IdentityDictionary new.
+	mergedNodes := IdentityDictionary new.
 	friendsEdges := nil.
 	friendsRank := nil.
 	graphEdges := nil.
@@ -522,46 +593,44 @@ GolapModel >> postCopy [
 ]
 
 { #category : 'copying' }
-GolapModel >> postCopyVertices [
+GolapModel >> postCopyNodes [
 
-	| newVertices nextPutVertex newEdges |
-	newVertices := Dictionary new: vertices size.
-	nextPutVertex := [ :vertex |
-	                 vertex isMergedVertex
-		                 ifTrue: [ vertex oldVertices do: nextPutVertex ]
-		                 ifFalse: [
-		                 newVertices at: vertex id put: vertex copy ] ].
-	vertices valuesDo: nextPutVertex.
+	| newNodes nextPutNode newEdges |
+	newNodes := Dictionary new: nodes size.
+	nextPutNode := [ :node |
+	               node isMergedNode
+		               ifTrue: [ node oldNodes do: nextPutNode ]
+		               ifFalse: [ newNodes at: node id put: node copy ] ].
+	nodes valuesDo: nextPutNode.
 	newEdges := IdentityDictionary new: 1024.
-	newVertices valuesDo: [ :vertex |
-		vertex edgesDo: [ :edge |
-			(edge vertex1 isMergedVertex or: [ edge vertex2 isMergedVertex ])
-				ifFalse: [
-					newEdges at: edge ifAbsentPut: [
-						edge copy
-							vertex1: (newVertices at: edge vertex1 id);
-							vertex2: (newVertices at: edge vertex2 id);
-							yourself ] ] ] ].
-	newVertices valuesDo: [ :vertex |
-		vertex edges: (vertex edges
+	newNodes valuesDo: [ :node |
+		node edgesDo: [ :edge |
+			(edge node1 isMergedNode or: [ edge node2 isMergedNode ]) ifFalse: [
+				newEdges at: edge ifAbsentPut: [
+					edge copy
+						node1: (newNodes at: edge node1 id);
+						node2: (newNodes at: edge node2 id);
+						yourself ] ] ] ].
+	newNodes valuesDo: [ :node |
+		node edges: (node edges
 				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
 				 thenSelect: #notNil) ].
-	vertices := newVertices
+	nodes := newNodes
 ]
 
 { #category : 'private' }
 GolapModel >> readServerDataframe: aDataFrame [
 
-	| newVertices |
+	| newNodes |
 	aDataFrame columnNames: (aDataFrame columnNames collect: [ :string |
 			 (string includes: $%)
 				 ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
 				 ifFalse: [ string ] ]).
-	vertexEvaluator := GolapVertexColumnEvaluator
-		                   on: self
-		                   column: 'frequency'.
+	nodeEvaluator := GolapNodeColumnEvaluator
+		                 on: self
+		                 column: 'frequency'.
 	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
-	vertexAggregators := { (GolapSumDataAggregator column: 'frequency') }.
+	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
 	edgeAggregators := {
 		                   (GolapSumDataAggregator column: 'frequency').
 		                   (GolapSumDataAggregator column: 'total').
@@ -577,30 +646,30 @@ GolapModel >> readServerDataframe: aDataFrame [
 		                   (GolapWeightedAverageDataAggregator
 			                    column: 'PMI'
 			                    weightColumn: 'frequency') }.
-	newVertices := Dictionary new.
+	newNodes := Dictionary new.
 	aDataFrame do: [ :data |
-		| node1 node2 vertex1 vertex2 |
-		node1 := data at: 'node1'.
-		node2 := data at: 'node2'.
-		vertex1 := newVertices at: node1 ifAbsentPut: [
-			           self
-				           createVertex: (DataSeries
-						            withKeys: { 'frequency' }
-						            values: { (data at: 'frequency1') }
-						            name: node1)
-				           name: (data at: 'node1n') ].
-		node2 ifNotNil: [
-			vertex2 := newVertices at: node2 ifAbsentPut: [
-				           self
-					           createVertex: (DataSeries
-							            withKeys: { 'frequency' }
-							            values: { (data at: 'frequency2') }
-							            name: node2)
-					           name: (data at: 'node2n') ].
+		| id1 id2 node1 node2 |
+		id1 := data at: 'node1'.
+		id2 := data at: 'node2'.
+		node1 := newNodes at: id1 ifAbsentPut: [
+			         self
+				         createNode: (DataSeries
+						          withKeys: { 'frequency' }
+						          values: { (data at: 'frequency1') }
+						          name: id1)
+				         name: (data at: 'node1n') ].
+		id2 ifNotNil: [
+			node2 := newNodes at: id2 ifAbsentPut: [
+				         self
+					         createNode: (DataSeries
+							          withKeys: { 'frequency' }
+							          values: { (data at: 'frequency2') }
+							          name: id2)
+					         name: (data at: 'node2n') ].
 			(data at: 'effective' ifAbsent: [ 1 ]) > 0
-				ifTrue: [ vertex1 createEdgeTo: vertex2 data: data ]
-				ifFalse: [ vertex1 createHiddenEdgeTo: vertex2 data: data ] ] ].
-	vertices := newVertices
+				ifTrue: [ node1 createEdgeTo: node2 data: data ]
+				ifFalse: [ node1 createHiddenEdgeTo: node2 data: data ] ] ].
+	nodes := newNodes
 ]
 
 { #category : 'polishing' }
@@ -609,13 +678,13 @@ GolapModel >> removeNegativePolishEdge: aGolapEdge [
 ]
 
 { #category : 'polishing' }
-GolapModel >> removeNegativePolishEdgeBetween: aGolapVertex1 and: aGolapVertex2 [
-	^ (aGolapVertex1 negativePolishEdgeWith: aGolapVertex2)
-		ifNotNil: [ :edge | 
-			aGolapVertex1 removeNegativePolishEdge: edge.
-			aGolapVertex2 removeNegativePolishEdge: edge.
-			self removeNegativePolishEdge: edge.
-			edge ]
+GolapModel >> removeNegativePolishEdgeBetween: aGolapNode1 and: aGolapNode2 [
+
+	^ (aGolapNode1 negativePolishEdgeWith: aGolapNode2) ifNotNil: [ :edge |
+		  aGolapNode1 removeNegativePolishEdge: edge.
+		  aGolapNode2 removeNegativePolishEdge: edge.
+		  self removeNegativePolishEdge: edge.
+		  edge ]
 ]
 
 { #category : 'polishing' }
@@ -624,16 +693,16 @@ GolapModel >> removePositivePolishEdge: aGolapEdge [
 ]
 
 { #category : 'polishing' }
-GolapModel >> removePositivePolishEdgeBetween: aGolapVertex1 and: aGolapVertex2 [
-	self
-		positivePolishEdgesDo: [ :edge | 
-			((aGolapVertex1 == edge vertex1 and: [ aGolapVertex2 == edge vertex2 ])
-				or:
-					[ aGolapVertex1 == edge vertex2 and: [ aGolapVertex2 == edge vertex1 ] ])
-				ifTrue: [ aGolapVertex1 removePositivePolishEdge: edge.
-					aGolapVertex2 removePositivePolishEdge: edge.
-					self removePositivePolishEdge: edge.
-					^ edge ] ].
+GolapModel >> removePositivePolishEdgeBetween: aGolapNode1 and: aGolapNode2 [
+
+	self positivePolishEdgesDo: [ :edge |
+		((aGolapNode1 == edge node1 and: [ aGolapNode2 == edge node2 ]) or: [
+			 aGolapNode1 == edge node2 and: [ aGolapNode2 == edge node1 ] ])
+			ifTrue: [
+				aGolapNode1 removePositivePolishEdge: edge.
+				aGolapNode2 removePositivePolishEdge: edge.
+				self removePositivePolishEdge: edge.
+				^ edge ] ].
 	^ nil
 ]
 
@@ -651,44 +720,42 @@ GolapModel >> repeat: anInteger1 polishAddAbove: aNumber1 removeBelow: aNumber2 
 { #category : 'accessing-vertex' }
 GolapModel >> resetMerges [
 
-	| newVertices nextPutVertex newEdges |
-	newVertices := Dictionary new: vertices size.
-	nextPutVertex := [ :vertex |
-	                 vertex isMergedVertex
-		                 ifTrue: [ vertex oldVertices do: nextPutVertex ]
-		                 ifFalse: [
-		                 newVertices at: vertex id put: vertex copy ] ].
-	vertices valuesDo: nextPutVertex.
+	| newNodes nextPutNode newEdges |
+	newNodes := Dictionary new: nodes size.
+	nextPutNode := [ :node |
+	               node isMergedNode
+		               ifTrue: [ node oldNodes do: nextPutNode ]
+		               ifFalse: [ newNodes at: node id put: node copy ] ].
+	nodes valuesDo: nextPutNode.
 	newEdges := IdentityDictionary new: 1024.
-	newVertices valuesDo: [ :vertex |
-		vertex edgesDo: [ :edge |
-			(edge vertex1 isMergedVertex or: [ edge vertex2 isMergedVertex ])
-				ifFalse: [
-					newEdges at: edge ifAbsentPut: [
-						edge copy
-							vertex1: (newVertices at: edge vertex1 id);
-							vertex2: (newVertices at: edge vertex2 id);
-							yourself ] ] ] ].
-	newVertices valuesDo: [ :vertex |
-		vertex edges: (vertex edges
+	newNodes valuesDo: [ :node |
+		node edgesDo: [ :edge |
+			(edge node1 isMergedNode or: [ edge node2 isMergedNode ]) ifFalse: [
+				newEdges at: edge ifAbsentPut: [
+					edge copy
+						node1: (newNodes at: edge node1 id);
+						node2: (newNodes at: edge node2 id);
+						yourself ] ] ] ].
+	newNodes valuesDo: [ :node |
+		node edges: (node edges
 				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
 				 thenSelect: #notNil) ].
-	vertices := newVertices.
-	mergedVertices := IdentityDictionary new
+	nodes := newNodes.
+	mergedNodes := IdentityDictionary new
+]
+
+{ #category : 'accessing-vertex' }
+GolapModel >> resetNodes [
+
+	self resetMerges.
+	self resetPolish
 ]
 
 { #category : 'polishing' }
 GolapModel >> resetPolish [
-	self verticesDo: [ :v | v resetPolish ].
+	self nodesDo: [ :v | v resetPolish ].
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new
-]
-
-{ #category : 'accessing-vertex' }
-GolapModel >> resetVertices [
-
-	self resetMerges.
-	self resetPolish
 ]
 
 { #category : 'operations' }
@@ -735,38 +802,40 @@ GolapModel >> setTreeMode [
 
 { #category : 'accessing' }
 GolapModel >> treeEdges [
-	^ treeEdges
-		ifNil: [ | edges subgraphs spanEdges |
-			edges := self graphEdges.
-			subgraphs := self vertices asArray collect: [ :vertex | Set with: vertex ].
-			spanEdges := OrderedCollection new: self vertices size // 2 + 1.
-			edges
-				do: [ :edge | 
-					| v1 v2 g1 g2 |
-					v1 := edge vertex1.
-					v2 := edge vertex2.
-					g1 := subgraphs detect: [ :s | s includes: v1 ] ifNone: [ nil ].
-					g2 := subgraphs detect: [ :s | s includes: v2 ] ifNone: [ nil ].
-					g1 ~~ g2
-						ifTrue: [ spanEdges add: edge.
-							g1 addAll: g2.
-							subgraphs := subgraphs reject: [ :g | g == g2 ] ] ].
-			treeEdges := spanEdges ]
+
+	^ treeEdges ifNil: [
+		  | edges subgraphs spanEdges |
+		  edges := self graphEdges.
+		  subgraphs := self nodes asArray collect: [ :node | Set with: node ].
+		  spanEdges := OrderedCollection new: self nodes size // 2 + 1.
+		  edges do: [ :edge |
+			  | node1 node2 g1 g2 |
+			  node1 := edge node1.
+			  node2 := edge node2.
+			  g1 := subgraphs
+				        detect: [ :s | s includes: node1 ]
+				        ifNone: [ nil ].
+			  g2 := subgraphs
+				        detect: [ :s | s includes: node2 ]
+				        ifNone: [ nil ].
+			  g1 ~~ g2 ifTrue: [
+				  spanEdges add: edge.
+				  g1 addAll: g2.
+				  subgraphs := subgraphs reject: [ :g | g == g2 ] ] ].
+		  treeEdges := spanEdges ]
 ]
 
 { #category : 'accessing-vertex' }
-GolapModel >> unmergeVertex: aGolapVertex [
+GolapModel >> unmergeNode: aGolapNode [
 
-	aGolapVertex isMergedVertex ifFalse: [ ^ self ].
-	aGolapVertex oldVerticesDo: [ :vertex |
-		self vertices at: vertex id put: vertex ].
-	aGolapVertex oldEdgesDo: [ :edge |
-		(edge vertex1 hasEdge: edge) ifFalse: [ edge vertex1 addEdge: edge ].
-		(edge vertex2 hasEdge: edge) ifFalse: [ edge vertex2 addEdge: edge ] ].
-	aGolapVertex edgesAndVerticesDo: [ :edge :peer |
-		peer removeEdge: edge ].
-	self vertices removeKey: aGolapVertex id.
-	^ aGolapVertex
+	aGolapNode isMergedNode ifFalse: [ ^ self ].
+	aGolapNode oldNodesDo: [ :node | self nodes at: node id put: node ].
+	aGolapNode oldEdgesDo: [ :edge |
+		(edge node1 hasEdge: edge) ifFalse: [ edge node1 addEdge: edge ].
+		(edge node2 hasEdge: edge) ifFalse: [ edge node2 addEdge: edge ] ].
+	aGolapNode edgesAndNodeDo: [ :edge :peer | peer removeEdge: edge ].
+	self nodes removeKey: aGolapNode id.
+	^ aGolapNode
 ]
 
 { #category : 'accessing' }
@@ -776,78 +845,7 @@ GolapModel >> valueAtEdge: aGolapEdge [
 ]
 
 { #category : 'accessing' }
-GolapModel >> valueAtVertex: aGolapVertex [
+GolapModel >> valueAtNode: aGolapNode [
 
-	^ vertexEvaluator value: aGolapVertex
-]
-
-{ #category : 'accessing' }
-GolapModel >> vertexAggregators [
-
-	^ vertexAggregators
-]
-
-{ #category : 'accessing' }
-GolapModel >> vertexAggregators: aCollectionOfGolapDataAggregator [
-
-	vertexAggregators := aCollectionOfGolapDataAggregator
-]
-
-{ #category : 'accessing-vertex' }
-GolapModel >> vertexAt: anInteger [
-	^ self vertices at: anInteger
-]
-
-{ #category : 'accessing-vertex' }
-GolapModel >> vertexAt: anInteger ifAbsent: errorBlock [
-	^ self vertices at: anInteger ifAbsent: errorBlock
-]
-
-{ #category : 'accessing' }
-GolapModel >> vertexEvaluator [
-
-	^ vertexEvaluator
-]
-
-{ #category : 'accessing' }
-GolapModel >> vertexEvaluator: aGolapVertexEvaluator [
-
-	vertexEvaluator := aGolapVertexEvaluator
-]
-
-{ #category : 'accessing' }
-GolapModel >> vertexListWithKeyword: aString [
-
-	| list column |
-	list := DataFrame new: 0 @ 3.
-	self verticesDo: [ :vertex :id |
-		| name |
-		name := vertex name.
-		(aString isEmpty or: [ (name findString: aString) > 0 ]) ifTrue: [
-			list
-				addRow: (DataSeries newFrom: {
-							 name.
-							 (self valueAtVertex: vertex).
-							 id })
-				named: id printString ] ].
-	column := self vertexEvaluator name.
-	list columnNames: {
-			'product'.
-			column.
-			'id' }.
-	list sortDescendingBy: column.
-	^ list
-]
-
-{ #category : 'accessing-vertex' }
-GolapModel >> vertices [
-
-	^ vertices ifNil: [ vertices := Dictionary new ]
-]
-
-{ #category : 'enumerating' }
-GolapModel >> verticesDo: aBlock [
-
-	self vertices keys do: [ :id |
-		aBlock cull: (vertices at: id) cull: id ]
+	^ nodeEvaluator value: aGolapNode
 ]

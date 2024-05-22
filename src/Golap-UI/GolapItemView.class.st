@@ -5,7 +5,7 @@ Class {
 		'infoList',
 		'itemImage',
 		'golap',
-		'vertex'
+		'node'
 	],
 	#classVars : [
 		'EmptyImage',
@@ -66,6 +66,15 @@ GolapItemView >> initializePresenters [
 		             yourself
 ]
 
+{ #category : 'accessing' }
+GolapItemView >> node: aGolapNode [
+
+	node := aGolapNode.
+	[
+	self updateImage.
+	self updateItemInfo ] forkAt: Processor userBackgroundPriority
+]
+
 { #category : 'snapshot' }
 GolapItemView >> restore: aStream [
 
@@ -90,11 +99,11 @@ GolapItemView >> snapshotInto: aStream [
 { #category : 'updating' }
 GolapItemView >> updateImage [
 
-	vertex ifNotNil: [
-		(golap productInfoRetriever photoimageFor: vertex)
+	node ifNotNil: [
+		(golap productInfoRetriever photoimageFor: node)
 			ifNotNil: [ :photoimage |
-				vertex photoimage ifNil: [
-					vertex photoimage: (photoimage scaledToSize: 64 @ 64) ].
+				node photoimage ifNil: [
+					node photoimage: (photoimage scaledToSize: 64 @ 64) ].
 				itemImage image: photoimage ]
 			ifNil: [ itemImage image: self emptyImage ] ]
 ]
@@ -102,16 +111,7 @@ GolapItemView >> updateImage [
 { #category : 'updating' }
 GolapItemView >> updateItemInfo [
 
-	^ infoList items: ((vertex ifNotNil: [
-			    golap productInfoRetriever productDataFor: vertex ]) ifNil: [
+	^ infoList items: ((node ifNotNil: [
+			    golap productInfoRetriever productDataFor: node ]) ifNil: [
 			   #(  ) ])
-]
-
-{ #category : 'accessing' }
-GolapItemView >> vertex: aGolapVertex [
-
-	vertex := aGolapVertex.
-	[
-	self updateImage.
-	self updateItemInfo ] forkAt: Processor userBackgroundPriority
 ]

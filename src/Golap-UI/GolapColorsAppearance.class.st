@@ -8,14 +8,14 @@ Class {
 		'decliningColor',
 		'freshColor',
 		'growingColor',
-		'vertexColors',
 		'nameList',
 		'colorList',
 		'nilIcon',
 		'lastPattern',
 		'golap',
 		'positivePolishColor',
-		'negativePolishColor'
+		'negativePolishColor',
+		'nodeColors'
 	],
 	#classVars : [
 		'NamedColors'
@@ -171,7 +171,7 @@ GolapColorsAppearance >> initialize [
 	selectionColor := Color black.
 	positivePolishColor := Color cyan muchDarker.
 	negativePolishColor := Color cyan.
-	vertexColors := OrderedCollection new.
+	nodeColors := OrderedCollection new.
 	freshColor := Color blue.
 	growingColor := Color blue muchDarker.
 	decliningColor := Color red muchDarker.
@@ -270,10 +270,10 @@ GolapColorsAppearance >> normalColor: aColor [
 ]
 
 { #category : 'accessing-colors' }
-GolapColorsAppearance >> normalColorFor: aGolapVertex [
-	vertexColors
+GolapColorsAppearance >> normalColorFor: aGolapNode [
+	nodeColors
 		do: [ :triple | 
-			(triple second matches: aGolapVertex name)
+			(triple second matches: aGolapNode name)
 				ifTrue: [ ^ triple third ] ].
 	^ self normalColor
 ]

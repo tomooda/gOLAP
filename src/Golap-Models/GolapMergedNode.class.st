@@ -1,9 +1,9 @@
 Class {
-	#name : 'GolapMergedVertex',
-	#superclass : 'GolapVertex',
+	#name : 'GolapMergedNode',
+	#superclass : 'GolapNode',
 	#instVars : [
 		'oldEdges',
-		'oldVertices'
+		'oldNodes'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -11,69 +11,69 @@ Class {
 }
 
 { #category : 'testing' }
-GolapMergedVertex >> hasVertex: aGolapVertex [
-	^ (super hasVertex: aGolapVertex)
-		or: [ oldVertices contains: [ :v | v hasVertex: aGolapVertex ] ]
+GolapMergedNode >> hasNode: aGolapNode [
+	^ (super hasNode: aGolapNode)
+		or: [ oldNodes contains: [ :v | v hasNode: aGolapNode ] ]
 ]
 
 { #category : 'enumerating' }
-GolapMergedVertex >> idDo: aBlock [
+GolapMergedNode >> idDo: aBlock [
 
 	aBlock value: self id.
-	oldVertices do: [ :v | v idDo: aBlock ]
+	oldNodes do: [ :v | v idDo: aBlock ]
 ]
 
 { #category : 'testing' }
-GolapMergedVertex >> includesId: anObject [
+GolapMergedNode >> includesId: anObject [
 	^ (super includesId: anObject)
-		or: [ oldVertices contains: [ :v | v includesId: anObject ] ]
+		or: [ oldNodes contains: [ :v | v includesId: anObject ] ]
 ]
 
 { #category : 'testing' }
-GolapMergedVertex >> isMergedVertex [
+GolapMergedNode >> isMergedNode [
 	^ true
 ]
 
 { #category : 'accessing' }
-GolapMergedVertex >> oldEdges [
+GolapMergedNode >> oldEdges [
 	^ oldEdges
 ]
 
 { #category : 'accessing' }
-GolapMergedVertex >> oldEdges: aCollectionOfGolapEdges [
+GolapMergedNode >> oldEdges: aCollectionOfGolapEdges [
 	oldEdges := aCollectionOfGolapEdges
 ]
 
 { #category : 'enumerating' }
-GolapMergedVertex >> oldEdgesDo: aBlock [
+GolapMergedNode >> oldEdgesDo: aBlock [
 	oldEdges do: aBlock
 ]
 
 { #category : 'accessing' }
-GolapMergedVertex >> oldVertices [
-	^ oldVertices
+GolapMergedNode >> oldNodes [
+	^ oldNodes
 ]
 
 { #category : 'accessing' }
-GolapMergedVertex >> oldVertices: aCollectionOfGolapVertices [
-	oldVertices := aCollectionOfGolapVertices
+GolapMergedNode >> oldNodes: aCollectionOfGolapNodes [
+	oldNodes := aCollectionOfGolapNodes
 ]
 
 { #category : 'enumerating' }
-GolapMergedVertex >> oldVerticesDo: aBlock [
-	oldVertices do: aBlock
+GolapMergedNode >> oldNodesDo: aBlock [
+	oldNodes do: aBlock
 ]
 
 { #category : 'accessing' }
-GolapMergedVertex >> photoId [
+GolapMergedNode >> photoId [
 
-	^ (oldVertices notNil and: [ oldVertices notEmpty ])
-		  ifTrue: [ oldVertices first photoId ]
+	^ (oldNodes notNil and: [ oldNodes notEmpty ])
+		  ifTrue: [ oldNodes first photoId ]
 		  ifFalse: [ self id ]
 ]
 
 { #category : 'accessing' }
-GolapMergedVertex >> photoimage: aFormOrAny [
+GolapMergedNode >> photoimage: aFormOrAny [
 
 	aFormOrAny isForm
 		ifTrue: [

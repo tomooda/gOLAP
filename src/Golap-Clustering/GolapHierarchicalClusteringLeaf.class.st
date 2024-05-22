@@ -1,64 +1,66 @@
 Class {
-	#name : #GolapHierarchicalClusteringLeaf,
-	#superclass : #GolapHierarchicalClusteringTree,
+	#name : 'GolapHierarchicalClusteringLeaf',
+	#superclass : 'GolapHierarchicalClusteringTree',
 	#instVars : [
-		'vertex'
+		'node'
 	],
-	#category : #'Golap-Clustering-Core'
+	#category : 'Golap-Clustering-Core',
+	#package : 'Golap-Clustering',
+	#tag : 'Core'
 }
 
-{ #category : #'instance creation' }
-GolapHierarchicalClusteringLeaf class >> vertex: aGolapVertex score: aNumber [
+{ #category : 'instance creation' }
+GolapHierarchicalClusteringLeaf class >> node: aGolapNode score: aNumber [
 
 	^ self new
-		  setVertex: aGolapVertex score: aNumber;
+		  setNode: aGolapNode score: aNumber;
 		  yourself
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapHierarchicalClusteringLeaf >> isLeaf [
 
 	^ true
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringLeaf >> leavesDo: aBlock [
 
 	aBlock value: self
 ]
 
-{ #category : #enumerating }
+{ #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> node [
+
+	^ node
+]
+
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringLeaf >> nodesDo: aBlock [
 
 	
 ]
 
-{ #category : #accessing }
-GolapHierarchicalClusteringLeaf >> oneVertex [
+{ #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> oneNode [
 
-	^ vertex
+	^ node
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapHierarchicalClusteringLeaf >> printOn: aStream [
-	aStream nextPutAll: vertex name
+	aStream nextPutAll: node name
 ]
 
-{ #category : #private }
-GolapHierarchicalClusteringLeaf >> setVertex: aGolapVertex score: aNumber [
+{ #category : 'private' }
+GolapHierarchicalClusteringLeaf >> setNode: aGolapNode score: aNumber [
 
-	vertex := aGolapVertex.
+	node := aGolapNode.
 	score := aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringLeaf >> trees [
 
 	^ #(  )
-]
-
-{ #category : #accessing }
-GolapHierarchicalClusteringLeaf >> vertex [
-
-	^ vertex
 ]

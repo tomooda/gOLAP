@@ -1,5 +1,5 @@
 Class {
-	#name : 'GolapVertexEvaluator',
+	#name : 'GolapNodeEvaluator',
 	#superclass : 'Object',
 	#instVars : [
 		'golapModel'
@@ -10,7 +10,7 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapVertexEvaluator class >> fromJSON: aDictionary [
+GolapNodeEvaluator class >> fromJSON: aDictionary [
 
 	self allSubclassesDo: [ :subclass |
 		subclass isAbstract not ifTrue: [
@@ -20,13 +20,13 @@ GolapVertexEvaluator class >> fromJSON: aDictionary [
 ]
 
 { #category : 'testing' }
-GolapVertexEvaluator class >> isAbstract [
+GolapNodeEvaluator class >> isAbstract [
 
-	^ self = GolapVertexEvaluator
+	^ self = GolapNodeEvaluator
 ]
 
 { #category : 'instance creation' }
-GolapVertexEvaluator class >> on: aGolapModel [
+GolapNodeEvaluator class >> on: aGolapModel [
 
 	^ self new
 		  golapModel: aGolapModel;
@@ -34,82 +34,82 @@ GolapVertexEvaluator class >> on: aGolapModel [
 ]
 
 { #category : 'accessing' }
-GolapVertexEvaluator class >> tag [
+GolapNodeEvaluator class >> tag [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'converting' }
-GolapVertexEvaluator >> asJSON [
+GolapNodeEvaluator >> asJSON [
 	^ { self tag -> self subtag }
 ]
 
 { #category : 'converting' }
-GolapVertexEvaluator >> asSortFunction [
+GolapNodeEvaluator >> asSortFunction [
 
 	^ PropertySortFunction property: self
 ]
 
 { #category : 'sorting' }
-GolapVertexEvaluator >> ascending [
+GolapNodeEvaluator >> ascending [
 
 	^ self asSortFunction
 ]
 
 { #category : 'sorting' }
-GolapVertexEvaluator >> descending [
+GolapNodeEvaluator >> descending [
 
 	^ self asSortFunction reversed
 ]
 
 { #category : 'accessing' }
-GolapVertexEvaluator >> golapModel [
+GolapNodeEvaluator >> golapModel [
 
 	^ golapModel
 ]
 
 { #category : 'accessing' }
-GolapVertexEvaluator >> golapModel: aGolapModel [
+GolapNodeEvaluator >> golapModel: aGolapModel [
 
 	golapModel := aGolapModel
 ]
 
 { #category : 'accessing' }
-GolapVertexEvaluator >> name [
+GolapNodeEvaluator >> name [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-GolapVertexEvaluator >> subtag [
+GolapNodeEvaluator >> subtag [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-GolapVertexEvaluator >> tag [
+GolapNodeEvaluator >> tag [
 
 	^ self class tag
 ]
 
 { #category : 'evaluating' }
-GolapVertexEvaluator >> value: aGolapVertex [
+GolapNodeEvaluator >> value: aGolapNode [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'private' }
-GolapVertexEvaluator >> valuesAtEdgesOfVertex: aGolapVertex [
+GolapNodeEvaluator >> valuesAtEdgesOfNode: aGolapNode [
 
 	^ Array streamContents: [ :stream |
 		  self
-			  valuesAtEdgesOfVertex: aGolapVertex
+			  valuesAtNodeOfNode: aGolapNode
 			  do: [ :value | stream nextPut: value ] ]
 ]
 
 { #category : 'private' }
-GolapVertexEvaluator >> valuesAtEdgesOfVertex: aGolapVertex do: aBlock [
+GolapNodeEvaluator >> valuesAtNodeOfNode: aGolapNode do: aBlock [
 
-	aGolapVertex edgesDo: [ :edge |
+	aGolapNode edgesDo: [ :edge |
 		(golapModel valueAtEdge: edge) ifNotNil: aBlock ]
 ]

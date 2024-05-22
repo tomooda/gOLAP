@@ -1,13 +1,15 @@
 Class {
-	#name : #GolapDandelionChartInteraction,
-	#superclass : #RSPopup,
+	#name : 'GolapDandelionChartInteraction',
+	#superclass : 'RSPopup',
 	#instVars : [
 		'presenter'
 	],
-	#category : #'Golap-Clustering-Dandelion'
+	#category : 'Golap-Clustering-Dandelion',
+	#package : 'Golap-Clustering',
+	#tag : 'Dandelion'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapDandelionChartInteraction class >> on: aGolapDandelionChartPresenter [
 
 	^ self new
@@ -15,13 +17,13 @@ GolapDandelionChartInteraction class >> on: aGolapDandelionChartPresenter [
 		  yourself
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionChartInteraction >> clicked: evt [
 
 	evt signalUpdate
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionChartInteraction >> onShape: aShape [
 
 	super onShape: aShape.
@@ -30,13 +32,13 @@ GolapDandelionChartInteraction >> onShape: aShape [
 		when: RSMouseRightClick send: #rightClicked: to: self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapDandelionChartInteraction >> presenter: aGolapDandelionChartPresenter [
 
 	presenter := aGolapDandelionChartPresenter
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionChartInteraction >> rightClicked: evt [
 
 	

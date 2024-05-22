@@ -1,82 +1,91 @@
 Class {
-	#name : #GolapHierarchicalClusteringTree,
-	#superclass : #Object,
+	#name : 'GolapHierarchicalClusteringTree',
+	#superclass : 'Object',
 	#instVars : [
 		'parent',
 		'score'
 	],
-	#category : #'Golap-Clustering-Core'
+	#category : 'Golap-Clustering-Core',
+	#package : 'Golap-Clustering',
+	#tag : 'Core'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapHierarchicalClusteringTree class >> friendsClusterFrom: aGolapModel depth: anInteger [
 
 	| done edges rank trees |
 	edges := OrderedCollection new.
-	done := IdentitySet new: aGolapModel vertices size.
-	aGolapModel verticesDo: [ :vertex |
-		done add: vertex.
-		vertex basicEdgesAndVerticesDo: [ :edge :peer |
+	done := IdentitySet new: aGolapModel nodes size.
+	aGolapModel nodesDo: [ :node |
+		done add: node.
+		node basicEdgesAndNodesDo: [ :edge :peer |
 			(done includes: peer) ifFalse: [
 				edges add: edge -> (aGolapModel valueAtEdge: edge) ] ] ].
 	edges := edges sorted: #value.
 	rank := 1.
-	trees := aGolapModel vertices asArray collect: [ :vertex |
+	trees := aGolapModel nodes asArray collect: [ :node |
 		         GolapHierarchicalClusteringLeaf
-			         vertex: vertex
-			         score: (aGolapModel valueAtVertex: vertex) ].
+			         node: node
+			         score: (aGolapModel valueAtNode: node) ].
 	anInteger timesRepeat: [  ]
 ]
 
-{ #category : #controlling }
+{ #category : 'controlling' }
 GolapHierarchicalClusteringTree >> ifNode: aBlock [
 ]
 
-{ #category : #testing }
-GolapHierarchicalClusteringTree >> includesVertex: aGolapVertex [
+{ #category : 'testing' }
+GolapHierarchicalClusteringTree >> includesNode: aGolapNode [
 
 	self leavesDo: [ :leaf |
-		leaf vertex == aGolapVertex ifTrue: [ ^ true ] ].
+		leaf node == aGolapNode ifTrue: [ ^ true ] ].
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapHierarchicalClusteringTree >> isLeaf [
 
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapHierarchicalClusteringTree >> isNode [
 
 	^ false
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringTree >> leavesDo: aBlock [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : #enumerating }
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> nodes [
+
+	^ Array streamContents: [ :stream |
+		  self nodesDo: [ :node | stream nextPut: node ] ]
+]
+
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringTree >> nodesDo: aBlock [
 
+	self leavesDo: [ :leaf | leaf node ifNotNil: aBlock ]
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> oneNode [
+
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
-GolapHierarchicalClusteringTree >> oneVertex [
-
-	^ self subclassResponsibility
-]
-
-{ #category : #visualization }
+{ #category : 'visualization' }
 GolapHierarchicalClusteringTree >> openSunburst [
 
 	| markers photoOffset sunburstBuilder bezierBuilder |
 	markers := OrderedCollection new.
-	self verticesDo: [ :vertex |
-		vertex markers do: [ :color |
+	self nodesDo: [ :node |
+		node markers do: [ :color |
 			(markers includes: color) ifFalse: [ markers add: color ] ] ].
 	photoOffset := markers size * 10 + 20.
 	sunburstBuilder := RSSunburstBuilder new.
@@ -90,7 +99,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 	sunburstBuilder shapes do: [ :shape |
 		shape model isLeaf ifTrue: [
 			| radius |
-			shape model vertex photoimage ifNotNil: [ :photoimage |
+			shape model node photoimage ifNotNil: [ :photoimage |
 				sunburstBuilder canvas addShape: ((RSBitmap newFrom: photoimage)
 						 position: (shape centroid:
 									  shape externalRadius - shape innerRadius / 2 + photoOffset);
@@ -100,7 +109,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 								 yourself) ].
 			radius := shape externalRadius + 1.
 			markers do: [ :color |
-				(shape model vertex hasMarker: color)
+				(shape model node hasMarker: color)
 					ifTrue: [
 						sunburstBuilder canvas addShape: (shape copy
 								 innerRadius: radius;
@@ -125,45 +134,32 @@ GolapHierarchicalClusteringTree >> openSunburst [
 	^ sunburstBuilder
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> parent [
 
 	^ parent
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> parent: aGolapHierarchicalClusteringNode [
 
 	parent := aGolapHierarchicalClusteringNode
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> score [
 
 	^ score
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> score: aNumber [
 
 	score := aNumber
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> trees [
 
 	^ self subclassResponsibility
-]
-
-{ #category : #accessing }
-GolapHierarchicalClusteringTree >> vertices [
-
-	^ Array streamContents: [ :stream |
-		  self verticesDo: [ :vertex | stream nextPut: vertex ] ]
-]
-
-{ #category : #enumerating }
-GolapHierarchicalClusteringTree >> verticesDo: aBlock [
-
-	self leavesDo: [ :leaf | leaf vertex ifNotNil: aBlock ]
 ]

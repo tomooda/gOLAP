@@ -46,13 +46,13 @@ GolapProductInfoRetriever >> asJSON [
 ]
 
 { #category : 'accessing' }
-GolapProductInfoRetriever >> photoimageFor: aGolapVertex [
+GolapProductInfoRetriever >> photoimageFor: aGolapNode [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-GolapProductInfoRetriever >> productDataFor: aGolapVertex [
+GolapProductInfoRetriever >> productDataFor: aGolapNode [
 
 	^ self subclassResponsibility
 ]

@@ -4,12 +4,12 @@ Class {
 	#instVars : [
 		'minFreqSlider',
 		'minFreqField',
-		'showIsolatedVerticesCheckBox',
-		'showHiddenConnectionVerticesCheckBox',
-		'showConnectedVerticesCheckBox',
 		'numLabelsSlider',
 		'fontButton',
-		'golap'
+		'golap',
+		'showConnectedNodesCheckBox',
+		'showHiddenConnectionNodesCheckBox',
+		'showIsolatedNodesCheckBox'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -31,10 +31,10 @@ GolapItemsAppearance class >> defaultLayout [
 		  height: self inputTextHeight;
 		  add: #numLabelsSlider height: self inputTextHeight;
 		  add: #fontButton height: self buttonHeight;
-		  add: #showConnectedVerticesCheckBox height: self inputTextHeight;
-		  add: #showHiddenConnectionVerticesCheckBox
+		  add: #showConnectedNodesCheckBox height: self inputTextHeight;
+		  add: #showHiddenConnectionNodesCheckBox
 		  height: self inputTextHeight;
-		  add: #showIsolatedVerticesCheckBox height: self inputTextHeight;
+		  add: #showIsolatedNodesCheckBox height: self inputTextHeight;
 		  yourself
 ]
 
@@ -81,13 +81,13 @@ GolapItemsAppearance >> initializePresenters [
 			                self minFrequency: value ];
 		                yourself.
 
-	showIsolatedVerticesCheckBox := self newCheckBox
+	showIsolatedNodesCheckBox := self newCheckBox
 		                                label: 'isolated';
 		                                state: false;
 		                                whenChangedDo: [ :value |
 			                                golap updateGlobalImageAfter: [  ] ];
 		                                yourself.
-	showHiddenConnectionVerticesCheckBox := self newCheckBox
+	showHiddenConnectionNodesCheckBox := self newCheckBox
 		                                        label: 'hidden';
 		                                        state: false;
 		                                        whenChangedDo: [ :value |
@@ -95,7 +95,7 @@ GolapItemsAppearance >> initializePresenters [
 				                                        updateGlobalImageAfter: [
 					                                         ] ];
 		                                        yourself.
-	showConnectedVerticesCheckBox := self newCheckBox
+	showConnectedNodesCheckBox := self newCheckBox
 		                                 label: 'connected';
 		                                 state: true;
 		                                 whenChangedDo: [ :value |
@@ -159,13 +159,12 @@ GolapItemsAppearance >> restore: aStream [
 	(NeoJSONReader on: aStream) next
 		at: 'minimum-frequency'
 		ifPresent: [ :int | minFreqField number: int ];
-		at: 'show-isolatex-vertices'
-		ifPresent: [ :bool | showIsolatedVerticesCheckBox state: bool ];
-		at: 'show-hidden-connection-vertices'
-		ifPresent: [ :bool |
-			showHiddenConnectionVerticesCheckBox state: bool ];
-		at: 'show-connected-vertices'
-		ifPresent: [ :bool | showConnectedVerticesCheckBox state: bool ];
+		at: 'show-isolatex-nodes'
+		ifPresent: [ :bool | showIsolatedNodesCheckBox state: bool ];
+		at: 'show-hidden-connection-nodes'
+		ifPresent: [ :bool | showHiddenConnectionNodesCheckBox state: bool ];
+		at: 'show-connected-nodes'
+		ifPresent: [ :bool | showConnectedNodesCheckBox state: bool ];
 		at: 'max-display-labels'
 		ifPresent: [ :float | numLabelsSlider value: float ]
 ]
@@ -178,18 +177,18 @@ GolapItemsAppearance >> setGolap: aGolap [
 ]
 
 { #category : 'accessing' }
-GolapItemsAppearance >> showsConnectedVertices [
-	^ showConnectedVerticesCheckBox state
+GolapItemsAppearance >> showsConnectedNodes [
+	^ showConnectedNodesCheckBox state
 ]
 
 { #category : 'accessing' }
-GolapItemsAppearance >> showsHiddenConnectionVertices [
-	^ showHiddenConnectionVerticesCheckBox state
+GolapItemsAppearance >> showsHiddenConnectionNodes [
+	^ showHiddenConnectionNodesCheckBox state
 ]
 
 { #category : 'accessing' }
-GolapItemsAppearance >> showsIsolatedVertices [
-	^ showIsolatedVerticesCheckBox state
+GolapItemsAppearance >> showsIsolatedNodes [
+	^ showIsolatedNodesCheckBox state
 ]
 
 { #category : 'snapshot' }
@@ -203,10 +202,10 @@ GolapItemsAppearance >> snapshotInto: aStream [
 
 	(NeoJSONWriter on: aStream) nextPut: {
 			('minimum-frequency' -> minFreqField number).
-			('show-isolatex-vertices' -> showIsolatedVerticesCheckBox state).
-			('show-hidden-connection-vertices'
-			 -> showHiddenConnectionVerticesCheckBox state).
-			('show-connected-vertices' -> showConnectedVerticesCheckBox state).
+			('show-isolatex-nodes' -> showIsolatedNodesCheckBox state).
+			('show-hidden-connection-nodes'
+			 -> showHiddenConnectionNodesCheckBox state).
+			('show-connected-nodes' -> showConnectedNodesCheckBox state).
 			('max-display-labels' -> numLabelsSlider value) }
 			asOrderedDictionary
 ]
@@ -216,7 +215,7 @@ GolapItemsAppearance >> updateMinMaxFrequency [
 
 	golap ifNotNil: [
 		golap model ifNotNil: [ :model |
-			(golap vertices collect: golap model vertexEvaluator)
+			(golap nodes collect: golap model nodeEvaluator)
 				ifEmpty: [
 					self
 						minFrequency: 0;

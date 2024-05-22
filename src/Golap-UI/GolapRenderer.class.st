@@ -6,7 +6,7 @@ Class {
 		'visibleEdgeMinValue',
 		'visibleEdgeMaxValue',
 		'reallyVisibleEdges',
-		'reallyVisibleVertices'
+		'reallyVisibleNodes'
 	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',
@@ -26,15 +26,15 @@ GolapRenderer >> colorForEdge: aGolapEdge [
 	v := golap model valueAtEdge: aGolapEdge.
 	v ifNil: [ ^ Color green ].
 	((v between: visibleEdgeMinValue and: visibleEdgeMaxValue)
-		or: [ (golap includesSelection: aGolapEdge vertex1)
-				or: [ golap includesSelection: aGolapEdge vertex2 ] ])
+		or: [ (golap includesSelection: aGolapEdge node1)
+				or: [ golap includesSelection: aGolapEdge node2 ] ])
 		ifFalse: [ ^ nil ].
 	^ golap colorForEdge: aGolapEdge
 ]
 
 { #category : 'accessing' }
-GolapRenderer >> colorForVertex: aGolapVertex [
-	^ golap colorForVertex: aGolapVertex
+GolapRenderer >> colorForNode: aGolapNode [
+	^ golap colorForNode: aGolapNode
 ]
 
 { #category : 'accessing' }
@@ -133,10 +133,25 @@ GolapRenderer >> nameIntoLines: aString [
 	^ aString substrings: golap class nameEndOfLineDelimiter
 ]
 
-{ #category : 'enumerating' }
-GolapRenderer >> reallyVisibleVerticesDo: aBlock [
+{ #category : 'accessing' }
+GolapRenderer >> nodeAtPoint: aPoint [
+	^ self subclassResponsibility 
+]
 
-	reallyVisibleVertices ifNotNil: [ reallyVisibleVertices do: aBlock ]
+{ #category : 'accessing' }
+GolapRenderer >> nodes [
+	^ golap nodes
+]
+
+{ #category : 'accessing' }
+GolapRenderer >> nodesDo: aBlock [
+	golap nodesDo: aBlock
+]
+
+{ #category : 'enumerating' }
+GolapRenderer >> reallyVisibleNodesDo: aBlock [
+
+	reallyVisibleNodes ifNotNil: [ reallyVisibleNodes do: aBlock ]
 ]
 
 { #category : 'view manipulation' }
@@ -171,7 +186,7 @@ GolapRenderer >> svg [
 GolapRenderer >> updateVisibleEdgeThresholds [
 
 	self modelDo: [ :model |
-		| min max minFreq connectedVertices |
+		| min max minFreq connectedNodes |
 		min := 0.0.
 		max := 0.0.
 		minFreq := golap minFrequency.
@@ -196,50 +211,35 @@ GolapRenderer >> updateVisibleEdgeThresholds [
 		golap visibleEdgeMaxPercentile label:
 			'max ' , visibleEdgeMaxValue printString.
 		reallyVisibleEdges := golap visibleEdges select: [ :edge |
-			                      (edge vertex1 notNil and: [
-				                       edge vertex2 notNil and: [
-					                       (model valueAtVertex: edge vertex1)
-					                       >= minFreq and:
-						                       (model valueAtVertex: edge vertex2)
-						                       > minFreq ] ]) and: [
-				                      (model valueAtEdge: edge)
-					                      ifNil: [ true ]
-					                      ifNotNil: [ :v |
-					                      v
-						                      between: visibleEdgeMinValue
-						                      and: visibleEdgeMaxValue ] ] ].
-		connectedVertices := IdentitySet new: reallyVisibleEdges size.
+			                      (edge node1 notNil and: [
+				                       edge node2 notNil and: [
+					                       (model valueAtNode: edge node1) >= minFreq
+						                       and:
+						                       (model valueAtNode: edge node2) > minFreq ] ])
+				                      and: [
+					                      (model valueAtEdge: edge)
+						                      ifNil: [ true ]
+						                      ifNotNil: [ :v |
+						                      v
+							                      between: visibleEdgeMinValue
+							                      and: visibleEdgeMaxValue ] ] ].
+		connectedNodes := IdentitySet new: reallyVisibleEdges size.
 		reallyVisibleEdges do: [ :edge |
-			connectedVertices
-				add: edge vertex1;
-				add: edge vertex2 ].
-		reallyVisibleVertices := Array streamContents: [ :stream |
-			                         golap showsConnectedVertices ifTrue: [
-				                         stream nextPutAll: connectedVertices ].
-			                         self verticesDo: [ :v |
-				                         (connectedVertices includes: v) ifFalse: [
-					                         v isIsolated
-						                         ifTrue: [
-						                         golap showsIsolatedVertices ifTrue: [
-							                         stream nextPut: v ] ]
-						                         ifFalse: [
-						                         golap showsHiddenConnectionVertices
-							                         ifTrue: [ stream nextPut: v ] ] ] ] ] ]
-]
-
-{ #category : 'accessing' }
-GolapRenderer >> vertexAtPoint: aPoint [
-	^ self subclassResponsibility 
-]
-
-{ #category : 'accessing' }
-GolapRenderer >> vertices [
-	^ golap vertices
-]
-
-{ #category : 'accessing' }
-GolapRenderer >> verticesDo: aBlock [
-	golap verticesDo: aBlock
+			connectedNodes
+				add: edge node1;
+				add: edge node2 ].
+		reallyVisibleNodes := Array streamContents: [ :stream |
+			                      golap showsConnectedNodes ifTrue: [
+				                      stream nextPutAll: connectedNodes ].
+			                      self nodesDo: [ :v |
+				                      (connectedNodes includes: v) ifFalse: [
+					                      v isIsolated
+						                      ifTrue: [
+						                      golap showsIsolatedNodes ifTrue: [
+							                      stream nextPut: v ] ]
+						                      ifFalse: [
+						                      golap showsHiddenConnectionNodes ifTrue: [
+							                      stream nextPut: v ] ] ] ] ] ]
 ]
 
 { #category : 'view manipulation' }

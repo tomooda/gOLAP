@@ -32,7 +32,7 @@ ManifestGolapModels class >> ruleRBModifiesCollectionRuleV1FalsePositive [
 
 { #category : 'code-critics' }
 ManifestGolapModels class >> ruleRBToDoCollectRuleV1FalsePositive [
-	^ #(#(#(#RGMethodDefinition #(#Golap #vertices: #false)) #'2019-07-19T11:31:07.489199+09:00') )
+	^ #(#(#(#RGMethodDefinition #(#Golap #nodes: #false)) #'2019-07-19T11:31:07.489199+09:00') )
 ]
 
 { #category : 'code-critics' }

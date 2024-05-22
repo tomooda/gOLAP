@@ -128,22 +128,22 @@ GolapServerProductInfoRetriever >> itemInfoRequestJsonFor: aString [
 ]
 
 { #category : 'accessing' }
-GolapServerProductInfoRetriever >> photoimageFor: aGolapVertex [
+GolapServerProductInfoRetriever >> photoimageFor: aGolapNode [
 
 	cachedImages
-		at: aGolapVertex id
+		at: aGolapNode id
 		ifPresent: [ :photoimage | ^ photoimage ]
 		ifAbsent: [
-			^ (self retrieveImagesFor: aGolapVertex id) ifNotNil: [ :photoimage |
-				  cachedImages at: aGolapVertex id put: photoimage ] ]
+			^ (self retrieveImagesFor: aGolapNode id) ifNotNil: [ :photoimage |
+				  cachedImages at: aGolapNode id put: photoimage ] ]
 ]
 
 { #category : 'accessing' }
-GolapServerProductInfoRetriever >> productDataFor: aGolapVertex [
+GolapServerProductInfoRetriever >> productDataFor: aGolapNode [
 
 	^ cachedItemInfos
-		  at: aGolapVertex id
-		  ifAbsentPut: [ self retrieveItemInfoFor: aGolapVertex id ]
+		  at: aGolapNode id
+		  ifAbsentPut: [ self retrieveItemInfoFor: aGolapNode id ]
 ]
 
 { #category : 'accessing' }

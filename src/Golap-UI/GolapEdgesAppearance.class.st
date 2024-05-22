@@ -15,7 +15,7 @@ Class {
 		'polishMinDenominatorField',
 		'polishIterationCheckbox',
 		'edgeEvaluatorList',
-		'vertexEvaluatorList'
+		'nodeEvaluatorList'
 	],
 	#classVars : [
 		'NamedColors'
@@ -91,7 +91,7 @@ GolapEdgesAppearance class >> defaultLayout [
 		  height: self buttonHeight;
 		  add: (SpBoxLayout newHorizontal
 				   add: '商品指標' asPresenter expand: true;
-				   add: #vertexEvaluatorList width: 150)
+				   add: #nodeEvaluatorList width: 150)
 		  height: self buttonHeight;
 		  yourself
 ]
@@ -115,7 +115,7 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 				model friendsEdges: nil.
 				self resetVisibleEdgeThresholds.
 				golap updateQuery.
-				vertexEvaluatorList withAdapterDo: [ :a |
+				nodeEvaluatorList withAdapterDo: [ :a |
 					a widgetDo: [ :w | w updateContents ] ] ] ] ]
 ]
 
@@ -155,12 +155,8 @@ GolapEdgesAppearance >> iconExtent [
 
 { #category : 'accessing' }
 GolapEdgesAppearance >> iconFor: aSymbol [
-	^ self
-		iconForColor:
-			(golap
-				ifNotNil: [ aSymbol isSymbol
-						ifTrue: [ golap perform: aSymbol ]
-						ifFalse: [ golap vertexColorWithPattern: aSymbol ] ])
+
+	^ self iconForColor: (golap ifNotNil: [ golap perform: aSymbol ])
 ]
 
 { #category : 'accessing' }
@@ -286,18 +282,18 @@ GolapEdgesAppearance >> initializePresenters [
 		                     whenSelectedItemChangedDo: [ :edgeEvaluator |
 			                     self edgeEvaluator: edgeEvaluator ];
 		                     yourself.
-	vertexEvaluatorList := self newDropList
+	nodeEvaluatorList := self newDropList
 		                       items: {
-				                       (GolapVertexColumnEvaluator column:
+				                       (GolapNodeColumnEvaluator column:
 						                        'frequency').
-				                       GolapVertexMaxEvaluator new.
-				                       GolapVertexSumEvaluator new.
-				                       GolapVertexAverageEvaluator new.
-				                       GolapVertexNumEdgesEvaluator new };
+				                       GolapNodeMaxEvaluator new.
+				                       GolapNodeSumEvaluator new.
+				                       GolapNodeAverageEvaluator new.
+				                       GolapNodeNumEdgesEvaluator new };
 		                       display: [ :item | item name ];
 		                       startWithSelection;
-		                       whenSelectedItemChangedDo: [ :vertexEvaluator |
-			                       self vertexEvaluator: vertexEvaluator ];
+		                       whenSelectedItemChangedDo: [ :nodeEvaluator |
+			                       self nodeEvaluator: nodeEvaluator ];
 		                       yourself.
 	self whenBuiltDo: [ :w |
 		| f |
@@ -315,6 +311,18 @@ GolapEdgesAppearance >> initializeWindow: aWindowPresenter [
 { #category : 'accessing' }
 GolapEdgesAppearance >> negativePolishFactor [
 	^ negativePolishField text asString asNumber ifNil: [ 0.0 ]
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> nodeEvaluator: aGolapNodeEvaluator [
+
+	aGolapNodeEvaluator ifNotNil: [
+		golap model ifNotNil: [ :model |
+			self updateGlobalImageAfter: [
+				model nodeEvaluator: (aGolapNodeEvaluator
+						 golapModel: model;
+						 yourself).
+				golap updateQuery ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -384,9 +392,9 @@ GolapEdgesAppearance >> restore: aStream [
 			at: 'edge-evaluator'
 			ifPresent: [ :dict |
 				self edgeEvaluator: (GolapEdgeEvaluator fromJSON: dict) ];
-			at: 'vertex-evaluator'
+			at: 'node-evaluator'
 			ifPresent: [ :dict |
-				self vertexEvaluator: (GolapVertexEvaluator fromJSON: dict) ] ]
+				self nodeEvaluator: (GolapNodeEvaluator fromJSON: dict) ] ]
 ]
 
 { #category : 'updating' }
@@ -397,10 +405,10 @@ GolapEdgesAppearance >> selectedEdgeEvaluatorChanged [
 ]
 
 { #category : 'updating' }
-GolapEdgesAppearance >> selectedVertexEvaluatorChanged [
+GolapEdgesAppearance >> selectedNodeEvaluatorChanged [
 
-	vertexEvaluatorList selectedItem ifNotNil: [ :vertexEvaluator |
-		self vertexEvaluator: vertexEvaluator ]
+	nodeEvaluatorList selectedItem ifNotNil: [ :nodeEvaluator |
+		self nodeEvaluator: nodeEvaluator ]
 ]
 
 { #category : 'private' }
@@ -413,45 +421,45 @@ GolapEdgesAppearance >> setGolap: aGolap [
 GolapEdgesAppearance >> setModelToAverageMode [
 
 	golap model ifNotNil: [ :model |
-		model vertexEvaluator: (GolapVertexAverageEvaluator on: model) ].
+		model nodeEvaluator: (GolapNodeAverageEvaluator on: model) ].
 	golap dimensionsDo: [ :m |
-		m vertexEvaluator: (GolapVertexAverageEvaluator on: m) ]
+		m nodeEvaluator: (GolapNodeAverageEvaluator on: m) ]
 ]
 
 { #category : 'operations' }
 GolapEdgesAppearance >> setModelToDegreeMode [
 
 	golap model ifNotNil: [ :model |
-		model vertexEvaluator: (GolapVertexNumEdgesEvaluator on: model) ].
+		model nodeEvaluator: (GolapNodeNumEdgesEvaluator on: model) ].
 	golap dimensionsDo: [ :m |
-		m vertexEvaluator: (GolapVertexNumEdgesEvaluator on: m) ]
+		m nodeEvaluator: (GolapNodeNumEdgesEvaluator on: m) ]
 ]
 
 { #category : 'operations' }
 GolapEdgesAppearance >> setModelToFreqMode [
 
 	golap model ifNotNil: [ :model |
-		model vertexEvaluator: (GolapVertexColumnEvaluator on: model column: 'frequency') ].
+		model nodeEvaluator: (GolapNodeColumnEvaluator on: model column: 'frequency') ].
 	golap dimensionsDo: [ :m |
-		m vertexEvaluator: (GolapVertexColumnEvaluator on: m column: 'frequency') ]
+		m nodeEvaluator: (GolapNodeColumnEvaluator on: m column: 'frequency') ]
 ]
 
 { #category : 'operations' }
 GolapEdgesAppearance >> setModelToMaxMode [
 
 	golap model ifNotNil: [ :model |
-		model vertexEvaluator: (GolapVertexMaxEvaluator on: model) ].
+		model nodeEvaluator: (GolapNodeMaxEvaluator on: model) ].
 	golap dimensionsDo: [ :m |
-		m vertexEvaluator: (GolapVertexMaxEvaluator on: m) ]
+		m nodeEvaluator: (GolapNodeMaxEvaluator on: m) ]
 ]
 
 { #category : 'operations' }
 GolapEdgesAppearance >> setModelToSumMode [
 
 	golap model ifNotNil: [ :model |
-		model vertexEvaluator: (GolapVertexSumEvaluator on: model) ].
+		model nodeEvaluator: (GolapNodeSumEvaluator on: model) ].
 	golap dimensionsDo: [ :m |
-		m vertexEvaluator: (GolapVertexSumEvaluator on: m) ]
+		m nodeEvaluator: (GolapNodeSumEvaluator on: m) ]
 ]
 
 { #category : 'snapshot' }
@@ -476,8 +484,8 @@ GolapEdgesAppearance >> snapshotInto: aStream [
 		at: 'rank' put: friendsField number.
 	edgeEvaluatorList selectedItem ifNotNil: [ :edgeEvaluator |
 		json at: 'edge-evaluator' put: edgeEvaluator asJSON ].
-	vertexEvaluatorList selectedItem ifNotNil: [ :vertexEvaluator |
-		json at: 'vertex-evaluator' put: vertexEvaluator asJSON ].
+	nodeEvaluatorList selectedItem ifNotNil: [ :nodeEvaluator |
+		json at: 'node-evaluator' put: nodeEvaluator asJSON ].
 	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
@@ -500,18 +508,6 @@ GolapEdgesAppearance >> updateGlobalImageAfter: aBlock layout: aBoolean [
 GolapEdgesAppearance >> updateModel: aGolapModel [
 
 	
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> vertexEvaluator: aGolapVertexEvaluator [
-
-	aGolapVertexEvaluator ifNotNil: [
-		golap model ifNotNil: [ :model |
-			self updateGlobalImageAfter: [
-				model vertexEvaluator: (aGolapVertexEvaluator
-						 golapModel: model;
-						 yourself).
-				golap updateQuery ] ] ]
 ]
 
 { #category : 'accessing' }

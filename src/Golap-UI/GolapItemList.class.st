@@ -8,7 +8,7 @@ Class {
 		'queryField',
 		'markers',
 		'presetQueryButton',
-		'vertexList'
+		'nodeList'
 	],
 	#classVars : [
 		'EmptyImage',
@@ -29,14 +29,14 @@ GolapItemList class >> defaultLayout [
 				   add: #queryField;
 				   add: #presetQueryButton width: 20)
 		  height: self buttonHeight;
-		  add: #vertexList
+		  add: #nodeList
 ]
 
 { #category : 'adding' }
-GolapItemList >> add: aGolapVertex toMarker: aColor [
+GolapItemList >> add: aGolapNode toMarker: aColor [
 
 	self updateGlobalImageAfter: [
-		aGolapVertex
+		aGolapNode
 			idDo: [ :data |
 				(markers at: aColor ifAbsentPut: [ Set new ]) add: data ];
 			addMarker: aColor.
@@ -47,19 +47,19 @@ GolapItemList >> add: aGolapVertex toMarker: aColor [
 					            collect: #trim
 					            thenSelect: #notEmpty.
 				regexs := patterns collect: [ :pattern | self regexFor: pattern ].
-				(regexs anySatisfy: [ :regex | regex matches: aGolapVertex name ])
-					ifFalse: [ patterns := patterns copyWith: aGolapVertex name ].
+				(regexs anySatisfy: [ :regex | regex matches: aGolapNode name ])
+					ifFalse: [ patterns := patterns copyWith: aGolapNode name ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateVertexList ]
+		self updateNodeList ]
 ]
 
 { #category : 'adding' }
-GolapItemList >> addAll: aCollectionOfGolapVertex toMarker: aColor [
+GolapItemList >> addAll: aCollectionOfGolapNode toMarker: aColor [
 
 	self updateGlobalImageAfter: [
-		aCollectionOfGolapVertex do: [ :vertex |
-			vertex
+		aCollectionOfGolapNode do: [ :node |
+			node
 				idDo: [ :id |
 					(markers at: aColor ifAbsentPut: [ Set new ]) add: id ];
 				addMarker: aColor ].
@@ -70,12 +70,12 @@ GolapItemList >> addAll: aCollectionOfGolapVertex toMarker: aColor [
 					            collect: #trim
 					            thenSelect: #notEmpty.
 				regexs := patterns collect: [ :pattern | self regexFor: pattern ].
-				aCollectionOfGolapVertex do: [ :vertex |
-					(regexs anySatisfy: [ :regex | regex matches: vertex name ])
-						ifFalse: [ patterns := patterns copyWith: vertex name ] ].
+				aCollectionOfGolapNode do: [ :node |
+					(regexs anySatisfy: [ :regex | regex matches: node name ])
+						ifFalse: [ patterns := patterns copyWith: node name ] ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateVertexList ]
+		self updateNodeList ]
 ]
 
 { #category : 'accessing-markers' }
@@ -221,7 +221,7 @@ GolapItemList >> initializePresenters [
 							                  lastSelectedMarkerIndex := markerDropList
 								                                             selectedIndex.
 							                  queryField text: selectedItem value asText.
-							                  self updateVertexList.
+							                  self updateNodeList.
 							                  self updateGlobalImage ] ] ];
 		                  yourself.
 	lastSelectedMarkerIndex := 0.
@@ -236,44 +236,43 @@ GolapItemList >> initializePresenters [
 				              ifEmpty: [
 				              markers removeKey: selectedMarker key ifAbsent: [  ] ]
 				              ifNotEmpty: [ :q |
-					              | regexs vertices |
+					              | regexs nodes |
 					              regexs := (q substrings: ',') collect: [ :pattern |
 						                        self regexFor: pattern trim ].
-					              vertices := self vertices select: [ :v |
-						                          regexs anySatisfy: [ :regex |
-							                          regex matches: v name ] ].
+					              nodes := self nodes select: [ :v |
+						                       regexs anySatisfy: [ :regex |
+							                       regex matches: v name ] ].
 					              markers
 						              at: selectedMarker key
-						              put: (vertices collect: #id) asSet.
-					              self vertices do: [ :vertex |
-						              vertex removeMarker: selectedMarker key ].
-					              vertices do: [ :vertex |
-						              vertex addMarker: selectedMarker key ] ] ].
-		              self updateVertexList ].
+						              put: (nodes collect: #id) asSet.
+					              self nodes do: [ :node |
+						              node removeMarker: selectedMarker key ].
+					              nodes do: [ :node |
+						              node addMarker: selectedMarker key ] ] ].
+		              self updateNodeList ].
 	presetQueryButton := self newButton
 		                     icon: (Smalltalk ui icons iconNamed: #back);
 		                     action: [ golap openPresetQueryDialog ];
 		                     yourself.
-	vertexList := self newTable
+	nodeList := self newTable
 		              beMultipleSelection;
 		              disableSearch;
 		              addColumn: (SpStringTableColumn new
 				               width: 80;
 				               evaluated: [ :id |
 					               self simpleStringFor:
-							               (self model valueAtVertex:
-									                (self model vertexAt: id)) ]);
+							               (self model valueAtNode: (self model nodeAt: id)) ]);
 		              addColumn:
 			              (SpStringTableColumn new evaluated: [ :id |
-				               (self model vertexAt: id) name ]);
-		              contextMenu: [ self vertexListMenu ];
+				               (self model nodeAt: id) name ]);
+		              contextMenu: [ self nodeListMenu ];
 		              whenSelectionChangedDo: [
 			              self updateGlobalImageAfter: [
-				              golap setSelections: vertexList selectedItems.
+				              golap setSelections: nodeList selectedItems.
 				              golap updateItemView ] ];
 		              yourself.
-	vertexList whenBuiltDo: [
-		vertexList withAdapterDo: [ :a |
+	nodeList whenBuiltDo: [
+		nodeList withAdapterDo: [ :a |
 			a widgetDo: [ :w |
 				w
 					secondarySelectionColor: w selectionColor lighter lighter lighter;
@@ -281,7 +280,7 @@ GolapItemList >> initializePresenters [
 ]
 
 { #category : 'menu' }
-GolapItemList >> markMenu: aGolapVertex [
+GolapItemList >> markMenu: aGolapNode [
 
 	| markMenu |
 	markMenu := self newMenu.
@@ -289,13 +288,13 @@ GolapItemList >> markMenu: aGolapVertex [
 		| color |
 		color := listItem key.
 		color isSymbol ifFalse: [
-			((markers at: color ifAbsent: [ #(  ) ]) includes: aGolapVertex id)
+			((markers at: color ifAbsent: [ #(  ) ]) includes: aGolapNode id)
 				ifFalse: [
 					markMenu addItem: [ :menuItem |
 						menuItem
 							name: '';
 							icon: (self iconForCircleColor: color);
-							action: [ self add: aGolapVertex toMarker: color ] ] ] ] ].
+							action: [ self add: aGolapNode toMarker: color ] ] ] ] ].
 	^ markMenu
 ]
 
@@ -317,13 +316,13 @@ GolapItemList >> markSelectionsMenu [
 ]
 
 { #category : 'accessing-markers' }
-GolapItemList >> markedVertices [
+GolapItemList >> markedNodes [
 
 	| ids |
 	ids := markers
 		       at: (markerDropList selectedItem ifNotNil: #key)
 		       ifAbsent: [ Array new ].
-	^ self model vertices asArray select: [ :v | 
+	^ self model nodes asArray select: [ :v | 
 		  ids anySatisfy: [ :id | v includesId: id ] ]
 ]
 
@@ -338,11 +337,11 @@ GolapItemList >> markers [
 ]
 
 { #category : 'enumerating' }
-GolapItemList >> markersAndVerticesDo: aBlock [
+GolapItemList >> markersAndNodesDo: aBlock [
 
 	self modelDo: [ :model | 
 		markers keysAndValuesDo: [ :key :ids | 
-			aBlock value: key value: (model vertices asArray select: [ :v | 
+			aBlock value: key value: (model nodes asArray select: [ :v | 
 					 ids anySatisfy: [ :id | v includesId: id ] ]) ] ]
 ]
 
@@ -356,15 +355,74 @@ GolapItemList >> model [
 GolapItemList >> modelChanged [
 
 	self model ifNotNil: [ :model |
-		model verticesDo: [ :vertex | vertex removeAllMarkers ].
-		self markersAndVerticesDo: [ :marker :vertices |
-			vertices do: [ :vertex | vertex addMarker: marker ] ] ]
+		model nodesDo: [ :node | node removeAllMarkers ].
+		self markersAndNodesDo: [ :marker :nodes |
+			nodes do: [ :node | node addMarker: marker ] ] ]
 ]
 
 { #category : 'accessing' }
 GolapItemList >> modelDo: aBlock [
 
 	^ self golapDo: [ :g | g model ifNotNil: aBlock ]
+]
+
+{ #category : 'private' }
+GolapItemList >> nodeList [
+
+	^ nodeList
+]
+
+{ #category : 'menu' }
+GolapItemList >> nodeListMenu [
+
+	| menu selectedNode |
+	menu := self newMenu.
+	selectedNode := self model
+		                nodeAt:
+		                (nodeList selection selectedItem ifNil: [ ^ menu ])
+		                ifAbsent: [ ^ menu ].
+	(self markMenu: selectedNode) ifNotNil: [ :submenu |
+		menu addItem: [ :item |
+			item
+				name: 'mark';
+				subMenu: submenu ] ].
+	(self unmarkMenu: selectedNode) ifNotNil: [ :submenu |
+		menu addItem: [ :item |
+			item
+				name: 'unmark';
+				subMenu: submenu ] ].
+	nodeList selectedItems ifNotEmpty: [
+		menu
+			addItem: [ :item |
+				item
+					name: 'Mark selections';
+					subMenu: self markSelectionsMenu ];
+			addItem: [ :item |
+				item
+					name: 'Unmark selections';
+					subMenu: self unmarkSelectionsMenu ] ].
+
+	(golap includesPin: selectedNode)
+		ifTrue: [
+			menu addItem: [ :item |
+				item
+					name: 'Unpin';
+					action: [ golap togglePin: selectedNode ] ] ]
+		ifFalse: [
+			menu addItem: [ :item |
+				item
+					name: 'Pin';
+					action: [ golap togglePin: selectedNode ] ] ].
+	menu addItem: [ :item |
+		item
+			name: 'Show info';
+			action: [ golap showItemView: selectedNode ] ].
+	^ menu
+]
+
+{ #category : 'accessing' }
+GolapItemList >> nodes [
+	^ golap ifNotNil: #nodes
 ]
 
 { #category : 'private' }
@@ -385,13 +443,13 @@ GolapItemList >> regexFor: aString [
 ]
 
 { #category : 'removing' }
-GolapItemList >> remove: aGolapVertex fromMarker: aColor [
+GolapItemList >> remove: aGolapNode fromMarker: aColor [
 
 	self updateGlobalImageAfter: [
 		markers
 			at: aColor
 			ifPresent: [ :set |
-				aGolapVertex
+				aGolapNode
 					idDo: [ :id | set remove: id ];
 					removeMarker: aColor ]
 			ifAbsent: [ ^ self ].
@@ -401,21 +459,21 @@ GolapItemList >> remove: aGolapVertex fromMarker: aColor [
 				patterns := (assoc value substrings: ',')
 					            collect: #trim
 					            thenSelect: #notEmpty.
-				patterns := patterns copyWithout: aGolapVertex name.
+				patterns := patterns copyWithout: aGolapNode name.
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateVertexList ]
+		self updateNodeList ]
 ]
 
 { #category : 'removing' }
-GolapItemList >> removeAll: aCollectionOfGolapVertex fromMarker: aColor [
+GolapItemList >> removeAll: aCollectionOfGolapNode fromMarker: aColor [
 
 	self updateGlobalImageAfter: [
 		markers
 			at: aColor
 			ifPresent: [ :set |
-				aCollectionOfGolapVertex do: [ :v |
-					v
+				aCollectionOfGolapNode do: [ :node |
+					node
 						idDo: [ :id | set remove: id ifAbsent: [  ] ];
 						removeMarker: aColor ] ]
 			ifAbsent: [ ^ self ].
@@ -427,11 +485,11 @@ GolapItemList >> removeAll: aCollectionOfGolapVertex fromMarker: aColor [
 					            collect: #trim
 					            thenSelect: #notEmpty.
 				patterns := patterns reject: [ :pattern |
-					            aCollectionOfGolapVertex anySatisfy: [ :vertex |
-						            vertex name = pattern ] ].
+					            aCollectionOfGolapNode anySatisfy: [ :node |
+						            node name = pattern ] ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateVertexList ]
+		self updateNodeList ]
 ]
 
 { #category : 'removing' }
@@ -444,41 +502,41 @@ GolapItemList >> restore: aStream [
 
 	((NeoJSONReader on: aStream)
 		 mapClass: OrderedDictionary;
-		 next) ifNotNil: [ :json | 
+		 next) ifNotNil: [ :json |
 		| colorMap |
 		colorMap := Dictionary new.
 		json
 			at: 'selectedMarkerIndex'
 			ifPresent: [ :int | lastSelectedMarkerIndex := int ];
-			at: 'markerFilters' ifPresent: [ :dict | 
-				markerDropList items: (dict keys collect: [ :colorString | 
-								 (colorString ifEmpty: [ nil ] ifNotEmpty: [ 
+			at: 'markerFilters' ifPresent: [ :dict |
+				markerDropList items: (dict keys collect: [ :colorString |
+								 (colorString ifEmpty: [ nil ] ifNotEmpty: [
 										  colorMap
 											  at: colorString
 											  ifAbsentPut: [ Color fromHexString: colorString ] ])
 								 -> (dict at: colorString) ]).
-				lastSelectedMarkerIndex ifNotNil: [ 
+				lastSelectedMarkerIndex ifNotNil: [
 						markerDropList selectIndex: lastSelectedMarkerIndex ] ];
-			at: 'markerVertices' ifPresent: [ :dict | 
-				markers := (dict keys collect: [ :colorString | 
-						            (colorString ifEmpty: [ nil ] ifNotEmpty: [ 
+			at: 'markerNodes' ifPresent: [ :dict |
+				markers := (dict keys collect: [ :colorString |
+						            (colorString ifEmpty: [ nil ] ifNotEmpty: [
 								             colorMap
 									             at: colorString
 									             ifAbsentPut: [ Color fromHexString: colorString ] ])
 						            -> (dict at: colorString) asSet ]) asDictionary ].
-		self updateVertexList ]
+		self updateNodeList ]
 ]
 
 { #category : 'accessing' }
 GolapItemList >> selectedItem [
 
-	^ vertexList selection selectedItem
+	^ nodeList selection selectedItem
 ]
 
 { #category : 'accessing' }
 GolapItemList >> selectedItems: aCollectionOfString [
 
-	vertexList selectItems: aCollectionOfString
+	nodeList selectItems: aCollectionOfString
 ]
 
 { #category : 'private' }
@@ -510,30 +568,30 @@ GolapItemList >> snapshotInto: aStream [
 	json at: 'selectedMarkerIndex' put: lastSelectedMarkerIndex.
 	json
 		at: 'markerFilters'
-		put: (markerDropList items collect: [ :colorAndPatternString | 
+		put: (markerDropList items collect: [ :colorAndPatternString |
 				 (self snapshotColor: colorAndPatternString key)
 				 -> colorAndPatternString value ]) asOrderedDictionary.
-	json at: 'markerVertices' put: (markers keys collect: [ :color | 
+	json at: 'markerNodes' put: (markers keys collect: [ :color |
 			 (self snapshotColor: color) -> (markers at: color) ])
 			asOrderedDictionary.
 	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
 { #category : 'menu' }
-GolapItemList >> unmarkMenu: aGolapVertex [
+GolapItemList >> unmarkMenu: aGolapNode [
 
 	| unmarkMenu |
 	unmarkMenu := self newMenu.
 	markerDropList listItems do: [ :listItem |
 		| color |
 		color := listItem key.
-		((markers at: color ifAbsent: [ #(  ) ]) includes: aGolapVertex id)
+		((markers at: color ifAbsent: [ #(  ) ]) includes: aGolapNode id)
 			ifTrue: [
 				unmarkMenu addItem: [ :menuItem |
 					menuItem
 						name: '';
 						icon: (self iconForCircleColor: color);
-						action: [ self remove: aGolapVertex fromMarker: color ] ] ] ].
+						action: [ self remove: aGolapNode fromMarker: color ] ] ] ].
 	^ unmarkMenu
 ]
 
@@ -575,78 +633,18 @@ GolapItemList >> updateGlobalImageAfter: aBlock layout: aBoolean [
 ]
 
 { #category : 'updating' }
-GolapItemList >> updateVertexList [
+GolapItemList >> updateNodeList [
 
-	| vertices selectedMarker |
-	self modelDo: [ :model | 
-		vertices := model vertices keys asArray.
+	| nodes selectedMarker |
+	self modelDo: [ :model |
+		nodes := model nodes keys asArray.
 		selectedMarker := markerDropList selectedItem ifNil: [ nil -> '' ].
-		markers at: selectedMarker key ifPresent: [ :markedIds | 
-			vertices := vertices select: [ :id | 
-				            markedIds anySatisfy: [ :m | 
-					            (model vertexAt: id) includesId: m ] ] ].
-		vertexList items: (vertices asSortedCollection: [ :id | 
-				 [ model valueAtVertex: (model vertexAt: id) ]
+		markers at: selectedMarker key ifPresent: [ :markedIds |
+			nodes := nodes select: [ :id |
+				         markedIds anySatisfy: [ :m |
+					         (model nodeAt: id) includesId: m ] ] ].
+		nodeList items: (nodes asSortedCollection: [ :id |
+				 [ model valueAtNode: (model nodeAt: id) ]
 					 on: Error
 					 do: [ :ex | 0 ] ] descending) ]
-]
-
-{ #category : 'private' }
-GolapItemList >> vertexList [
-
-	^ vertexList
-]
-
-{ #category : 'menu' }
-GolapItemList >> vertexListMenu [
-
-	| menu selectedVertex |
-	menu := self newMenu.
-	selectedVertex := self model
-		                  vertexAt:
-		                  (vertexList selection selectedItem ifNil: [
-			                   ^ menu ])
-		                  ifAbsent: [ ^ menu ].
-	(self markMenu: selectedVertex) ifNotNil: [ :submenu |
-		menu addItem: [ :item |
-			item
-				name: 'mark';
-				subMenu: submenu ] ].
-	(self unmarkMenu: selectedVertex) ifNotNil: [ :submenu |
-		menu addItem: [ :item |
-			item
-				name: 'unmark';
-				subMenu: submenu ] ].
-	vertexList selectedItems ifNotEmpty: [
-		menu
-			addItem: [ :item |
-				item
-					name: 'Mark selections';
-					subMenu: self markSelectionsMenu ];
-			addItem: [ :item |
-				item
-					name: 'Unmark selections';
-					subMenu: self unmarkSelectionsMenu ] ].
-
-	(golap includesPin: selectedVertex)
-		ifTrue: [
-			menu addItem: [ :item |
-				item
-					name: 'Unpin';
-					action: [ golap togglePin: selectedVertex ] ] ]
-		ifFalse: [
-			menu addItem: [ :item |
-				item
-					name: 'Pin';
-					action: [ golap togglePin: selectedVertex ] ] ].
-	menu addItem: [ :item |
-		item
-			name: 'Show info';
-			action: [ golap showItemView: selectedVertex ] ].
-	^ menu
-]
-
-{ #category : 'accessing' }
-GolapItemList >> vertices [
-	^ golap ifNotNil: #vertices
 ]

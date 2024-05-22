@@ -2,11 +2,11 @@ Class {
 	#name : 'GolapEdgeTest',
 	#superclass : 'TestCase',
 	#instVars : [
-		'vertex1',
-		'vertex2',
-		'vertex3',
 		'edge12',
-		'edge23'
+		'edge23',
+		'node1',
+		'node2',
+		'node3'
 	],
 	#category : 'Golap-Models-Tests',
 	#package : 'Golap-Models',
@@ -16,23 +16,23 @@ Class {
 { #category : 'running' }
 GolapEdgeTest >> setUp [
 
-	vertex1 := GolapVertex
+	node1 := GolapNode
 		           on:
 		           (DataSeries withKeys: { 'value' } values: { 10 } name: 1)
 		           name: 'v1'.
-	vertex2 := GolapVertex
+	node2 := GolapNode
 		           on:
 		           (DataSeries withKeys: { 'value' } values: { 20 } name: 2)
 		           name: 'v2'.
-	vertex3 := GolapVertex
+	node3 := GolapNode
 		           on:
 		           (DataSeries withKeys: { 'value' } values: { 30 } name: 3)
 		           name: 'v3'.
-	edge12 := vertex1
-		          createEdgeTo: vertex2
+	edge12 := node1
+		          createEdgeTo: node2
 		          data: (DataSeries withKeys: { 'value' } values: { 12 }).
-	edge23 := vertex2
-		          createEdgeTo: vertex3
+	edge23 := node2
+		          createEdgeTo: node3
 		          data: (DataSeries withKeys: { 'value' } values: { 23 })
 ]
 

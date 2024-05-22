@@ -1,30 +1,32 @@
 Class {
-	#name : #GolapDandelionNodeInteraction,
-	#superclass : #GolapDandelionChartInteraction,
-	#category : #'Golap-Clustering-Dandelion'
+	#name : 'GolapDandelionNodeInteraction',
+	#superclass : 'GolapDandelionChartInteraction',
+	#category : 'Golap-Clustering-Dandelion',
+	#package : 'Golap-Clustering',
+	#tag : 'Dandelion'
 }
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionNodeInteraction >> activePopupWith: event [
 
 	event shape model isLeaf ifTrue: [ super activePopupWith: event ]
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionNodeInteraction >> clicked: event [
 
-	(event shape model respondsTo: #vertex) ifTrue: [
-		presenter toggleSelection: event shape model vertex ]
+	(event shape model respondsTo: #node) ifTrue: [
+		presenter toggleSelection: event shape model node ]
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
 
-	^ aShape model vertex photoimage
+	^ aShape model node photoimage
 		  ifNotNil: [ :photoimage |
 			  | imageShape labelShape popupShape |
 			  imageShape := RSBitmap newFrom: photoimage.
-			  labelShape := shapeBuilder shapeFor: aShape model vertex name.
+			  labelShape := shapeBuilder shapeFor: aShape model node name.
 			  imageShape translateBottomLeftTo: 0 @ 0.
 			  labelShape translateTopLeftTo: 0 @ 0.
 			  popupShape := RSComposite new
@@ -38,11 +40,11 @@ GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
 		  ifNil: [ super createPopupFor: aShape event: event ]
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionNodeInteraction >> rightClicked: event [
 
-	(event shape model respondsTo: #vertex) ifTrue: [
-		(presenter golap globalImageMenu: event shape model vertex)
+	(event shape model respondsTo: #node) ifTrue: [
+		(presenter golap globalImageMenu: event shape model node)
 			openWithSpecAt: (presenter withAdapterDo: [ :a |
 					 a widgetDo: [ :w | w activeHand position ] ]) ]
 ]

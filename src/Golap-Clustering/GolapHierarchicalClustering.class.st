@@ -1,16 +1,18 @@
 Class {
-	#name : #GolapHierarchicalClustering,
-	#superclass : #Object,
+	#name : 'GolapHierarchicalClustering',
+	#superclass : 'Object',
 	#instVars : [
 		'golapModel',
 		'edges',
 		'trees',
 		'rank'
 	],
-	#category : #'Golap-Clustering-Core'
+	#category : 'Golap-Clustering-Core',
+	#package : 'Golap-Clustering',
+	#tag : 'Core'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapHierarchicalClustering class >> on: aGolapModel [
 
 	^ self new
@@ -18,29 +20,29 @@ GolapHierarchicalClustering class >> on: aGolapModel [
 		  yourself
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHierarchicalClustering >> computeTrees [
 
-	| treeByVertex nextTreeMap |
-	treeByVertex := IdentityDictionary new: golapModel vertices size.
+	| treeByNode nextTreeMap |
+	treeByNode := IdentityDictionary new: golapModel nodes size.
 	trees do: [ :tree |
-		tree verticesDo: [ :vertex | treeByVertex at: vertex put: tree ] ].
+		tree nodesDo: [ :node | treeByNode at: node put: tree ] ].
 	nextTreeMap := IdentityDictionary new: trees size.
 	trees do: [ :tree |
 		nextTreeMap
 			at: tree
 			put: (GolapHierarchicalClusteringNode with: tree) ].
 	trees do: [ :tree |
-		| doneVertices |
-		doneVertices := (nextTreeMap at: tree) vertices asIdentitySet.
-		tree verticesDo: [ :vertex |
-			self friendsOf: vertex do: [ :friend |
-				(doneVertices includes: friend) ifFalse: [
+		| doneNodes |
+		doneNodes := (nextTreeMap at: tree) nodes asIdentitySet.
+		tree nodesDo: [ :node |
+			self friendsOf: node do: [ :friend |
+				(doneNodes includes: friend) ifFalse: [
 					| friendTree myNextTree obsoleteNextTree |
-					friendTree := treeByVertex at: friend.
+					friendTree := treeByNode at: friend.
 					myNextTree := nextTreeMap at: tree.
 					obsoleteNextTree := nextTreeMap at: friendTree.
-					obsoleteNextTree verticesDo: [ :v | doneVertices add: v ].
+					obsoleteNextTree nodesDo: [ :v | doneNodes add: v ].
 					myNextTree merge: obsoleteNextTree.
 					(nextTreeMap keys select: [ :key |
 						 (nextTreeMap at: key) == obsoleteNextTree ]) do: [ :key |
@@ -48,73 +50,73 @@ GolapHierarchicalClustering >> computeTrees [
 	^ nextTreeMap values asIdentitySet asArray
 ]
 
-{ #category : #enumerating }
-GolapHierarchicalClustering >> friendsOf: aGolapVertex do: aBlock [
+{ #category : 'enumerating' }
+GolapHierarchicalClustering >> friendsOf: aGolapNode do: aBlock [
 
 	| index |
 	index := 1.
 	rank timesRepeat: [
 		| edge peer |
-		[ (edges at: index) hasVertex: aGolapVertex ] whileFalse: [
+		[ (edges at: index) hasNode: aGolapNode ] whileFalse: [
 			index := index + 1.
 			index <= edges size ifFalse: [ ^ self ] ].
 		edge := edges at: index.
-		peer := edge peerOf: aGolapVertex.
+		peer := edge peerOf: aGolapNode.
 		((1 to: index) inject: 0 into: [ :count :i |
-			 ((edges at: i) hasVertex: peer)
+			 ((edges at: i) hasNode: peer)
 				 ifTrue: [ count + 1 ]
 				 ifFalse: [ count ] ]) <= rank ifTrue: [ aBlock value: peer ].
 		index := index + 1.
 		index <= edges size ifFalse: [ ^ self ] ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapHierarchicalClustering >> initializeWith: aGolapModel [
 
 	| done |
 	golapModel := aGolapModel.
 	edges := OrderedCollection new.
-	done := IdentitySet new: golapModel vertices size.
-	golapModel verticesDo: [ :vertex |
-		done add: vertex.
-		vertex basicEdgesAndVerticesDo: [ :edge :peer |
+	done := IdentitySet new: golapModel nodes size.
+	golapModel nodesDo: [ :node |
+		done add: node.
+		node basicEdgesAndNodesDo: [ :edge :peer |
 			(done includes: peer) ifFalse: [
 				edges add: edge -> (golapModel valueAtEdge: edge) ] ] ].
 	edges := (edges sorted: #value descending) collect: #key.
 	rank := 1.
-	trees := golapModel vertices asArray collect: [ :vertex |
+	trees := golapModel nodes asArray collect: [ :node |
 		         GolapHierarchicalClusteringLeaf
-			         vertex: vertex
-			         score: (golapModel valueAtVertex: vertex) ]
+			         node: node
+			         score: (golapModel valueAtNode: node) ]
 ]
 
-{ #category : #visualization }
+{ #category : 'enumerating' }
+GolapHierarchicalClustering >> nodesDo: aBlock [
+
+	golapModel nodes valuesDo: aBlock
+]
+
+{ #category : 'visualization' }
 GolapHierarchicalClustering >> openSunburst [
 
 	(GolapHierarchicalClusteringNode withAll: trees) openSunburst
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClustering >> rank [
 
 	^ rank
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClustering >> rank: anInteger [
 
 	rank := rank max: anInteger.
 	trees := self computeTrees
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClustering >> tree [
 
 	^ GolapHierarchicalClusteringNode withAll: trees
-]
-
-{ #category : #enumerating }
-GolapHierarchicalClustering >> verticesDo: aBlock [
-
-	golapModel vertices valuesDo: aBlock
 ]

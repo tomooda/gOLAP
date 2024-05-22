@@ -329,33 +329,33 @@ Golap >> applyMergesToModel: aGolapModel [
 	positions := Dictionary new:
 		             (model
 			              ifNil: [ 256 ]
-			              ifNotNil: [ model vertices size * 3 // 2 ]).
+			              ifNotNil: [ model nodes size * 3 // 2 ]).
 	model ifNotNil: [
-		model verticesDo: [ :v |
-			v asPoint ifNotNil: [ :p | positions at: v id put: p ] ] ].
-	aGolapModel resetVertices.
-	aGolapModel verticesDo: [ :v |
-		positions at: v id ifPresent: [ :p |
-			v
+		model nodesDo: [ :node |
+			node asPoint ifNotNil: [ :p | positions at: node id put: p ] ] ].
+	aGolapModel resetNodes.
+	aGolapModel nodesDo: [ :node |
+		positions at: node id ifPresent: [ :p |
+			node
 				x: p x;
 				y: p y ] ].
 	merges do: [ :assoc |
-		| oldVertices newVertex |
-		oldVertices := assoc value
-			               collect: [ :id |
-			               aGolapModel vertices at: id ifAbsent: [ nil ] ]
-			               thenSelect: #notNil.
-		newVertex := aGolapModel
-			             mergeVertices: (assoc value
-					              collect: [ :id |
-					              aGolapModel vertices at: id ifAbsent: [ nil ] ]
-					              thenSelect: #notNil)
-			             named: assoc key.
-		newVertex
-			x: ((oldVertices collect: #x thenSelect: #notNil)
+		| oldNodes newNode |
+		oldNodes := assoc value
+			            collect: [ :id |
+			            aGolapModel nodes at: id ifAbsent: [ nil ] ]
+			            thenSelect: #notNil.
+		newNode := aGolapModel
+			           mergeNodes: (assoc value
+					            collect: [ :id |
+					            aGolapModel nodes at: id ifAbsent: [ nil ] ]
+					            thenSelect: #notNil)
+			           named: assoc key.
+		newNode
+			x: ((oldNodes collect: #x thenSelect: #notNil)
 					 ifEmpty: [ nil ]
 					 ifNotEmpty: #average);
-			y: ((oldVertices collect: #y thenSelect: #notNil)
+			y: ((oldNodes collect: #y thenSelect: #notNil)
 					 ifEmpty: [ nil ]
 					 ifNotEmpty: #average) ].
 	^ aGolapModel
@@ -418,12 +418,12 @@ Golap >> colorForEdge: aGolapEdge [
 	self selectedBaseDimension ifNotNil: [
 		| frontEdge baseEdge v |
 		frontEdge := self selectedFrontDimension
-			             edgeBetween: aGolapEdge vertex1 id
-			             and: aGolapEdge vertex2 id
+			             edgeBetween: aGolapEdge node1 id
+			             and: aGolapEdge node2 id
 			             ifAbsent: [  ].
 		baseEdge := self selectedBaseDimension
-			            edgeBetween: aGolapEdge vertex1 id
-			            and: aGolapEdge vertex2 id
+			            edgeBetween: aGolapEdge node1 id
+			            and: aGolapEdge node2 id
 			            ifAbsent: [  ].
 		(frontEdge isNil and: [ baseEdge notNil ]) ifTrue: [
 			^ self retreatingColor ].
@@ -436,25 +436,25 @@ Golap >> colorForEdge: aGolapEdge [
 ]
 
 { #category : 'accessing-colors' }
-Golap >> colorForVertex: aGolapVertex [
+Golap >> colorForNode: aGolapNode [
 
-	(self includesSelection: aGolapVertex) ifTrue: [
+	(self includesSelection: aGolapNode) ifTrue: [
 		^ self selectionColor ].
 	self selectedBaseDimension ifNotNil: [
-		| frontVertex baseVertex |
-		frontVertex := self selectedFrontDimension ifNotNil: [ :dimension |
-			               dimension vertexAt: aGolapVertex id ifAbsent: [  ] ].
-		baseVertex := self selectedBaseDimension ifNotNil: [ :dimension |
-			              dimension vertexAt: aGolapVertex id ifAbsent: [  ] ].
-		(frontVertex isNil and: [ baseVertex notNil ]) ifTrue: [
+		| frontNode baseNode |
+		frontNode := self selectedFrontDimension ifNotNil: [ :dimension |
+			               dimension nodeAt: aGolapNode id ifAbsent: [  ] ].
+		baseNode := self selectedBaseDimension ifNotNil: [ :dimension |
+			              dimension nodeAt: aGolapNode id ifAbsent: [  ] ].
+		(frontNode isNil and: [ baseNode notNil ]) ifTrue: [
 			^ self retreatingColor ].
-		(frontVertex notNil and: [ baseVertex isNil ]) ifTrue: [
+		(frontNode notNil and: [ baseNode isNil ]) ifTrue: [
 			^ self freshColor ].
-		(model valueAtVertex: aGolapVertex) < 0 ifTrue: [
+		(model valueAtNode: aGolapNode) < 0 ifTrue: [
 			^ self decliningColor ].
-		(model valueAtVertex: aGolapVertex) > 0 ifTrue: [
+		(model valueAtNode: aGolapNode) > 0 ifTrue: [
 			^ self growingColor ] ].
-	^ self normalColorFor: aGolapVertex
+	^ self normalColorFor: aGolapNode
 ]
 
 { #category : 'accessing' }
@@ -592,36 +592,36 @@ Golap >> friendsEdges [
 ]
 
 { #category : 'menu' }
-Golap >> globalImageMenu: aGolapVertex [
+Golap >> globalImageMenu: aGolapNode [
 
 	| menu |
 	menu := self newMenu.
 	menu addGroup: [ :group |
-		aGolapVertex ifNotNil: [
-			(self includesSelection: aGolapVertex)
+		aGolapNode ifNotNil: [
+			(self includesSelection: aGolapNode)
 				ifTrue: [
 					group addItem: [ :item |
 						item
 							name: 'Unselect';
-							action: [ self toggleSelection: aGolapVertex ] ] ]
+							action: [ self toggleSelection: aGolapNode ] ] ]
 				ifFalse: [
 					group addItem: [ :item |
 						item
 							name: 'Select';
-							action: [ self toggleSelection: aGolapVertex ] ] ] ].
+							action: [ self toggleSelection: aGolapNode ] ] ] ].
 		self selections ifNotEmpty: [
 			group addItem: [ :item |
 				item
 					name: 'Unselect all';
 					action: [ self unselectAll ] ] ] ].
 	menu addGroup: [ :group |
-		aGolapVertex ifNotNil: [
-			(itemList markMenu: aGolapVertex) ifNotNil: [ :submenu |
+		aGolapNode ifNotNil: [
+			(itemList markMenu: aGolapNode) ifNotNil: [ :submenu |
 				group addItem: [ :item |
 					item
 						name: 'Mark';
 						subMenu: submenu ] ].
-			(itemList unmarkMenu: aGolapVertex) ifNotNil: [ :submenu |
+			(itemList unmarkMenu: aGolapNode) ifNotNil: [ :submenu |
 				group addItem: [ :item |
 					item
 						name: 'Unmark';
@@ -636,25 +636,25 @@ Golap >> globalImageMenu: aGolapVertex [
 					item
 						name: 'Unmark selections';
 						subMenu: itemList unmarkSelectionsMenu ] ] ].
-	aGolapVertex ifNotNil: [
+	aGolapNode ifNotNil: [
 		menu
 			addGroup: [ :group |
-				(self includesPin: aGolapVertex)
+				(self includesPin: aGolapNode)
 					ifTrue: [
 						group addItem: [ :item |
 								item
 									name: 'Unpin';
-									action: [ self togglePin: aGolapVertex ] ] ]
+									action: [ self togglePin: aGolapNode ] ] ]
 					ifFalse: [
 						group addItem: [ :item |
 							item
 								name: 'Pin';
-								action: [ self togglePin: aGolapVertex ] ] ] ];
+								action: [ self togglePin: aGolapNode ] ] ] ];
 			addGroup: [ :group |
 				group addItem: [ :item |
 					item
 						name: 'Show info';
-						action: [ itemView vertex: aGolapVertex ] ] ] ].
+						action: [ itemView node: aGolapNode ] ] ] ].
 	menu addGroup: [ :group |
 		group addItem: [ :item |
 			item
@@ -678,7 +678,7 @@ Golap >> globalImageMouseClick: anEvent [
 	| target |
 	anEvent wasHandled: true.
 	target := self renderer
-		vertexAtPoint: anEvent position - globalImagePane adapter widget position.
+		nodeAtPoint: anEvent position - globalImagePane adapter widget position.
 	anEvent yellowButtonChanged
 		ifTrue: [ ^ (self globalImageMenu: target) openWithSpecAt: anEvent position ].
 	target ifNotNil: [ self toggleSelection: target ]
@@ -803,15 +803,15 @@ Golap >> imageRepositoryUrl: aString [
 ]
 
 { #category : 'accessing-selection' }
-Golap >> includesPin: aGolapVertex [
+Golap >> includesPin: aGolapNode [
 
-	^ pins includes: aGolapVertex id
+	^ pins includes: aGolapNode id
 ]
 
 { #category : 'accessing-selection' }
-Golap >> includesSelection: aGolapVertex [
+Golap >> includesSelection: aGolapNode [
 
-	^ selections contains: [ :id | aGolapVertex includesId: id ]
+	^ selections contains: [ :id | aGolapNode includesId: id ]
 ]
 
 { #category : 'initialization' }
@@ -1054,15 +1054,15 @@ Golap >> itemViewUrl: aString [
 ]
 
 { #category : 'accessing-markers' }
-Golap >> markedVertices [
+Golap >> markedNodes [
 
-	^ itemList markedVertices
+	^ itemList markedNodes
 ]
 
 { #category : 'accessing-markers' }
-Golap >> markersAndVerticesDo: aBlock [
+Golap >> markersAndNodesDo: aBlock [
 
-	itemList markersAndVerticesDo: aBlock
+	itemList markersAndNodesDo: aBlock
 ]
 
 { #category : 'operations-photoimages' }
@@ -1086,7 +1086,7 @@ Golap >> mergeMenu [
 			group addItem: [ :item | 
 				item
 					name: 'selections';
-					action: [ self mergeSelectedVertices ] ] ].
+					action: [ self mergeSelectedNodes ] ] ].
 		itemList markerDropList listItems do: [ :listItem | 
 			| color ids |
 			color := listItem key.
@@ -1097,27 +1097,17 @@ Golap >> mergeMenu [
 						name: '';
 						icon: (self iconForCircleColor: color);
 						action: [ 
-							(self mergeVertices: ids copy) ifNotNil: [ :newId | 
+							(self mergeNodes: ids copy) ifNotNil: [ :newId | 
 									itemList markerDropList items do: [ :item | 
 											item key = color ifTrue: [ item value: item value, ',',newId ] ].
 									(itemList markers at: color) add: newId.
 									itemList currentMarker: color.
-									itemList updateVertexList ] ] ] ] ] ].
+									itemList updateNodeList ] ] ] ] ] ].
 	^ menu
 ]
 
 { #category : 'merging' }
-Golap >> mergeSelectedVertices [
-
-	^ self selections
-		  ifNotEmpty: [ :vs |
-			  (self mergeVertices: (vs collect: #id)) ifNotNil: [ :newId |
-				  self select: (model vertexAt: newId) ] ]
-		  ifEmpty: [ nil ]
-]
-
-{ #category : 'merging' }
-Golap >> mergeVertices: aCollectionOfIds [
+Golap >> mergeNodes: aCollectionOfIds [
 
 	aCollectionOfIds size < 2 ifTrue: [ ^ nil ].
 	^ model ifNotNil: [ 
@@ -1125,15 +1115,25 @@ Golap >> mergeVertices: aCollectionOfIds [
 			   request: '統合したノード名'
 			   initialAnswer: ''
 			   title: 'ノードの統合') ifNotNil: [ :nodeName | 
-			  (model vertices includesKey: nodeName)
+			  (model nodes includesKey: nodeName)
 				  ifTrue: [ 
 					  UIManager default alert: '名前が重複しています'.
 					  nil ]
 				  ifFalse: [ 
 					  merges add: nodeName -> aCollectionOfIds copy.
 					  self updateModel.
-					  itemList updateVertexList.
+					  itemList updateNodeList.
 					  nodeName ] ] ]
+]
+
+{ #category : 'merging' }
+Golap >> mergeSelectedNodes [
+
+	^ self selections
+		  ifNotEmpty: [ :nodes |
+			  (self mergeNodes: (nodes collect: #id)) ifNotNil: [ :newId |
+				  self select: (model nodeAt: newId) ] ]
+		  ifEmpty: [ nil ]
 ]
 
 { #category : 'accessing' }
@@ -1164,8 +1164,8 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 	self
 		updateGlobalImageAfter: [
 			(model notNil and: [ aGolapModel notNil ]) ifTrue: [
-				model vertices keysAndValuesDo: [ :id :v1 |
-					(aGolapModel vertexAt: id ifAbsent: [ nil ]) ifNotNil: [ :v2 |
+				model nodes keysAndValuesDo: [ :id :v1 |
+					(aGolapModel nodeAt: id ifAbsent: [ nil ]) ifNotNil: [ :v2 |
 						v2
 							x: v1 x;
 							y: v1 y ] ] ].
@@ -1175,7 +1175,7 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 			model ifNotNil: [
 				itemsAppearancePresenter updateMinMaxFrequency.
 				edgesAppearancePresenter updateModel: model.
-				itemList updateVertexList ] ]
+				itemList updateNodeList ] ]
 		layout: true.
 	self announcer announce: GolapModelUpdated new
 ]
@@ -1201,14 +1201,24 @@ Golap >> newGolapItemView [
 		  yourself
 ]
 
+{ #category : 'accessing' }
+Golap >> nodes [
+	^ model ifNil: [ #() ] ifNotNil: [ model nodes values ]
+]
+
+{ #category : 'enumerating' }
+Golap >> nodesDo: aBlock [
+	model ifNotNil: [ model nodes valuesDo: aBlock ]
+]
+
 { #category : 'accessing-colors' }
 Golap >> normalColor [
 	^ colorsAppearancePresenter normalColor
 ]
 
 { #category : 'accessing-colors' }
-Golap >> normalColorFor: aGolapVertex [
-	^ colorsAppearancePresenter normalColorFor: aGolapVertex
+Golap >> normalColorFor: aGolapNode [
+	^ colorsAppearancePresenter normalColorFor: aGolapNode
 ]
 
 { #category : 'accessing' }
@@ -1304,7 +1314,7 @@ Golap >> pinsDo: aBlock [
 	model
 		ifNotNil: [ pins
 				do:
-					[ :id | (model vertexAt: id ifAbsent: [  ]) ifNotNil: aBlock ] ]
+					[ :id | (model nodeAt: id ifAbsent: [  ]) ifNotNil: aBlock ] ]
 ]
 
 { #category : 'accessing-colors' }
@@ -1717,18 +1727,17 @@ Golap >> retrievePhotoimage [
 ]
 
 { #category : 'operations-photoimages' }
-Golap >> retrievePhotoimageFor: aGolapVertex [
+Golap >> retrievePhotoimageFor: aGolapNode [
 
-	aGolapVertex photoimage: false.
+	aGolapNode photoimage: false.
 	[ retrievalProcessCount > self maxPhotoimageRetrievalProcesses ]
 		whileTrue: [ 300 milliSecond wait ].
 	retrievalProcessCount := retrievalProcessCount + 1.
 	[
 	productInfoRetriever ifNotNil: [
 		[
-		(productInfoRetriever photoimageFor: aGolapVertex) ifNotNil: [
-			:image |
-			aGolapVertex photoimage:
+		(productInfoRetriever photoimageFor: aGolapNode) ifNotNil: [ :image |
+			aGolapNode photoimage:
 				(image scaledToSize: self photoimageSize asPoint).
 			self updateGlobalImageAfter: [  ] ] ] ensure: [
 			retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
@@ -1738,11 +1747,10 @@ Golap >> retrievePhotoimageFor: aGolapVertex [
 { #category : 'operations-photoimages' }
 Golap >> retrievePhotoimageOnElaborationRenderer [
 
-	[ 
-	elaborationRenderer ifNotNil: [ 
-		overviewRenderer verticesDo: [ :vertex | 
-			vertex basicPhotoimage ifNil: [ 
-				^ self retrievePhotoimageFor: vertex ].
+	[
+	elaborationRenderer ifNotNil: [
+		overviewRenderer nodesDo: [ :node |
+			node basicPhotoimage ifNil: [ ^ self retrievePhotoimageFor: node ].
 			Processor yield ] ] ]
 		on: Error
 		do: [ :ex |  ]
@@ -1751,35 +1759,35 @@ Golap >> retrievePhotoimageOnElaborationRenderer [
 { #category : 'operations-photoimages' }
 Golap >> retrievePhotoimageOnOverviewRenderer [
 
-	[ 
-	overviewRenderer ifNotNil: [ 
-		globalImagePane withAdapterDo: [ :a | 
-			a widgetDo: [ :w | 
+	[
+	overviewRenderer ifNotNil: [
+		globalImagePane withAdapterDo: [ :a |
+			a widgetDo: [ :w |
 				| origin corner mouse minD minV |
-				origin := overviewRenderer vertexPointAtPoint:
+				origin := overviewRenderer nodePointAtPoint:
 					          (-10 @ -10 min: w extent // 10).
-				corner := overviewRenderer vertexPointAtPoint:
+				corner := overviewRenderer nodePointAtPoint:
 					          w extent + (10 @ 10 max: w extent // 10).
-				mouse := overviewRenderer vertexPointAtPoint:
+				mouse := overviewRenderer nodePointAtPoint:
 					         w activeHand position - w position.
 				minD := Float infinity.
 				minV := nil.
-				overviewRenderer reallyVisibleVerticesDo: [ :vertex | 
-					vertex basicPhotoimage ifNil: [ 
-						vertex x ifNotNil: [ :x | 
-							vertex y ifNotNil: [ :y | 
-								((x between: origin x and: corner x) and: [ 
-									 y between: origin y and: corner y ]) ifTrue: [ 
+				overviewRenderer reallyVisibleNodesDo: [ :node |
+					node basicPhotoimage ifNil: [
+						node x ifNotNil: [ :x |
+							node y ifNotNil: [ :y |
+								((x between: origin x and: corner x) and: [
+									 y between: origin y and: corner y ]) ifTrue: [
 									| d |
 									d := (x - mouse x) squared + (y - mouse y) squared.
-									d < minD ifTrue: [ 
+									d < minD ifTrue: [
 										minD := d.
-										minV := vertex ] ] ] ] ].
+										minV := node ] ] ] ] ].
 					Processor yield ].
 
 				minV ifNotNil: [ ^ self retrievePhotoimageFor: minV ] ] ] ] ]
 		on: Error
-		do: [ :ex | ]
+		do: [ :ex |  ]
 ]
 
 { #category : 'operations' }
@@ -1838,21 +1846,21 @@ Golap >> saveSnapshot [
 ]
 
 { #category : 'accessing-selection' }
-Golap >> select: aGolapVertex [
+Golap >> select: aGolapNode [
 
-	aGolapVertex idDo: [ :id | selections add: id ].
+	aGolapNode idDo: [ :id | selections add: id ].
 	selectedEdges := nil.
-	self showItemView: aGolapVertex.
+	self showItemView: aGolapNode.
 	self updateSelection
 ]
 
 { #category : 'accessing-selection' }
-Golap >> selectAll: aCollectionOfGolapVertex [
+Golap >> selectAll: aCollectionOfGolapNode [
 
-	aCollectionOfGolapVertex do: [ :vertex |
-		vertex idDo: [ :id | selections add: id ] ].
+	aCollectionOfGolapNode do: [ :node |
+		node idDo: [ :id | selections add: id ] ].
 	selectedEdges := nil.
-	self showItemView: aCollectionOfGolapVertex anyOne.
+	self showItemView: aCollectionOfGolapNode anyOne.
 	self updateSelection
 ]
 
@@ -1887,11 +1895,11 @@ Golap >> selectedModel [
 ]
 
 { #category : 'enumerating' }
-Golap >> selectedVerticesDo: aBlock [
+Golap >> selectedNodesDo: aBlock [
 
-	model verticesDo: [ :vertex |
-		(selections anySatisfy: [ :id | vertex includesId: id ]) ifTrue: [
-			aBlock value: vertex ] ]
+	model nodesDo: [ :node |
+		(selections anySatisfy: [ :id | node includesId: id ]) ifTrue: [
+			aBlock value: node ] ]
 ]
 
 { #category : 'accessing-colors' }
@@ -1904,22 +1912,22 @@ Golap >> selections [
 	^ Array
 		streamContents: [ :stream | 
 			model
-				verticesDo: [ :v | 
+				nodesDo: [ :v | 
 					(selections anySatisfy: [ :id | v includesId: id ])
 						ifTrue: [ stream nextPut: v ] ] ]
 ]
 
 { #category : 'accessing-selection' }
-Golap >> selections: aCollectionOfGolapVertex [
+Golap >> selections: aCollectionOfGolapNode [
 
 	| newSelections |
-	newSelections := Set new: aCollectionOfGolapVertex size.
-	aCollectionOfGolapVertex do: [ :v |
+	newSelections := Set new: aCollectionOfGolapNode size.
+	aCollectionOfGolapNode do: [ :v |
 		v idDo: [ :id | newSelections add: id ] ].
 	selections = newSelections ifFalse: [
 		selections := newSelections.
 		selectedEdges := nil.
-		self showItemView: aCollectionOfGolapVertex last.
+		self showItemView: aCollectionOfGolapNode last.
 		self updateSelection ]
 ]
 
@@ -1940,7 +1948,7 @@ Golap >> setOverviewRenderer [
 			rendererSelector := #overviewRenderer.
 			elaborationRendererButton state: false.
 			overviewRendererButton state: true ]
-		layout: (self vertices anySatisfy: [ :v | v asPoint isNil ])
+		layout: (self nodes anySatisfy: [ :v | v asPoint isNil ])
 ]
 
 { #category : 'accessing' }
@@ -1964,28 +1972,28 @@ Golap >> setSelections: aCollectionOfString [
 		selections := newSelections.
 		selectedEdges := nil.
 		itemList selectedItem ifNotNil: [ :item |
-			self showItemView: (model vertexAt: item) ].
+			self showItemView: (model nodeAt: item) ].
 		self updateSelection ]
 ]
 
 { #category : 'operations' }
-Golap >> showItemView: aGolapVertex [
-	aGolapVertex ifNotNil: [ itemView vertex: aGolapVertex ]
+Golap >> showItemView: aGolapNode [
+	aGolapNode ifNotNil: [ itemView node: aGolapNode ]
 ]
 
 { #category : 'accessing' }
-Golap >> showsConnectedVertices [
-	^ itemsAppearancePresenter showsConnectedVertices
+Golap >> showsConnectedNodes [
+	^ itemsAppearancePresenter showsConnectedNodes
 ]
 
 { #category : 'accessing' }
-Golap >> showsHiddenConnectionVertices [
-	^ itemsAppearancePresenter showsHiddenConnectionVertices
+Golap >> showsHiddenConnectionNodes [
+	^ itemsAppearancePresenter showsHiddenConnectionNodes
 ]
 
 { #category : 'accessing' }
-Golap >> showsIsolatedVertices [
-	^ itemsAppearancePresenter showsIsolatedVertices
+Golap >> showsIsolatedNodes [
+	^ itemsAppearancePresenter showsIsolatedNodes
 ]
 
 { #category : 'accessing-dimensions' }
@@ -2218,22 +2226,22 @@ Golap >> title [
 ]
 
 { #category : 'accessing-selection' }
-Golap >> togglePin: aGolapVertex [
+Golap >> togglePin: aGolapNode [
 
 	self updateGlobalImageAfter: [
 		| id |
-		id := aGolapVertex id.
+		id := aGolapNode id.
 		(pins includes: id)
 			ifTrue: [ pins remove: id ]
 			ifFalse: [ pins add: id ] ]
 ]
 
 { #category : 'accessing-selection' }
-Golap >> toggleSelection: aGolapVertex [
+Golap >> toggleSelection: aGolapNode [
 	self
-		updateGlobalImageAfter: [ (self includesSelection: aGolapVertex)
-				ifTrue: [ self unselect: aGolapVertex ]
-				ifFalse: [ self select: aGolapVertex ] ]
+		updateGlobalImageAfter: [ (self includesSelection: aGolapNode)
+				ifTrue: [ self unselect: aGolapNode ]
+				ifFalse: [ self select: aGolapNode ] ]
 ]
 
 { #category : 'accessing' }
@@ -2253,23 +2261,22 @@ Golap >> unmergeMenu [
 						addItem: [ :item | 
 							item
 								name: assoc key;
-								action: [ self unmergeVertex: assoc key ] ] ] ].
+								action: [ self unmergeNode: assoc key ] ] ] ].
 	^ menu
 ]
 
 { #category : 'merging' }
-Golap >> unmergeVertex: aString [
+Golap >> unmergeNode: aString [
 
 	merges removeAllSuchThat: [ :assoc | assoc key = aString ].
 	self updateModel.
-	itemList updateVertexList
+	itemList updateNodeList
 ]
 
 { #category : 'accessing-selection' }
-Golap >> unselect: aGolapVertex [
+Golap >> unselect: aGolapNode [
 
-	aGolapVertex idDo: [ :id |
-		selections remove: id ifAbsent: [  ] ].
+	aGolapNode idDo: [ :id | selections remove: id ifAbsent: [  ] ].
 	selectedEdges := nil.
 	self updateSelection
 ]
@@ -2283,10 +2290,10 @@ Golap >> unselectAll [
 ]
 
 { #category : 'accessing-selection' }
-Golap >> unselectAll: aCollectionOfGolapVertex [
+Golap >> unselectAll: aCollectionOfGolapNode [
 
-	aCollectionOfGolapVertex do: [ :vertex |
-		vertex idDo: [ :id | selections remove: id ifAbsent: [  ] ] ].
+	aCollectionOfGolapNode do: [ :node |
+		node idDo: [ :id | selections remove: id ifAbsent: [  ] ] ].
 	selectedEdges := nil.
 	self updateSelection
 ]
@@ -2335,7 +2342,7 @@ Golap >> updateItemView [
 	self
 		showItemView:
 			(model
-				vertexAt: itemList selectedItem
+				nodeAt: itemList selectedItem
 				ifAbsent: [ ^ self ])
 ]
 
@@ -2347,7 +2354,7 @@ Golap >> updateModel [
 
 { #category : 'private' }
 Golap >> updateQuery [
-	itemList updateVertexList
+	itemList updateNodeList
 ]
 
 { #category : 'accessing-selection' }
@@ -2367,16 +2374,6 @@ Golap >> url [
 Golap >> url: aZnUrl [
 
 	url := aZnUrl asUrl
-]
-
-{ #category : 'accessing' }
-Golap >> vertices [
-	^ model ifNil: [ #() ] ifNotNil: [ model vertices values ]
-]
-
-{ #category : 'enumerating' }
-Golap >> verticesDo: aBlock [
-	model ifNotNil: [ model vertices valuesDo: aBlock ]
 ]
 
 { #category : 'accessing-widgets' }

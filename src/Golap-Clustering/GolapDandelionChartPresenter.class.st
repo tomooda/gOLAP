@@ -1,79 +1,81 @@
 Class {
-	#name : #GolapDandelionChartPresenter,
-	#superclass : #SpRoassalPresenter,
+	#name : 'GolapDandelionChartPresenter',
+	#superclass : 'SpRoassalPresenter',
 	#instVars : [
 		'golap',
 		'tree'
 	],
-	#category : #'Golap-Clustering-Dandelion'
+	#category : 'Golap-Clustering-Dandelion',
+	#package : 'Golap-Clustering',
+	#tag : 'Dandelion'
 }
 
-{ #category : #'accessing-colors' }
-GolapDandelionChartPresenter >> colorForVertex: aGolapVertex [
+{ #category : 'accessing-colors' }
+GolapDandelionChartPresenter >> colorForNode: aGolapNode [
 
-	^ golap colorForVertex: aGolapVertex
+	^ golap colorForNode: aGolapNode
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapDandelionChartPresenter >> golap [
 
 	^ golap
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapDandelionChartPresenter >> golap: aGolap [
 
 	golap := aGolap.
 	golap announcer
 		when: GolapModelUpdated send: #updateTree to: self;
-		when: GolapViewUpdated send: #updateVertex to: self.
+		when: GolapViewUpdated send: #updateNode to: self.
 	self golapChanged
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapDandelionChartPresenter >> golapChanged [
 
 	golap model ifNotNil: [ self updateTree ]
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapDandelionChartPresenter >> initializeWindow: aSpWindowPresenter [
 
 	super initializeWindow: aSpWindowPresenter.
 	aSpWindowPresenter title: 'Dandelion Chart'
 ]
 
-{ #category : #operations }
-GolapDandelionChartPresenter >> toggleSelection: aGolapVertex [
+{ #category : 'operations' }
+GolapDandelionChartPresenter >> toggleSelection: aGolapNode [
 
-	golap toggleSelection: aGolapVertex.
-	self updateVertex: aGolapVertex
+	golap toggleSelection: aGolapNode.
+	self updateNode: aGolapNode
 ]
 
-{ #category : #operations }
-GolapDandelionChartPresenter >> toggleSelectionsAll: aCollectionOfGolapVertex [
+{ #category : 'operations' }
+GolapDandelionChartPresenter >> toggleSelectionsAll: aCollectionOfGolapNode [
 
-	(aCollectionOfGolapVertex anySatisfy: [ :vertex |
-		 (golap includesSelection: vertex) not ])
-		ifTrue: [ golap selectAll: aCollectionOfGolapVertex ]
-		ifFalse: [ golap unselectAll: aCollectionOfGolapVertex ].
-	self updateVertex
+	(aCollectionOfGolapNode anySatisfy: [ :node |
+		 (golap includesSelection: node) not ])
+		ifTrue: [ golap selectAll: aCollectionOfGolapNode ]
+		ifFalse: [ golap unselectAll: aCollectionOfGolapNode ].
+	self updateNode
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapDandelionChartPresenter >> tree: aGolapHierarchicalClusteringTree [
 
 	tree := aGolapHierarchicalClusteringTree.
 	self treeChanged
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapDandelionChartPresenter >> treeChanged [
 
 	self updateCanvas
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapDandelionChartPresenter >> updateCanvas [
 
 	| markers sunburstBuilder bezierBuilder |
@@ -84,7 +86,7 @@ GolapDandelionChartPresenter >> updateCanvas [
 		container: self canvas;
 		sliceColor: [ :slice |
 			slice model isLeaf
-				ifTrue: [ self colorForVertex: slice model vertex ]
+				ifTrue: [ self colorForNode: slice model node ]
 				ifFalse: [ Color transparent ] ];
 		explore: tree using: #trees;
 		build.
@@ -96,12 +98,12 @@ GolapDandelionChartPresenter >> updateCanvas [
 				sunburstBuilder canvas addShape: (shape copy
 						 innerRadius: radius;
 						 externalRadius: (radius := radius + 10);
-						 color: ((shape model vertex hasMarker: c)
+						 color: ((shape model node hasMarker: c)
 								  ifTrue: [ c ]
 								  ifFalse: [ Color transparent ]);
 						 model: {
 								 #marker.
-								 shape model vertex.
+								 shape model node.
 								 c }) ] ] ].
 	sunburstBuilder canvas @ (GolapDandelionCanvasController on: self).
 	sunburstBuilder shapes @ (GolapDandelionNodeInteraction on: self).
@@ -120,10 +122,44 @@ GolapDandelionChartPresenter >> updateCanvas [
 	self zoomToFit
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
+GolapDandelionChartPresenter >> updateNode [
+
+	self canvas shapes do: [ :shape |
+		(shape model respondsTo: #node) ifTrue: [
+			shape color: (self colorForNode: shape model node) ].
+		(shape model isArray and: [ shape model first = #marker ]) ifTrue: [
+			| v c |
+			v := shape model second.
+			c := shape model third.
+			shape color: ((v hasMarker: c)
+					 ifTrue: [ c ]
+					 ifFalse: [ Color transparent ]) ] ].
+	self canvas signalUpdate
+]
+
+{ #category : 'updating' }
+GolapDandelionChartPresenter >> updateNode: aGolapNode [
+
+	self canvas shapes do: [ :shape |
+		((shape model respondsTo: #node) and: [
+			 shape model node == aGolapNode ]) ifTrue: [
+			shape color: (self colorForNode: aGolapNode) ].
+		(shape model isArray and: [
+			 shape model first = #marker and: [
+				 shape model second == aGolapNode ] ]) ifTrue: [
+			| c |
+			c := shape model third.
+			shape color: ((aGolapNode hasMarker: c)
+					 ifTrue: [ c ]
+					 ifFalse: [ Color transparent ]) ] ].
+	self canvas signalUpdate
+]
+
+{ #category : 'updating' }
 GolapDandelionChartPresenter >> updatePhotoimage: shape [
 
-	shape model vertex photoimage ifNotNil: [ :photoimage |
+	shape model node photoimage ifNotNil: [ :photoimage |
 		(shape schildren contains: [ :child | child model = #photoimage ])
 			ifFalse: [
 				shape canvas addShape: ((RSBitmap newFrom: photoimage)
@@ -137,7 +173,7 @@ GolapDandelionChartPresenter >> updatePhotoimage: shape [
 						 yourself) ] ]
 ]
 
-{ #category : #updating }
+{ #category : 'updating' }
 GolapDandelionChartPresenter >> updateTree [
 
 	self tree: ((GolapHierarchicalClustering on: golap model)
@@ -152,41 +188,7 @@ GolapDandelionChartPresenter >> updateTree [
 			 tree)
 ]
 
-{ #category : #updating }
-GolapDandelionChartPresenter >> updateVertex [
-
-	self canvas shapes do: [ :shape |
-		(shape model respondsTo: #vertex) ifTrue: [
-			shape color: (self colorForVertex: shape model vertex) ].
-		(shape model isArray and: [ shape model first = #marker ]) ifTrue: [
-			| v c |
-			v := shape model second.
-			c := shape model third.
-			shape color: ((v hasMarker: c)
-					 ifTrue: [ c ]
-					 ifFalse: [ Color transparent ]) ] ].
-	self canvas signalUpdate
-]
-
-{ #category : #updating }
-GolapDandelionChartPresenter >> updateVertex: aGolapVertex [
-
-	self canvas shapes do: [ :shape |
-		((shape model respondsTo: #vertex) and: [
-			 shape model vertex == aGolapVertex ]) ifTrue: [
-			shape color: (self colorForVertex: aGolapVertex) ].
-		(shape model isArray and: [
-			 shape model first = #marker and: [
-				 shape model second == aGolapVertex ] ]) ifTrue: [
-			| c |
-			c := shape model third.
-			shape color: ((aGolapVertex hasMarker: c)
-					 ifTrue: [ c ]
-					 ifFalse: [ Color transparent ]) ] ].
-	self canvas signalUpdate
-]
-
-{ #category : #updating }
+{ #category : 'updating' }
 GolapDandelionChartPresenter >> zoomToFit [
 
 	self canvas

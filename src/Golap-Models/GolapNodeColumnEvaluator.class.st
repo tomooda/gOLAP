@@ -1,6 +1,6 @@
 Class {
-	#name : 'GolapVertexColumnEvaluator',
-	#superclass : 'GolapVertexEvaluator',
+	#name : 'GolapNodeColumnEvaluator',
+	#superclass : 'GolapNodeEvaluator',
 	#instVars : [
 		'column'
 	],
@@ -10,7 +10,7 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapVertexColumnEvaluator class >> column: aString [
+GolapNodeColumnEvaluator class >> column: aString [
 
 	^ self new
 		  column: aString;
@@ -18,7 +18,7 @@ GolapVertexColumnEvaluator class >> column: aString [
 ]
 
 { #category : 'instance creation' }
-GolapVertexColumnEvaluator class >> fromJSON: aDictionary [
+GolapNodeColumnEvaluator class >> fromJSON: aDictionary [
 
 	^ aDictionary
 		  at: self tag
@@ -27,7 +27,7 @@ GolapVertexColumnEvaluator class >> fromJSON: aDictionary [
 ]
 
 { #category : 'instance creation' }
-GolapVertexColumnEvaluator class >> on: aGolapModel column: aString [
+GolapNodeColumnEvaluator class >> on: aGolapModel column: aString [
 
 	^ (self on: aGolapModel)
 		  column: aString;
@@ -35,37 +35,37 @@ GolapVertexColumnEvaluator class >> on: aGolapModel column: aString [
 ]
 
 { #category : 'accessing' }
-GolapVertexColumnEvaluator class >> tag [
+GolapNodeColumnEvaluator class >> tag [
 
 	^ 'column'
 ]
 
 { #category : 'accessing' }
-GolapVertexColumnEvaluator >> column [
+GolapNodeColumnEvaluator >> column [
 
 	^ column
 ]
 
 { #category : 'accessing' }
-GolapVertexColumnEvaluator >> column: aString [
+GolapNodeColumnEvaluator >> column: aString [
 
 	column := aString
 ]
 
 { #category : 'accessing' }
-GolapVertexColumnEvaluator >> name [
+GolapNodeColumnEvaluator >> name [
 
 	^ column ifNil: [ '-' ]
 ]
 
 { #category : 'accessing' }
-GolapVertexColumnEvaluator >> subtag [
+GolapNodeColumnEvaluator >> subtag [
 
 	^ column
 ]
 
 { #category : 'evaluating' }
-GolapVertexColumnEvaluator >> value: aGolapVertex [
+GolapNodeColumnEvaluator >> value: aGolapNode [
 
-	^ aGolapVertex at: column
+	^ aGolapNode at: column
 ]

@@ -1,13 +1,13 @@
 Class {
-	#name : 'GolapVertexAggregationEvaluator',
-	#superclass : 'GolapVertexEvaluator',
+	#name : 'GolapNodeAggregationEvaluator',
+	#superclass : 'GolapNodeEvaluator',
 	#category : 'Golap-Models-Evaluators',
 	#package : 'Golap-Models',
 	#tag : 'Evaluators'
 }
 
 { #category : 'instance creation' }
-GolapVertexAggregationEvaluator class >> fromJSON: aDictionary [
+GolapNodeAggregationEvaluator class >> fromJSON: aDictionary [
 
 	^ aDictionary
 		  at: self tag
@@ -19,37 +19,37 @@ GolapVertexAggregationEvaluator class >> fromJSON: aDictionary [
 ]
 
 { #category : 'testing' }
-GolapVertexAggregationEvaluator class >> isAbstract [
+GolapNodeAggregationEvaluator class >> isAbstract [
 
-	^ self = GolapVertexAggregationEvaluator
+	^ self = GolapNodeAggregationEvaluator
 ]
 
 { #category : 'accessing' }
-GolapVertexAggregationEvaluator class >> subtag [
+GolapNodeAggregationEvaluator class >> subtag [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-GolapVertexAggregationEvaluator class >> tag [
+GolapNodeAggregationEvaluator class >> tag [
 
 	^ 'aggregation'
 ]
 
 { #category : 'accessing' }
-GolapVertexAggregationEvaluator >> aggregation [
+GolapNodeAggregationEvaluator >> aggregation [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-GolapVertexAggregationEvaluator >> aggregationName [
+GolapNodeAggregationEvaluator >> aggregationName [
 
 	^ self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-GolapVertexAggregationEvaluator >> name [
+GolapNodeAggregationEvaluator >> name [
 
 	^ self aggregationName
 	  ,
@@ -57,15 +57,15 @@ GolapVertexAggregationEvaluator >> name [
 ]
 
 { #category : 'accessing' }
-GolapVertexAggregationEvaluator >> subtag [
+GolapNodeAggregationEvaluator >> subtag [
 
 	^ self class subtag
 ]
 
 { #category : 'evaluating' }
-GolapVertexAggregationEvaluator >> value: aGolapVertex [
+GolapNodeAggregationEvaluator >> value: aGolapNode [
 
-	^ (self valuesAtEdgesOfVertex: aGolapVertex)
+	^ (self valuesAtEdgesOfNode: aGolapNode)
 		  ifNotEmpty: self aggregation
 		  ifEmpty: [ 0 ]
 ]

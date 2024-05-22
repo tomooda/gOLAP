@@ -3,8 +3,8 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'data',
-		'vertex1',
-		'vertex2'
+		'node1',
+		'node2'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -12,12 +12,13 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapEdge class >> on: aDataSeries between: aGolapVertex1 and: aGolapVertex2 [
+GolapEdge class >> on: aDataSeries between: aGolapNode1 and: aGolapNode2 [
+
 	^ self new
-		setData: aDataSeries;
-		vertex1: aGolapVertex1;
-		vertex2: aGolapVertex2;
-		yourself
+		  setData: aDataSeries;
+		  node1: aGolapNode1;
+		  node2: aGolapNode2;
+		  yourself
 ]
 
 { #category : 'accessing' }
@@ -41,13 +42,13 @@ GolapEdge >> at: aString put: anObject [
 ]
 
 { #category : 'operations' }
-GolapEdge >> basicReplaceVertex: aGolapVertex1 with: aGolapVertex2 [
-	vertex1 == aGolapVertex1
-		ifTrue: [ vertex1 := aGolapVertex2.
-			^ vertex1 ].
-	vertex2 == aGolapVertex1
-		ifTrue: [ vertex2 := aGolapVertex2.
-			^ vertex2 ].
+GolapEdge >> basicReplaceNode: aGolapNode1 with: aGolapNode2 [
+	node1 == aGolapNode1
+		ifTrue: [ node1 := aGolapNode2.
+			^ node1 ].
+	node2 == aGolapNode1
+		ifTrue: [ node2 := aGolapNode2.
+			^ node2 ].
 	^ nil
 ]
 
@@ -68,9 +69,9 @@ GolapEdge >> diff: aGolapEdge [
 ]
 
 { #category : 'testing' }
-GolapEdge >> hasVertex: aGolapVertex [
+GolapEdge >> hasNode: aGolapNode [
 
-	^ vertex1 == aGolapVertex or: [ vertex2 == aGolapVertex ]
+	^ node1 == aGolapNode or: [ node2 == aGolapNode ]
 ]
 
 { #category : 'arithmetics' }
@@ -83,10 +84,30 @@ GolapEdge >> negated [
 ]
 
 { #category : 'accessing' }
-GolapEdge >> peerOf: aGolapVertex [
+GolapEdge >> node1 [
+	^ node1
+]
 
-	aGolapVertex id = vertex1 id ifTrue: [ ^ vertex2 ].
-	aGolapVertex id = vertex2 id ifTrue: [ ^ vertex1 ].
+{ #category : 'accessing' }
+GolapEdge >> node1: aGolapNode [
+	node1 := aGolapNode
+]
+
+{ #category : 'accessing' }
+GolapEdge >> node2 [
+	^ node2
+]
+
+{ #category : 'accessing' }
+GolapEdge >> node2: aGolapNode [
+	node2 := aGolapNode
+]
+
+{ #category : 'accessing' }
+GolapEdge >> peerOf: aGolapNode [
+
+	aGolapNode id = node1 id ifTrue: [ ^ node2 ].
+	aGolapNode id = node2 id ifTrue: [ ^ node1 ].
 	^ nil
 ]
 
@@ -99,40 +120,20 @@ GolapEdge >> postCopy [
 
 { #category : 'operations' }
 GolapEdge >> remove [
-	vertex1 ifNotNil: [ :v | v basicRemoveEdge: self ].
-	vertex2 ifNotNil: [ :v | v basicRemoveEdge: self ]
+	node1 ifNotNil: [ :v | v basicRemoveEdge: self ].
+	node2 ifNotNil: [ :v | v basicRemoveEdge: self ]
 ]
 
 { #category : 'operations' }
-GolapEdge >> replaceVertex: aGolapVertex1 with: aGolapVertex2 [
-	aGolapVertex1 basicRemoveEdge: self.
-	self basicReplaceVertex: aGolapVertex1 with: aGolapVertex2.
-	aGolapVertex1 addEdge: self.
-	^ aGolapVertex2
+GolapEdge >> replaceNode: aGolapNode1 with: aGolapNode2 [
+	aGolapNode1 basicRemoveEdge: self.
+	self basicReplaceNode: aGolapNode1 with: aGolapNode2.
+	aGolapNode1 addEdge: self.
+	^ aGolapNode2
 ]
 
 { #category : 'private' }
 GolapEdge >> setData: aDataSeries [
 
 	data := aDataSeries
-]
-
-{ #category : 'accessing' }
-GolapEdge >> vertex1 [
-	^ vertex1
-]
-
-{ #category : 'accessing' }
-GolapEdge >> vertex1: aGolapVertex [
-	vertex1 := aGolapVertex
-]
-
-{ #category : 'accessing' }
-GolapEdge >> vertex2 [
-	^ vertex2
-]
-
-{ #category : 'accessing' }
-GolapEdge >> vertex2: aGolapVertex [
-	vertex2 := aGolapVertex
 ]

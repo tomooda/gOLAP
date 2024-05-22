@@ -1,19 +1,21 @@
 Class {
-	#name : #GolapHierarchicalClusteringNode,
-	#superclass : #GolapHierarchicalClusteringTree,
+	#name : 'GolapHierarchicalClusteringNode',
+	#superclass : 'GolapHierarchicalClusteringTree',
 	#instVars : [
 		'trees'
 	],
-	#category : #'Golap-Clustering-Core'
+	#category : 'Golap-Clustering-Core',
+	#package : 'Golap-Clustering',
+	#tag : 'Core'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapHierarchicalClusteringNode class >> with: aGolapHierarchicalClusteringTree [
 
 	^ self withAll: { aGolapHierarchicalClusteringTree }
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapHierarchicalClusteringNode class >> withAll: aCollectionOfGolapTree [
 
 	^ self new
@@ -21,7 +23,7 @@ GolapHierarchicalClusteringNode class >> withAll: aCollectionOfGolapTree [
 		  yourself
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapHierarchicalClusteringNode >> add: aGolapHierarchicalClusteringTree score: aNumber [
 
 	trees add: aGolapHierarchicalClusteringTree.
@@ -29,32 +31,32 @@ GolapHierarchicalClusteringNode >> add: aGolapHierarchicalClusteringTree score: 
 	score := score + aNumber
 ]
 
-{ #category : #merging }
+{ #category : 'merging' }
 GolapHierarchicalClusteringNode >> empty [
 
 	trees := Array new.
 	score := 0
 ]
 
-{ #category : #controlling }
+{ #category : 'controlling' }
 GolapHierarchicalClusteringNode >> ifNode: aBlock [
 
 	aBlock cull: self
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapHierarchicalClusteringNode >> isNode [
 
 	^ true
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringNode >> leavesDo: aBlock [
 
 	trees do: [ :tree | tree leavesDo: aBlock ]
 ]
 
-{ #category : #merging }
+{ #category : 'merging' }
 GolapHierarchicalClusteringNode >> merge: aGolapHierarchicalClusteringNode [
 
 	trees := trees , aGolapHierarchicalClusteringNode trees.
@@ -64,28 +66,28 @@ GolapHierarchicalClusteringNode >> merge: aGolapHierarchicalClusteringNode [
 	aGolapHierarchicalClusteringNode empty
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringNode >> nodesDo: aBlock [
 
 	aBlock value: self.
 	trees do: [ :tree | tree nodesDo: aBlock ]
 ]
 
-{ #category : #accessing }
-GolapHierarchicalClusteringNode >> oneVertex [
+{ #category : 'accessing' }
+GolapHierarchicalClusteringNode >> oneNode [
 
-	^ trees ifNotEmpty: [ :t | t first oneVertex ] ifEmpty: [ nil ]
+	^ trees ifNotEmpty: [ :t | t first oneNode ] ifEmpty: [ nil ]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapHierarchicalClusteringNode >> printOn: aStream [
 
-	self vertices
-		do: [ :vertex | aStream nextPutAll: vertex name ]
+	self nodes
+		do: [ :node | aStream nextPutAll: node name ]
 		separatedBy: [ aStream cr ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHierarchicalClusteringNode >> setTrees: aCollectionOfGolapTree [
 
 	trees := aCollectionOfGolapTree asArray.
@@ -95,7 +97,7 @@ GolapHierarchicalClusteringNode >> setTrees: aCollectionOfGolapTree [
 		         into: [ :sum :tree | sum + tree score ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringNode >> trees [
 
 	^ trees

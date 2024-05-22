@@ -1,17 +1,19 @@
 Class {
-	#name : #GolapDandelionEdgeInteraction,
-	#superclass : #GolapDandelionChartInteraction,
-	#category : #'Golap-Clustering-Dandelion'
+	#name : 'GolapDandelionEdgeInteraction',
+	#superclass : 'GolapDandelionChartInteraction',
+	#category : 'Golap-Clustering-Dandelion',
+	#package : 'Golap-Clustering',
+	#tag : 'Dandelion'
 }
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionEdgeInteraction >> clicked: evt [
 	"evt shape model value ifNode: [ :node | node openSunburst ]."
 
-	presenter toggleSelectionsAll: evt shape model value vertices
+	presenter toggleSelectionsAll: evt shape model value nodes
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionEdgeInteraction >> createPopupFor: aShape event: event [
 
 	| popupShape |
@@ -21,7 +23,7 @@ GolapDandelionEdgeInteraction >> createPopupFor: aShape event: event [
 	^ popupShape
 ]
 
-{ #category : #hooks }
+{ #category : 'hooks' }
 GolapDandelionEdgeInteraction >> rightClicked: event [
 
 	(presenter golap globalImageMenu: nil) openWithSpecAt:

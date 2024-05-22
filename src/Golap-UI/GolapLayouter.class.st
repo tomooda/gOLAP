@@ -21,70 +21,66 @@ GolapLayouter class >> on: aGolapModel [
 ]
 
 { #category : 'layouting' }
-GolapLayouter >> adjustCenter: aCollectionOfGolapVertex [
-	| numVertices minX minY maxX maxY meanX meanY |
-	numVertices := aCollectionOfGolapVertex size.
+GolapLayouter >> adjustCenter: aCollectionOfGolapNode [
+	| numNodes minX minY maxX maxY meanX meanY |
+	numNodes := aCollectionOfGolapNode size.
 	minX := maxX := divisions asFloat * 0.5.
 	minY := maxY := divisions asFloat * 0.5.
-	aCollectionOfGolapVertex
-		do: [ :vertex | 
+	aCollectionOfGolapNode
+		do: [ :node | 
 			| x y |
-			x := vertex x.
-			y := vertex y.
+			x := node x.
+			y := node y.
 			minX := minX min: x.
 			maxX := maxX max: x.
 			minY := minY min: y.
 			maxY := maxY max: y ].
 	meanX := 0.0.
 	meanY := 0.0.
-	aCollectionOfGolapVertex
-		do: [ :vertex | 
-			meanX := meanX + vertex x.
-			meanY := meanY + vertex y ].
+	aCollectionOfGolapNode
+		do: [ :node | 
+			meanX := meanX + node x.
+			meanY := meanY + node y ].
 	meanX := divisions asFloat * 0.5
-		- (meanX / (numVertices max: 1) asFloat).
+		- (meanX / (numNodes max: 1) asFloat).
 	meanY := divisions asFloat * 0.5
-		- (meanY / (numVertices max: 1) asFloat).
-	aCollectionOfGolapVertex
-		do: [ :vertex | 
-			vertex
-				x: vertex x + meanX;
-				y: vertex y + meanY ]
+		- (meanY / (numNodes max: 1) asFloat).
+	aCollectionOfGolapNode
+		do: [ :node | 
+			node
+				x: node x + meanX;
+				y: node y + meanY ]
 ]
 
 { #category : 'layouting' }
-GolapLayouter >> bindParticles: aCollectionOfGolapVertex bindings: bindings [
+GolapLayouter >> bindParticles: aCollectionOfGolapNode bindings: bindings [
+
 	| velocities |
-	velocities := IdentityDictionary new: aCollectionOfGolapVertex size.
-	aCollectionOfGolapVertex
-		do: [ :vertex | velocities at: vertex put: 0.0 @ 0.0 ].
-	aCollectionOfGolapVertex
-		do: [ :v1 | 
-			| p1 |
-			p1 := v1 asPoint.
-			(bindings at: v1)
-				do: [ :v2 | 
-					| p2 v |
-					p2 := v2 asPoint.
-					v := p2 - p1.
-					v r > 0.2
-						ifTrue: [ velocities
-								at: v1
-								put: (velocities at: v1) + (p2 - (v normalized * 0.2) - p1) ] ] ].
-	velocities
-		keysAndValuesDo: [ :v :p | 
-			| numBindings |
-			numBindings := (bindings at: v) size asFloat.
-			numBindings > 1.0e-8
-				ifTrue: [ v
-						x:
-							(v x + (p x / (bindings at: v) size asFloat)
-								min: softDivisions
-								max: 1.0e-8);
-						y:
-							(v y + (p y / (bindings at: v) size asFloat)
-								min: softDivisions
-								max: 1.0e-8) ] ]
+	velocities := IdentityDictionary new: aCollectionOfGolapNode size.
+	aCollectionOfGolapNode do: [ :node |
+		velocities at: node put: 0.0 @ 0.0 ].
+	aCollectionOfGolapNode do: [ :v1 |
+		| p1 |
+		p1 := v1 asPoint.
+		(bindings at: v1) do: [ :v2 |
+			| p2 v |
+			p2 := v2 asPoint.
+			v := p2 - p1.
+			v r > 0.2 ifTrue: [
+				velocities
+					at: v1
+					put: (velocities at: v1) + (p2 - (v normalized * 0.2) - p1) ] ] ].
+	velocities keysAndValuesDo: [ :v :p |
+		| numBindings |
+		numBindings := (bindings at: v) size asFloat.
+		numBindings > 1.0e-8 ifTrue: [
+			v
+				x: (v x + (p x / (bindings at: v) size asFloat)
+						 min: softDivisions
+						 max: 1.0e-8);
+				y: (v y + (p y / (bindings at: v) size asFloat)
+						 min: softDivisions
+						 max: 1.0e-8) ] ]
 ]
 
 { #category : 'layouting' }
@@ -95,20 +91,20 @@ GolapLayouter >> bindings [
 		ifNotNil: [ model
 				bindingEdgesDo: [ :edge | 
 					| v1 v2 |
-					v1 := edge vertex1.
-					v2 := edge vertex2.
+					v1 := edge node1.
+					v2 := edge node2.
 					v1 ~~ v2
 						ifTrue: [ (bindings at: v1 ifAbsentPut: [ OrderedCollection new ]) add: v2.
 							(bindings at: v2 ifAbsentPut: [ OrderedCollection new ])
 								add: v1 ] ].
 			model
-				verticesDo: [ :v | bindings at: v ifAbsentPut: [ OrderedCollection new ] ] ].
+				nodesDo: [ :v | bindings at: v ifAbsentPut: [ OrderedCollection new ] ] ].
 	^ bindings
 ]
 
 { #category : 'layouting' }
-GolapLayouter >> centralize: aCollectionOfGolapVertex [
-	aCollectionOfGolapVertex
+GolapLayouter >> centralize: aCollectionOfGolapNode [
+	aCollectionOfGolapNode
 		do: [ :v | 
 			v
 				x: (v x - (divisions * 0.5)) * 0.99 + (divisions * 0.5);
@@ -132,17 +128,15 @@ GolapLayouter >> initialize [
 { #category : 'layouting' }
 GolapLayouter >> layout [
 
-	| vertices boundVertices bindings reps isolatedVertices |
-	vertices := self model vertices asSortedCollection: [ :v1 :v2 |
-		            v2 id <= v1 id ].
-	boundVertices := vertices reject: [ :vertex | vertex isIsolated ].
-	divisions := (boundVertices size sqrt * 1.4) ceiling max: 1.
+	| nodes boundNodes bindings reps isolatedNodes |
+	nodes := self model nodes asSortedCollection: [ :node1 :node2 |
+		         node2 id <= node1 id ].
+	boundNodes := nodes reject: [ :node | node isIsolated ].
+	divisions := (boundNodes size sqrt * 1.4) ceiling max: 1.
 	softDivisions := divisions asFloat - 1.0e-8.
-	self swirlLayout: boundVertices.
+	self swirlLayout: boundNodes.
 	bindings := self bindings.
-	reps := 40000000 // (boundVertices size squared max: 1)
-		        min: 100
-		        max: 20.
+	reps := 40000000 // (boundNodes size squared max: 1) min: 100 max: 20.
 	model ifNotNil: [
 		UIManager default
 			displayProgress: 'layouting'
@@ -153,89 +147,88 @@ GolapLayouter >> layout [
 					progress value: i.
 					5 timesRepeat: [
 						self
-							centralize: boundVertices;
-							bindParticles: boundVertices bindings: bindings;
-							repulseParticles: boundVertices bindings: bindings;
-							wall: boundVertices;
-							adjustCenter: boundVertices ] ] ] ].
+							centralize: boundNodes;
+							bindParticles: boundNodes bindings: bindings;
+							repulseParticles: boundNodes bindings: bindings;
+							wall: boundNodes;
+							adjustCenter: boundNodes ] ] ] ].
 	self overridesYWithFrequency ifTrue: [
 		| minY maxY minF maxF |
-		minY := (boundVertices collect: #y thenSelect: #notNil)
+		minY := (boundNodes collect: #y thenSelect: #notNil)
 			        ifEmpty: [ 0.0 ]
 			        ifNotEmpty: #min.
-		maxY := (boundVertices collect: #y thenSelect: #notNil)
+		maxY := (boundNodes collect: #y thenSelect: #notNil)
 			        ifEmpty: [ 0.0 ]
 			        ifNotEmpty: #max.
-		minF := (boundVertices
-			         collect: model vertexEvaluator
-			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #min.
-		maxF := (boundVertices
-			         collect: model vertexEvaluator
-			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #max.
+		minF := (boundNodes collect: model nodeEvaluator thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #min.
+		maxF := (boundNodes collect: model nodeEvaluator thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #max.
 		(minY ~= maxY and: [ minF ~= maxF ]) ifTrue: [
 			| offset scale |
 			offset := minY.
 			scale := maxY - minY / (maxF - minF).
-			boundVertices do: [ :vertex |
-				vertex y: maxF - (model valueAtVertex: vertex) * scale + offset ] ] ].
+			boundNodes do: [ :node |
+				node y: maxF - (model valueAtNode: node) * scale + offset ] ] ].
 	self overridesYWithFrequencyOrder ifTrue: [
 		| minY maxY minF maxF |
-		minY := (boundVertices collect: #y thenSelect: #notNil)
+		minY := (boundNodes collect: #y thenSelect: #notNil)
 			        ifEmpty: [ 0.0 ]
 			        ifNotEmpty: #min.
-		maxY := (boundVertices collect: #y thenSelect: #notNil)
+		maxY := (boundNodes collect: #y thenSelect: #notNil)
 			        ifEmpty: [ 0.0 ]
 			        ifNotEmpty: #max.
-		minF := (boundVertices
-			         collect: model vertexEvaluator
-			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #min.
-		maxF := (boundVertices
-			         collect: model vertexEvaluator
-			         thenSelect: #notNil) ifEmpty: [ 0.0 ] ifNotEmpty: #max.
-		(minY ~= maxY and: [ minF ~= maxF and: [ boundVertices size > 1 ] ])
+		minF := (boundNodes collect: model nodeEvaluator thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #min.
+		maxF := (boundNodes collect: model nodeEvaluator thenSelect: #notNil)
+			        ifEmpty: [ 0.0 ]
+			        ifNotEmpty: #max.
+		(minY ~= maxY and: [ minF ~= maxF and: [ boundNodes size > 1 ] ])
 			ifTrue: [
 				| offset scale |
 				offset := minY.
-				scale := maxY - minY / (boundVertices size - 1).
-				(boundVertices asSortedCollection: [ :more :less |
+				scale := maxY - minY / (boundNodes size - 1).
+				(boundNodes asSortedCollection: [ :more :less |
 					 | v1 v2 |
-					 v1 := model valueAtVertex: more.
-					 v2 := model valueAtVertex: less.
+					 v1 := model valueAtNode: more.
+					 v2 := model valueAtNode: less.
 					 v2 isNil or: [ v1 notNil and: [ v1 >= v2 ] ] ]) doWithIndex: [
-					:vertex
-					:index | vertex y: (index - 1) asFloat * scale + offset ] ] ].
-	((boundVertices collect: #x thenSelect: #notNil)
+					:node
+					:index | node y: (index - 1) asFloat * scale + offset ] ] ].
+	((boundNodes collect: #x thenSelect: #notNil)
 		 ifEmpty: [ 0.0 ]
 		 ifNotEmpty: #min) floor
-	@ ((boundVertices collect: #y thenSelect: #notNil)
+	@ ((boundNodes collect: #y thenSelect: #notNil)
 			 ifEmpty: [ 0.0 ]
 			 ifNotEmpty: #min) floor in: [ :offset |
-		boundVertices do: [ :v |
+		boundNodes do: [ :v |
 			v
 				x: v x - offset x;
 				y: v y - offset y ] ].
-	divisions := (((boundVertices collect: #x)
+	divisions := (((boundNodes collect: #x)
 		               ifEmpty: [ 0 ]
 		               ifNotEmpty: #max) ceiling max:
-		              ((boundVertices collect: #y)
+		              ((boundNodes collect: #y)
 			               ifEmpty: [ 0 ]
 			               ifNotEmpty: #max) ceiling) + 1.
-	isolatedVertices := (vertices select: [ :vertex | vertex isIsolated ])
-		                    readStream.
+	isolatedNodes := (nodes select: #isIsolated) readStream.
 	[
 	divisions := divisions + (1 / 2).
 	1 to: divisions by: 1 / 2 do: [ :x |
-		isolatedVertices atEnd ifTrue: [
+		isolatedNodes atEnd ifTrue: [
 			divisions := divisions ceiling.
 			^ self ].
-		isolatedVertices next
+		isolatedNodes next
 			x: x - 0.25;
 			y: divisions - 0.25 ].
 	1 to: divisions - (1 / 2) by: 1 / 2 do: [ :y |
-		isolatedVertices atEnd ifTrue: [
+		isolatedNodes atEnd ifTrue: [
 			divisions := divisions ceiling.
 			^ self ].
-		isolatedVertices next
+		isolatedNodes next
 			x: divisions - 0.25;
 			y: y - 0.25 ] ] repeat
 ]
@@ -271,17 +264,17 @@ GolapLayouter >> overridesYWithFrequencyOrder: aBoolean [
 ]
 
 { #category : 'layouting' }
-GolapLayouter >> repulseParticles: aCollectionOfGolapVertex bindings: bindings [
+GolapLayouter >> repulseParticles: aCollectionOfGolapNode bindings: bindings [
 
 	| cells |
 	cells := (1 to: divisions) collect: [ :i |
 		         (1 to: divisions) collect: [ :j |
 			         (OrderedCollection new:
-				          (aCollectionOfGolapVertex size // divisions squared + 10
+				          (aCollectionOfGolapNode size // divisions squared + 10
 					           max: 10)) -> (OrderedCollection new:
-				          (aCollectionOfGolapVertex size // divisions squared + 10
+				          (aCollectionOfGolapNode size // divisions squared + 10
 					           max: 10)) ] ].
-	aCollectionOfGolapVertex do: [ :v |
+	aCollectionOfGolapNode do: [ :v |
 		| x y pair |
 		x := v x ceiling min: divisions max: 1.
 		y := v y ceiling min: divisions max: 1.
@@ -339,27 +332,27 @@ GolapLayouter >> repulseParticles: aCollectionOfGolapVertex bindings: bindings [
 ]
 
 { #category : 'layouting' }
-GolapLayouter >> swirlLayout: aCollectionOfGolapVertex [
+GolapLayouter >> swirlLayout: aCollectionOfGolapNode [
+
 	| width |
 	width := divisions // 2 * 2 + 1.
-	aCollectionOfGolapVertex
-		doWithIndex: [ :v :i | 
-			| x y |
-			x := i \\ width + 1.
-			y := i // width + 1.
-			v
-				x: x - 0.5;
-				y: y - 0.5 ]
+	aCollectionOfGolapNode doWithIndex: [ :node :i |
+		| x y |
+		x := i \\ width + 1.
+		y := i // width + 1.
+		node
+			x: x - 0.5;
+			y: y - 0.5 ]
 ]
 
 { #category : 'layouting' }
-GolapLayouter >> wall: aCollectionOfGolapVertex [
+GolapLayouter >> wall: aCollectionOfGolapNode [
+
 	| min max |
 	min := 0.0.
 	max := divisions asFloat.
-	aCollectionOfGolapVertex
-		do: [ :v | 
-			v
-				x: (v x min: max max: min);
-				y: (v y min: max max: min) ]
+	aCollectionOfGolapNode do: [ :node |
+		node
+			x: (node x min: max max: min);
+			y: (node y min: max max: min) ]
 ]

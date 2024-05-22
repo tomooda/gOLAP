@@ -1,25 +1,25 @@
 Class {
-	#name : 'GolapVertexMaxEvaluator',
-	#superclass : 'GolapVertexAggregationEvaluator',
+	#name : 'GolapNodeMaxEvaluator',
+	#superclass : 'GolapNodeAggregationEvaluator',
 	#category : 'Golap-Models-Evaluators',
 	#package : 'Golap-Models',
 	#tag : 'Evaluators'
 }
 
 { #category : 'accessing' }
-GolapVertexMaxEvaluator class >> subtag [
+GolapNodeMaxEvaluator class >> subtag [
 
 	^ 'max'
 ]
 
 { #category : 'evaluating' }
-GolapVertexMaxEvaluator >> aggregation [
+GolapNodeMaxEvaluator >> aggregation [
 
 	^ #max
 ]
 
 { #category : 'accessing' }
-GolapVertexMaxEvaluator >> aggregationName [
+GolapNodeMaxEvaluator >> aggregationName [
 
 	^ '最大 '
 ]
