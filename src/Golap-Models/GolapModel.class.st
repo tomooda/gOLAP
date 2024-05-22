@@ -126,7 +126,7 @@ GolapModel >> createMergedNodeFrom: aCollectionOfGolapNode named: aString [
 		  ifEmpty: [ nil ]
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> createNode: aDataSeries name: aString [
 
 	^ GolapNode on: aDataSeries name: aString
@@ -331,7 +331,7 @@ GolapModel >> liftMode [
 	treeEdges := nil
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
 	aCollectionOfGolapNode ifNotEmpty: [
@@ -421,12 +421,12 @@ GolapModel >> nodeAggregators: aCollectionOfGolapDataAggregator [
 	nodeAggregators := aCollectionOfGolapDataAggregator
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> nodeAt: anInteger [
 	^ self nodes at: anInteger
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> nodeAt: anInteger ifAbsent: errorBlock [
 	^ self nodes at: anInteger ifAbsent: errorBlock
 ]
@@ -467,7 +467,7 @@ GolapModel >> nodeListWithKeyword: aString [
 	^ list
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> nodes [
 
 	^ nodes ifNil: [ nodes := Dictionary new ]
@@ -619,6 +619,20 @@ GolapModel >> postCopyNodes [
 ]
 
 { #category : 'private' }
+GolapModel >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn: anotherString [
+
+	| newNodes |
+	newNodes := Dictionary new: nodeDataframe size.
+	nodeDataframe withIndexDo: [ :row :index |
+		| id name |
+		id := row at: aString ifAbsent: [ index ].
+		name := (row at: anotherString ifAbsent: [ id ]) asString.
+		row name: id.
+		newNodes at: id put: (self createNode: row name: name) ].
+	nodes := newNodes
+]
+
+{ #category : 'private' }
 GolapModel >> readServerDataframe: aDataFrame [
 
 	| newNodes |
@@ -717,7 +731,7 @@ GolapModel >> repeat: anInteger1 polishAddAbove: aNumber1 removeBelow: aNumber2 
 				ifFalse: [ ^ self ] ]
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> resetMerges [
 
 	| newNodes nextPutNode newEdges |
@@ -744,7 +758,7 @@ GolapModel >> resetMerges [
 	mergedNodes := IdentityDictionary new
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> resetNodes [
 
 	self resetMerges.
@@ -825,7 +839,7 @@ GolapModel >> treeEdges [
 		  treeEdges := spanEdges ]
 ]
 
-{ #category : 'accessing-vertex' }
+{ #category : 'accessing-node' }
 GolapModel >> unmergeNode: aGolapNode [
 
 	aGolapNode isMergedNode ifFalse: [ ^ self ].
