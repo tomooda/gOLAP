@@ -4,8 +4,6 @@ Class {
 	#instVars : [
 		'vertexEvaluator',
 		'edgeEvaluator',
-		'vertexAggregationMap',
-		'edgeAggregationMap',
 		'vertices',
 		'treeEdges',
 		'friendsEdges',
@@ -13,7 +11,9 @@ Class {
 		'graphEdges',
 		'positivePolishEdges',
 		'negativePolishEdges',
-		'mergedVertices'
+		'mergedVertices',
+		'edgeAggregators',
+		'vertexAggregators'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -114,8 +114,8 @@ GolapModel >> createMergedVertexFrom: aCollectionOfGolapVertex named: aString [
 		  ifNotEmpty: [
 			  | oldData newData |
 			  oldData := aCollectionOfGolapVertex collect: #data.
-			  newData := vertexAggregationMap collect: [ :aggregation |
-				             aggregation value: oldData ].
+			  newData := (vertexAggregators collect: [ :aggregation |
+				              aggregation value: oldData ]) asOrderedDictionary.
 			  newData name: aString.
 			  GolapMergedVertex
 				  on: (DataSeries
@@ -158,15 +158,15 @@ GolapModel >> diff: aGolapModel [
 ]
 
 { #category : 'accessing' }
-GolapModel >> edgeAggregationMap [
+GolapModel >> edgeAggregators [
 
-	^ edgeAggregationMap
+	^ edgeAggregators
 ]
 
 { #category : 'accessing' }
-GolapModel >> edgeAggregationMap: aDictionary [
+GolapModel >> edgeAggregators: aCollectionOfGolapDataAggregator [
 
-	edgeAggregationMap := aDictionary
+	edgeAggregators := aCollectionOfGolapDataAggregator
 ]
 
 { #category : 'accessing' }
@@ -296,32 +296,22 @@ GolapModel >> initialize [
 		                   on: self
 		                   column: 'frequency'.
 	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
-	vertexAggregationMap := { ('frequency'
-	                         ->
-	                         (GolapSumDataAggregator column: 'frequency')) }
-		                        asOrderedDictionary.
-	edgeAggregationMap := {
-		                      ('frequency'
-		                       ->
-		                       (GolapSumDataAggregator column: 'frequency')).
-		                      ('total'
-		                       -> (GolapSumDataAggregator column: 'total')).
-		                      ('support'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'supoort'
-				                        weightColumn: 'frequency')).
-		                      ('jaccard'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'jaccard'
-				                        weightColumn: 'frequency')).
-		                      ('lift'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'lift'
-				                        weightColumn: 'frequency')).
-		                      ('PMI' -> (GolapWeightedAverageDataAggregator
-			                        column: 'PMI'
-			                        weightColumn: 'frequency')) }
-		                      asOrderedDictionary.
+	vertexAggregators := { (GolapSumDataAggregator column: 'frequency') }.
+	edgeAggregators := {
+		                   (GolapSumDataAggregator column: 'frequency').
+		                   (GolapSumDataAggregator column: 'total').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'supoort'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'jaccard'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'lift'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'PMI'
+			                    weightColumn: 'frequency') }.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedVertices := IdentityDictionary new
@@ -510,12 +500,17 @@ GolapModel >> positivePolishEdgesDo: aBlock [
 ]
 
 { #category : 'copying' }
-GolapModel >> postCopy [ 
+GolapModel >> postCopy [
+
 	super postCopy.
-	vertexEvaluator := vertexEvaluator copy golapModel: self; yourself.
-	edgeEvaluator := edgeEvaluator copy golapModel: self; yourself.
-	vertexAggregationMap := vertexAggregationMap copy.
-	edgeAggregationMap := edgeAggregationMap copy.
+	vertexEvaluator := vertexEvaluator copy
+		                   golapModel: self;
+		                   yourself.
+	edgeEvaluator := edgeEvaluator copy
+		                 golapModel: self;
+		                 yourself.
+	vertexAggregators := vertexAggregators copy.
+	edgeAggregators := edgeAggregators copy.
 	self postCopyVertices.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
@@ -566,32 +561,22 @@ GolapModel >> readServerDataframe: aDataFrame [
 		                   on: self
 		                   column: 'frequency'.
 	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
-	vertexAggregationMap := { ('frequency'
-	                         ->
-	                         (GolapSumDataAggregator column: 'frequency')) }
-		                        asOrderedDictionary.
-	edgeAggregationMap := {
-		                      ('frequency'
-		                       ->
-		                       (GolapSumDataAggregator column: 'frequency')).
-		                      ('total'
-		                       -> (GolapSumDataAggregator column: 'total')).
-		                      ('support'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'supoort'
-				                        weightColumn: 'frequency')).
-		                      ('jaccard'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'jaccard'
-				                        weightColumn: 'frequency')).
-		                      ('lift'
-		                       -> (GolapWeightedAverageDataAggregator
-				                        column: 'lift'
-				                        weightColumn: 'frequency')).
-		                      ('PMI' -> (GolapWeightedAverageDataAggregator
-			                        column: 'PMI'
-			                        weightColumn: 'frequency')) }
-		                      asOrderedDictionary.
+	vertexAggregators := { (GolapSumDataAggregator column: 'frequency') }.
+	edgeAggregators := {
+		                   (GolapSumDataAggregator column: 'frequency').
+		                   (GolapSumDataAggregator column: 'total').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'supoort'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'jaccard'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'lift'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'PMI'
+			                    weightColumn: 'frequency') }.
 	newVertices := Dictionary new.
 	aDataFrame do: [ :data |
 		| node1 node2 vertex1 vertex2 |
@@ -797,15 +782,15 @@ GolapModel >> valueAtVertex: aGolapVertex [
 ]
 
 { #category : 'accessing' }
-GolapModel >> vertexAggregationMap [
+GolapModel >> vertexAggregators [
 
-	^ vertexAggregationMap
+	^ vertexAggregators
 ]
 
 { #category : 'accessing' }
-GolapModel >> vertexAggregationMap: aDictionary [
+GolapModel >> vertexAggregators: aCollectionOfGolapDataAggregator [
 
-	vertexAggregationMap := aDictionary
+	vertexAggregators := aCollectionOfGolapDataAggregator
 ]
 
 { #category : 'accessing-vertex' }

@@ -43,9 +43,9 @@ GolapWeightedAverageDataAggregator >> value: aCollectionOfDataSeries [
 				data at: weightColumn ifPresent: [ :weight |
 					sum := value * weight + sum.
 					weightSum := weight + weightSum ] ] ] ].
-	^ weightSum abs > 1.0e-8
-		  ifTrue: [ sum / weightSum ]
-		  ifFalse: [ 0 ]
+	^ self column -> (weightSum abs > 1.0e-8
+		   ifTrue: [ sum / weightSum ]
+		   ifFalse: [ 0 ])
 ]
 
 { #category : 'accessing' }

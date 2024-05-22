@@ -12,6 +12,12 @@ GolapDataAggregator class >> isAbstract [
 	^ self = GolapDataAggregator
 ]
 
+{ #category : 'accessing' }
+GolapDataAggregator >> column [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'evaluating' }
 GolapDataAggregator >> value: aCollectionOfDataSeries [
 

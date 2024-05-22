@@ -39,5 +39,5 @@ GolapSumDataAggregator >> value: aCollectionOfDataSeries [
 			at: column
 			ifPresent: [ :value |
 			value isNumber ifTrue: [ sum := sum + value ] ] ].
-	^ sum
+	^ self column -> sum
 ]
