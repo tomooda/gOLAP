@@ -72,7 +72,7 @@ GolapServerProductInfoRetriever >> imageRepositoryUrl [
 { #category : 'accessing' }
 GolapServerProductInfoRetriever >> imageRepositoryUrl: aString [
 
-	imageRepositoryUrl := aString asUrl
+	imageRepositoryUrl := aString ifNotNil: #asUrl
 ]
 
 { #category : 'accessing' }
