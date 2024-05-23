@@ -15,19 +15,32 @@ GolapHierarchicalClusteringTree class >> friendsClusterFrom: aGolapModel depth: 
 
 	| done edges rank trees |
 	edges := OrderedCollection new.
-	done := IdentitySet new: aGolapModel nodes size.
-	aGolapModel nodesDo: [ :node |
+	done := IdentitySet new: aGolapModel graphNodes size.
+	aGolapModel graphNodesDo: [ :node |
 		done add: node.
 		node basicEdgesAndNodesDo: [ :edge :peer |
 			(done includes: peer) ifFalse: [
 				edges add: edge -> (aGolapModel valueAtEdge: edge) ] ] ].
 	edges := edges sorted: #value.
 	rank := 1.
-	trees := aGolapModel nodes asArray collect: [ :node |
+	trees := aGolapModel graphNodes asArray collect: [ :node |
 		         GolapHierarchicalClusteringLeaf
 			         node: node
 			         score: (aGolapModel valueAtNode: node) ].
 	anInteger timesRepeat: [  ]
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> graphNodes [
+
+	^ Array streamContents: [ :stream |
+		  self graphNodesDo: [ :node | stream nextPut: node ] ]
+]
+
+{ #category : 'enumerating' }
+GolapHierarchicalClusteringTree >> graphNodesDo: aBlock [
+
+	self leavesDo: [ :leaf | leaf graphNode ifNotNil: aBlock ]
 ]
 
 { #category : 'controlling' }
@@ -38,7 +51,7 @@ GolapHierarchicalClusteringTree >> ifNode: aBlock [
 GolapHierarchicalClusteringTree >> includesNode: aGolapNode [
 
 	self leavesDo: [ :leaf |
-		leaf node == aGolapNode ifTrue: [ ^ true ] ].
+		leaf graphNode == aGolapNode ifTrue: [ ^ true ] ].
 	^ false
 ]
 
@@ -60,21 +73,14 @@ GolapHierarchicalClusteringTree >> leavesDo: aBlock [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'accessing' }
-GolapHierarchicalClusteringTree >> nodes [
-
-	^ Array streamContents: [ :stream |
-		  self nodesDo: [ :node | stream nextPut: node ] ]
-]
-
 { #category : 'enumerating' }
 GolapHierarchicalClusteringTree >> nodesDo: aBlock [
 
-	self leavesDo: [ :leaf | leaf node ifNotNil: aBlock ]
+	^ self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-GolapHierarchicalClusteringTree >> oneNode [
+GolapHierarchicalClusteringTree >> oneGraphNode [
 
 	^ self subclassResponsibility
 ]
@@ -84,7 +90,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 
 	| markers photoOffset sunburstBuilder bezierBuilder |
 	markers := OrderedCollection new.
-	self nodesDo: [ :node |
+	self graphNodesDo: [ :node |
 		node markers do: [ :color |
 			(markers includes: color) ifFalse: [ markers add: color ] ] ].
 	photoOffset := markers size * 10 + 20.
@@ -99,7 +105,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 	sunburstBuilder shapes do: [ :shape |
 		shape model isLeaf ifTrue: [
 			| radius |
-			shape model node photoimage ifNotNil: [ :photoimage |
+			shape model graphNode photoimage ifNotNil: [ :photoimage |
 				sunburstBuilder canvas addShape: ((RSBitmap newFrom: photoimage)
 						 position: (shape centroid:
 									  shape externalRadius - shape innerRadius / 2 + photoOffset);
@@ -109,7 +115,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 								 yourself) ].
 			radius := shape externalRadius + 1.
 			markers do: [ :color |
-				(shape model node hasMarker: color)
+				(shape model graphNode hasMarker: color)
 					ifTrue: [
 						sunburstBuilder canvas addShape: (shape copy
 								 innerRadius: radius;

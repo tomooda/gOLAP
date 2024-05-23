@@ -15,18 +15,18 @@ GolapDandelionNodeInteraction >> activePopupWith: event [
 { #category : 'hooks' }
 GolapDandelionNodeInteraction >> clicked: event [
 
-	(event shape model respondsTo: #node) ifTrue: [
-		presenter toggleSelection: event shape model node ]
+	(event shape model respondsTo: #graphNode) ifTrue: [
+		presenter toggleSelection: event shape model graphNode ]
 ]
 
 { #category : 'hooks' }
 GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
 
-	^ aShape model node photoimage
+	^ aShape model graphNode photoimage
 		  ifNotNil: [ :photoimage |
 			  | imageShape labelShape popupShape |
 			  imageShape := RSBitmap newFrom: photoimage.
-			  labelShape := shapeBuilder shapeFor: aShape model node name.
+			  labelShape := shapeBuilder shapeFor: aShape model graphNode name.
 			  imageShape translateBottomLeftTo: 0 @ 0.
 			  labelShape translateTopLeftTo: 0 @ 0.
 			  popupShape := RSComposite new
@@ -43,8 +43,8 @@ GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
 { #category : 'hooks' }
 GolapDandelionNodeInteraction >> rightClicked: event [
 
-	(event shape model respondsTo: #node) ifTrue: [
-		(presenter golap globalImageMenu: event shape model node)
+	(event shape model respondsTo: #graphNode) ifTrue: [
+		(presenter golap globalImageMenu: event shape model graphNode)
 			openWithSpecAt: (presenter withAdapterDo: [ :a |
 					 a widgetDo: [ :w | w activeHand position ] ]) ]
 ]

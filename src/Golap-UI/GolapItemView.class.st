@@ -100,18 +100,19 @@ GolapItemView >> snapshotInto: aStream [
 GolapItemView >> updateImage [
 
 	node ifNotNil: [
-		(golap productInfoRetriever photoimageFor: node)
-			ifNotNil: [ :photoimage |
-				node photoimage ifNil: [
-					node photoimage: (photoimage scaledToSize: 64 @ 64) ].
-				itemImage image: photoimage ]
-			ifNil: [ itemImage image: self emptyImage ] ]
+		golap productInfoRetriever ifNotNil: [
+			(golap productInfoRetriever photoimageFor: node)
+				ifNotNil: [ :photoimage |
+					node photoimage ifNil: [
+						node photoimage: (photoimage scaledToSize: 64 @ 64) ].
+					itemImage image: photoimage ]
+				ifNil: [ itemImage image: self emptyImage ] ] ]
 ]
 
 { #category : 'updating' }
 GolapItemView >> updateItemInfo [
 
 	^ infoList items: ((node ifNotNil: [
-			    golap productInfoRetriever productDataFor: node ]) ifNil: [
-			   #(  ) ])
+			    golap productInfoRetriever ifNotNil: [ :retriever |
+				    retriever productDataFor: node ] ]) ifNil: [ #(  ) ])
 ]
