@@ -641,7 +641,7 @@ GolapModel >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn: ano
 		id := (row at: aString ifAbsent: [ index ]) asString.
 		name := (row at: anotherString ifAbsent: [ id ]) asString.
 		row name: id.
-		newNodes at: id put: (self createNode: row name: name) ].
+		newNodes at: id ifAbsentPut: (self createNode: row name: name) ].
 	nodes := newNodes
 ]
 
