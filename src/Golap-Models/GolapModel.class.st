@@ -619,13 +619,26 @@ GolapModel >> postCopyNodes [
 ]
 
 { #category : 'private' }
+GolapModel >> readEdgeDataframe: edgeDataframe idColumn: aString and: anotherString [
+
+	edgeDataframe do: [ :row |
+		| node1 node2 |
+		node1 := row at: aString ifPresent: [ :id | nodes at: id asString ].
+		node2 := row
+			         at: anotherString
+			         ifPresent: [ :id | nodes at: id asString ].
+		(node1 notNil and: [ node2 notNil ]) ifTrue: [
+			node1 createEdgeTo: node2 data: row ] ]
+]
+
+{ #category : 'private' }
 GolapModel >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn: anotherString [
 
 	| newNodes |
 	newNodes := Dictionary new: nodeDataframe size.
 	nodeDataframe withIndexDo: [ :row :index |
 		| id name |
-		id := row at: aString ifAbsent: [ index ].
+		id := (row at: aString ifAbsent: [ index ]) asString.
 		name := (row at: anotherString ifAbsent: [ id ]) asString.
 		row name: id.
 		newNodes at: id put: (self createNode: row name: name) ].
