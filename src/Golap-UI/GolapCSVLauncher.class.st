@@ -47,11 +47,15 @@ GolapCSVLauncher >> initializePresenters [
 { #category : 'operations' }
 GolapCSVLauncher >> launch [
 
-	| golapModel |
+	| golapModel golap |
 	golapModel := GolapModel new.
 	nodeImporterPresenter loadInto: golapModel.
 	edgeImporterPresenter loadInto: golapModel.
-	(Golap new
-		 model: golapModel;
-		 open) maximize
+	golap := Golap new.
+	golap open maximize.
+	golap silentAddDimension: golapModel named: 'CSV'.
+	golap updateDimensions.
+	golap updateModel.
+	golap numFriends: 5.
+	golap updateGlobalImageAfter: [  ] layout: true
 ]

@@ -623,12 +623,16 @@ GolapModel >> readEdgeDataframe: edgeDataframe idColumn: aString and: anotherStr
 
 	edgeDataframe do: [ :row |
 		| node1 node2 |
-		node1 := row at: aString ifPresent: [ :id | nodes at: id asString ].
+		node1 := row
+			         at: aString
+			         ifPresent: [ :id |
+			         nodes at: id asString ifAbsent: [ nil ] ].
 		node2 := row
 			         at: anotherString
-			         ifPresent: [ :id | nodes at: id asString ].
-		(node1 notNil and: [ node2 notNil ]) ifTrue: [
-			node1 createEdgeTo: node2 data: row ] ]
+			         ifPresent: [ :id |
+			         nodes at: id asString ifAbsent: [ nil ] ].
+		(node1 notNil and: [ node2 notNil and: [ node1 ~~ node2 ] ])
+			ifTrue: [ node1 createEdgeTo: node2 data: row ] ]
 ]
 
 { #category : 'private' }
