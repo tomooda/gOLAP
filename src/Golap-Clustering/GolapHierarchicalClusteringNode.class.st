@@ -74,15 +74,15 @@ GolapHierarchicalClusteringNode >> nodesDo: aBlock [
 ]
 
 { #category : 'accessing' }
-GolapHierarchicalClusteringNode >> oneNode [
+GolapHierarchicalClusteringNode >> oneGraphNode [
 
-	^ trees ifNotEmpty: [ :t | t first oneNode ] ifEmpty: [ nil ]
+	^ trees ifNotEmpty: [ :t | t first oneGraphNode ] ifEmpty: [ nil ]
 ]
 
 { #category : 'printing' }
 GolapHierarchicalClusteringNode >> printOn: aStream [
 
-	self nodes
+	self graphNodes
 		do: [ :node | aStream nextPutAll: node name ]
 		separatedBy: [ aStream cr ]
 ]

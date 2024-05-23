@@ -2,7 +2,7 @@ Class {
 	#name : 'GolapHierarchicalClusteringLeaf',
 	#superclass : 'GolapHierarchicalClusteringTree',
 	#instVars : [
-		'node'
+		'graphNode'
 	],
 	#category : 'Golap-Clustering-Core',
 	#package : 'Golap-Clustering',
@@ -13,8 +13,14 @@ Class {
 GolapHierarchicalClusteringLeaf class >> node: aGolapNode score: aNumber [
 
 	^ self new
-		  setNode: aGolapNode score: aNumber;
+		  setGraphNode: aGolapNode score: aNumber;
 		  yourself
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> graphNode [
+
+	^ graphNode
 ]
 
 { #category : 'testing' }
@@ -29,12 +35,6 @@ GolapHierarchicalClusteringLeaf >> leavesDo: aBlock [
 	aBlock value: self
 ]
 
-{ #category : 'accessing' }
-GolapHierarchicalClusteringLeaf >> node [
-
-	^ node
-]
-
 { #category : 'enumerating' }
 GolapHierarchicalClusteringLeaf >> nodesDo: aBlock [
 
@@ -42,20 +42,20 @@ GolapHierarchicalClusteringLeaf >> nodesDo: aBlock [
 ]
 
 { #category : 'accessing' }
-GolapHierarchicalClusteringLeaf >> oneNode [
+GolapHierarchicalClusteringLeaf >> oneGraphNode [
 
-	^ node
+	^ graphNode
 ]
 
 { #category : 'printing' }
 GolapHierarchicalClusteringLeaf >> printOn: aStream [
-	aStream nextPutAll: node name
+	aStream nextPutAll: graphNode name
 ]
 
 { #category : 'private' }
-GolapHierarchicalClusteringLeaf >> setNode: aGolapNode score: aNumber [
+GolapHierarchicalClusteringLeaf >> setGraphNode: aGolapNode score: aNumber [
 
-	node := aGolapNode.
+	graphNode := aGolapNode.
 	score := aNumber
 ]
 

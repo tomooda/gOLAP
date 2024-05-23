@@ -86,7 +86,7 @@ GolapDandelionChartPresenter >> updateCanvas [
 		container: self canvas;
 		sliceColor: [ :slice |
 			slice model isLeaf
-				ifTrue: [ self colorForNode: slice model node ]
+				ifTrue: [ self colorForNode: slice model graphNode ]
 				ifFalse: [ Color transparent ] ];
 		explore: tree using: #trees;
 		build.
@@ -98,12 +98,12 @@ GolapDandelionChartPresenter >> updateCanvas [
 				sunburstBuilder canvas addShape: (shape copy
 						 innerRadius: radius;
 						 externalRadius: (radius := radius + 10);
-						 color: ((shape model node hasMarker: c)
+						 color: ((shape model graphNode hasMarker: c)
 								  ifTrue: [ c ]
 								  ifFalse: [ Color transparent ]);
 						 model: {
 								 #marker.
-								 shape model node.
+								 shape model graphNode.
 								 c }) ] ] ].
 	sunburstBuilder canvas @ (GolapDandelionCanvasController on: self).
 	sunburstBuilder shapes @ (GolapDandelionNodeInteraction on: self).
@@ -126,8 +126,8 @@ GolapDandelionChartPresenter >> updateCanvas [
 GolapDandelionChartPresenter >> updateNode [
 
 	self canvas shapes do: [ :shape |
-		(shape model respondsTo: #node) ifTrue: [
-			shape color: (self colorForNode: shape model node) ].
+		(shape model respondsTo: #graphNode) ifTrue: [
+			shape color: (self colorForNode: shape model graphNode) ].
 		(shape model isArray and: [ shape model first = #marker ]) ifTrue: [
 			| v c |
 			v := shape model second.
@@ -142,8 +142,8 @@ GolapDandelionChartPresenter >> updateNode [
 GolapDandelionChartPresenter >> updateNode: aGolapNode [
 
 	self canvas shapes do: [ :shape |
-		((shape model respondsTo: #node) and: [
-			 shape model node == aGolapNode ]) ifTrue: [
+		((shape model respondsTo: #graphNode) and: [
+			 shape model graphNode == aGolapNode ]) ifTrue: [
 			shape color: (self colorForNode: aGolapNode) ].
 		(shape model isArray and: [
 			 shape model first = #marker and: [
@@ -159,7 +159,7 @@ GolapDandelionChartPresenter >> updateNode: aGolapNode [
 { #category : 'updating' }
 GolapDandelionChartPresenter >> updatePhotoimage: shape [
 
-	shape model node photoimage ifNotNil: [ :photoimage |
+	shape model graphNode photoimage ifNotNil: [ :photoimage |
 		(shape schildren contains: [ :child | child model = #photoimage ])
 			ifFalse: [
 				shape canvas addShape: ((RSBitmap newFrom: photoimage)

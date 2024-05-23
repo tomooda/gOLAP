@@ -26,7 +26,7 @@ GolapHierarchicalClustering >> computeTrees [
 	| treeByNode nextTreeMap |
 	treeByNode := IdentityDictionary new: golapModel nodes size.
 	trees do: [ :tree |
-		tree nodesDo: [ :node | treeByNode at: node put: tree ] ].
+		tree graphNodesDo: [ :node | treeByNode at: node put: tree ] ].
 	nextTreeMap := IdentityDictionary new: trees size.
 	trees do: [ :tree |
 		nextTreeMap
@@ -34,15 +34,15 @@ GolapHierarchicalClustering >> computeTrees [
 			put: (GolapHierarchicalClusteringNode with: tree) ].
 	trees do: [ :tree |
 		| doneNodes |
-		doneNodes := (nextTreeMap at: tree) nodes asIdentitySet.
-		tree nodesDo: [ :node |
+		doneNodes := (nextTreeMap at: tree) graphNodes asIdentitySet.
+		tree graphNodesDo: [ :node |
 			self friendsOf: node do: [ :friend |
 				(doneNodes includes: friend) ifFalse: [
 					| friendTree myNextTree obsoleteNextTree |
 					friendTree := treeByNode at: friend.
 					myNextTree := nextTreeMap at: tree.
 					obsoleteNextTree := nextTreeMap at: friendTree.
-					obsoleteNextTree nodesDo: [ :v | doneNodes add: v ].
+					obsoleteNextTree graphNodesDo: [ :v | doneNodes add: v ].
 					myNextTree merge: obsoleteNextTree.
 					(nextTreeMap keys select: [ :key |
 						 (nextTreeMap at: key) == obsoleteNextTree ]) do: [ :key |
@@ -70,6 +70,12 @@ GolapHierarchicalClustering >> friendsOf: aGolapNode do: aBlock [
 		index <= edges size ifFalse: [ ^ self ] ]
 ]
 
+{ #category : 'enumerating' }
+GolapHierarchicalClustering >> graphNodesDo: aBlock [
+
+	golapModel nodes valuesDo: aBlock
+]
+
 { #category : 'initialization' }
 GolapHierarchicalClustering >> initializeWith: aGolapModel [
 
@@ -88,12 +94,6 @@ GolapHierarchicalClustering >> initializeWith: aGolapModel [
 		         GolapHierarchicalClusteringLeaf
 			         node: node
 			         score: (golapModel valueAtNode: node) ]
-]
-
-{ #category : 'enumerating' }
-GolapHierarchicalClustering >> nodesDo: aBlock [
-
-	golapModel nodes valuesDo: aBlock
 ]
 
 { #category : 'visualization' }
