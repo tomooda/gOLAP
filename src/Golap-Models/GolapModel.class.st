@@ -198,7 +198,7 @@ GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlo
 { #category : 'accessing' }
 GolapModel >> edgeEvaluator [
 
-	^ edgeEvaluator
+	^ edgeEvaluator graph: self
 ]
 
 { #category : 'accessing' }
@@ -292,10 +292,8 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 GolapModel >> initialize [
 
 	super initialize.
-	nodeEvaluator := GolapNodeColumnEvaluator
-		                   on: self
-		                   column: 'frequency'.
-	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
+	nodeEvaluator := GolapNodeColumnEvaluator column: 'frequency'.
+	edgeEvaluator := GolapEdgeColumnEvaluator column: 'jaccard'.
 	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
 	edgeAggregators := {
 		                   (GolapSumDataAggregator column: 'frequency').
@@ -337,8 +335,8 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 	aCollectionOfGolapNode ifNotEmpty: [
 		| newNode newEdges oldEdges |
 		newNode := self
-			             createMergedNodeFrom: aCollectionOfGolapNode
-			             named: aString.
+			           createMergedNodeFrom: aCollectionOfGolapNode
+			           named: aString.
 		newEdges := IdentityDictionary new.
 		oldEdges := OrderedCollection new:
 			            aCollectionOfGolapNode size
@@ -395,7 +393,7 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 			oldEdges: oldEdges asArray;
 			oldNodes:
 				(aCollectionOfGolapNode asArray sorted:
-						 nodeEvaluator descending).
+						 self nodeEvaluator descending).
 		self nodes at: aString put: newNode.
 		treeEdges := nil.
 		graphEdges := nil.
@@ -434,7 +432,7 @@ GolapModel >> nodeAt: anInteger ifAbsent: errorBlock [
 { #category : 'accessing' }
 GolapModel >> nodeEvaluator [
 
-	^ nodeEvaluator
+	^ nodeEvaluator graph: self
 ]
 
 { #category : 'accessing' }
@@ -458,7 +456,7 @@ GolapModel >> nodeListWithKeyword: aString [
 							 (self valueAtNode: node).
 							 id })
 				named: id printString ] ].
-	column := self nodeEvaluator name.
+	column := nodeEvaluator name.
 	list columnNames: {
 			'product'.
 			column.
@@ -574,14 +572,10 @@ GolapModel >> positivePolishEdgesDo: aBlock [
 GolapModel >> postCopy [
 
 	super postCopy.
-	nodeEvaluator := nodeEvaluator copy
-		                   golapModel: self;
-		                   yourself.
-	edgeEvaluator := edgeEvaluator copy
-		                 golapModel: self;
-		                 yourself.
-	nodeAggregators := nodeAggregators copy.
-	edgeAggregators := edgeAggregators copy.
+	nodeEvaluator := nodeEvaluator ifNotNil: #copy.
+	edgeEvaluator := edgeEvaluator ifNotNil: #copy.
+	nodeAggregators := nodeAggregators ifNotNil: #copy.
+	edgeAggregators := edgeAggregators ifNotNil: #copy.
 	self postCopyNodes.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
@@ -657,10 +651,8 @@ GolapModel >> readServerDataframe: aDataFrame [
 			 (string includes: $%)
 				 ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
 				 ifFalse: [ string ] ]).
-	nodeEvaluator := GolapNodeColumnEvaluator
-		                 on: self
-		                 column: 'frequency'.
-	edgeEvaluator := GolapEdgeColumnEvaluator on: self column: 'jaccard'.
+	nodeEvaluator := GolapNodeColumnEvaluator column: 'frequency'.
+	edgeEvaluator := GolapEdgeColumnEvaluator column: 'jaccard'.
 	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
 	edgeAggregators := {
 		                   (GolapSumDataAggregator column: 'frequency').
@@ -792,8 +784,7 @@ GolapModel >> resetPolish [
 { #category : 'operations' }
 GolapModel >> setFrequencyMode [
 
-	self edgeEvaluator:
-		(GolapEdgeColumnEvaluator on: self column: 'frequency')
+	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'frequency')
 ]
 
 { #category : 'operations' }
@@ -807,21 +798,19 @@ GolapModel >> setFullGraphMode [
 { #category : 'operations' }
 GolapModel >> setJaccardMode [
 
-	self edgeEvaluator:
-		(GolapEdgeColumnEvaluator on: self column: 'jaccard')
+	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'jaccard')
 ]
 
 { #category : 'operations' }
 GolapModel >> setLiftMode [
 
-	self edgeEvaluator:
-		(GolapEdgeColumnEvaluator on: self column: 'lift')
+	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'lift')
 ]
 
 { #category : 'operations' }
 GolapModel >> setPMIMode [
 
-	self edgeEvaluator: (GolapEdgeColumnEvaluator on: self column: 'PMI')
+	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'PMI')
 ]
 
 { #category : 'operations' }
@@ -872,7 +861,7 @@ GolapModel >> unmergeNode: aGolapNode [
 { #category : 'accessing' }
 GolapModel >> valueAtEdge: aGolapEdge [
 
-	^ edgeEvaluator value: aGolapEdge
+	^ edgeEvaluator value: aGolapEdge graph: self
 ]
 
 { #category : 'accessing' }

@@ -65,7 +65,7 @@ GolapNodeColumnEvaluator >> subtag [
 ]
 
 { #category : 'evaluating' }
-GolapNodeColumnEvaluator >> value: aGolapNode [
+GolapNodeColumnEvaluator >> value: aGolapNode graph: aGolapModel [
 
 	^ aGolapNode at: column
 ]

@@ -31,7 +31,7 @@ GolapNodeNumEdgesEvaluator >> subtag [
 ]
 
 { #category : 'evaluating' }
-GolapNodeNumEdgesEvaluator >> value: aGolapNode [
+GolapNodeNumEdgesEvaluator >> value: aGolapNode graph: aGolapModel [
 
 	^ aGolapNode numberOfEdges
 ]

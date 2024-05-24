@@ -1,9 +1,6 @@
 Class {
 	#name : 'GolapEdgeEvaluator',
 	#superclass : 'Object',
-	#instVars : [
-		'golapModel'
-	],
 	#category : 'Golap-Models-Evaluators',
 	#package : 'Golap-Models',
 	#tag : 'Evaluators'
@@ -23,14 +20,6 @@ GolapEdgeEvaluator class >> fromJSON: aDictionary [
 GolapEdgeEvaluator class >> isAbstract [
 
 	^ self = GolapEdgeEvaluator
-]
-
-{ #category : 'instance creation' }
-GolapEdgeEvaluator class >> on: aGolapModel [
-
-	^ self new
-		  golapModel: aGolapModel;
-		  yourself
 ]
 
 { #category : 'accessing' }
@@ -63,16 +52,10 @@ GolapEdgeEvaluator >> descending [
 	^ self asSortFunction reversed
 ]
 
-{ #category : 'accessing' }
-GolapEdgeEvaluator >> golapModel [
+{ #category : 'evaluating' }
+GolapEdgeEvaluator >> graph: aGolapModel [
 
-	^ golapModel
-]
-
-{ #category : 'accessing' }
-GolapEdgeEvaluator >> golapModel: aGolapModel [
-
-	golapModel := aGolapModel
+	^ [ :edge | self value: edge graph: aGolapModel ]
 ]
 
 { #category : 'accessing' }
@@ -94,7 +77,7 @@ GolapEdgeEvaluator >> tag [
 ]
 
 { #category : 'evaluating' }
-GolapEdgeEvaluator >> value: aGolapEdge [
+GolapEdgeEvaluator >> value: aGolapEdge graph: aGolapModel [
 
 	^ self subclassResponsibility
 ]

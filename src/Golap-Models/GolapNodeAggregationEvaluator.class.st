@@ -52,8 +52,6 @@ GolapNodeAggregationEvaluator >> aggregationName [
 GolapNodeAggregationEvaluator >> name [
 
 	^ self aggregationName
-	  ,
-	  (golapModel ifNotNil: [ :m | m edgeEvaluator name ] ifNil: [ '' ])
 ]
 
 { #category : 'accessing' }
@@ -63,9 +61,17 @@ GolapNodeAggregationEvaluator >> subtag [
 ]
 
 { #category : 'evaluating' }
-GolapNodeAggregationEvaluator >> value: aGolapNode [
+GolapNodeAggregationEvaluator >> value: aGolapNode graph: aGolapModel [
 
-	^ (self valuesAtEdgesOfNode: aGolapNode)
+	^ (self valuesAtEdgesOfNode: aGolapNode graph: aGolapModel)
 		  ifNotEmpty: self aggregation
 		  ifEmpty: [ 0 ]
+]
+
+{ #category : 'private' }
+GolapNodeAggregationEvaluator >> valuesAtEdgesOfNode: aGolapNode graph: aGolapModel [
+
+	^ Array streamContents: [ :stream |
+		  aGolapNode edgesDo: [ :edge |
+			  stream nextPut: (aGolapModel valueAtEdge: edge) ] ]
 ]

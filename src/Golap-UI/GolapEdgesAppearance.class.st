@@ -109,9 +109,7 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 	aGolapEdgeEvaluator ifNotNil: [
 		golap model ifNotNil: [ :model |
 			self updateGlobalImageAfter: [
-				model edgeEvaluator: (aGolapEdgeEvaluator
-						 golapModel: model;
-						 yourself).
+				model edgeEvaluator: aGolapEdgeEvaluator.
 				model friendsEdges: nil.
 				self resetVisibleEdgeThresholds.
 				golap updateQuery.

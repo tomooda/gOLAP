@@ -25,14 +25,6 @@ GolapNodeEvaluator class >> isAbstract [
 	^ self = GolapNodeEvaluator
 ]
 
-{ #category : 'instance creation' }
-GolapNodeEvaluator class >> on: aGolapModel [
-
-	^ self new
-		  golapModel: aGolapModel;
-		  yourself
-]
-
 { #category : 'accessing' }
 GolapNodeEvaluator class >> tag [
 
@@ -62,16 +54,10 @@ GolapNodeEvaluator >> descending [
 	^ self asSortFunction reversed
 ]
 
-{ #category : 'accessing' }
-GolapNodeEvaluator >> golapModel [
+{ #category : 'evaluating' }
+GolapNodeEvaluator >> graph: aGolapModel [
 
-	^ golapModel
-]
-
-{ #category : 'accessing' }
-GolapNodeEvaluator >> golapModel: aGolapModel [
-
-	golapModel := aGolapModel
+	^ [ :node | self value: node graph: aGolapModel ]
 ]
 
 { #category : 'accessing' }
@@ -93,23 +79,7 @@ GolapNodeEvaluator >> tag [
 ]
 
 { #category : 'evaluating' }
-GolapNodeEvaluator >> value: aGolapNode [
+GolapNodeEvaluator >> value: aGolapNode graph: aGolapModel [
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'private' }
-GolapNodeEvaluator >> valuesAtEdgesOfNode: aGolapNode [
-
-	^ Array streamContents: [ :stream |
-		  self
-			  valuesAtNodeOfNode: aGolapNode
-			  do: [ :value | stream nextPut: value ] ]
-]
-
-{ #category : 'private' }
-GolapNodeEvaluator >> valuesAtNodeOfNode: aGolapNode do: aBlock [
-
-	aGolapNode edgesDo: [ :edge |
-		(golapModel valueAtEdge: edge) ifNotNil: aBlock ]
 ]

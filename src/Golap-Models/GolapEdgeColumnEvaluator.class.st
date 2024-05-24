@@ -26,14 +26,6 @@ GolapEdgeColumnEvaluator class >> fromJSON: aDictionary [
 		  ifAbsent: [ nil ]
 ]
 
-{ #category : 'instance creation' }
-GolapEdgeColumnEvaluator class >> on: aGolapModel column: aString [
-
-	^ (self on: aGolapModel)
-		  column: aString;
-		  yourself
-]
-
 { #category : 'accessing' }
 GolapEdgeColumnEvaluator class >> tag [
 
@@ -65,7 +57,7 @@ GolapEdgeColumnEvaluator >> subtag [
 ]
 
 { #category : 'evaluating' }
-GolapEdgeColumnEvaluator >> value: aGolapEdge [
+GolapEdgeColumnEvaluator >> value: aGolapEdge graph: aGolapModel [
 
 	^ aGolapEdge at: column
 ]

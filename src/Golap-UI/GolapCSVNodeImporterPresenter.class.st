@@ -83,8 +83,8 @@ GolapCSVNodeImporterPresenter >> loadInto: aGolapModel [
 	aGolapModel
 		readNodeDataframe: dataframe
 		idColumn: self idColumn
-		nameColumn: self nameColumn;
-		nodeAggregators: self createAggregators
+		nameColumn: self nameColumn.
+	aGolapModel nodeAggregators: self createAggregators
 ]
 
 { #category : 'accessing' }
