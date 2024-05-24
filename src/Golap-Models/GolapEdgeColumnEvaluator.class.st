@@ -32,6 +32,12 @@ GolapEdgeColumnEvaluator class >> tag [
 	^ 'column'
 ]
 
+{ #category : 'comparing' }
+GolapEdgeColumnEvaluator >> = anObject [
+
+	^ self class = anObject class and: [ column = anObject column ]
+]
+
 { #category : 'accessing' }
 GolapEdgeColumnEvaluator >> column [
 
@@ -42,6 +48,12 @@ GolapEdgeColumnEvaluator >> column [
 GolapEdgeColumnEvaluator >> column: aString [
 
 	column := aString
+]
+
+{ #category : 'comparing' }
+GolapEdgeColumnEvaluator >> hash [
+
+	^ self class hash bitXor: column hash
 ]
 
 { #category : 'accessing' }

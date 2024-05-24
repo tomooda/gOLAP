@@ -18,6 +18,18 @@ GolapNodeNumEdgesEvaluator class >> tag [
 	^ 'degree'
 ]
 
+{ #category : 'comparing' }
+GolapNodeNumEdgesEvaluator >> = anObject [
+
+	^ self class = anObject class
+]
+
+{ #category : 'comparing' }
+GolapNodeNumEdgesEvaluator >> hash [
+
+	^ self class hash
+]
+
 { #category : 'accessing' }
 GolapNodeNumEdgesEvaluator >> name [
 

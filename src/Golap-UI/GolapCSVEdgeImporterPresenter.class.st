@@ -33,6 +33,19 @@ GolapCSVEdgeImporterPresenter class >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'accessing' }
+GolapCSVEdgeImporterPresenter >> availableEdgeEvaluators [
+
+	^ Array streamContents: [ :stream |
+		  dataframe ifNotNil: [
+			  dataframe rows ifNotEmpty: [ :rows |
+				  ((rows first keys copyWithoutAll: {
+						    self idColumn1.
+						    self idColumn2 }) select: [ :column |
+					   (rows first at: column) isNumber ]) do: [ :column |
+					  stream nextPut: (GolapEdgeColumnEvaluator column: column) ] ] ] ]
+]
+
 { #category : 'operations' }
 GolapCSVEdgeImporterPresenter >> createAggregators [
 
@@ -58,6 +71,12 @@ GolapCSVEdgeImporterPresenter >> dataframeChanged [
 	self
 		updateIdDropList1;
 		updateIdDropList2
+]
+
+{ #category : 'accessing' }
+GolapCSVEdgeImporterPresenter >> defaultEdgeEvaluator [
+
+	^ self availableEdgeEvaluators ifNotEmpty: #first ifEmpty: [ nil ]
 ]
 
 { #category : 'accessing' }
@@ -102,17 +121,22 @@ GolapCSVEdgeImporterPresenter >> loadInto: aGolapModel [
 		readEdgeDataframe: dataframe
 		idColumn: self idColumn1
 		and: self idColumn2;
-		edgeAggregators: self createAggregators
+		edgeAggregators: self createAggregators;
+		edgeEvaluator: self defaultEdgeEvaluator
 ]
 
 { #category : 'updating' }
 GolapCSVEdgeImporterPresenter >> updateIdDropList1 [
 
-	idDropList1 items: self availableColumns
+	idDropList1
+		items: self availableColumns;
+		selectIndex: 1
 ]
 
 { #category : 'updating' }
 GolapCSVEdgeImporterPresenter >> updateIdDropList2 [
 
-	idDropList2 items: self availableColumns
+	idDropList2
+		items: self availableColumns;
+		selectIndex: 2
 ]

@@ -36,6 +36,12 @@ GolapNodeAggregationEvaluator class >> tag [
 	^ 'aggregation'
 ]
 
+{ #category : 'comparing' }
+GolapNodeAggregationEvaluator >> = anObject [
+
+	^ self class = anObject class
+]
+
 { #category : 'accessing' }
 GolapNodeAggregationEvaluator >> aggregation [
 
@@ -46,6 +52,12 @@ GolapNodeAggregationEvaluator >> aggregation [
 GolapNodeAggregationEvaluator >> aggregationName [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'comparing' }
+GolapNodeAggregationEvaluator >> hash [
+
+	^ self class hash
 ]
 
 { #category : 'accessing' }

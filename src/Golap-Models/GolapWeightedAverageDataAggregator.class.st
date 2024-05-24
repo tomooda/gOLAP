@@ -19,6 +19,14 @@ GolapWeightedAverageDataAggregator class >> column: aString weightColumn: anothe
 		  yourself
 ]
 
+{ #category : 'comparing' }
+GolapWeightedAverageDataAggregator >> = anObject [
+
+	^ self class = anObject class and: [
+		  column = anObject column and: [
+			  weightColumn = anObject weightColumn ] ]
+]
+
 { #category : 'accessing' }
 GolapWeightedAverageDataAggregator >> column [
 
@@ -29,6 +37,12 @@ GolapWeightedAverageDataAggregator >> column [
 GolapWeightedAverageDataAggregator >> column: aString [
 
 	column := aString
+]
+
+{ #category : 'comparing' }
+GolapWeightedAverageDataAggregator >> hash [
+
+	^ (self class hash bitXor: column hash) bitXor: weightColumn hash
 ]
 
 { #category : 'evaluating' }

@@ -118,6 +118,12 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 ]
 
 { #category : 'accessing' }
+GolapEdgesAppearance >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
+
+	edgeEvaluatorList items: aCollectionOfGolapEdgeEvaluator
+]
+
+{ #category : 'accessing' }
 GolapEdgesAppearance >> edgeScale [
 	^ edgeScale ifNil: [ edgeScale := 1.0 ]
 ]
@@ -317,10 +323,14 @@ GolapEdgesAppearance >> nodeEvaluator: aGolapNodeEvaluator [
 	aGolapNodeEvaluator ifNotNil: [
 		golap model ifNotNil: [ :model |
 			self updateGlobalImageAfter: [
-				model nodeEvaluator: (aGolapNodeEvaluator
-						 golapModel: model;
-						 yourself).
+				model nodeEvaluator: aGolapNodeEvaluator.
 				golap updateQuery ] ] ]
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
+
+	nodeEvaluatorList items: aCollectionOfGolapNodeEvaluator
 ]
 
 { #category : 'accessing' }
@@ -393,6 +403,18 @@ GolapEdgesAppearance >> restore: aStream [
 			at: 'node-evaluator'
 			ifPresent: [ :dict |
 				self nodeEvaluator: (GolapNodeEvaluator fromJSON: dict) ] ]
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> selectEdgeEvaluator: aGolapEdgeEvaluator [
+
+	edgeEvaluatorList selectItem: aGolapEdgeEvaluator
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> selectNodeEvaluator: aGolapNodeEvaluator [
+
+	nodeEvaluatorList selectItem: aGolapNodeEvaluator
 ]
 
 { #category : 'updating' }

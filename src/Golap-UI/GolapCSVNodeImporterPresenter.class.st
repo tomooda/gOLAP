@@ -33,6 +33,23 @@ GolapCSVNodeImporterPresenter class >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'accessing' }
+GolapCSVNodeImporterPresenter >> availableNodeEvaluators [
+
+	^ Array streamContents: [ :stream |
+		  dataframe ifNotNil: [
+			  dataframe rows ifNotEmpty: [ :rows |
+				  ((rows first keys copyWithoutAll: {
+						    self idColumn.
+						    self nameColumn }) select: [ :column |
+					   (rows first at: column) isNumber ]) do: [ :column |
+					  stream nextPut: (GolapNodeColumnEvaluator column: column) ] ] ].
+		  stream
+			  nextPut: GolapNodeSumEvaluator new;
+			  nextPut: GolapNodeMaxEvaluator new;
+			  nextPut: GolapNodeAverageEvaluator new ]
+]
+
 { #category : 'operations' }
 GolapCSVNodeImporterPresenter >> createAggregators [
 
@@ -61,6 +78,21 @@ GolapCSVNodeImporterPresenter >> dataframeChanged [
 ]
 
 { #category : 'accessing' }
+GolapCSVNodeImporterPresenter >> defaultNameColumn [
+
+	^ dataframe ifNotNil: [
+		  dataframe columnNames
+			  detect: [ :column | (dataframe rows first at: column) isString ]
+			  ifNone: [ nil ] ]
+]
+
+{ #category : 'accessing' }
+GolapCSVNodeImporterPresenter >> defaultNodeEvaluator [
+
+	^ self availableNodeEvaluators ifNotEmpty: #first ifEmpty: [ nil ]
+]
+
+{ #category : 'accessing' }
 GolapCSVNodeImporterPresenter >> idColumn [
 
 	^ idDropList selectedItem
@@ -83,8 +115,9 @@ GolapCSVNodeImporterPresenter >> loadInto: aGolapModel [
 	aGolapModel
 		readNodeDataframe: dataframe
 		idColumn: self idColumn
-		nameColumn: self nameColumn.
-	aGolapModel nodeAggregators: self createAggregators
+		nameColumn: self nameColumn;
+		nodeAggregators: self createAggregators;
+		nodeEvaluator: self defaultNodeEvaluator
 ]
 
 { #category : 'accessing' }
@@ -96,11 +129,15 @@ GolapCSVNodeImporterPresenter >> nameColumn [
 { #category : 'updating' }
 GolapCSVNodeImporterPresenter >> updateIdDropList [
 
-	idDropList items: self availableColumns
+	idDropList
+		items: self availableColumns;
+		selectIndex: 1
 ]
 
 { #category : 'updating' }
 GolapCSVNodeImporterPresenter >> updateNameDropList [
 
-	nameDropList items: self availableColumns
+	nameDropList
+		items: self availableColumns;
+		selectItem: self defaultNameColumn
 ]

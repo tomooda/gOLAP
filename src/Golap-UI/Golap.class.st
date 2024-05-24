@@ -545,6 +545,19 @@ Golap >> dumpToFile [
 ]
 
 { #category : 'accessing' }
+Golap >> edgeEvaluator: aGolapEdgeEvaluator [
+
+	edgesAppearancePresenter selectEdgeEvaluator: aGolapEdgeEvaluator
+]
+
+{ #category : 'accessing' }
+Golap >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
+
+	edgesAppearancePresenter edgeEvaluators:
+		aCollectionOfGolapEdgeEvaluator
+]
+
+{ #category : 'accessing' }
 Golap >> edgeScale [
 	^ edgesAppearancePresenter edgeScale
 ]
@@ -1199,6 +1212,19 @@ Golap >> newGolapItemView [
 	^ (self instantiate: GolapItemView)
 		  golap: self;
 		  yourself
+]
+
+{ #category : 'accessing' }
+Golap >> nodeEvaluator: aGolapNodeEvaluator [
+
+	edgesAppearancePresenter selectNodeEvaluator: aGolapNodeEvaluator
+]
+
+{ #category : 'accessing' }
+Golap >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
+
+	edgesAppearancePresenter nodeEvaluators:
+		aCollectionOfGolapNodeEvaluator
 ]
 
 { #category : 'accessing' }

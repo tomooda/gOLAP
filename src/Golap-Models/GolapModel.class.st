@@ -43,10 +43,10 @@ GolapModel class >> coocurrenceDataDirectory [
 
 { #category : 'instance creation' }
 GolapModel class >> fromServerDataframe: aDataFrame [
+
 	^ self new
-		readServerDataframe: aDataFrame;
-		setJaccardMode;
-		yourself
+		  readServerDataframe: aDataFrame;
+		  yourself
 ]
 
 { #category : 'storage' }
@@ -212,13 +212,6 @@ GolapModel >> font [
 	^ TextStyle defaultFont
 ]
 
-{ #category : 'operations' }
-GolapModel >> frequencyMode [
-	self setFrequencyMode.
-	graphEdges := nil.
-	treeEdges := nil
-]
-
 { #category : 'accessing' }
 GolapModel >> friendsEdges [
 	^ self friendsEdges: self friendsRank
@@ -292,41 +285,9 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 GolapModel >> initialize [
 
 	super initialize.
-	nodeEvaluator := GolapNodeColumnEvaluator column: 'frequency'.
-	edgeEvaluator := GolapEdgeColumnEvaluator column: 'jaccard'.
-	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
-	edgeAggregators := {
-		                   (GolapSumDataAggregator column: 'frequency').
-		                   (GolapSumDataAggregator column: 'total').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'supoort'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'jaccard'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'lift'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'PMI'
-			                    weightColumn: 'frequency') }.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new
-]
-
-{ #category : 'operations' }
-GolapModel >> jaccardMode [
-	self setJaccardMode.
-	graphEdges := nil.
-	treeEdges := nil
-]
-
-{ #category : 'operations' }
-GolapModel >> liftMode [
-	self setLiftMode.
-	graphEdges := nil.
-	treeEdges := nil
 ]
 
 { #category : 'accessing-node' }
@@ -494,13 +455,6 @@ GolapModel >> openSunburst [
 	(GolapDandelionChartPresenter new
 		 golap: self;
 		 yourself) open
-]
-
-{ #category : 'operations' }
-GolapModel >> pmiMode [
-	self setPMIMode.
-	graphEdges := nil.
-	treeEdges := nil
 ]
 
 { #category : 'polishing' }
@@ -781,45 +735,6 @@ GolapModel >> resetPolish [
 	negativePolishEdges := IdentitySet new
 ]
 
-{ #category : 'operations' }
-GolapModel >> setFrequencyMode [
-
-	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'frequency')
-]
-
-{ #category : 'operations' }
-GolapModel >> setFullGraphMode [
-	self friendsEdges: nil.
-	friendsEdges := nil.
-	treeEdges := nil.
-	self graphEdges
-]
-
-{ #category : 'operations' }
-GolapModel >> setJaccardMode [
-
-	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'jaccard')
-]
-
-{ #category : 'operations' }
-GolapModel >> setLiftMode [
-
-	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'lift')
-]
-
-{ #category : 'operations' }
-GolapModel >> setPMIMode [
-
-	self edgeEvaluator: (GolapEdgeColumnEvaluator column: 'PMI')
-]
-
-{ #category : 'operations' }
-GolapModel >> setTreeMode [
-	self friendsEdges: nil.
-	friendsEdges := nil.
-	self treeEdges
-]
-
 { #category : 'accessing' }
 GolapModel >> treeEdges [
 
@@ -867,5 +782,5 @@ GolapModel >> valueAtEdge: aGolapEdge [
 { #category : 'accessing' }
 GolapModel >> valueAtNode: aGolapNode [
 
-	^ nodeEvaluator value: aGolapNode
+	^ nodeEvaluator value: aGolapNode graph: self
 ]

@@ -17,6 +17,12 @@ GolapSumDataAggregator class >> column: aString [
 		  yourself
 ]
 
+{ #category : 'comparing' }
+GolapSumDataAggregator >> = anObject [
+
+	^ self class = anObject class and: [ column = anObject column ]
+]
+
 { #category : 'accessing' }
 GolapSumDataAggregator >> column [
 
@@ -27,6 +33,12 @@ GolapSumDataAggregator >> column [
 GolapSumDataAggregator >> column: aString [
 
 	column := aString
+]
+
+{ #category : 'comparing' }
+GolapSumDataAggregator >> hash [
+
+	^ self class hash bitXor: column hash
 ]
 
 { #category : 'evaluating' }

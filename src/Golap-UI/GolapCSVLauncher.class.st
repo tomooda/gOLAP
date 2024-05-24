@@ -72,11 +72,16 @@ GolapCSVLauncher >> launch [
 	edgeImporterPresenter loadInto: golapModel.
 	golap := Golap new.
 	golap open maximize.
-	golap silentAddDimension: golapModel named: 'CSV'.
-	golap updateDimensions.
-	golap updateModel.
-	golap numFriends: 5.
-	golap updateGlobalImageAfter: [  ] layout: true
+	golap
+		nodeEvaluators: nodeImporterPresenter availableNodeEvaluators;
+		edgeEvaluators: edgeImporterPresenter availableEdgeEvaluators;
+		nodeEvaluator: nodeImporterPresenter defaultNodeEvaluator;
+		edgeEvaluator: edgeImporterPresenter defaultEdgeEvaluator;
+		silentAddDimension: golapModel named: 'CSV';
+		updateDimensions;
+		updateModel;
+		numFriends: 5;
+		updateGlobalImageAfter: [  ] layout: true
 ]
 
 { #category : 'accessing' }

@@ -40,6 +40,12 @@ GolapNodeColumnEvaluator class >> tag [
 	^ 'column'
 ]
 
+{ #category : 'comparing' }
+GolapNodeColumnEvaluator >> = anObject [
+
+	^ self class = anObject class and: [ column = anObject column ]
+]
+
 { #category : 'accessing' }
 GolapNodeColumnEvaluator >> column [
 
@@ -50,6 +56,12 @@ GolapNodeColumnEvaluator >> column [
 GolapNodeColumnEvaluator >> column: aString [
 
 	column := aString
+]
+
+{ #category : 'comparing' }
+GolapNodeColumnEvaluator >> hash [
+
+	^ self class hash bitXor: column hash
 ]
 
 { #category : 'accessing' }
