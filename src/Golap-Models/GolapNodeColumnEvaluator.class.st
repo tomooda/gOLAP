@@ -70,6 +70,15 @@ GolapNodeColumnEvaluator >> name [
 	^ column ifNil: [ '-' ]
 ]
 
+{ #category : 'printing' }
+GolapNodeColumnEvaluator >> printOn: aStream [
+
+	super printOn: aStream.
+	aStream nextPut: $(.
+	column printOn: aStream.
+	aStream nextPut: $)
+]
+
 { #category : 'accessing' }
 GolapNodeColumnEvaluator >> subtag [
 

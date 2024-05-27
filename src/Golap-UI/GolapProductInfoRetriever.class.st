@@ -45,6 +45,12 @@ GolapProductInfoRetriever >> asJSON [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'testing' }
+GolapProductInfoRetriever >> hasPhotoImage [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'accessing' }
 GolapProductInfoRetriever >> photoimageFor: aGolapNode [
 

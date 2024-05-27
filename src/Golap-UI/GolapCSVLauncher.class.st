@@ -33,6 +33,19 @@ GolapCSVLauncher class >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'menus' }
+GolapCSVLauncher class >> golapMenuOn: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #'Open pair-CSV')
+		parent: 'Golap';
+		order: 1;
+		target: GolapCSVLauncher;
+		selector: #open;
+		help: 'Open a pair CSV launcher';
+		withSeparatorAfter
+]
+
 { #category : 'instance creation' }
 GolapCSVLauncher class >> open [
 
@@ -71,17 +84,20 @@ GolapCSVLauncher >> launch [
 	nodeImporterPresenter loadInto: golapModel.
 	edgeImporterPresenter loadInto: golapModel.
 	golap := Golap new.
-	golap open maximize.
 	golap
-		nodeEvaluators: nodeImporterPresenter availableNodeEvaluators;
-		edgeEvaluators: edgeImporterPresenter availableEdgeEvaluators;
-		nodeEvaluator: nodeImporterPresenter defaultNodeEvaluator;
-		edgeEvaluator: edgeImporterPresenter defaultEdgeEvaluator;
+		nodeEvaluators: nodeImporterPresenter availableEvaluators;
+		edgeEvaluators: edgeImporterPresenter availableEvaluators;
+		nodeEvaluator: nodeImporterPresenter evaluator;
+		edgeEvaluator: edgeImporterPresenter evaluator;
+		productInfoRetriever: (GolapCSVProductInfoRetriever photoUrlColumn:
+					 nodeImporterPresenter photoUrlColumn);
 		silentAddDimension: golapModel named: 'CSV';
 		updateDimensions;
 		updateModel;
-		numFriends: 5;
-		updateGlobalImageAfter: [  ] layout: true
+		numFriends: 5.
+	golap open maximize.
+	golap updateGlobalImageAfter: [  ] layout: true.
+	self window ifNotNil: #close
 ]
 
 { #category : 'accessing' }

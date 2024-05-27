@@ -30,11 +30,16 @@ GolapCSVEdgeImporterPresenter class >> defaultLayout [
 				   add: #idDropList2 expand: false;
 				   yourself)
 		  expand: false;
+		  add: (SpBoxLayout newHorizontal
+				   add: '評価値' asPresenter width: 80;
+				   add: #evaluatorDropList expand: false;
+				   yourself)
+		  expand: false;
 		  yourself
 ]
 
 { #category : 'accessing' }
-GolapCSVEdgeImporterPresenter >> availableEdgeEvaluators [
+GolapCSVEdgeImporterPresenter >> availableEvaluators [
 
 	^ Array streamContents: [ :stream |
 		  dataframe ifNotNil: [
@@ -74,12 +79,6 @@ GolapCSVEdgeImporterPresenter >> dataframeChanged [
 ]
 
 { #category : 'accessing' }
-GolapCSVEdgeImporterPresenter >> defaultEdgeEvaluator [
-
-	^ self availableEdgeEvaluators ifNotEmpty: #first ifEmpty: [ nil ]
-]
-
-{ #category : 'accessing' }
 GolapCSVEdgeImporterPresenter >> idColumn1 [
 
 	^ idDropList1 selectedItem
@@ -88,7 +87,7 @@ GolapCSVEdgeImporterPresenter >> idColumn1 [
 { #category : 'updating' }
 GolapCSVEdgeImporterPresenter >> idColumn1Changed [
 
-	
+	self updateEvaluatorDropList
 ]
 
 { #category : 'accessing' }
@@ -100,7 +99,7 @@ GolapCSVEdgeImporterPresenter >> idColumn2 [
 { #category : 'updating' }
 GolapCSVEdgeImporterPresenter >> idColumn2Changed [
 
-	
+	self updateEvaluatorDropList
 ]
 
 { #category : 'initialization' }
@@ -122,7 +121,7 @@ GolapCSVEdgeImporterPresenter >> loadInto: aGolapModel [
 		idColumn: self idColumn1
 		and: self idColumn2;
 		edgeAggregators: self createAggregators;
-		edgeEvaluator: self defaultEdgeEvaluator
+		edgeEvaluator: self evaluator
 ]
 
 { #category : 'updating' }

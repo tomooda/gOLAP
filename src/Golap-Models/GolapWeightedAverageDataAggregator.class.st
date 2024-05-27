@@ -45,6 +45,17 @@ GolapWeightedAverageDataAggregator >> hash [
 	^ (self class hash bitXor: column hash) bitXor: weightColumn hash
 ]
 
+{ #category : 'printing' }
+GolapWeightedAverageDataAggregator >> printOn: aStream [
+
+	super printOn: aStream.
+	aStream nextPut: $(.
+	column printOn: aStream.
+	aStream nextPut: $,.
+	weightColumn printOn: aStream.
+	aStream nextPut: $)
+]
+
 { #category : 'evaluating' }
 GolapWeightedAverageDataAggregator >> value: aCollectionOfDataSeries [
 

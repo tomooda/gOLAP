@@ -509,11 +509,6 @@ GolapEdgesAppearance >> snapshotInto: aStream [
 	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
-{ #category : 'accessing' }
-GolapEdgesAppearance >> treeEdges [
-	^ golap model ifNotNil: #treeEdges ifNil: [ Array new ]
-]
-
 { #category : 'drawing' }
 GolapEdgesAppearance >> updateGlobalImageAfter: aBlock [
 	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock ]

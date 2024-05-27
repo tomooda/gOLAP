@@ -3,7 +3,8 @@ Class {
 	#superclass : 'GolapCSVImportPresenter',
 	#instVars : [
 		'idDropList',
-		'nameDropList'
+		'nameDropList',
+		'photoUrlColumnDropList'
 	],
 	#category : 'Golap-UI-CSV',
 	#package : 'Golap-UI',
@@ -30,11 +31,21 @@ GolapCSVNodeImporterPresenter class >> defaultLayout [
 				   add: #nameDropList expand: false;
 				   yourself)
 		  expand: false;
+		  add: (SpBoxLayout newHorizontal
+				   add: '評価値' asPresenter width: 80;
+				   add: #evaluatorDropList expand: false;
+				   yourself)
+		  expand: false;
+		  add: (SpBoxLayout newHorizontal
+				   add: '画像URL' asPresenter width: 80;
+				   add: #photoUrlColumnDropList expand: false;
+				   yourself)
+		  expand: false;
 		  yourself
 ]
 
 { #category : 'accessing' }
-GolapCSVNodeImporterPresenter >> availableNodeEvaluators [
+GolapCSVNodeImporterPresenter >> availableEvaluators [
 
 	^ Array streamContents: [ :stream |
 		  dataframe ifNotNil: [
@@ -87,15 +98,17 @@ GolapCSVNodeImporterPresenter >> defaultNameColumn [
 ]
 
 { #category : 'accessing' }
-GolapCSVNodeImporterPresenter >> defaultNodeEvaluator [
-
-	^ self availableNodeEvaluators ifNotEmpty: #first ifEmpty: [ nil ]
-]
-
-{ #category : 'accessing' }
 GolapCSVNodeImporterPresenter >> idColumn [
 
 	^ idDropList selectedItem
+]
+
+{ #category : 'updating' }
+GolapCSVNodeImporterPresenter >> idColumnChanged [
+
+	self
+		updateEvaluatorDropList;
+		updatePhotoUrlDropList
 ]
 
 { #category : 'initialization' }
@@ -105,7 +118,9 @@ GolapCSVNodeImporterPresenter >> initializePresenters [
 	idDropList := self newDropList whenSelectionChangedDo: [
 		              self idColumnChanged ].
 	nameDropList := self newDropList whenSelectionChangedDo: [
-		                self nameColumnChanged ]
+		                self nameColumnChanged ].
+	photoUrlColumnDropList := self newDropList whenSelectionChangedDo: [
+		                          self photoUrlColumnChanged ]
 ]
 
 { #category : 'operations' }
@@ -117,13 +132,33 @@ GolapCSVNodeImporterPresenter >> loadInto: aGolapModel [
 		idColumn: self idColumn
 		nameColumn: self nameColumn;
 		nodeAggregators: self createAggregators;
-		nodeEvaluator: self defaultNodeEvaluator
+		nodeEvaluator: self evaluator
 ]
 
 { #category : 'accessing' }
 GolapCSVNodeImporterPresenter >> nameColumn [
 
 	^ nameDropList selectedItem
+]
+
+{ #category : 'updating' }
+GolapCSVNodeImporterPresenter >> nameColumnChanged [
+
+	self
+		updateEvaluatorDropList;
+		updatePhotoUrlDropList
+]
+
+{ #category : 'accessing' }
+GolapCSVNodeImporterPresenter >> photoUrlColumn [
+
+	^ photoUrlColumnDropList selectedItem
+]
+
+{ #category : 'updating' }
+GolapCSVNodeImporterPresenter >> photoUrlColumnChanged [
+
+	self updateEvaluatorDropList
 ]
 
 { #category : 'updating' }
@@ -138,6 +173,20 @@ GolapCSVNodeImporterPresenter >> updateIdDropList [
 GolapCSVNodeImporterPresenter >> updateNameDropList [
 
 	nameDropList
-		items: self availableColumns;
+		items: self availableStringColumns;
 		selectItem: self defaultNameColumn
+]
+
+{ #category : 'updating' }
+GolapCSVNodeImporterPresenter >> updatePhotoUrlDropList [
+
+	| selection items |
+	selection := photoUrlColumnDropList selectedItem.
+	items := self availableStringColumns copyWithoutAll: {
+			         self idColumn.
+			         self nameColumn }.
+	photoUrlColumnDropList items: items.
+	(items includes: selection)
+		ifTrue: [ photoUrlColumnDropList selectItem: selection ]
+		ifFalse: [ photoUrlColumnDropList selectIndex: 1 ]
 ]

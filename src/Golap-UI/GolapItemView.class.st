@@ -35,7 +35,7 @@ GolapItemView class >> on: aGolap [
 		  yourself
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapItemView >> emptyImage [
 	^ EmptyImage
 		ifNil: [ | image |
@@ -44,7 +44,7 @@ GolapItemView >> emptyImage [
 			image ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapItemView >> golap: aGolap [
 	golap := aGolap
 ]
@@ -100,13 +100,14 @@ GolapItemView >> snapshotInto: aStream [
 GolapItemView >> updateImage [
 
 	node ifNotNil: [
-		golap productInfoRetriever ifNotNil: [
-			(golap productInfoRetriever photoimageFor: node)
-				ifNotNil: [ :photoimage |
+		golap productInfoRetriever ifNotNil: [ :retriever |
+			retriever hasPhotoImage ifTrue: [
+				(retriever photoimageFor: node) ifNotNil: [ :photoimage |
 					node photoimage ifNil: [
 						node photoimage: (photoimage scaledToSize: 64 @ 64) ].
-					itemImage image: photoimage ]
-				ifNil: [ itemImage image: self emptyImage ] ] ]
+					itemImage image: photoimage.
+					^ self ] ] ] ].
+	itemImage image: self emptyImage
 ]
 
 { #category : 'updating' }

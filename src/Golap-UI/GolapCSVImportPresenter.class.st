@@ -5,6 +5,7 @@ Class {
 		'pathField',
 		'changePathButton',
 		'columnsTable',
+		'evaluatorDropList',
 		'aggregators',
 		'dataframe'
 	],
@@ -48,6 +49,21 @@ GolapCSVImportPresenter >> availableColumns [
 	^ dataframe ifNotNil: #columnNames ifNil: [ {  } ]
 ]
 
+{ #category : 'accessing' }
+GolapCSVImportPresenter >> availableEvaluators [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapCSVImportPresenter >> availableStringColumns [
+
+	^ dataframe rows ifEmpty: [ {  } ] ifNotEmpty: [ :rows |
+		  Array streamContents: [ :stream |
+			  rows first keysAndValuesDo: [ :column :value |
+				  value isString ifTrue: [ stream nextPut: column ] ] ] ]
+]
+
 { #category : 'operations' }
 GolapCSVImportPresenter >> changePath [
 
@@ -72,7 +88,9 @@ GolapCSVImportPresenter >> createAggregators [
 { #category : 'updating' }
 GolapCSVImportPresenter >> dataframeChanged [
 
-	self updateColumnsTable
+	self
+		updateColumnsTable;
+		updateEvaluatorDropList
 ]
 
 { #category : 'accessing' }
@@ -83,13 +101,21 @@ GolapCSVImportPresenter >> displayAggregator: aString [
 ]
 
 { #category : 'accessing' }
-GolapCSVImportPresenter >> fileReference [
+GolapCSVImportPresenter >> evaluator [
 
-	^ pathField text trim ifNotEmpty: #asFileReference
+	^ evaluatorDropList selectedItem
 ]
 
 { #category : 'updating' }
-GolapCSVImportPresenter >> idColumnChanged [
+GolapCSVImportPresenter >> evaluatorChanged [
+
+	
+]
+
+{ #category : 'accessing' }
+GolapCSVImportPresenter >> fileReference [
+
+	^ pathField text trim ifNotEmpty: #asFileReference
 ]
 
 { #category : 'initialization' }
@@ -115,6 +141,11 @@ GolapCSVImportPresenter >> initializePresenters [
 	columnsTable := self newTable
 		                beResizable;
 		                yourself.
+	evaluatorDropList := self newDropList
+		                     display: [ :evaluator | evaluator name ];
+		                     whenSelectedItemChangedDo: [
+			                     self evaluatorChanged ];
+		                     yourself.
 	self whenBuiltDo: [
 		pathField text:
 			(FileLocator documents / 'gOLAP') asFileReference absolutePath
@@ -125,10 +156,6 @@ GolapCSVImportPresenter >> initializePresenters [
 GolapCSVImportPresenter >> loadInto: aGolapModel [
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'updating' }
-GolapCSVImportPresenter >> nameColumnChanged [
 ]
 
 { #category : 'updating' }
@@ -166,4 +193,16 @@ GolapCSVImportPresenter >> updateDataframe [
 	self fileReference ifNotNil: [ :ref |
 		ref isFile ifTrue: [ dataframe := DataFrame readFromCsv: ref ] ].
 	self dataframeChanged
+]
+
+{ #category : 'updating' }
+GolapCSVImportPresenter >> updateEvaluatorDropList [
+
+	| selection items |
+	selection := evaluatorDropList selectedItem.
+	items := self availableEvaluators.
+	evaluatorDropList items: items.
+	(items includes: selection)
+		ifTrue: [ evaluatorDropList selectItem: selection ]
+		ifFalse: [ evaluatorDropList selectIndex: 1 ]
 ]

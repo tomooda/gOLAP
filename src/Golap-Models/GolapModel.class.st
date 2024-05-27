@@ -3,7 +3,6 @@ Class {
 	#superclass : 'Model',
 	#instVars : [
 		'edgeEvaluator',
-		'treeEdges',
 		'friendsEdges',
 		'friendsRank',
 		'graphEdges',
@@ -82,10 +81,9 @@ GolapModel >> addPositivePolishEdge: aGolapEdge [
 
 { #category : 'enumerating' }
 GolapModel >> bindingEdgesDo: aBlock [
-	(friendsEdges ifNil: [ treeEdges ifNil: [ self graphEdges ] ])
-		do: [ :edge | 
-			(negativePolishEdges includes: edge)
-				ifFalse: [ aBlock value: edge ] ].
+
+	self friendsEdges do: [ :edge |
+		(negativePolishEdges includes: edge) ifFalse: [ aBlock value: edge ] ].
 	positivePolishEdges do: aBlock
 ]
 
@@ -285,6 +283,7 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 GolapModel >> initialize [
 
 	super initialize.
+	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new
@@ -356,7 +355,6 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 				(aCollectionOfGolapNode asArray sorted:
 						 self nodeEvaluator descending).
 		self nodes at: aString put: newNode.
-		treeEdges := nil.
 		graphEdges := nil.
 		friendsEdges := nil.
 		self friendsEdges: self friendsRank.
@@ -512,7 +510,6 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 					v2 addNegativePolishEdge: edge.
 					self addNegativePolishEdge: edge ] ] ].
 	graphEdges := nil.
-	treeEdges := nil.
 	friendsEdges := nil.
 	^ changed
 ]
@@ -536,8 +533,7 @@ GolapModel >> postCopy [
 	mergedNodes := IdentityDictionary new.
 	friendsEdges := nil.
 	friendsRank := nil.
-	graphEdges := nil.
-	treeEdges := nil
+	graphEdges := nil
 ]
 
 { #category : 'copying' }
@@ -733,31 +729,6 @@ GolapModel >> resetPolish [
 	self nodesDo: [ :v | v resetPolish ].
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new
-]
-
-{ #category : 'accessing' }
-GolapModel >> treeEdges [
-
-	^ treeEdges ifNil: [
-		  | edges subgraphs spanEdges |
-		  edges := self graphEdges.
-		  subgraphs := self nodes asArray collect: [ :node | Set with: node ].
-		  spanEdges := OrderedCollection new: self nodes size // 2 + 1.
-		  edges do: [ :edge |
-			  | node1 node2 g1 g2 |
-			  node1 := edge node1.
-			  node2 := edge node2.
-			  g1 := subgraphs
-				        detect: [ :s | s includes: node1 ]
-				        ifNone: [ nil ].
-			  g2 := subgraphs
-				        detect: [ :s | s includes: node2 ]
-				        ifNone: [ nil ].
-			  g1 ~~ g2 ifTrue: [
-				  spanEdges add: edge.
-				  g1 addAll: g2.
-				  subgraphs := subgraphs reject: [ :g | g == g2 ] ] ].
-		  treeEdges := spanEdges ]
 ]
 
 { #category : 'accessing-node' }

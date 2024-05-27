@@ -2216,14 +2216,16 @@ Golap >> snapshotSelections [
 Golap >> startPhotoimageRetrievingProcess [
 
 	self stopPhotoimageRetrievingProcess.
-	photoImageRetrievingProcess := [ 
+	(productInfoRetriever isNil or: [
+		 productInfoRetriever hasPhotoImage not ]) ifTrue: [ ^ self ].
+	photoImageRetrievingProcess := [
 	                               retrievalProcessCount := 0.
-	                               [ 
-	                               self ifNotActive: [ 
+	                               [
+	                               self ifNotActive: [
 		                               photoImageRetrievingProcess := nil.
 		                               Processor activeProcess terminate ].
 	                               self retrievePhotoimage.
-	                               100 milliSecond wait ] repeat ] 
+	                               100 milliSecond wait ] repeat ]
 		                               forkAt:
 		                               Processor userBackgroundPriority
 ]
@@ -2268,11 +2270,6 @@ Golap >> toggleSelection: aGolapNode [
 		updateGlobalImageAfter: [ (self includesSelection: aGolapNode)
 				ifTrue: [ self unselect: aGolapNode ]
 				ifFalse: [ self select: aGolapNode ] ]
-]
-
-{ #category : 'accessing' }
-Golap >> treeEdges [
-	^ model ifNotNil: [ model treeEdges ] ifNil: [ Array new ]
 ]
 
 { #category : 'menu' }

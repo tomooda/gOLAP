@@ -63,6 +63,12 @@ GolapServerProductInfoRetriever >> golapServerUrl: aString [
 	golapServerUrl := aString asUrl
 ]
 
+{ #category : 'testing' }
+GolapServerProductInfoRetriever >> hasPhotoImage [
+
+	^ imageRepositoryUrl notNil
+]
+
 { #category : 'accessing' }
 GolapServerProductInfoRetriever >> imageRepositoryUrl [
 

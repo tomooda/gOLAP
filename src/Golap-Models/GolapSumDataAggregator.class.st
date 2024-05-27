@@ -41,6 +41,14 @@ GolapSumDataAggregator >> hash [
 	^ self class hash bitXor: column hash
 ]
 
+{ #category : 'printing' }
+GolapSumDataAggregator >> printOn: aStream [
+	super printOn: aStream.
+	aStream nextPut: $(.
+	column printOn: aStream.
+	aStream nextPut: $)
+]
+
 { #category : 'evaluating' }
 GolapSumDataAggregator >> value: aCollectionOfDataSeries [
 
