@@ -80,5 +80,5 @@ GolapEdgeColumnEvaluator >> subtag [
 { #category : 'evaluating' }
 GolapEdgeColumnEvaluator >> value: aGolapEdge graph: aGolapModel [
 
-	^ aGolapEdge at: column
+	^ aGolapEdge at: column ifAbsent: [ 0 ]
 ]
