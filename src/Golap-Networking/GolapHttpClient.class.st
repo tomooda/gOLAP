@@ -1,25 +1,26 @@
 Class {
-	#name : #GolapHttpClient,
-	#superclass : #ZnClient,
+	#name : 'GolapHttpClient',
+	#superclass : 'ZnClient',
 	#instVars : [
 		'authenticateBlock'
 	],
-	#category : #'Golap-Networking'
+	#category : 'Golap-Networking',
+	#package : 'Golap-Networking'
 }
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> client [
 	^ self new
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> clientWithAuthenticateBlock: aBlock [
 	^ self new
 		authenticateBlock: aBlock;
 		yourself
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> get: aZnUrl [
 	^ self client
 		beOneShot;
@@ -28,7 +29,7 @@ GolapHttpClient class >> get: aZnUrl [
 		response
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> get: aZnUrl authenticateBlock: aBlock [
 	^ self client
 		beOneShot;
@@ -38,7 +39,7 @@ GolapHttpClient class >> get: aZnUrl authenticateBlock: aBlock [
 		response
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> post: aZnUrl [
 	^ self client
 		beOneShot;
@@ -47,7 +48,7 @@ GolapHttpClient class >> post: aZnUrl [
 		response
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> post: aZnUrl authenticateBlock: aBlock [
 	^ self client
 		beOneShot;
@@ -57,7 +58,7 @@ GolapHttpClient class >> post: aZnUrl authenticateBlock: aBlock [
 		response
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> post: aZnUrl data: aZnEntity [
 	^ self client
 		beOneShot;
@@ -67,7 +68,7 @@ GolapHttpClient class >> post: aZnUrl data: aZnEntity [
 		response
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> post: aZnUrl data: aZnEntity authenticateBlock: aBlock [
 	^ self client
 		beOneShot;
@@ -78,7 +79,7 @@ GolapHttpClient class >> post: aZnUrl data: aZnEntity authenticateBlock: aBlock 
 		response
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> post: urlObject data: entity timeout: seconds [
 	^ self client
 		url: urlObject;
@@ -88,7 +89,7 @@ GolapHttpClient class >> post: urlObject data: entity timeout: seconds [
 		response
 ]
 
-{ #category : #public }
+{ #category : 'public' }
 GolapHttpClient class >> post: urlObject data: entity timeout: seconds authenticateBlock: aBlock [
 	^ self client
 		url: urlObject;
@@ -99,7 +100,7 @@ GolapHttpClient class >> post: urlObject data: entity timeout: seconds authentic
 		response
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHttpClient >> a1ForUserName: username password: password realm: realm [
 	^ self
 		md5Hash:
@@ -113,7 +114,7 @@ GolapHttpClient >> a1ForUserName: username password: password realm: realm [
 						nextPutAll: password ])
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHttpClient >> a2ForUrl: url method: method [
 	^ self
 		md5Hash:
@@ -125,7 +126,7 @@ GolapHttpClient >> a2ForUrl: url method: method [
 						nextPutAll: url asString ])
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHttpClient >> authenticate [
 
 	self authenticateBlock value: [ :username :password | 
@@ -144,7 +145,7 @@ GolapHttpClient >> authenticate [
 	^ nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHttpClient >> authenticateBlock [
 	^ authenticateBlock
 		ifNil: [ authenticateBlock := [ :auth | 
@@ -154,12 +155,12 @@ GolapHttpClient >> authenticateBlock [
 						ifNotNil: [ :password | auth value: username value: password ] ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapHttpClient >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHttpClient >> authorizationForUsername: username password: password params: params [
 	| realm nonce opaque a1 a2 |
 	realm := params at: 'realm' ifAbsent: [ ^ nil ].
@@ -185,12 +186,12 @@ GolapHttpClient >> authorizationForUsername: username password: password params:
 				nextPut: $" ]
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHttpClient >> createCnonce [
 	^ String streamContents:  [ :stream | 32 timesRepeat: [ stream nextPut: '0123456789abcdef' atRandom ] ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapHttpClient >> execute [
 	| result |
 	result := super execute.
@@ -199,7 +200,7 @@ GolapHttpClient >> execute [
 	^ result
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHttpClient >> getAuthParams [
 	| header |
 	header := response headers at: 'Www-Authenticate' ifAbsent: [ ^ nil ].
@@ -215,14 +216,14 @@ GolapHttpClient >> getAuthParams [
 				-> (def copyFrom: index + 2 to: def size - 1) ]) asDictionary
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapHttpClient >> initialize [
 
 	super initialize.
 	self maximumEntitySize: 256 * 1024 * 1024
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapHttpClient >> md5Hash: aString [
 	^ (MD5 new
 		initialize;

@@ -1,6 +1,6 @@
-Extension { #name : #Job }
+Extension { #name : 'Job' }
 
-{ #category : #'*Golap-Networking' }
+{ #category : '*Golap-Networking' }
 Job >> signalException: anException [
 	process signalException: anException
 ]

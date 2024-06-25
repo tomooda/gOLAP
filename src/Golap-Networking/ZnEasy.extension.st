@@ -1,6 +1,6 @@
-Extension { #name : #ZnEasy }
+Extension { #name : 'ZnEasy' }
 
-{ #category : #'*Golap-Networking' }
+{ #category : '*Golap-Networking' }
 ZnEasy class >> post: urlObject data: entity timeout: seconds [
 	^ self client
 		url: urlObject;

@@ -1,6 +1,6 @@
 Class {
-	#name : #GolapApiClient,
-	#superclass : #Object,
+	#name : 'GolapApiClient',
+	#superclass : 'Object',
 	#instVars : [
 		'url',
 		'authenticateBlock',
@@ -12,15 +12,16 @@ Class {
 	#classInstVars : [
 		'random'
 	],
-	#category : #'Golap-Networking'
+	#category : 'Golap-Networking',
+	#package : 'Golap-Networking'
 }
 
-{ #category : #utilities }
+{ #category : 'utilities' }
 GolapApiClient class >> random [
 	^ random ifNil: [ random := Random new ]
 ]
 
-{ #category : #'instance cretion' }
+{ #category : 'instance cretion' }
 GolapApiClient class >> url: aStringOrUrl query: aString authenticateBlock: aBlock [
 
 	^ self new
@@ -30,7 +31,7 @@ GolapApiClient class >> url: aStringOrUrl query: aString authenticateBlock: aBlo
 		  yourself
 ]
 
-{ #category : #'instance cretion' }
+{ #category : 'instance cretion' }
 GolapApiClient class >> url: aStringOrUrl query: aString comment: anotherString serverConfig: configDictionary itemFieldQuerySpec: aDictionary authenticateBlock: aBlock [
 
 	^ self new
@@ -43,17 +44,17 @@ GolapApiClient class >> url: aStringOrUrl query: aString comment: anotherString 
 		  yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> authenticateBlock [
 	^ authenticateBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapApiClient >> cancel: aString [
 	| response |
 	response := GolapHttpClient
@@ -62,19 +63,19 @@ GolapApiClient >> cancel: aString [
 	^ response entity contents
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> comment [
 
 	^ comment
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> comment: aString [
 
 	comment := aString
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapApiClient >> createRunId [
 
 	<script: 'GolapApiClient new createRunId inspect'>
@@ -82,12 +83,12 @@ GolapApiClient >> createRunId [
 		  16 timesRepeat: [ (self random nextInteger: 9) printOn: stream ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> imageUrl [
 	^ self serverConfig at: 'imageUrl' ifAbsent: [ nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> itemFieldQuerySpec [
 
 	^ itemFieldQuerySpec ifNil: [ 
@@ -99,32 +100,32 @@ GolapApiClient >> itemFieldQuerySpec [
 			                        ifNil: [ Dictionary new ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> itemFieldQuerySpec: aDictionary [
 	itemFieldQuerySpec := aDictionary
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapApiClient >> jobProgressBar [
 	^ (World findDeeplyA: JobProgressBarMorph) findA: ImageMorph
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> query [
 	^ query
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> query: aString [
 	query := aString withUnixLineEndings
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 GolapApiClient >> random [
 	^ self class random
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> readStream [
 
 	"GolapApiClient new entity"
@@ -172,7 +173,7 @@ GolapApiClient >> readStream [
 			  , url asString ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> serverConfig [
 
 	^ serverConfig ifNil: [ 
@@ -197,22 +198,22 @@ GolapApiClient >> serverConfig [
 			  do: [ :ex | ^ nil ] ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> serverConfig: aDictionary [
 	serverConfig := aDictionary
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> timeout [
 	^ 3
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> url [
 	^ url
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapApiClient >> url: aStringOrZnUrl [
 	url := aStringOrZnUrl asUrl
 ]

@@ -1,6 +1,6 @@
-Extension { #name : #Morph }
+Extension { #name : 'Morph' }
 
-{ #category : #'*Golap-Networking' }
+{ #category : '*Golap-Networking' }
 Morph >> clearEvent: eventName [
 	self eventHandler
 		ifNotNil: [ :handler | handler clearAllSubscriptionsToEvent: eventName ]

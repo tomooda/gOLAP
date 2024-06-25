@@ -1,6 +1,6 @@
-Extension { #name : #BlockClosure }
+Extension { #name : 'BlockClosure' }
 
-{ #category : #'*Golap-Networking' }
+{ #category : '*Golap-Networking' }
 BlockClosure >> forkAndWait [
 	"Suspend current process and execute self in new process, when it completes resume current process"
 

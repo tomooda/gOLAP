@@ -1,6 +1,6 @@
-Extension { #name : #Object }
+Extension { #name : 'Object' }
 
-{ #category : #'*Golap-Networking' }
+{ #category : '*Golap-Networking' }
 Object >> golapJsonAt: anObject [
 	^ self at: anObject
 ]

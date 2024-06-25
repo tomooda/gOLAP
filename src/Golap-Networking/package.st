@@ -1,1 +1,1 @@
-Package { #name : #'Golap-Networking' }
+Package { #name : 'Golap-Networking' }

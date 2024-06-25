@@ -1,9 +1,8 @@
 Class {
 	#name : 'GolapFileRetrieveBinaryContents',
 	#superclass : 'ZnUrlOperation',
-	#category : 'Golap-UI-CSV',
-	#package : 'Golap-UI',
-	#tag : 'CSV'
+	#category : 'Golap-Networking',
+	#package : 'Golap-Networking'
 }
 
 { #category : 'accessing' }

@@ -109,6 +109,7 @@ Golap class >> deploy [
 	Stdio useNullStreams.
 	MCCacheRepository uniqueInstance disable.
 	EpMonitor reset.
+	SessionManager default registerSystemClassNamed: #FreeTypeFileInfo.
 	Golap allInstancesDo: [ :g | g becomeForward: Object new ].
 	5 timesRepeat: [ "PharoCommandLineHandler forcePreferencesOmission: true"
 		Smalltalk garbageCollect ]
@@ -320,6 +321,18 @@ Golap >> addDimension: aGolapOverviewModel named: aString [
 Golap >> allMarkerColors [
 
 	^ itemList allMarkerColors
+]
+
+{ #category : 'announcements' }
+Golap >> announceGolapModelUpdated [
+
+	self announcer announce: GolapModelUpdated new
+]
+
+{ #category : 'announcements' }
+Golap >> announceGolapViewUpdated [
+
+	self announcer announce: GolapViewUpdated new
 ]
 
 { #category : 'merging' }
@@ -1190,7 +1203,7 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 				edgesAppearancePresenter updateModel: model.
 				itemList updateNodeList ] ]
 		layout: true.
-	self announcer announce: GolapModelUpdated new
+	self announceGolapModelUpdated
 ]
 
 { #category : 'accessing-colors' }
@@ -2342,6 +2355,7 @@ Golap >> updateGlobalImage [
 
 { #category : 'drawing' }
 Golap >> updateGlobalImageAfter: aBlock [
+
 	^ self updateGlobalImageAfter: aBlock layout: false
 ]
 

@@ -114,7 +114,8 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 				self resetVisibleEdgeThresholds.
 				golap updateQuery.
 				nodeEvaluatorList withAdapterDo: [ :a |
-					a widgetDo: [ :w | w updateContents ] ] ] ] ]
+					a widgetDo: [ :w | w updateContents ] ].
+				golap announceGolapModelUpdated ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -144,7 +145,7 @@ GolapEdgesAppearance >> friendsEdges [
 { #category : 'operations' }
 GolapEdgesAppearance >> friendsGraph [
 
-	self updateGlobalImageAfter: [  ]
+	self updateGlobalImageAfter: [ golap announceGolapModelUpdated ]
 ]
 
 { #category : 'accessing' }
@@ -324,7 +325,8 @@ GolapEdgesAppearance >> nodeEvaluator: aGolapNodeEvaluator [
 		golap model ifNotNil: [ :model |
 			self updateGlobalImageAfter: [
 				model nodeEvaluator: aGolapNodeEvaluator.
-				golap updateQuery ] ] ]
+				golap updateQuery.
+				golap announceGolapModelUpdated ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -347,15 +349,16 @@ GolapEdgesAppearance >> numFriends: anInteger [
 
 { #category : 'operations' }
 GolapEdgesAppearance >> polish [
-	self
-		updateGlobalImageAfter: [ golap model
-				repeat:
-					(polishIterationCheckbox state
-						ifTrue: [ 100 ]
-						ifFalse: [ 1 ])
-				polishAddAbove: self positivePolishFactor
-				removeBelow: self negativePolishFactor
-				minDenominator: polishMinDenominatorField text asString asInteger ]
+
+	self updateGlobalImageAfter: [
+		golap model
+			repeat: (polishIterationCheckbox state
+					 ifTrue: [ 100 ]
+					 ifFalse: [ 1 ])
+			polishAddAbove: self positivePolishFactor
+			removeBelow: self negativePolishFactor
+			minDenominator: polishMinDenominatorField text asString asInteger.
+		golap announceGolapModelUpdated ]
 ]
 
 { #category : 'accessing' }
