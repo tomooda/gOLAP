@@ -15,11 +15,6 @@ Class {
 GolapCSVNodeImporterPresenter class >> defaultLayout [
 
 	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   add: #pathField expand: true;
-				   add: #changePathButton expand: false;
-				   yourself)
-		  expand: false;
 		  add: #columnsTable expand: true;
 		  add: (SpBoxLayout newHorizontal
 				   add: '商品ID' asPresenter width: 80;
