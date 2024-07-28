@@ -114,7 +114,9 @@ GolapDandelionChartPresenter >> updateCanvas [
 	(bezierBuilder connectFrom: #parent)
 		do: [ :bezier |
 			bezier
-				width: (100.0 * bezier model value score / tree score) abs;
+				width: (tree score abs > 1.0e-8
+						 ifTrue: [ (100.0 * bezier model value score / tree score) abs ]
+						 ifFalse: [ 1.0 ]);
 				color: (bezier model value score >= 0
 						 ifTrue: [ Color black ]
 						 ifFalse: [ Color red ]) ];
