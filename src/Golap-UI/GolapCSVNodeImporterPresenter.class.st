@@ -65,7 +65,7 @@ GolapCSVNodeImporterPresenter >> createAggregators [
 	^ Array streamContents: [ :stream |
 		  aggregators keysAndValuesDo: [ :column :string |
 			  (column = idColumn or: [ column = nameColumn ]) ifFalse: [
-				  column = #sum
+				  string = #sum
 					  ifTrue: [
 					  stream nextPut: (GolapSumDataAggregator column: column) ]
 					  ifFalse: [
@@ -116,18 +116,6 @@ GolapCSVNodeImporterPresenter >> initializePresenters [
 		                self nameColumnChanged ].
 	photoUrlColumnDropList := self newDropList whenSelectionChangedDo: [
 		                          self photoUrlColumnChanged ]
-]
-
-{ #category : 'operations' }
-GolapCSVNodeImporterPresenter >> loadInto: aGolapModel [
-
-	dataframe ifNil: [ ^ self ].
-	aGolapModel
-		readNodeDataframe: dataframe
-		idColumn: self idColumn
-		nameColumn: self nameColumn;
-		nodeAggregators: self createAggregators;
-		nodeEvaluator: self evaluator
 ]
 
 { #category : 'accessing' }

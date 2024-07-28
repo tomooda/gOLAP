@@ -55,7 +55,7 @@ GolapCSVEdgeImporterPresenter >> createAggregators [
 	^ Array streamContents: [ :stream |
 		  aggregators keysAndValuesDo: [ :column :string |
 			  (column = idColumn1 or: [ column = idColumn2 ]) ifFalse: [
-				  column = #sum
+				  string = #sum
 					  ifTrue: [
 					  stream nextPut: (GolapSumDataAggregator column: column) ]
 					  ifFalse: [
@@ -105,18 +105,6 @@ GolapCSVEdgeImporterPresenter >> initializePresenters [
 		               self idColumn1Changed ].
 	idDropList2 := self newDropList whenSelectionChangedDo: [
 		               self idColumn2Changed ]
-]
-
-{ #category : 'operations' }
-GolapCSVEdgeImporterPresenter >> loadInto: aGolapModel [
-
-	dataframe ifNil: [ ^ self ].
-	aGolapModel
-		readEdgeDataframe: dataframe
-		idColumn: self idColumn1
-		and: self idColumn2;
-		edgeAggregators: self createAggregators;
-		edgeEvaluator: self evaluator
 ]
 
 { #category : 'updating' }

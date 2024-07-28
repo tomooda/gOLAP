@@ -79,6 +79,7 @@ GolapCSVImportPresenter >> dataframe: aDataFrame [
 GolapCSVImportPresenter >> dataframeChanged [
 
 	self
+		updateAggregators;
 		updateColumnsTable;
 		updateEvaluatorDropList
 ]
@@ -124,10 +125,13 @@ GolapCSVImportPresenter >> initializePresenters [
 		                     yourself
 ]
 
-{ #category : 'operations' }
-GolapCSVImportPresenter >> loadInto: aGolapModel [
+{ #category : 'updating' }
+GolapCSVImportPresenter >> updateAggregators [
 
-	^ self subclassResponsibility
+	self availableColumns do: [ :column |
+		(self availableAggregatorsFor: column) ifNotEmpty: [
+			:availableAggregators |
+			aggregators at: column put: availableAggregators first ] ]
 ]
 
 { #category : 'updating' }

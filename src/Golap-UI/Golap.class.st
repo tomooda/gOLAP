@@ -756,11 +756,6 @@ Golap >> golapDirectory [
 	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
-{ #category : 'accessing' }
-Golap >> graphEdges [
-	^ model ifNotNil: [ model graphEdges ] ifNil: [ Array new ]
-]
-
 { #category : 'layouts' }
 Golap >> graphLayout [
 

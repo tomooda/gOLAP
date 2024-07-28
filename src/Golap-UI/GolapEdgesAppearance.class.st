@@ -149,11 +149,6 @@ GolapEdgesAppearance >> friendsGraph [
 ]
 
 { #category : 'accessing' }
-GolapEdgesAppearance >> graphEdges [
-	^ golap model ifNotNil: #graphEdges ifNil: [ Array new ]
-]
-
-{ #category : 'accessing' }
 GolapEdgesAppearance >> iconExtent [
 	^ 30 @ 14
 ]

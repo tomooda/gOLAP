@@ -5,7 +5,6 @@ Class {
 		'edgeEvaluator',
 		'friendsEdges',
 		'friendsRank',
-		'graphEdges',
 		'positivePolishEdges',
 		'negativePolishEdges',
 		'edgeAggregators',
@@ -112,8 +111,9 @@ GolapModel >> createMergedNodeFrom: aCollectionOfGolapNode named: aString [
 		  ifNotEmpty: [
 			  | oldData newData |
 			  oldData := aCollectionOfGolapNode collect: #data.
-			  newData := (nodeAggregators collect: [ :aggregation |
-				              aggregation value: oldData ]) asOrderedDictionary.
+			  newData := DataSeries newFrom:
+				             (nodeAggregators collect: [ :aggregation |
+					              aggregation value: oldData ]).
 			  newData name: aString.
 			  GolapMergedNode
 				  on: (DataSeries
@@ -236,22 +236,6 @@ GolapModel >> friendsRank [
 ]
 
 { #category : 'accessing' }
-GolapModel >> graphEdges [
-	^ graphEdges
-		ifNil: [ | edges |
-			edges := IdentitySet new.
-			self
-				nodesDo: [ :node | node edgesDo: [ :edge | edges add: edge ] ].
-			edges := edges
-				asSortedCollection: [ :more :less | 
-					(self valueAtEdge: less)
-						ifNil: [ true ]
-						ifNotNil:
-							[ :l | (self valueAtEdge: more) ifNil: [ false ] ifNotNil: [ :m | l <= m ] ] ].
-			graphEdges := edges ]
-]
-
-{ #category : 'accessing' }
 GolapModel >> hiddenEdgeBetween: data1 and: data2 ifAbsent: errorBlock [
 	^ self
 		hiddenEdgeBetween: data1
@@ -293,56 +277,30 @@ GolapModel >> initialize [
 GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
 	aCollectionOfGolapNode ifNotEmpty: [
-		| newNode newEdges oldEdges |
+		| newNode oldEdgesByPeers oldEdges |
 		newNode := self
 			           createMergedNodeFrom: aCollectionOfGolapNode
 			           named: aString.
-		newEdges := IdentityDictionary new.
+		oldEdgesByPeers := IdentityDictionary new.
 		oldEdges := OrderedCollection new:
 			            aCollectionOfGolapNode size
 			            * aCollectionOfGolapNode size.
 		aCollectionOfGolapNode do: [ :node |
-			(Array streamContents: [ :stream |
-				 node edgesDo: [ :e | stream nextPut: e ] ]) do: [ :edge |
+			node edges copy do: [ :edge |
 				| peer |
 				peer := edge peerOf: node.
-				newNode == peer
-					ifTrue: [
-						edge remove.
-						newEdges removeKey: node ]
-					ifFalse: [
-						(newEdges includesKey: peer)
-							ifTrue: [
-								| newEdge |
-								newEdge := newEdges at: peer.
-								newEdge
-									at: 'frequency'
-									put: (newEdge at: 'frequency') + (edge at: 'frequency').
-								#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
-									newEdge
-										at: key
-										put:
-										(newEdge at: key)
-										+ ((edge at: key) * (edge at: 'frequency')) ].
-								edge remove.
-								oldEdges add: edge ]
-							ifFalse: [
-								| newEdge |
-								newEdge := edge copy.
-								#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
-									newEdge
-										at: key
-										put: (newEdge at: key) * (newEdge at: 'frequency') ].
-								edge remove.
-								newEdge basicReplaceNode: node with: newNode.
-								newNode addEdge: newEdge.
-								peer addEdge: newEdge.
-								oldEdges add: edge.
-								newEdges at: peer put: newEdge ] ] ].
+				(aCollectionOfGolapNode includes: peer) ifFalse: [
+					(oldEdgesByPeers at: peer ifAbsentPut: [ OrderedCollection new ])
+						add: edge ].
+				oldEdges add: edge.
+				edge remove ].
 			self nodes removeKey: node id ].
-		newEdges do: [ :edge |
-			#( 'support' 'jaccard' 'lift' 'PMI' ) do: [ :key |
-				edge at: key put: (edge at: key) / (edge at: 'frequency') ] ].
+		oldEdgesByPeers keysAndValuesDo: [ :peer :edges |
+			newNode
+				createEdgeTo: peer
+				data:
+					(DataSeries newFrom: (edgeAggregators collect: [ :aggregator |
+							  aggregator value: (edges collect: #data) ])) ].
 		newNode
 			x: ((aCollectionOfGolapNode collect: #x thenSelect: #notNil)
 					 ifEmpty: [ nil ]
@@ -355,7 +313,6 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 				(aCollectionOfGolapNode asArray sorted:
 						 self nodeEvaluator descending).
 		self nodes at: aString put: newNode.
-		graphEdges := nil.
 		friendsEdges := nil.
 		self friendsEdges: self friendsRank.
 		^ newNode ]
@@ -509,7 +466,6 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 					v1 addNegativePolishEdge: edge.
 					v2 addNegativePolishEdge: edge.
 					self addNegativePolishEdge: edge ] ] ].
-	graphEdges := nil.
 	friendsEdges := nil.
 	^ changed
 ]
@@ -532,8 +488,7 @@ GolapModel >> postCopy [
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
 	friendsEdges := nil.
-	friendsRank := nil.
-	graphEdges := nil
+	friendsRank := nil
 ]
 
 { #category : 'copying' }
