@@ -51,7 +51,8 @@ Class {
 		'drawingSemaphore',
 		'commentText',
 		'openSunburstButton',
-		'dandelionPresenter'
+		'dandelionPresenter',
+		'snapshotBaseName'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -500,16 +501,16 @@ Golap >> copyFromQueryViewTree [
 { #category : 'snapshot' }
 Golap >> createTemporarySnapshotDirectory [
 
-	^ url ifNotNil: [ 
+	^ snapshotBaseName ifNotNil: [
 		  | ref |
 		  ref := (self golapDirectory / self temporaryDirectoryName
 		          /
-			          (url host asString , '--' , DateAndTime now printString
+			          (snapshotBaseName , '--' , DateAndTime now printString
 			           , '--'
 			           ,
 			           ((SharedRandom globalGenerator nextInteger: 1000000) - 1)
 				           printString)) ensureCreateDirectory.
-		  ref / 'createdTime' writeStreamDo: [ :stream | 
+		  ref / 'createdTime' writeStreamDo: [ :stream |
 			  | now |
 			  now := DateAndTime now.
 			  stream nextPutAll:
@@ -846,7 +847,8 @@ Golap >> initialize [
 	rendererSelector := #overviewRenderer.
 	snapshotEnabled := true.
 	lastZoomTimestamp := DateAndTime now.
-	drawingSemaphore := Semaphore forMutualExclusion
+	drawingSemaphore := Semaphore forMutualExclusion.
+	snapshotBaseName := ''
 ]
 
 { #category : 'initialization' }
@@ -1053,8 +1055,9 @@ Golap >> initializeWindow: aWindowPresenter [
 { #category : 'snapshot' }
 Golap >> isTemporarySnapshot [
 
-	^ self snapshotDirectory parent basename
-	  = self temporaryDirectoryName
+	^ self snapshotDirectory isNil or: [
+		  self snapshotDirectory parent basename
+		  = self temporaryDirectoryName ]
 ]
 
 { #category : 'accessing' }
@@ -1606,11 +1609,12 @@ Golap >> restoreColorsAppearance [
 Golap >> restoreData [
 
 	| ref |
-	ref := self snapshotDirectory / 'data.csv'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :readStream | 
-			[ readStream atEnd ] whileFalse: [ 
-				self readDimensionFrom: readStream ] ].
+	ref := self snapshotDirectory / 'data.json'.
+	ref isFile ifTrue: [
+		ref readStreamDo: [ :readStream |
+			dimensions removeAll.
+			(STONJSON fromStream: readStream) keysAndValuesDo: [ :name :json |
+				dimensions at: name put: (GolapModel fromJSON: json) ] ].
 		self updateDimensions ]
 ]
 
@@ -2067,6 +2071,18 @@ Golap >> snapshotBaseDirectoryName [
 	^ 'snapshots'
 ]
 
+{ #category : 'accessing' }
+Golap >> snapshotBaseName [
+
+	^ snapshotBaseName
+]
+
+{ #category : 'accessing' }
+Golap >> snapshotBaseName: aString [
+
+	snapshotBaseName := aString
+]
+
 { #category : 'snapshot' }
 Golap >> snapshotColorsAppearance: aBlock [
 
@@ -2077,26 +2093,26 @@ Golap >> snapshotColorsAppearance: aBlock [
 ]
 
 { #category : 'snapshot' }
+Golap >> snapshotData [
+
+	self snapshotDirectory ifNotNil: [ :baseDir |
+		(baseDir / 'data.json')
+			ensureDelete;
+			writeStreamDo: [ :writeStream |
+				STONJSON
+					put: (dimensions associations collect: [ :assoc |
+								 assoc key -> assoc value asJSON ]) asOrderedDictionary
+					onStreamPretty: writeStream ] ]
+]
+
+{ #category : 'snapshot' }
 Golap >> snapshotData: aReadStream do: aBlock [
 
 	self snapshotQuery.
 	(aReadStream notNil and: [ aReadStream isString not ])
 		ifTrue: [
-			self snapshotDirectory
-				ifNotNil: [ :baseDir |
-					| ref |
-					ref := (baseDir / 'data.csv') ensureDelete.
-					ref writeStreamDo: [ :writeStream |
-						Cursor wait showWhile: [
-							UIManager default informUserDuring: [ :bar |
-								bar
-									min: 0;
-									max: aReadStream size.
-								[ aReadStream atEnd ] whileFalse: [
-									bar value: aReadStream position.
-									writeStream nextPutAll: (aReadStream next: 16384) ] ] ] ].
-					ref readStreamDo: [ :readStream | aBlock value: readStream ] ]
-				ifNil: [ aBlock value: aReadStream ] ]
+			aBlock value: aReadStream.
+			self snapshotData ]
 		ifFalse: [ aBlock value: nil ]
 ]
 
@@ -2405,7 +2421,8 @@ Golap >> url [
 { #category : 'accessing' }
 Golap >> url: aZnUrl [
 
-	url := aZnUrl asUrl
+	url := aZnUrl asUrl.
+	snapshotBaseName := url host asString
 ]
 
 { #category : 'accessing-widgets' }

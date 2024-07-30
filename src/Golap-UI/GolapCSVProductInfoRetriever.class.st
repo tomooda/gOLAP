@@ -26,9 +26,7 @@ GolapCSVProductInfoRetriever class >> tag [
 { #category : 'converting' }
 GolapCSVProductInfoRetriever >> asJSON [
 
-	^ {
-		  'photo-url-column'.
-		  photoUrlColumn } asOrderedDictionary
+	^ { ('photo-url-column' -> photoUrlColumn) } asOrderedDictionary
 ]
 
 { #category : 'testing' }

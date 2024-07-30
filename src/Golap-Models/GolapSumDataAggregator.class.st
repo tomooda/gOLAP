@@ -17,6 +17,18 @@ GolapSumDataAggregator class >> column: aString [
 		  yourself
 ]
 
+{ #category : 'instance creation' }
+GolapSumDataAggregator class >> fromSubtag: anArray [
+
+	^ self column: anArray first
+]
+
+{ #category : 'accessing' }
+GolapSumDataAggregator class >> tag [
+
+	^ 'sum'
+]
+
 { #category : 'comparing' }
 GolapSumDataAggregator >> = anObject [
 
@@ -47,6 +59,12 @@ GolapSumDataAggregator >> printOn: aStream [
 	aStream nextPut: $(.
 	column printOn: aStream.
 	aStream nextPut: $)
+]
+
+{ #category : 'accessing' }
+GolapSumDataAggregator >> subtag [
+
+	^ { self column }
 ]
 
 { #category : 'evaluating' }

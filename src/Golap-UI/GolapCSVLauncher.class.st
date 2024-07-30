@@ -186,6 +186,9 @@ GolapCSVLauncher >> launch [
 	self golapModelsAndNamesDo: [ :golapModel :name |
 		golap silentAddDimension: golapModel named: name ].
 	golap
+		snapshotBaseName: pairPresenter basepathReference basename;
+		snapshotData.
+	golap
 		updateDimensions;
 		updateModel;
 		numFriends: 5.

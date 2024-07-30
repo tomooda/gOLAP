@@ -40,6 +40,14 @@ GolapModel class >> coocurrenceDataDirectory [
 ]
 
 { #category : 'instance creation' }
+GolapModel class >> fromJSON: aDictionary [
+
+	^ self new
+		  fromJSON: aDictionary;
+		  yourself
+]
+
+{ #category : 'instance creation' }
 GolapModel class >> fromServerDataframe: aDataFrame [
 
 	^ self new
@@ -76,6 +84,33 @@ GolapModel >> addNegativePolishEdge: aGolapEdge [
 { #category : 'polishing' }
 GolapModel >> addPositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges add: aGolapEdge
+]
+
+{ #category : 'snapshot' }
+GolapModel >> asJSON [
+
+	| originalNodes originalEdges nodeJsons |
+	originalEdges := IdentitySet new: nodes size.
+	nodeJsons := OrderedCollection new: nodes size.
+	(originalNodes := self originalNodes) do: [ :node |
+		originalEdges addAll: node edges ].
+	^ OrderedDictionary new
+		  at: 'nodes'
+		  put: (originalNodes values asArray collect: [ :node |
+					   {
+						   ('id' -> node id).
+						   ('name' -> node name).
+						   ('data' -> node data) } asOrderedDictionary ]);
+		  at: 'nodeEvaluator' put: nodeEvaluator asJSON;
+		  at: 'nodeAggregators' put: (nodeAggregators collect: #asJSON);
+		  at: 'edges' put: (originalEdges asArray collect: [ :edge |
+					   {
+						   ('node1' -> edge node1 id).
+						   ('node2' -> edge node2 id).
+						   ('data' -> edge data) } asOrderedDictionary ]);
+		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
+		  at: 'edgeAggregators' put: (edgeAggregators collect: #asJSON);
+		  yourself
 ]
 
 { #category : 'enumerating' }
@@ -233,6 +268,50 @@ GolapModel >> friendsEdges: anInteger [
 { #category : 'accessing' }
 GolapModel >> friendsRank [
 	^ friendsRank
+]
+
+{ #category : 'snapshot' }
+GolapModel >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'nodes' ifPresent: [ :nodesJson |
+			nodes := (nodesJson collect: [ :nodeJson |
+					          | data id name |
+					          data := nodeJson at: 'data'.
+					          id := nodeJson at: 'id'.
+					          name := nodeJson at: 'name'.
+					          id -> (GolapNode
+							           on:
+								           (DataSeries
+									            withKeys: data keys
+									            values: data values
+									            name: id)
+							           name: name) ]) asDictionary ];
+		at: 'nodeEvaluator'
+		ifPresent: [ :json |
+			nodeEvaluator := GolapNodeEvaluator fromJSON: json ];
+		at: 'nodeAggregators' ifPresent: [ :jsonArray |
+			nodeAggregators := jsonArray collect: [ :json |
+					                   GolapDataAggregator fromJSON: json ] ];
+		at: 'edges' ifPresent: [ :edgesJson |
+			edgesJson do: [ :edgeJson |
+					| node1 node2 data |
+					node1 := edgeJson at: 'node1'.
+					node2 := edgeJson at: 'node2'.
+					data := edgeJson at: 'data'.
+					(nodes at: node1)
+						createEdgeTo: (nodes at: node2)
+						data: (DataSeries withKeys: data keys values: data values) ] ];
+		at: 'edgeEvaluator'
+		ifPresent: [ :json |
+			edgeEvaluator := GolapEdgeEvaluator fromJSON: json ];
+		at: 'edgeAggregators' ifPresent: [ :jsonArray |
+			edgeAggregators := jsonArray collect: [ :json |
+					                   GolapDataAggregator fromJSON: json ] ].
+	friendsRank := 5.
+	positivePolishEdges := IdentitySet new.
+	negativePolishEdges := IdentitySet new.
+	mergedNodes := IdentityDictionary new
 ]
 
 { #category : 'accessing' }
@@ -412,6 +491,32 @@ GolapModel >> openSunburst [
 		 yourself) open
 ]
 
+{ #category : 'private' }
+GolapModel >> originalNodes [
+
+	| newNodes nextPutNode newEdges |
+	newNodes := Dictionary new: nodes size.
+	nextPutNode := [ :node |
+	               node isMergedNode
+		               ifTrue: [ node oldNodes do: nextPutNode ]
+		               ifFalse: [ newNodes at: node id put: node copy ] ].
+	nodes valuesDo: nextPutNode.
+	newEdges := IdentityDictionary new: 1024.
+	newNodes valuesDo: [ :node |
+		node edgesDo: [ :edge |
+			(edge node1 isMergedNode or: [ edge node2 isMergedNode ]) ifFalse: [
+				newEdges at: edge ifAbsentPut: [
+					edge copy
+						node1: (newNodes at: edge node1 id);
+						node2: (newNodes at: edge node2 id);
+						yourself ] ] ] ].
+	newNodes valuesDo: [ :node |
+		node edges: (node edges
+				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
+				 thenSelect: #notNil) ].
+	^ newNodes
+]
+
 { #category : 'polishing' }
 GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anInteger [
 
@@ -483,38 +588,12 @@ GolapModel >> postCopy [
 	edgeEvaluator := edgeEvaluator ifNotNil: #copy.
 	nodeAggregators := nodeAggregators ifNotNil: #copy.
 	edgeAggregators := edgeAggregators ifNotNil: #copy.
-	self postCopyNodes.
+	nodes := self originalNodes.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
 	friendsEdges := nil.
 	friendsRank := nil
-]
-
-{ #category : 'copying' }
-GolapModel >> postCopyNodes [
-
-	| newNodes nextPutNode newEdges |
-	newNodes := Dictionary new: nodes size.
-	nextPutNode := [ :node |
-	               node isMergedNode
-		               ifTrue: [ node oldNodes do: nextPutNode ]
-		               ifFalse: [ newNodes at: node id put: node copy ] ].
-	nodes valuesDo: nextPutNode.
-	newEdges := IdentityDictionary new: 1024.
-	newNodes valuesDo: [ :node |
-		node edgesDo: [ :edge |
-			(edge node1 isMergedNode or: [ edge node2 isMergedNode ]) ifFalse: [
-				newEdges at: edge ifAbsentPut: [
-					edge copy
-						node1: (newNodes at: edge node1 id);
-						node2: (newNodes at: edge node2 id);
-						yourself ] ] ] ].
-	newNodes valuesDo: [ :node |
-		node edges: (node edges
-				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
-				 thenSelect: #notNil) ].
-	nodes := newNodes
 ]
 
 { #category : 'private' }

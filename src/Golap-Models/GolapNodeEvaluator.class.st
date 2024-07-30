@@ -33,7 +33,8 @@ GolapNodeEvaluator class >> tag [
 
 { #category : 'converting' }
 GolapNodeEvaluator >> asJSON [
-	^ { self tag -> self subtag }
+
+	^ { (self tag -> self subtag) } asOrderedDictionary
 ]
 
 { #category : 'converting' }

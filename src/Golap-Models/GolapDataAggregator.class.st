@@ -6,6 +6,23 @@ Class {
 	#tag : 'Evaluators'
 }
 
+{ #category : 'instance creation' }
+GolapDataAggregator class >> fromJSON: aDictionary [
+
+	self allSubclassesDo: [ :subclass |
+		subclass isAbstract not ifTrue: [
+			aDictionary
+				at: subclass tag
+				ifPresent: [ :subtag | ^ subclass fromSubtag: subtag ] ] ].
+	^ nil
+]
+
+{ #category : 'instance creation' }
+GolapDataAggregator class >> fromSubtag: anArray [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'testing' }
 GolapDataAggregator class >> isAbstract [
 
@@ -13,9 +30,33 @@ GolapDataAggregator class >> isAbstract [
 ]
 
 { #category : 'accessing' }
+GolapDataAggregator class >> tag [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'converting' }
+GolapDataAggregator >> asJSON [
+
+	^ { (self tag -> self subtag) } asOrderedDictionary
+]
+
+{ #category : 'accessing' }
 GolapDataAggregator >> column [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapDataAggregator >> subtag [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapDataAggregator >> tag [
+
+	^ self class tag
 ]
 
 { #category : 'evaluating' }

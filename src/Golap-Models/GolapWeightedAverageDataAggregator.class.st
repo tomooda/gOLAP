@@ -19,6 +19,18 @@ GolapWeightedAverageDataAggregator class >> column: aString weightColumn: anothe
 		  yourself
 ]
 
+{ #category : 'instance creation' }
+GolapWeightedAverageDataAggregator class >> fromSubtag: anArray [
+
+	^ self column: anArray first weightColumn: anArray second
+]
+
+{ #category : 'accessing' }
+GolapWeightedAverageDataAggregator class >> tag [
+
+	^ 'weighted-average'
+]
+
 { #category : 'comparing' }
 GolapWeightedAverageDataAggregator >> = anObject [
 
@@ -54,6 +66,14 @@ GolapWeightedAverageDataAggregator >> printOn: aStream [
 	aStream nextPut: $,.
 	weightColumn printOn: aStream.
 	aStream nextPut: $)
+]
+
+{ #category : 'accessing' }
+GolapWeightedAverageDataAggregator >> subtag [
+
+	^ {
+		  self column.
+		  self weightColumn }
 ]
 
 { #category : 'evaluating' }
