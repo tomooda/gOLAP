@@ -44,7 +44,16 @@ GolapSnapshotBrowser class >> open [
 { #category : 'operations' }
 GolapSnapshotBrowser >> addSnapshot [
 
-	Golap openClient
+	self newMenu
+		addItem: [ :item |
+			item
+				name: 'CSV';
+				action: [ GolapCSVLauncher open ] ];
+		addItem: [ :item |
+			item
+				name: 'Server';
+				action: [ Golap openClient ] ];
+		openWithSpecAtPointer
 ]
 
 { #category : 'accessing' }
