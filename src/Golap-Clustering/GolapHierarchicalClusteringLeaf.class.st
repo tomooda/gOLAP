@@ -17,10 +17,22 @@ GolapHierarchicalClusteringLeaf class >> node: aGolapNode score: aNumber [
 		  yourself
 ]
 
+{ #category : 'enumerating' }
+GolapHierarchicalClusteringLeaf >> childrenDo: aBlock [
+
+	
+]
+
 { #category : 'accessing' }
 GolapHierarchicalClusteringLeaf >> graphNode [
 
 	^ graphNode
+]
+
+{ #category : 'testing' }
+GolapHierarchicalClusteringLeaf >> hasChild: aTree [
+
+	^ false
 ]
 
 { #category : 'testing' }

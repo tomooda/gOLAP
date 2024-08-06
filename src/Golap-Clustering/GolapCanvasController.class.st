@@ -1,16 +1,16 @@
 Class {
-	#name : 'GolapDandelionCanvasController',
+	#name : 'GolapCanvasController',
 	#superclass : 'RSCanvasController',
 	#instVars : [
 		'presenter'
 	],
-	#category : 'Golap-Clustering-Dandelion',
+	#category : 'Golap-Clustering-Core',
 	#package : 'Golap-Clustering',
-	#tag : 'Dandelion'
+	#tag : 'Core'
 }
 
 { #category : 'instance creation' }
-GolapDandelionCanvasController class >> on: aGolapDandelionChartPresenter [
+GolapCanvasController class >> on: aGolapDandelionChartPresenter [
 
 	^ self new
 		  presenter: aGolapDandelionChartPresenter;
@@ -18,11 +18,11 @@ GolapDandelionCanvasController class >> on: aGolapDandelionChartPresenter [
 ]
 
 { #category : 'hooks' }
-GolapDandelionCanvasController >> clicked: event [
+GolapCanvasController >> clicked: event [
 ]
 
 { #category : 'hooks' }
-GolapDandelionCanvasController >> onShape: aShape [
+GolapCanvasController >> onShape: aShape [
 
 	super onShape: aShape.
 	aShape
@@ -31,13 +31,13 @@ GolapDandelionCanvasController >> onShape: aShape [
 ]
 
 { #category : 'accessing' }
-GolapDandelionCanvasController >> presenter: aGolapDandelionChartPresenter [
+GolapCanvasController >> presenter: aGolapDandelionChartPresenter [
 
 	presenter := aGolapDandelionChartPresenter
 ]
 
 { #category : 'hooks' }
-GolapDandelionCanvasController >> rightClicked: event [
+GolapCanvasController >> rightClicked: event [
 
 	(presenter golap globalImageMenu: nil) openWithSpecAt:
 		(presenter withAdapterDo: [ :a |

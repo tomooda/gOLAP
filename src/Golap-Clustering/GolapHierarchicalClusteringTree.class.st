@@ -31,6 +31,31 @@ GolapHierarchicalClusteringTree class >> friendsClusterFrom: aGolapModel depth: 
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringTree >> allLeaves [
+
+	^ Array streamContents: [ :stream |
+		  self leavesDo: [ :leaf | stream nextPut: leaf ] ]
+]
+
+{ #category : 'enumerating' }
+GolapHierarchicalClusteringTree >> childrenDo: aBlock [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> depth [
+
+	| depth node |
+	depth := 1.
+	node := parent.
+	[ node notNil ] whileTrue: [
+		node := node parent.
+		depth := depth + 1 ].
+	^ depth
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> graphNodes [
 
 	^ Array streamContents: [ :stream |
@@ -43,16 +68,14 @@ GolapHierarchicalClusteringTree >> graphNodesDo: aBlock [
 	self leavesDo: [ :leaf | leaf graphNode ifNotNil: aBlock ]
 ]
 
-{ #category : 'controlling' }
-GolapHierarchicalClusteringTree >> ifNode: aBlock [
+{ #category : 'testing' }
+GolapHierarchicalClusteringTree >> hasChild: aTree [
+
+	^ self subclassResponsibility
 ]
 
-{ #category : 'testing' }
-GolapHierarchicalClusteringTree >> includesNode: aGolapNode [
-
-	self leavesDo: [ :leaf |
-		leaf graphNode == aGolapNode ifTrue: [ ^ true ] ].
-	^ false
+{ #category : 'controlling' }
+GolapHierarchicalClusteringTree >> ifNode: aBlock [
 ]
 
 { #category : 'testing' }
@@ -71,6 +94,14 @@ GolapHierarchicalClusteringTree >> isNode [
 GolapHierarchicalClusteringTree >> leavesDo: aBlock [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> maxDepth [
+
+	^ self allLeaves
+		  ifNotEmpty: [ :leaves | (leaves collect: #depth) max ]
+		  ifEmpty: [ 0 ]
 ]
 
 { #category : 'enumerating' }
@@ -123,7 +154,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 								 color: color) ]
 					ifFalse: [ radius := radius + 10 ] ] ] ].
 	sunburstBuilder canvas @ RSCanvasController.
-	sunburstBuilder shapes @ GolapDandelionNodeInteraction.
+	sunburstBuilder shapes @ GolapNodeInteraction.
 	bezierBuilder := RSLineBuilder sunburstBezier.
 	bezierBuilder
 		capRound;
@@ -135,7 +166,7 @@ GolapHierarchicalClusteringTree >> openSunburst [
 				color: (bezier model value score >= 0
 						 ifTrue: [ Color black ]
 						 ifFalse: [ Color red ]) ];
-		@ GolapDandelionChartInteraction.
+		@ GolapChartInteraction.
 	sunburstBuilder canvas open maximize.
 	^ sunburstBuilder
 ]

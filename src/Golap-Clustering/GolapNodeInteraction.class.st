@@ -1,26 +1,26 @@
 Class {
-	#name : 'GolapDandelionNodeInteraction',
-	#superclass : 'GolapDandelionChartInteraction',
-	#category : 'Golap-Clustering-Dandelion',
+	#name : 'GolapNodeInteraction',
+	#superclass : 'GolapChartInteraction',
+	#category : 'Golap-Clustering-Core',
 	#package : 'Golap-Clustering',
-	#tag : 'Dandelion'
+	#tag : 'Core'
 }
 
 { #category : 'hooks' }
-GolapDandelionNodeInteraction >> activePopupWith: event [
+GolapNodeInteraction >> activePopupWith: event [
 
 	event shape model isLeaf ifTrue: [ super activePopupWith: event ]
 ]
 
 { #category : 'hooks' }
-GolapDandelionNodeInteraction >> clicked: event [
+GolapNodeInteraction >> clicked: event [
 
 	(event shape model respondsTo: #graphNode) ifTrue: [
 		presenter toggleSelection: event shape model graphNode ]
 ]
 
 { #category : 'hooks' }
-GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
+GolapNodeInteraction >> createPopupFor: aShape event: event [
 
 	^ aShape model graphNode photoimage
 		  ifNotNil: [ :photoimage |
@@ -41,7 +41,7 @@ GolapDandelionNodeInteraction >> createPopupFor: aShape event: event [
 ]
 
 { #category : 'hooks' }
-GolapDandelionNodeInteraction >> rightClicked: event [
+GolapNodeInteraction >> rightClicked: event [
 
 	(event shape model respondsTo: #graphNode) ifTrue: [
 		(presenter golap globalImageMenu: event shape model graphNode)

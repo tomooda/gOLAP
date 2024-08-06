@@ -23,7 +23,7 @@ GolapHierarchicalClustering class >> on: aGolapModel [
 { #category : 'private' }
 GolapHierarchicalClustering >> computeTrees [
 
-	| treeByNode nextTreeMap |
+	| treeByNode nextTreeMap stream odds evens |
 	treeByNode := IdentityDictionary new: golapModel nodes size.
 	trees do: [ :tree |
 		tree graphNodesDo: [ :node | treeByNode at: node put: tree ] ].
@@ -31,7 +31,7 @@ GolapHierarchicalClustering >> computeTrees [
 	trees do: [ :tree |
 		nextTreeMap
 			at: tree
-			put: (GolapHierarchicalClusteringNode with: tree) ].
+			put: (GolapHierarchicalClusteringNode with: tree rank: rank) ].
 	trees do: [ :tree |
 		| doneNodes |
 		doneNodes := (nextTreeMap at: tree) graphNodes asIdentitySet.
@@ -47,7 +47,14 @@ GolapHierarchicalClustering >> computeTrees [
 					(nextTreeMap keys select: [ :key |
 						 (nextTreeMap at: key) == obsoleteNextTree ]) do: [ :key |
 						nextTreeMap at: key put: myNextTree ] ] ] ] ].
-	^ nextTreeMap values asIdentitySet asArray
+	stream := (nextTreeMap values asIdentitySet asArray sorted:
+		           #score descending) readStream.
+	odds := OrderedCollection new: (nextTreeMap size / 2) ceiling.
+	evens := OrderedCollection new: (nextTreeMap size / 2) ceiling.
+	[ stream atEnd ] whileFalse: [
+		odds add: stream next.
+		stream atEnd ifFalse: [ evens add: stream next ] ].
+	^ evens reverse , odds
 ]
 
 { #category : 'enumerating' }

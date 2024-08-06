@@ -2,7 +2,8 @@ Class {
 	#name : 'GolapHierarchicalClusteringNode',
 	#superclass : 'GolapHierarchicalClusteringTree',
 	#instVars : [
-		'trees'
+		'trees',
+		'rank'
 	],
 	#category : 'Golap-Clustering-Core',
 	#package : 'Golap-Clustering',
@@ -16,10 +17,25 @@ GolapHierarchicalClusteringNode class >> with: aGolapHierarchicalClusteringTree 
 ]
 
 { #category : 'instance creation' }
+GolapHierarchicalClusteringNode class >> with: aGolapHierarchicalClusteringTree rank: anInteger [
+
+	^ self withAll: { aGolapHierarchicalClusteringTree } rank: anInteger
+]
+
+{ #category : 'instance creation' }
 GolapHierarchicalClusteringNode class >> withAll: aCollectionOfGolapTree [
 
 	^ self new
 		  setTrees: aCollectionOfGolapTree;
+		  yourself
+]
+
+{ #category : 'instance creation' }
+GolapHierarchicalClusteringNode class >> withAll: aCollectionOfGolapTree rank: anInteger [
+
+	^ self new
+		  setTrees: aCollectionOfGolapTree;
+		  rank: anInteger;
 		  yourself
 ]
 
@@ -31,11 +47,23 @@ GolapHierarchicalClusteringNode >> add: aGolapHierarchicalClusteringTree score: 
 	score := score + aNumber
 ]
 
+{ #category : 'enumerating' }
+GolapHierarchicalClusteringNode >> childrenDo: aBlock [
+
+	^ trees do: aBlock
+]
+
 { #category : 'merging' }
 GolapHierarchicalClusteringNode >> empty [
 
 	trees := Array new.
 	score := 0
+]
+
+{ #category : 'testing' }
+GolapHierarchicalClusteringNode >> hasChild: aTree [
+
+	^ trees includes: aTree
 ]
 
 { #category : 'controlling' }
@@ -85,6 +113,18 @@ GolapHierarchicalClusteringNode >> printOn: aStream [
 	self graphNodes
 		do: [ :node | aStream nextPutAll: node name ]
 		separatedBy: [ aStream cr ]
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringNode >> rank [
+
+	^ rank
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringNode >> rank: anInteger [
+
+	rank := anInteger
 ]
 
 { #category : 'private' }

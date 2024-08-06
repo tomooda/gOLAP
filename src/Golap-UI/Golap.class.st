@@ -52,7 +52,8 @@ Class {
 		'commentText',
 		'openSunburstButton',
 		'dandelionPresenter',
-		'snapshotBaseName'
+		'snapshotBaseName',
+		'hedgePresenter'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -1028,13 +1029,16 @@ Golap >> initializePresenters [
 
 	dandelionPresenter := self instantiate:
 		                      (GolapDandelionChartPresenter new golap: self).
+	hedgePresenter := self instantiate:
+		                  (GolapHedgeChartPresenter new golap: self).
 	viewsNotebook := self newNotebook
 		                 addPageTitle: 'グラフ' provider: [
 			                 SpPresenter new
 				                 layout: self graphLayout;
 				                 yourself ];
-		                 addPageTitle: '樹形図'
+		                 addPageTitle: 'たんぽぽ図'
 		                 provider: [ dandelionPresenter ];
+		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
 		                 yourself.
 
 	self whenBuiltDo: [ :w |
