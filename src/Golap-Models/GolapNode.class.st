@@ -425,6 +425,17 @@ GolapNode >> printOn: aStream [
 ]
 
 { #category : 'accessing' }
+GolapNode >> rankOf: aGolapEdge in: aGolapModel [
+
+	| score rank |
+	score := aGolapModel valueAtEdge: aGolapEdge.
+	rank := 1.
+	edges do: [ :edge |
+		score < (aGolapModel valueAtEdge: edge) ifTrue: [ rank := rank + 1 ] ].
+	^ rank
+]
+
+{ #category : 'accessing' }
 GolapNode >> rectangles [
 	^ rectangles
 ]

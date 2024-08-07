@@ -118,6 +118,13 @@ GolapEdge >> postCopy [
 	data := data copy
 ]
 
+{ #category : 'accessing' }
+GolapEdge >> rankIn: aGolapModel [
+
+	^ (node1 rankOf: self in: aGolapModel) max:
+		  (node2 rankOf: self in: aGolapModel)
+]
+
 { #category : 'operations' }
 GolapEdge >> remove [
 	node1 ifNotNil: [ :v | v basicRemoveEdge: self ].

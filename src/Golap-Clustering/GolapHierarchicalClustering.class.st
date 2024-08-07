@@ -60,21 +60,9 @@ GolapHierarchicalClustering >> computeTrees [
 { #category : 'enumerating' }
 GolapHierarchicalClustering >> friendsOf: aGolapNode do: aBlock [
 
-	| index |
-	index := 1.
-	rank timesRepeat: [
-		| edge peer |
-		[ (edges at: index) hasNode: aGolapNode ] whileFalse: [
-			index := index + 1.
-			index <= edges size ifFalse: [ ^ self ] ].
-		edge := edges at: index.
-		peer := edge peerOf: aGolapNode.
-		((1 to: index) inject: 0 into: [ :count :i |
-			 ((edges at: i) hasNode: peer)
-				 ifTrue: [ count + 1 ]
-				 ifFalse: [ count ] ]) <= rank ifTrue: [ aBlock value: peer ].
-		index := index + 1.
-		index <= edges size ifFalse: [ ^ self ] ]
+	aGolapNode edgesDo: [ :edge |
+		(golapModel rankAtEdge: edge) <= rank ifTrue: [
+			aBlock value: (edge peerOf: aGolapNode) ] ]
 ]
 
 { #category : 'enumerating' }

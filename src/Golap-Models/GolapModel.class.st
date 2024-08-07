@@ -11,7 +11,8 @@ Class {
 		'mergedNodes',
 		'nodeAggregators',
 		'nodeEvaluator',
-		'nodes'
+		'nodes',
+		'edgeRanks'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -125,18 +126,11 @@ GolapModel >> bindingEdgesDo: aBlock [
 GolapModel >> computeFriendsEdges: anInteger [
 
 	| edges |
-	edges := IdentityBag new: self nodes size * anInteger.
-	self nodesDo: [ :v |
-		edges addAll: ((((Array streamContents: [ :stream |
-				    v edgesDo: [ :e |
-					    (self valueAtEdge: e) ifNotNil: [ :value |
-						    stream nextPut: e -> value ] ] ]) asSortedCollection: [
-				   :more
-				   :less | less value <= more value ]) readStream next: anInteger)
-				 collect: #key) ].
-	^ Array streamContents: [ :stream |
-		  edges doWithOccurrences: [ :e :n |
-			  n >= 2 ifTrue: [ stream nextPut: e ] ] ]
+	edges := IdentitySet new.
+	self nodesDo: [ :node |
+		node edgesDo: [ :edge |
+			(self rankAtEdge: edge) <= anInteger ifTrue: [ edges add: edge ] ] ].
+	^ edges asArray
 ]
 
 { #category : 'private' }
@@ -240,6 +234,12 @@ GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
 	edgeEvaluator := aGolapEdgeEvaluator
 ]
 
+{ #category : 'private' }
+GolapModel >> flushEdgeRanks [
+
+	edgeRanks removeAll
+]
+
 { #category : 'visualizing-labels' }
 GolapModel >> font [
 	^ TextStyle defaultFont
@@ -311,7 +311,8 @@ GolapModel >> fromJSON: aDictionary [
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	mergedNodes := IdentityDictionary new
+	mergedNodes := IdentityDictionary new.
+	self flushEdgeRanks
 ]
 
 { #category : 'accessing' }
@@ -349,7 +350,8 @@ GolapModel >> initialize [
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	mergedNodes := IdentityDictionary new
+	mergedNodes := IdentityDictionary new.
+	edgeRanks := IdentityDictionary new
 ]
 
 { #category : 'accessing-node' }
@@ -392,6 +394,7 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 				(aCollectionOfGolapNode asArray sorted:
 						 self nodeEvaluator descending).
 		self nodes at: aString put: newNode.
+		self flushEdgeRanks.
 		friendsEdges := nil.
 		self friendsEdges: self friendsRank.
 		^ newNode ]
@@ -463,7 +466,9 @@ GolapModel >> nodeListWithKeyword: aString [
 { #category : 'accessing-node' }
 GolapModel >> nodes [
 
-	^ nodes ifNil: [ nodes := Dictionary new ]
+	^ nodes ifNil: [
+		  nodes := Dictionary new.
+		  self flushEdgeRanks ]
 ]
 
 { #category : 'enumerating' }
@@ -572,6 +577,7 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 					v2 addNegativePolishEdge: edge.
 					self addNegativePolishEdge: edge ] ] ].
 	friendsEdges := nil.
+	self flushEdgeRanks.
 	^ changed
 ]
 
@@ -593,7 +599,14 @@ GolapModel >> postCopy [
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
 	friendsEdges := nil.
-	friendsRank := nil
+	friendsRank := nil.
+	self flushEdgeRanks
+]
+
+{ #category : 'accessing' }
+GolapModel >> rankAtEdge: aGolapEdge [
+
+	^ edgeRanks at: aGolapEdge ifAbsentPut: [ aGolapEdge rankIn: self ]
 ]
 
 { #category : 'private' }
@@ -624,7 +637,8 @@ GolapModel >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn: ano
 		name := (row at: anotherString ifAbsent: [ id ]) asString.
 		row name: id.
 		newNodes at: id ifAbsentPut: (self createNode: row name: name) ].
-	nodes := newNodes
+	nodes := newNodes.
+	self flushEdgeRanks
 ]
 
 { #category : 'private' }
@@ -676,7 +690,8 @@ GolapModel >> readServerDataframe: aDataFrame [
 			(data at: 'effective' ifAbsent: [ 1 ]) > 0
 				ifTrue: [ node1 createEdgeTo: node2 data: data ]
 				ifFalse: [ node1 createHiddenEdgeTo: node2 data: data ] ] ].
-	nodes := newNodes
+	nodes := newNodes.
+	self flushEdgeRanks
 ]
 
 { #category : 'polishing' }
@@ -748,7 +763,8 @@ GolapModel >> resetMerges [
 				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
 				 thenSelect: #notNil) ].
 	nodes := newNodes.
-	mergedNodes := IdentityDictionary new
+	mergedNodes := IdentityDictionary new.
+	self flushEdgeRanks
 ]
 
 { #category : 'accessing-node' }

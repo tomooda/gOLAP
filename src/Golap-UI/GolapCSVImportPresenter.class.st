@@ -44,7 +44,7 @@ GolapCSVImportPresenter >> availableAggregatorsFor: aString [
 { #category : 'accessing' }
 GolapCSVImportPresenter >> availableColumns [
 
-	^ dataframe ifNotNil: #columnNames ifNil: [ {  } ]
+	^ dataframe ifNotNil: [ dataframe columnNames ] ifNil: [ {  } ]
 ]
 
 { #category : 'accessing' }
@@ -71,6 +71,10 @@ GolapCSVImportPresenter >> createAggregators [
 { #category : 'accessing' }
 GolapCSVImportPresenter >> dataframe: aDataFrame [
 
+	aDataFrame columnNames copy do: [ :columnName |
+		((aDataFrame column: columnName) anySatisfy: [ :value |
+			 value isNil or: [ value isFloat and: [ value isFinite not ] ] ])
+			ifTrue: [ aDataFrame removeColumn: columnName ] ].
 	dataframe := aDataFrame.
 	self dataframeChanged
 ]
