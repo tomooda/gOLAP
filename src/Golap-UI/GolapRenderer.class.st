@@ -114,6 +114,12 @@ GolapRenderer >> layout [
 ]
 
 { #category : 'accessing' }
+GolapRenderer >> layouter [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
 GolapRenderer >> modelDo: aBlock [
 	golap ifNotNil: [ golap model ifNotNil: aBlock ]
 ]
@@ -125,6 +131,12 @@ GolapRenderer >> moveImageOffset: aPoint [
 
 { #category : 'view manipulation' }
 GolapRenderer >> moveMapOffset: aPoint [
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapRenderer >> moveNode: aGolapNode to: aPoint [
+
 	^ self subclassResponsibility
 ]
 

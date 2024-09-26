@@ -6,7 +6,8 @@ Class {
 		'model',
 		'softDivisions',
 		'overridesYWithFrequency',
-		'overridesYWithFrequencyOrder'
+		'overridesYWithFrequencyOrder',
+		'lockedNodes'
 	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',
@@ -22,34 +23,30 @@ GolapLayouter class >> on: aGolapModel [
 
 { #category : 'layouting' }
 GolapLayouter >> adjustCenter: aCollectionOfGolapNode [
+
 	| numNodes minX minY maxX maxY meanX meanY |
 	numNodes := aCollectionOfGolapNode size.
 	minX := maxX := divisions asFloat * 0.5.
 	minY := maxY := divisions asFloat * 0.5.
-	aCollectionOfGolapNode
-		do: [ :node | 
-			| x y |
-			x := node x.
-			y := node y.
-			minX := minX min: x.
-			maxX := maxX max: x.
-			minY := minY min: y.
-			maxY := maxY max: y ].
+	aCollectionOfGolapNode do: [ :node |
+		| x y |
+		x := node x.
+		y := node y.
+		minX := minX min: x.
+		maxX := maxX max: x.
+		minY := minY min: y.
+		maxY := maxY max: y ].
 	meanX := 0.0.
 	meanY := 0.0.
-	aCollectionOfGolapNode
-		do: [ :node | 
-			meanX := meanX + node x.
-			meanY := meanY + node y ].
+	aCollectionOfGolapNode do: [ :node |
+		meanX := meanX + node x.
+		meanY := meanY + node y ].
 	meanX := divisions asFloat * 0.5
-		- (meanX / (numNodes max: 1) asFloat).
+	         - (meanX / (numNodes max: 1) asFloat).
 	meanY := divisions asFloat * 0.5
-		- (meanY / (numNodes max: 1) asFloat).
-	aCollectionOfGolapNode
-		do: [ :node | 
-			node
-				x: node x + meanX;
-				y: node y + meanY ]
+	         - (meanY / (numNodes max: 1) asFloat).
+	aCollectionOfGolapNode do: [ :node |
+		self move: node toX: node x + meanX y: node y + meanY ]
 ]
 
 { #category : 'layouting' }
@@ -70,15 +67,16 @@ GolapLayouter >> bindParticles: aCollectionOfGolapNode bindings: bindings [
 				velocities
 					at: v1
 					put: (velocities at: v1) + (p2 - (v normalized * 0.2) - p1) ] ] ].
-	velocities keysAndValuesDo: [ :v :p |
+	velocities keysAndValuesDo: [ :node :p |
 		| numBindings |
-		numBindings := (bindings at: v) size asFloat.
+		numBindings := (bindings at: node) size asFloat.
 		numBindings > 1.0e-8 ifTrue: [
-			v
-				x: (v x + (p x / (bindings at: v) size asFloat)
+			self
+				move: node
+				toX: (node x + (p x / (bindings at: node) size asFloat)
 						 min: softDivisions
-						 max: 1.0e-8);
-				y: (v y + (p y / (bindings at: v) size asFloat)
+						 max: 1.0e-8)
+				y: (node y + (p y / (bindings at: node) size asFloat)
 						 min: softDivisions
 						 max: 1.0e-8) ] ]
 ]
@@ -104,11 +102,12 @@ GolapLayouter >> bindings [
 
 { #category : 'layouting' }
 GolapLayouter >> centralize: aCollectionOfGolapNode [
-	aCollectionOfGolapNode
-		do: [ :v | 
-			v
-				x: (v x - (divisions * 0.5)) * 0.99 + (divisions * 0.5);
-				y: (v y - (divisions * 0.5)) * 0.99 + (divisions * 0.5) ]
+
+	aCollectionOfGolapNode do: [ :node |
+		self
+			move: node
+			toX: node x - (divisions * 0.5) * 0.99 + (divisions * 0.5)
+			y: node y - (divisions * 0.5) * 0.99 + (divisions * 0.5) ]
 ]
 
 { #category : 'accessing' }
@@ -122,7 +121,14 @@ GolapLayouter >> initialize [
 	super initialize.
 	divisions := nil.
 	overridesYWithFrequency := false.
-	overridesYWithFrequencyOrder := false
+	overridesYWithFrequencyOrder := false.
+	lockedNodes := IdentitySet new
+]
+
+{ #category : 'testing' }
+GolapLayouter >> isLockedNode: aGolapNode [
+
+	^ lockedNodes includes: aGolapNode
 ]
 
 { #category : 'layouting' }
@@ -171,7 +177,9 @@ GolapLayouter >> layout [
 			offset := minY.
 			scale := maxY - minY / (maxF - minF).
 			boundNodes do: [ :node |
-				node y: maxF - (model valueAtNode: node) * scale + offset ] ] ].
+				self
+					move: node
+					toY: maxF - (model valueAtNode: node) * scale + offset ] ] ].
 	self overridesYWithFrequencyOrder ifTrue: [
 		| minY maxY minF maxF |
 		minY := (boundNodes collect: #y thenSelect: #notNil)
@@ -197,17 +205,16 @@ GolapLayouter >> layout [
 					 v2 := model valueAtNode: less.
 					 v2 isNil or: [ v1 notNil and: [ v1 >= v2 ] ] ]) doWithIndex: [
 					:node
-					:index | node y: (index - 1) asFloat * scale + offset ] ] ].
+					:index |
+					self move: node toY: (index - 1) asFloat * scale + offset ] ] ].
 	((boundNodes collect: #x thenSelect: #notNil)
 		 ifEmpty: [ 0.0 ]
 		 ifNotEmpty: #min) floor
 	@ ((boundNodes collect: #y thenSelect: #notNil)
 			 ifEmpty: [ 0.0 ]
 			 ifNotEmpty: #min) floor in: [ :offset |
-		boundNodes do: [ :v |
-			v
-				x: v x - offset x;
-				y: v y - offset y ] ].
+		boundNodes do: [ :node |
+			self move: node toX: node x - offset x y: node y - offset y ] ].
 	divisions := (((boundNodes collect: #x)
 		               ifEmpty: [ 0 ]
 		               ifNotEmpty: #max) ceiling max:
@@ -221,16 +228,19 @@ GolapLayouter >> layout [
 		isolatedNodes atEnd ifTrue: [
 			divisions := divisions ceiling.
 			^ self ].
-		isolatedNodes next
-			x: x - 0.25;
-			y: divisions - 0.25 ].
+		self move: isolatedNodes next toX: x - 0.25 y: divisions - 0.25 ].
 	1 to: divisions - (1 / 2) by: 1 / 2 do: [ :y |
 		isolatedNodes atEnd ifTrue: [
 			divisions := divisions ceiling.
 			^ self ].
-		isolatedNodes next
-			x: divisions - 0.25;
-			y: y - 0.25 ] ] repeat
+		self move: isolatedNodes next toX: divisions - 0.25 y: y - 0.25 ] ]
+		repeat
+]
+
+{ #category : 'accessing' }
+GolapLayouter >> lockNode: aGolapNode [
+
+	lockedNodes add: aGolapNode
 ]
 
 { #category : 'accessing' }
@@ -240,7 +250,25 @@ GolapLayouter >> model [
 
 { #category : 'accessing' }
 GolapLayouter >> model: aGolapModel [
-	model := aGolapModel
+	model := aGolapModel.
+	lockedNodes := IdentitySet new
+]
+
+{ #category : 'layouting' }
+GolapLayouter >> move: aGolapNode toX: aNumber y: anotherNumber [
+
+	(lockedNodes includes: aGolapNode) ifFalse: [
+		aGolapNode
+			x: aNumber;
+			y: anotherNumber ].
+	^ aGolapNode
+]
+
+{ #category : 'layouting' }
+GolapLayouter >> move: aGolapNode toY: aNumber [
+
+	(lockedNodes includes: aGolapNode) ifFalse: [ aGolapNode y: aNumber ].
+	^ aGolapNode
 ]
 
 { #category : 'accessing' }
@@ -322,10 +350,11 @@ GolapLayouter >> repulseParticles: aCollectionOfGolapNode bindings: bindings [
 										ifTrue: [ v := v + 1.0e-4 asPoint ]
 										ifFalse: [ v := v + -1.0e-4 asPoint ] ] ] ] ].
 				c > 0 ifTrue: [
-					v1
-						x: (v1 x + (v x / c asFloat min: 1.0 max: -1.0)
+					self
+						move: v1
+						toX: (v1 x + (v x / c asFloat min: 1.0 max: -1.0)
 								 min: softDivisions
-								 max: 1.0e-8);
+								 max: 1.0e-8)
 						y: (v1 y + (v y / c asFloat min: 1.0 max: -1.0)
 								 min: softDivisions
 								 max: 1.0e-8) ] ] ] ]
@@ -340,9 +369,13 @@ GolapLayouter >> swirlLayout: aCollectionOfGolapNode [
 		| x y |
 		x := i \\ width + 1.
 		y := i // width + 1.
-		node
-			x: x - 0.5;
-			y: y - 0.5 ]
+		self move: node toX: x - 0.5 y: y - 0.5 ]
+]
+
+{ #category : 'accessing' }
+GolapLayouter >> unlockNode: aGolapNode [
+
+	lockedNodes remove: aGolapNode ifAbsent: [  ]
 ]
 
 { #category : 'layouting' }
@@ -352,7 +385,8 @@ GolapLayouter >> wall: aCollectionOfGolapNode [
 	min := 0.0.
 	max := divisions asFloat.
 	aCollectionOfGolapNode do: [ :node |
-		node
-			x: (node x min: max max: min);
+		self
+			move: node
+			toX: (node x min: max max: min)
 			y: (node y min: max max: min) ]
 ]

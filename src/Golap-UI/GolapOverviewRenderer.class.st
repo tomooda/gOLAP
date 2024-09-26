@@ -580,6 +580,16 @@ GolapOverviewRenderer >> moveMapOffset: aPoint [
 ]
 
 { #category : 'accessing' }
+GolapOverviewRenderer >> moveNode: aGolapNode to: aPoint [
+
+	| p |
+	p := self nodePointAtPoint: aPoint.
+	aGolapNode
+		x: p x;
+		y: p y
+]
+
+{ #category : 'accessing' }
 GolapOverviewRenderer >> nodeAtPoint: aPoint [
 
 	| scale minD minV |

@@ -396,6 +396,12 @@ GolapElaborationRenderer >> layout [
 
 ]
 
+{ #category : 'accessing' }
+GolapElaborationRenderer >> layouter [
+
+	^ nil
+]
+
 { #category : 'private' }
 GolapElaborationRenderer >> maxLabelWidth [
 
@@ -418,6 +424,12 @@ GolapElaborationRenderer >> moveMapOffset: aPoint [
 
 	imageOffset := (aPoint y negated / mapScale / 2.0 min: 3.0 max: -3.0)
 	               + imageOffset
+]
+
+{ #category : 'accessing' }
+GolapElaborationRenderer >> moveNode: aGolapNode to: aPoint [
+
+	
 ]
 
 { #category : 'accessing' }

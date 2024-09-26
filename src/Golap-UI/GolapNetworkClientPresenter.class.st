@@ -299,7 +299,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 	commentText := self newText.
 	self whenBuiltDo: [
 		self window isDialog ifTrue: [
-			okButton := self window buttons first.
+			okButton := self window buttons detect: [:button | button label = 'Ok'].
 			okButton enabled: false.
 			self window buttons
 				addFirst: (self newButton

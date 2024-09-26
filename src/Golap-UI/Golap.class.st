@@ -53,7 +53,8 @@ Class {
 		'openSunburstButton',
 		'dandelionPresenter',
 		'snapshotBaseName',
-		'hedgePresenter'
+		'hedgePresenter',
+		'dragNode'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -665,6 +666,27 @@ Golap >> globalImageMenu: aGolapNode [
 						name: 'Unmark selections';
 						subMenu: itemList unmarkSelectionsMenu ] ] ].
 	aGolapNode ifNotNil: [
+		rendererSelector = #overviewRenderer ifTrue: [
+			menu addGroup: [ :group |
+				(self renderer layouter isLockedNode: aGolapNode)
+					ifTrue: [
+						group
+							addItem: [ :item |
+								item
+									name: 'move';
+									action: [ self moveNode: aGolapNode ] ];
+							addItem: [ :item |
+								item
+									name: 'be auto layouted';
+									action: [ self unlockNode: aGolapNode ] ] ]
+					ifFalse: [
+						group addItem: [ :item |
+							item
+								name: 'be manual layouted';
+								action: [
+									self
+										lockNode: aGolapNode;
+										moveNode: aGolapNode ] ] ] ] ].
 		menu
 			addGroup: [ :group |
 				(self includesPin: aGolapNode)
@@ -703,13 +725,24 @@ Golap >> globalImageMenu: aGolapNode [
 
 { #category : 'operations' }
 Golap >> globalImageMouseClick: anEvent [
-	| target |
+
 	anEvent wasHandled: true.
-	target := self renderer
-		nodeAtPoint: anEvent position - globalImagePane adapter widget position.
-	anEvent yellowButtonChanged
-		ifTrue: [ ^ (self globalImageMenu: target) openWithSpecAt: anEvent position ].
-	target ifNotNil: [ self toggleSelection: target ]
+	dragNode
+		ifNil: [
+			| target |
+			target := self renderer nodeAtPoint:
+				          anEvent position
+				          - globalImagePane adapter widget position.
+			anEvent yellowButtonChanged ifTrue: [
+				^ (self globalImageMenu: target) openWithSpecAt: anEvent position ].
+			target ifNotNil: [ self toggleSelection: target ] ]
+		ifNotNil: [
+			self renderer
+				moveNode: dragNode
+				to: anEvent position - globalImagePane adapter widget position.
+			dragNode := nil.
+			anEvent hand showTemporaryCursor: nil.
+			self updateGlobalImage ]
 ]
 
 { #category : 'operations' }
@@ -1081,6 +1114,13 @@ Golap >> itemViewUrl: aString [
 	productInfoRetriever golapServerUrl: aString
 ]
 
+{ #category : 'menu' }
+Golap >> lockNode: aGolapNode [
+
+	self renderer layouter ifNotNil: [ :layouter |
+		layouter lockNode: aGolapNode ]
+]
+
 { #category : 'accessing-markers' }
 Golap >> markedNodes [
 
@@ -1206,6 +1246,15 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 				itemList updateNodeList ] ]
 		layout: true.
 	self announceGolapModelUpdated
+]
+
+{ #category : 'menu' }
+Golap >> moveNode: aGolapNode [
+
+	dragNode := aGolapNode.
+	self withAdapterDo: [ :a |
+		a widgetDo: [ :w |
+			w activeHand showTemporaryCursor: Cursor crossHair ] ]
 ]
 
 { #category : 'accessing-colors' }
@@ -2298,6 +2347,13 @@ Golap >> toggleSelection: aGolapNode [
 		updateGlobalImageAfter: [ (self includesSelection: aGolapNode)
 				ifTrue: [ self unselect: aGolapNode ]
 				ifFalse: [ self select: aGolapNode ] ]
+]
+
+{ #category : 'menu' }
+Golap >> unlockNode: aGolapNode [
+
+	self renderer layouter ifNotNil: [ :layouter |
+		layouter unlockNode: aGolapNode ]
 ]
 
 { #category : 'menu' }
