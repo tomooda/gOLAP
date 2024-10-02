@@ -240,6 +240,12 @@ GolapModel >> flushEdgeRanks [
 	edgeRanks removeAll
 ]
 
+{ #category : 'accessing' }
+GolapModel >> flushFriendsEdges [
+
+	friendsEdges := nil
+]
+
 { #category : 'visualizing-labels' }
 GolapModel >> font [
 	^ TextStyle defaultFont

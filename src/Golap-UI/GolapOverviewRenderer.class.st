@@ -75,101 +75,63 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 	self edgeScale < 1.0e-6 ifTrue: [ ^ self ].
 	reallyVisibleEdges ifEmpty: [ ^ self ].
 	maxValue := (reallyVisibleEdges
-		             collect: [ :e | 
+		             collect: [ :e |
 		             (golap model valueAtEdge: e) ifNotNil: #abs ]
-		             thenSelect: [ :v | 
+		             thenSelect: [ :v |
 		             v notNil and: [ v isNaN not and: [ v isInfinite not ] ] ])
 		            ifEmpty: [ 0 ]
 		            ifNotEmpty: #max.
 	lineScale := maxValue >= 1.0e-8
 		             ifTrue: [ 5.0 / maxValue * self edgeScale ]
 		             ifFalse: [ 2.0 ].
-	reallyVisibleEdges do: [ :edge | 
-		(golap model valueAtEdge: edge) ifNotNil: [ :v0 | 
-			(self colorForEdge: edge) ifNotNil: [ :c | 
+	reallyVisibleEdges do: [ :edge |
+		(golap model valueAtEdge: edge) ifNotNil: [ :v0 |
+			(self colorForEdge: edge) ifNotNil: [ :c |
 				| v p1 p2 str |
 				v := v0.
 				p1 := edge node1 asPoint * scale + offset.
 				p2 := edge node2 asPoint * scale + offset.
 				str := self simpleStringFor: v.
-				(v notNil and: [ v isInfinite ]) ifTrue: [ 
+				(v notNil and: [ v isInfinite ]) ifTrue: [
 					v := v > 0.0
 						     ifTrue: [ maxValue * 2.0 ]
 						     ifFalse: [ maxValue * -2.0 ] ].
-				((golap includesSelection: edge node1) or: [ 
-					 golap includesSelection: edge node2 ])
-					ifTrue: [ 
-						v isNaN ifFalse: [ 
-							aCanvas
-								line: p1
-								to: p2
-								width: v abs * lineScale + 2.0
-								color: c ].
-						self
-							drawEdgeLabelFor: edge
-							at: p1 + p2 / 2.0 + (5 @ 5)
-							color: c
-							on: aCanvas ]
-					ifFalse: [ 
-						| c0 |
-						c0 := c alpha: 0.2.
-						v isNaN ifFalse: [ 
-							aCanvas
-								line: p1
-								to: p2
-								width: v abs * lineScale + 2.0
-								color: c0 ].
-						aCanvas
-							drawString: str
-							at: p1 + p2 / 2.0 + (5 @ 5)
-							font: self font
-							color: c0 ] ] ] ].
-	golap positivePolishColor ifNotNil: [ :color | 
-		golap model positivePolishEdgesDo: [ :edge | 
-			((reallyVisibleNodes includes: edge node1) and: [ 
-				 reallyVisibleNodes includes: edge node2 ]) ifTrue: [ 
+				v isNaN ifFalse: [
+					aCanvas
+						line: p1
+						to: p2
+						width: v abs * lineScale + 2.0
+						color: c ] ] ] ].
+	golap positivePolishColor ifNotNil: [ :color |
+		golap model positivePolishEdgesDo: [ :edge |
+			((reallyVisibleNodes includes: edge node1) and: [
+				 reallyVisibleNodes includes: edge node2 ]) ifTrue: [
 				| p1 p2 |
 				p1 := edge node1 asPoint * scale + offset.
 				p2 := edge node2 asPoint * scale + offset.
 				aCanvas
 					line: p1
 					to: p2
-					width: (((golap includesSelection: edge node1) or: [ 
+					width: (((golap includesSelection: edge node1) or: [
 							  golap includesSelection: edge node2 ])
 							 ifTrue: [ 4 ]
 							 ifFalse: [ 2 ])
 					color: color ] ] ].
-	golap negativePolishColor ifNotNil: [ :color | 
-		golap model negativePolishEdgesDo: [ :edge | 
-			((reallyVisibleNodes includes: edge node1) and: [ 
-				 reallyVisibleNodes includes: edge node2 ]) ifTrue: [ 
+	golap negativePolishColor ifNotNil: [ :color |
+		golap model negativePolishEdgesDo: [ :edge |
+			((reallyVisibleNodes includes: edge node1) and: [
+				 reallyVisibleNodes includes: edge node2 ]) ifTrue: [
 				| p1 p2 |
 				p1 := edge node1 asPoint * scale + offset.
 				p2 := edge node2 asPoint * scale + offset.
 				aCanvas
 					line: p1
 					to: p2
-					width: (((golap includesSelection: edge node1) or: [ 
+					width: (((golap includesSelection: edge node1) or: [
 							  golap includesSelection: edge node2 ])
 							 ifTrue: [ 4 ]
 							 ifFalse: [ 1 ])
-					color: color ] ] ].
-	golap selectedEdges do: [ :edge | 
-		"edge data ifNotNil: [ "
-			| c p1 p2 |
-			c := Color black.
-			p1 := edge node1 asPoint * scale + offset.
-			p2 := edge node2 asPoint * scale + offset.
-			aCanvas
-				line: p1
-				to: p2
-				width: 2
-				color: c.
-			self
-				drawEdgeLabelFor: edge
-				at: p1 + p2 / 2.0 + (5 @ 5)
-				color: c
-				on: aCanvas ] "]"
+					color: color ] ] ]
 ]
 
 { #category : 'drawing' }
@@ -368,46 +330,57 @@ GolapOverviewRenderer >> drawSelectionsOn: aCanvas extent: extent scale: scale o
 		                   golap markersAndNodesDo: [ :color :vs |
 			                   color ifNotNil: [
 				                   stream nextPut: color -> vs asIdentitySet ] ] ].
-	golap selectedNodesDo: [ :node |
-		(self colorForNode: node) ifNotNil: [ :c |
-			| p lp |
-			p := node asPoint * scale + offset.
-			((p x between: 0.0 and: extent x) and: [
-				 p y between: 0.0 and: extent y ]) ifTrue: [
-				node photoimage ifNotNil: [ :photo |
-					| w h |
-					w := photo width.
-					h := photo height.
-					aCanvas
-						paintImage: photo at: p x - (w // 2) @ (p y - (h // 2));
-						frameRectangle: (Rectangle center: p extent: w @ h)
-						width: 2
-						color: c.
-					markersAndNodes do: [ :colorAndNodes |
-						(colorAndNodes value includes: node) ifTrue: [
-							w := w + 8.
-							h := h + 8.
-							aCanvas
-								frameOval: (Rectangle center: p extent: w @ h)
-								width: 4
-								color: colorAndNodes key ] ] ] ].
-			lp := p + (((golap visibleEdges collect: [ :edge |
-				         (edge peerOf: node)
-					         ifNil: [ 0 ]
-					         ifNotNil: [ :peer | peer x - node x ] ])
-				        ifEmpty: [ 0.0 ]
-				        ifNotEmpty: #sum) <= 0.0
-				       ifTrue: [ labelOffset ]
-				       ifFalse: [
-					       (self extentForName: node name) x + labelOffset x * -1
-					       @ labelOffset y ]).
-			(self
-				 drawNodeLabelFor: node
-				 at: lp
-				 color: c
-				 fillColor: Color white
-				 on: aCanvas) ifNotNil: [ :box |
-				newLabelBoxes nextPut: box -> node ] ] ].
+
+	reallyVisibleEdges do: [ :edge |
+		((golap includesSelection: edge node1) or: [
+			 golap includesSelection: edge node2 ]) ifTrue: [
+			self
+				drawEdgeLabelFor: edge
+				at: edge node1 asPoint + edge node2 asPoint / 2.0 * scale + offset
+				color: (self colorForEdge: edge)
+				on: aCanvas ] ].
+
+	reallyVisibleNodes do: [ :node |
+		(golap includesSelection: node) ifTrue: [
+			(self colorForNode: node) ifNotNil: [ :c |
+				| p lp |
+				p := node asPoint * scale + offset.
+				((p x between: 0.0 and: extent x) and: [
+					 p y between: 0.0 and: extent y ]) ifTrue: [
+					node photoimage ifNotNil: [ :photo |
+						| w h |
+						w := photo width.
+						h := photo height.
+						aCanvas
+							paintImage: photo at: p x - (w // 2) @ (p y - (h // 2));
+							frameRectangle: (Rectangle center: p extent: w @ h)
+							width: 2
+							color: c.
+						markersAndNodes do: [ :colorAndNodes |
+							(colorAndNodes value includes: node) ifTrue: [
+								w := w + 8.
+								h := h + 8.
+								aCanvas
+									frameOval: (Rectangle center: p extent: w @ h)
+									width: 4
+									color: colorAndNodes key ] ] ] ].
+				lp := p + (((golap visibleEdges collect: [ :edge |
+					         (edge peerOf: node)
+						         ifNil: [ 0 ]
+						         ifNotNil: [ :peer | peer x - node x ] ])
+					        ifEmpty: [ 0.0 ]
+					        ifNotEmpty: #sum) <= 0.0
+					       ifTrue: [ labelOffset ]
+					       ifFalse: [
+						       (self extentForName: node name) x + labelOffset x * -1
+						       @ labelOffset y ]).
+				(self
+					 drawNodeLabelFor: node
+					 at: lp
+					 color: c
+					 fillColor: Color white
+					 on: aCanvas) ifNotNil: [ :box |
+					newLabelBoxes nextPut: box -> node ] ] ] ].
 	labelBoxes := newLabelBoxes contents
 ]
 
@@ -462,36 +435,38 @@ GolapOverviewRenderer >> fullImage [
 { #category : 'drawing' }
 GolapOverviewRenderer >> globalImage [
 
-	| form |
-	form := (inactiveImage notNil and: [ 
+	| form offset scale |
+	form := (inactiveImage notNil and: [
 		         inactiveImage extent = self globalImageExtent ])
 		        ifTrue: [ inactiveImage ]
 		        ifFalse: [ Form extent: self globalImageExtent depth: 32 ].
 	self updateVisibleEdgeThresholds.
-	self modelDo: [ :model | 
-		form getCanvas in: [ :canvas | 
+	offset := viewOffset.
+	scale := self scale.
+	self modelDo: [ :model |
+		form getCanvas in: [ :canvas |
 			canvas fillColor: Color white.
 			self
 				drawEdgesOn: canvas
 				extent: form extent
-				scale: self scale
-				offset: viewOffset.
+				scale: scale
+				offset: offset.
 			self
 				drawNodesOn: canvas
 				extent: form extent
-				scale: self scale
-				offset: viewOffset
+				scale: scale
+				offset: offset
 				numLabels: (50.0 ** golap numLabels) truncated.
 			self
 				drawSelectionsOn: canvas
 				extent: form extent
-				scale: self scale
-				offset: viewOffset.
+				scale: scale
+				offset: offset.
 			self
 				drawPinsOn: canvas
 				extent: form extent
-				scale: self scale
-				offset: viewOffset ] ].
+				scale: scale
+				offset: offset ] ].
 	inactiveImage := activeImage.
 	^ activeImage := form
 ]
@@ -522,10 +497,10 @@ GolapOverviewRenderer >> globalMap [
 	mapScale := 200.0 asPoint / (max - min max: 1.0e-8 asPoint).
 	mapOffset := min - (50.0 / mapScale).
 	golap visibleEdges do: [ :edge | 
-		canvas
+		[canvas
 			line: edge node1 asPoint - mapOffset * mapScale
 			to: edge node2 asPoint - mapOffset * mapScale
-			color: Color black ].
+			color: Color black] on: Error do: [ :ex | ] ].
 	inactiveMap := activeMap.
 	^ activeMap := form
 ]
@@ -667,12 +642,12 @@ GolapOverviewRenderer >> restore: aStream [
 
 { #category : 'accessing' }
 GolapOverviewRenderer >> scale [
+
 	| extent |
 	extent := self globalImageExtent.
-	extent isZero
-		ifTrue: [ ^ 1 ].
+	extent isZero ifTrue: [ ^ 1 ].
 	^ (extent x min: extent y) / self layouter divisions asFloat
-		* viewScale
+	  * viewScale
 ]
 
 { #category : 'private' }

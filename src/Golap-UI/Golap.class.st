@@ -1229,22 +1229,24 @@ Golap >> model: aGolapModel [
 Golap >> model: aGolapModel forceUpdate: aBoolean [
 
 	(aBoolean == false and: [ aGolapModel == model ]) ifTrue: [ ^ self ].
+	(model notNil and: [ aGolapModel notNil ]) ifTrue: [
+		model nodes keysAndValuesDo: [ :id :v1 |
+			(aGolapModel nodeAt: id ifAbsent: [ nil ]) ifNotNil: [ :v2 |
+				v2
+					x: v1 x;
+					y: v1 y ] ] ].
 	self
 		updateGlobalImageAfter: [
-			(model notNil and: [ aGolapModel notNil ]) ifTrue: [
-				model nodes keysAndValuesDo: [ :id :v1 |
-					(aGolapModel nodeAt: id ifAbsent: [ nil ]) ifNotNil: [ :v2 |
-						v2
-							x: v1 x;
-							y: v1 y ] ] ].
 			model := aGolapModel.
+			model flushFriendsEdges.
 			self overviewRenderer layouter model: model.
 			self unselectAll.
 			model ifNotNil: [
 				itemsAppearancePresenter updateMinMaxFrequency.
 				edgesAppearancePresenter updateModel: model.
 				itemList updateNodeList ] ]
-		layout: true.
+		layout: (aGolapModel nodes anySatisfy: [ :node |
+				 node x isNil or: [ node y isNil ] ]).
 	self announceGolapModelUpdated
 ]
 
