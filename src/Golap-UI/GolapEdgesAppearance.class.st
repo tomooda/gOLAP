@@ -90,7 +90,7 @@ GolapEdgesAppearance class >> defaultLayout [
 				   add: #edgeEvaluatorList width: 150)
 		  height: self buttonHeight;
 		  add: (SpBoxLayout newHorizontal
-				   add: '商品指標' asPresenter expand: true;
+				   add: 'アイテム指標' asPresenter expand: true;
 				   add: #nodeEvaluatorList width: 150)
 		  height: self buttonHeight;
 		  yourself

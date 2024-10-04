@@ -8,10 +8,19 @@ Class {
 		'edgeCSVList',
 		'nameField'
 	],
+	#classInstVars : [
+		'lastBasepath'
+	],
 	#category : 'Golap-UI-CSV',
 	#package : 'Golap-UI',
 	#tag : 'CSV'
 }
+
+{ #category : 'accessing' }
+GolapCSVPairPresenter class >> defaultBasepath [
+
+	^ (FileLocator documents / 'gOLAP') asFileReference
+]
 
 { #category : 'layout' }
 GolapCSVPairPresenter class >> defaultLayout [
@@ -24,7 +33,7 @@ GolapCSVPairPresenter class >> defaultLayout [
 		  expand: false;
 		  add: (SpBoxLayout newHorizontal
 				   add: (SpBoxLayout newVertical
-						    add: '商品CSV' expand: false;
+						    add: 'アイテムCSV' expand: false;
 						    add: #nodeCSVList expand: true)
 				   expand: true;
 				   add: (SpBoxLayout newVertical
@@ -38,9 +47,30 @@ GolapCSVPairPresenter class >> defaultLayout [
 		  expand: false
 ]
 
+{ #category : 'accessing' }
+GolapCSVPairPresenter class >> flushLastBasepath [
+
+	lastBasepath := nil
+]
+
+{ #category : 'accessing' }
+GolapCSVPairPresenter class >> lastBasepath [
+
+	(lastBasepath isNil or: [ lastBasepath isDirectory not ]) ifTrue: [
+		lastBasepath := self defaultBasepath ].
+	^ lastBasepath
+]
+
+{ #category : 'accessing' }
+GolapCSVPairPresenter class >> lastBasepath: anObject [
+
+	lastBasepath := anObject
+]
+
 { #category : 'updating' }
 GolapCSVPairPresenter >> basepathChanged [
 
+	self class lastBasepath: self basepathReference.
 	self
 		updateNodeCSVList;
 		updateEdgeCSVList
@@ -83,8 +113,7 @@ GolapCSVPairPresenter >> initializePresenters [
 	super initializePresenters.
 	basepathField := self newTextInput
 		                 text:
-			                 (FileLocator documents / 'gOLAP') asFileReference
-				                 absolutePath pathString;
+			                 self class lastBasepath absolutePath pathString;
 		                 whenChangedDo: [ self basepathChanged ];
 		                 whenSubmitDo: [ :t | self basepathChanged ];
 		                 yourself.
@@ -101,7 +130,9 @@ GolapCSVPairPresenter >> initializePresenters [
 			               self selectedEdgeCSVChanged ];
 		               yourself.
 	nameField := self newTextInput.
-	self whenBuiltDo: [ nameField text: '' ]
+	self whenBuiltDo: [
+		nameField text: ''.
+		self basepathChanged ]
 ]
 
 { #category : 'initialization' }
@@ -146,7 +177,7 @@ GolapCSVPairPresenter >> updateEdgeCSVList [
 	self basepathReference isDirectory ifTrue: [
 		edgeCSVList items:
 			(self basepathReference fileNames sorted select: [ :basename |
-				 basename endsWith: '.csv' ]) ]
+				 basename endsWith: '-r.csv' ]) ]
 ]
 
 { #category : 'updating' }
@@ -155,9 +186,9 @@ GolapCSVPairPresenter >> updateNameField [
 	nameField text asString trim ifEmpty: [
 		| name1 name2 |
 		name1 := (nodeCSVList selectedItem ifNil: [ ^ self ])
-			         withoutSuffix: '.csv'.
+			         withoutSuffix: '-i.csv'.
 		name2 := (edgeCSVList selectedItem ifNil: [ ^ self ])
-			         withoutSuffix: '.csv'.
+			         withoutSuffix: '-r.csv'.
 		(name1 isEmpty or: [ name2 isEmpty ]) ifTrue: [ ^ self ].
 		name1 first = name2 first ifTrue: [
 			| index |
@@ -184,5 +215,5 @@ GolapCSVPairPresenter >> updateNodeCSVList [
 	self basepathReference isDirectory ifTrue: [
 		nodeCSVList items:
 			(self basepathReference fileNames sorted select: [ :basename |
-				 basename endsWith: '.csv' ]) ]
+				 basename endsWith: '-i.csv' ]) ]
 ]

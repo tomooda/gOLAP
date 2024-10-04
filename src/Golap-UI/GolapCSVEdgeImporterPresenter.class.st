@@ -16,12 +16,12 @@ GolapCSVEdgeImporterPresenter class >> defaultLayout [
 	^ SpBoxLayout newVertical
 		  add: #columnsTable expand: true;
 		  add: (SpBoxLayout newHorizontal
-				   add: '商品ID1' asPresenter width: 80;
+				   add: 'アイテムID1' asPresenter width: 80;
 				   add: #idDropList1 expand: false;
 				   yourself)
 		  expand: false;
 		  add: (SpBoxLayout newHorizontal
-				   add: '商品ID2' asPresenter width: 80;
+				   add: 'アイテムID2' asPresenter width: 80;
 				   add: #idDropList2 expand: false;
 				   yourself)
 		  expand: false;

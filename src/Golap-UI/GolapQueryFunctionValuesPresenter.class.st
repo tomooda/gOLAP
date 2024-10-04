@@ -32,12 +32,13 @@ GolapQueryFunctionValuesPresenter class >> defaultSpec [
 
 { #category : 'utilities' }
 GolapQueryFunctionValuesPresenter class >> on: aGolapNetworkClientPresenter functionName: aString openDialogIfAccepted: aBlock [
+
 	| presenter |
 	presenter := self new
-		networkClient: aGolapNetworkClientPresenter;
-		functionName: aString;
-		yourself.
-	presenter openDialogWithSpec okAction: [ aBlock cull: presenter ].
+		             networkClient: aGolapNetworkClientPresenter;
+		             functionName: aString;
+		             yourself.
+	presenter openDialog okAction: [ aBlock cull: presenter ].
 	^ presenter
 ]
 

@@ -17,12 +17,12 @@ GolapCSVNodeImporterPresenter class >> defaultLayout [
 	^ SpBoxLayout newVertical
 		  add: #columnsTable expand: true;
 		  add: (SpBoxLayout newHorizontal
-				   add: '商品ID' asPresenter width: 80;
+				   add: 'アイテムID' asPresenter width: 80;
 				   add: #idDropList expand: false;
 				   yourself)
 		  expand: false;
 		  add: (SpBoxLayout newHorizontal
-				   add: '商品名' asPresenter width: 80;
+				   add: 'アイテム名' asPresenter width: 80;
 				   add: #nameDropList expand: false;
 				   yourself)
 		  expand: false;

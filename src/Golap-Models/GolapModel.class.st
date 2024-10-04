@@ -243,7 +243,7 @@ GolapModel >> flushEdgeRanks [
 { #category : 'accessing' }
 GolapModel >> flushFriendsEdges [
 
-	friendsEdges := nil
+	"friendsEdges := nil"
 ]
 
 { #category : 'visualizing-labels' }
@@ -315,6 +315,7 @@ GolapModel >> fromJSON: aDictionary [
 			edgeAggregators := jsonArray collect: [ :json |
 					                   GolapDataAggregator fromJSON: json ] ].
 	friendsRank := 5.
+	friendsEdges := nil.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
@@ -474,6 +475,7 @@ GolapModel >> nodes [
 
 	^ nodes ifNil: [
 		  nodes := Dictionary new.
+		  friendsEdges := nil.
 		  self flushEdgeRanks ]
 ]
 
@@ -644,6 +646,7 @@ GolapModel >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn: ano
 		row name: id.
 		newNodes at: id ifAbsentPut: (self createNode: row name: name) ].
 	nodes := newNodes.
+	friendsEdges := nil.
 	self flushEdgeRanks
 ]
 
@@ -697,6 +700,7 @@ GolapModel >> readServerDataframe: aDataFrame [
 				ifTrue: [ node1 createEdgeTo: node2 data: data ]
 				ifFalse: [ node1 createHiddenEdgeTo: node2 data: data ] ] ].
 	nodes := newNodes.
+	friendsEdges := nil.
 	self flushEdgeRanks
 ]
 
@@ -770,6 +774,7 @@ GolapModel >> resetMerges [
 				 thenSelect: #notNil) ].
 	nodes := newNodes.
 	mergedNodes := IdentityDictionary new.
+	friendsEdges := nil.
 	self flushEdgeRanks
 ]
 

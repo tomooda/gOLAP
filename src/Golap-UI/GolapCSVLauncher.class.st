@@ -31,7 +31,7 @@ GolapCSVLauncher class >> defaultLayout [
 				   add: (SpBoxLayout newHorizontal
 						    add: (SpBoxLayout newHorizontal
 								     add: (SpBoxLayout newVertical
-										      add: '商品CSV' asPresenter expand: false;
+										      add: 'アイテムCSV' asPresenter expand: false;
 										      add: #nodeImporterPresenter expand: true;
 										      yourself)
 								     expand: true;
@@ -134,7 +134,7 @@ GolapCSVLauncher >> initializePresenters [
 	pairPresenter := GolapCSVPairPresenter new.
 	pairsTable := self newTable
 		              addColumn: (SpStringTableColumn
-				               title: '商品CSV'
+				               title: 'アイテムCSV'
 				               evaluated: [ :pair | pair first basename ]);
 		              addColumn: (SpStringTableColumn
 				               title: '関連CSV'

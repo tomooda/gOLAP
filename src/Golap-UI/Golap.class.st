@@ -963,7 +963,7 @@ Golap >> initializePresenters [
 					                       edgesAppearancePresenter ];
 				                       yourself);
 		                      addPage: (self newNotebookPage
-				                       title: '商品';
+				                       title: 'アイテム';
 				                       presenterProvider: [
 					                       itemsAppearancePresenter ];
 				                       yourself);
@@ -1051,11 +1051,11 @@ Golap >> initializePresenters [
 	itemView := self newGolapItemView.
 	itemNotebook := self newNotebook
 		                addPage: (self newNotebookPage
-				                 title: '商品リスト';
+				                 title: 'アイテムリスト';
 				                 presenterProvider: [ itemList ];
 				                 yourself);
 		                addPage: (self newNotebookPage
-				                 title: '商品情報';
+				                 title: 'アイテム情報';
 				                 presenterProvider: [ itemView ];
 				                 yourself);
 		                yourself.
@@ -1072,6 +1072,10 @@ Golap >> initializePresenters [
 		                 addPageTitle: 'たんぽぽ図'
 		                 provider: [ dandelionPresenter ];
 		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
+		                 whenSelectedPageChangedDo: [ :page |
+			                 page activePresenter ifNotNil: [ :p |
+				                 (p respondsTo: #updateTree) ifTrue: [
+					                 p updateTree ] ] ];
 		                 yourself.
 
 	self whenBuiltDo: [ :w |
@@ -1344,26 +1348,26 @@ Golap >> openPresetQueryDialog [
 	presetQueries := self readPresetQueries.
 	queryList := SpEditableListPresenter new.
 	queryList
-		title: '商品名フィルタ';
+		title: 'アイテム名フィルタ';
 		items: presetQueries asOrderedCollection;
 		addItemBlock: [ UIManager default request: '新規パターン' ];
-		removeItemBlock: [ 
-			queryList selectedItem ifNotNil: [ :selection | 
+		removeItemBlock: [
+			queryList selectedItem ifNotNil: [ :selection |
 					queryList items remove: selection ifAbsent: [  ].
 					queryList refresh ] ];
-		whenSelectionChangedDo: [ 
+		whenSelectionChangedDo: [
 			([ queryList selectedItem ]
 				 on: Error
-				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection | 
+				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection |
 					itemList queryField text: selection ] ];
-		okAction: [ 
-			queryList items asArray ~= presetQueries ifTrue: [ 
+		okAction: [
+			queryList items asArray ~= presetQueries ifTrue: [
 					self writePresetQueries: queryList items asArray ].
 			([ queryList selectedItem ]
 				 on: Error
-				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection | 
+				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection |
 					itemList queryField text: selection ] ];
-		openModalWithSpec
+		openModal
 ]
 
 { #category : 'operations' }
