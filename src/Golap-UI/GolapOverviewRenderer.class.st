@@ -11,12 +11,21 @@ Class {
 		'activeImage',
 		'inactiveImage',
 		'activeMap',
+		'lockedNodes',
+		'referenceNodes',
 		'inactiveMap'
 	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',
 	#tag : 'Graph'
 }
+
+{ #category : 'accessing' }
+GolapOverviewRenderer >> addReferenceNode: aGolapNode [
+
+	referenceNodes addLast: aGolapNode id.
+	self layoutReferenceNodes
+]
 
 { #category : 'drawing' }
 GolapOverviewRenderer >> drawEdgeLabelFor: aGolapEdge at: aPoint color: aColor on: aCanvas [
@@ -507,21 +516,71 @@ GolapOverviewRenderer >> globalMap [
 
 { #category : 'initialization' }
 GolapOverviewRenderer >> initialize [
+
 	super initialize.
 	mapScale := 1.0 @ 1.0.
 	mapOffset := 0.0 @ 0.0.
 	viewScale := 1.0.
-	viewOffset := 0.0 @ 0.0
+	viewOffset := 0.0 @ 0.0.
+	lockedNodes := Set new.
+	referenceNodes := OrderedCollection new
+]
+
+{ #category : 'testing' }
+GolapOverviewRenderer >> isLockedNode: aGolapNode [
+
+	^ lockedNodes includes: aGolapNode id
+]
+
+{ #category : 'testing' }
+GolapOverviewRenderer >> isReferenceNode: aGolapNode [
+
+	^ referenceNodes includes: aGolapNode id
 ]
 
 { #category : 'view manipulation' }
-GolapOverviewRenderer >> layout [ 
-	^ self layouter layout
+GolapOverviewRenderer >> layout [
+
+	self layouter layout.
+	self layoutReferenceNodes
+]
+
+{ #category : 'view manipulation' }
+GolapOverviewRenderer >> layoutReferenceNodes [
+
+	| extent scale x y xStep |
+	extent := activeImage ifNil: [ ^ self ] ifNotNil: #extent.
+	scale := self scale.
+	x := viewOffset x negated / scale.
+	y := extent y * 9 // 10 - viewOffset y / scale.
+	xStep := extent x asFloat / (referenceNodes size + 1) asFloat / scale.
+	referenceNodes withIndexDo: [ :node :index |
+		(golap model nodeAt: node)
+			x: xStep * index asFloat + x;
+			y: y ]
 ]
 
 { #category : 'accessing' }
 GolapOverviewRenderer >> layouter [
-	^ layouter ifNil: [ layouter := GolapLayouter on: golap model ]
+
+	^ (layouter ifNil: [ layouter := GolapLayouter on: golap model ])
+		  lockedNodes:
+			  ((lockedNodes collect: [ :id | golap model nodeAt: id ])
+			   , (referenceNodes collect: [ :id | golap model nodeAt: id ]))
+				  asIdentitySet;
+		  yourself
+]
+
+{ #category : 'accessing' }
+GolapOverviewRenderer >> lockNode: aGolapNode [
+
+	lockedNodes add: aGolapNode id
+]
+
+{ #category : 'accessing' }
+GolapOverviewRenderer >> lockedNodes [
+
+	^ lockedNodes
 ]
 
 { #category : 'accessing' }
@@ -540,7 +599,8 @@ GolapOverviewRenderer >> moveImageOffset: aPoint [
 	| dx dy |
 	dx := aPoint x min: 10 max: -10.
 	dy := aPoint y min: 10 max: -10.
-	viewOffset := dx @ dy + viewOffset
+	viewOffset := dx @ dy + viewOffset.
+	self layoutReferenceNodes
 ]
 
 { #category : 'view manipulation' }
@@ -551,7 +611,8 @@ GolapOverviewRenderer >> moveMapOffset: aPoint [
 	activeMap ifNil: [ ^ self ].
 	dx := aPoint x * mapScale x min: 20 max: -20.
 	dy := aPoint y * mapScale y min: 20 max: -20.
-	viewOffset := dx @ dy + viewOffset
+	viewOffset := dx @ dy + viewOffset.
+	self layoutReferenceNodes
 ]
 
 { #category : 'accessing' }
@@ -614,11 +675,25 @@ GolapOverviewRenderer >> overridesYWithFrequencyOrder: aBoolean [
 	self layouter overridesYWithFrequencyOrder: aBoolean
 ]
 
+{ #category : 'accessing' }
+GolapOverviewRenderer >> referenceNodes [
+
+	^ referenceNodes
+]
+
+{ #category : 'accessing' }
+GolapOverviewRenderer >> removeReferenceNode: aGolapNode [
+
+	referenceNodes remove: aGolapNode id ifAbsent: [  ].
+	self layoutReferenceNodes
+]
+
 { #category : 'view manipulation' }
 GolapOverviewRenderer >> resetZoom [
 
 	viewScale := 1.0.
-	viewOffset := 0 @ 0
+	viewOffset := 0 @ 0.
+	self layoutReferenceNodes
 ]
 
 { #category : 'snapshot' }
@@ -723,6 +798,12 @@ GolapOverviewRenderer >> svg [
 	^ svg
 ]
 
+{ #category : 'accessing' }
+GolapOverviewRenderer >> unlockNode: aGolapNode [
+
+	lockedNodes remove: aGolapNode id ifAbsent: [  ]
+]
+
 { #category : 'view manipulation' }
 GolapOverviewRenderer >> validateViewOffset: aPoint [
 	| min max d |
@@ -757,7 +838,8 @@ GolapOverviewRenderer >> zoom: aNumber [
 		             max: self minScale.
 	scale := self globalImageExtent / self layouter divisions asFloat
 	         * viewScale.
-	viewOffset := halfExtent - (center * scale)
+	viewOffset := halfExtent - (center * scale).
+	self layoutReferenceNodes
 ]
 
 { #category : 'view manipulation' }
@@ -775,5 +857,6 @@ GolapOverviewRenderer >> zoomCenter: aNumber [
 		             max: self minScale.
 	scale := self globalImageExtent / self layouter divisions asFloat
 	         * viewScale.
-	viewOffset := halfExtent - (center * scale)
+	viewOffset := halfExtent - (center * scale).
+	self layoutReferenceNodes
 ]

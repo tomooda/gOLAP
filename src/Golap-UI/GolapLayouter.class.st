@@ -125,12 +125,6 @@ GolapLayouter >> initialize [
 	lockedNodes := IdentitySet new
 ]
 
-{ #category : 'testing' }
-GolapLayouter >> isLockedNode: aGolapNode [
-
-	^ lockedNodes includes: aGolapNode
-]
-
 { #category : 'layouting' }
 GolapLayouter >> layout [
 
@@ -238,9 +232,9 @@ GolapLayouter >> layout [
 ]
 
 { #category : 'accessing' }
-GolapLayouter >> lockNode: aGolapNode [
+GolapLayouter >> lockedNodes: anIdentitySetOfGolapNode [
 
-	lockedNodes add: aGolapNode
+	lockedNodes := anIdentitySetOfGolapNode
 ]
 
 { #category : 'accessing' }
@@ -250,8 +244,8 @@ GolapLayouter >> model [
 
 { #category : 'accessing' }
 GolapLayouter >> model: aGolapModel [
-	model := aGolapModel.
-	lockedNodes := IdentitySet new
+
+	model := aGolapModel
 ]
 
 { #category : 'layouting' }
@@ -370,12 +364,6 @@ GolapLayouter >> swirlLayout: aCollectionOfGolapNode [
 		x := i \\ width + 1.
 		y := i // width + 1.
 		self move: node toX: x - 0.5 y: y - 0.5 ]
-]
-
-{ #category : 'accessing' }
-GolapLayouter >> unlockNode: aGolapNode [
-
-	lockedNodes remove: aGolapNode ifAbsent: [  ]
 ]
 
 { #category : 'layouting' }

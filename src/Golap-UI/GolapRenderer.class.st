@@ -108,6 +108,12 @@ GolapRenderer >> golap: aGolap [
 	golap := aGolap
 ]
 
+{ #category : 'accessing' }
+GolapRenderer >> isLockedNode: aGolapNode [
+
+	^ false
+]
+
 { #category : 'view manipulation' }
 GolapRenderer >> layout [ 
 	^ self subclassResponsibility 
@@ -117,6 +123,12 @@ GolapRenderer >> layout [
 GolapRenderer >> layouter [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapRenderer >> lockNode: aGolapNode [
+
+	
 ]
 
 { #category : 'accessing' }

@@ -320,6 +320,13 @@ Golap >> addDimension: aGolapOverviewModel named: aString [
 	^ aGolapOverviewModel
 ]
 
+{ #category : 'menu' }
+Golap >> addReferenceNode: aGolapNode [
+
+	overviewRenderer addReferenceNode: aGolapNode.
+	self updateGlobalImage
+]
+
 { #category : 'accessing-markers' }
 Golap >> allMarkerColors [
 
@@ -668,25 +675,44 @@ Golap >> globalImageMenu: aGolapNode [
 	aGolapNode ifNotNil: [
 		rendererSelector = #overviewRenderer ifTrue: [
 			menu addGroup: [ :group |
-				(self renderer layouter isLockedNode: aGolapNode)
+				(self renderer isReferenceNode: aGolapNode)
 					ifTrue: [
-						group
-							addItem: [ :item |
-								item
-									name: 'move';
-									action: [ self moveNode: aGolapNode ] ];
-							addItem: [ :item |
-								item
-									name: 'be auto layouted';
-									action: [ self unlockNode: aGolapNode ] ] ]
-					ifFalse: [
 						group addItem: [ :item |
 							item
-								name: 'be manual layouted';
-								action: [
-									self
-										lockNode: aGolapNode;
-										moveNode: aGolapNode ] ] ] ] ].
+								name: 'remove from reference';
+								action: [ self removeReferenceNode: aGolapNode ] ] ]
+					ifFalse: [
+						(self renderer isLockedNode: aGolapNode)
+							ifTrue: [
+								group
+									addItem: [ :item |
+										item
+											name: 'move';
+											action: [ self moveNode: aGolapNode ] ];
+									addItem: [ :item |
+										item
+											name: 'be auto layouted';
+											action: [ self unlockNode: aGolapNode ] ];
+									addItem: [ :item |
+										item
+											name: 'add to reference';
+											action: [
+												self
+													unlockNode: aGolapNode;
+													addReferenceNode: aGolapNode ] ] ]
+							ifFalse: [
+								group
+									addItem: [ :item |
+										item
+											name: 'add to reference';
+											action: [ self addReferenceNode: aGolapNode ] ];
+									addItem: [ :item |
+										item
+											name: 'be manual layouted';
+											action: [
+												self
+													lockNode: aGolapNode;
+													moveNode: aGolapNode ] ] ] ] ] ].
 		menu
 			addGroup: [ :group |
 				(self includesPin: aGolapNode)
@@ -1121,8 +1147,7 @@ Golap >> itemViewUrl: aString [
 { #category : 'menu' }
 Golap >> lockNode: aGolapNode [
 
-	self renderer layouter ifNotNil: [ :layouter |
-		layouter lockNode: aGolapNode ]
+	self renderer lockNode: aGolapNode
 ]
 
 { #category : 'accessing-markers' }
@@ -1614,6 +1639,13 @@ Golap >> release [
 	font := nil.
 	itemView := nil.
 	super release
+]
+
+{ #category : 'menu' }
+Golap >> removeReferenceNode: aGolapNode [
+
+	overviewRenderer removeReferenceNode: aGolapNode.
+	self updateGlobalImage
 ]
 
 { #category : 'accessing-renderer' }
@@ -2358,8 +2390,7 @@ Golap >> toggleSelection: aGolapNode [
 { #category : 'menu' }
 Golap >> unlockNode: aGolapNode [
 
-	self renderer layouter ifNotNil: [ :layouter |
-		layouter unlockNode: aGolapNode ]
+	self overviewRenderer unlockNode: aGolapNode
 ]
 
 { #category : 'menu' }
