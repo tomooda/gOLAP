@@ -333,6 +333,24 @@ Golap >> allMarkerColors [
 	^ itemList allMarkerColors
 ]
 
+{ #category : 'accessing-dimensions' }
+Golap >> animateDimensions [
+
+	(UIManager default
+		 request: 'コマ送り間隔 (秒)'
+		 initialAnswer: '1'
+		 title: '流す...') ifNotNil: [ :string |
+		[
+		| seconds |
+		seconds := string asNumber max: 0.
+		[
+		dimensions keysDo: [ :dimensionName |
+			frontList selectItem: dimensionName.
+			seconds second wait ] ] forkAt: Processor userBackgroundPriority ]
+			on: Error
+			do: [ :ex |  ] ]
+]
+
 { #category : 'announcements' }
 Golap >> announceGolapModelUpdated [
 
@@ -965,15 +983,25 @@ Golap >> initializePresenters [
 		                   action: [ self resetZoom ];
 		                   yourself.
 	frontList := self newDropList
-		             display: [ :string | string asString ];
+		             display: [ :string |
+			             string isSymbol
+				             ifTrue: [ self pseudoDimensionNameAt: string ]
+				             ifFalse: [ string asString ] ];
+		             displayIcon: [ :string |
+			             string isSymbol
+				             ifTrue: [ self pseudoDimensionIconAt: string ]
+				             ifFalse: [ nil ] ];
 		             whenSelectedItemChangedDo: [ :front |
-			             baseList
-				             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [
-							              dimensions keys asArray collect: [ :back |
-									              front = back
-										              ifTrue: [ String new ]
-										              ifFalse: [ back ] ] ]);
-				             selectItem: String new ];
+			             front isSymbol
+				             ifTrue: [ self perform: front ]
+				             ifFalse: [
+					             baseList
+						             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [
+									              dimensions keys asArray collect: [ :back |
+											              front = back
+												              ifTrue: [ String new ]
+												              ifFalse: [ back ] ] ]);
+						             selectItem: String new ] ];
 		             yourself.
 	baseList := self newDropList
 		            display: [ :string | string asString ];
@@ -1438,6 +1466,12 @@ Golap >> pinsDo: aBlock [
 					[ :id | (model nodeAt: id ifAbsent: [  ]) ifNotNil: aBlock ] ]
 ]
 
+{ #category : 'accessing-dimensions' }
+Golap >> playIcon [
+
+	^ self iconNamed: #smallDoIt
+]
+
 { #category : 'accessing-colors' }
 Golap >> positivePolishColor [
 	^ colorsAppearancePresenter positivePolishColor
@@ -1458,6 +1492,26 @@ Golap >> productInfoRetriever [
 Golap >> productInfoRetriever: aGolapProductInfoRetriever [
 
 	productInfoRetriever := aGolapProductInfoRetriever
+]
+
+{ #category : 'accessing-dimensions' }
+Golap >> pseudoDimensionIconAt: aSymbol [
+
+	aSymbol = #animateDimensions ifTrue: [ ^ self playIcon ].
+	^ nil
+]
+
+{ #category : 'accessing-dimensions' }
+Golap >> pseudoDimensionNameAt: aSymbol [
+
+	aSymbol = #animateDimensions ifTrue: [ ^ '流す...' ].
+	^ '-'
+]
+
+{ #category : 'accessing-dimensions' }
+Golap >> pseudoDimensionNames [
+
+	^ #( animateDimensions )
 ]
 
 { #category : 'accessing' }
@@ -2444,9 +2498,10 @@ Golap >> unselectAll: aCollectionOfGolapNode [
 
 { #category : 'accessing-dimensions' }
 Golap >> updateDimensions [
+
 	frontList
-		items: dimensions keys;
-		selectItem: dimensions keys last
+		items: dimensions keys , self pseudoDimensionNames;
+		selectIndex: 1
 ]
 
 { #category : 'drawing' }
