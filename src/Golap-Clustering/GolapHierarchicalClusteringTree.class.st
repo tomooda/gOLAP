@@ -183,6 +183,12 @@ GolapHierarchicalClusteringTree >> parent: aGolapHierarchicalClusteringNode [
 	parent := aGolapHierarchicalClusteringNode
 ]
 
+{ #category : 'private' }
+GolapHierarchicalClusteringTree >> removeAllBut: aCollectionOfGolapNode [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'accessing' }
 GolapHierarchicalClusteringTree >> score [
 

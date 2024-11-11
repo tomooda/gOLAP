@@ -173,6 +173,12 @@ GolapRenderer >> nodesDo: aBlock [
 ]
 
 { #category : 'enumerating' }
+GolapRenderer >> reallyVisibleNodes [
+
+	^ reallyVisibleNodes
+]
+
+{ #category : 'enumerating' }
 GolapRenderer >> reallyVisibleNodesDo: aBlock [
 
 	reallyVisibleNodes ifNotNil: [ reallyVisibleNodes do: aBlock ]

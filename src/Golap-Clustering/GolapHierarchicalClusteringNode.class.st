@@ -73,6 +73,12 @@ GolapHierarchicalClusteringNode >> ifNode: aBlock [
 ]
 
 { #category : 'testing' }
+GolapHierarchicalClusteringNode >> isEmpty [
+
+	^ trees isEmpty
+]
+
+{ #category : 'testing' }
 GolapHierarchicalClusteringNode >> isNode [
 
 	^ true
@@ -125,6 +131,22 @@ GolapHierarchicalClusteringNode >> rank [
 GolapHierarchicalClusteringNode >> rank: anInteger [
 
 	rank := anInteger
+]
+
+{ #category : 'private' }
+GolapHierarchicalClusteringNode >> removeAllBut: aCollectionOfGolapNode [
+
+	trees := trees reject: [ :tree |
+		         tree isLeaf
+			         ifTrue: [
+			         (aCollectionOfGolapNode includes: tree graphNode) not ]
+			         ifFalse: [
+				         tree
+					         removeAllBut: aCollectionOfGolapNode;
+					         isEmpty ] ].
+	score := trees
+		         inject: 0
+		         into: [ :subtotal :tree | subtotal + tree score ]
 ]
 
 { #category : 'private' }

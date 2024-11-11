@@ -65,6 +65,12 @@ GolapHierarchicalClusteringLeaf >> printOn: aStream [
 ]
 
 { #category : 'private' }
+GolapHierarchicalClusteringLeaf >> removeAllBut: aCollectionOfGolapNode [
+
+	
+]
+
+{ #category : 'private' }
 GolapHierarchicalClusteringLeaf >> setGraphNode: aGolapNode score: aNumber [
 
 	graphNode := aGolapNode.
