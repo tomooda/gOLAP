@@ -160,6 +160,12 @@ GolapHierarchicalClusteringNode >> setTrees: aCollectionOfGolapTree [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringNode >> size [
+
+	^ trees inject: 0 into: [ :subtotal :tree | subtotal + tree size ]
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringNode >> trees [
 
 	^ trees

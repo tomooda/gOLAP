@@ -22,6 +22,17 @@ GolapCanvasController >> clicked: event [
 ]
 
 { #category : 'hooks' }
+GolapCanvasController >> contextMenu [
+
+	^ presenter newMenu addGroup: [ :group |
+		  presenter tree parent ifNotNil: [ :parent |
+			  group addItem: [ :item |
+				  item
+					  name: 'Undive';
+					  action: [ presenter tree: parent ] ] ] ]
+]
+
+{ #category : 'hooks' }
 GolapCanvasController >> onShape: aShape [
 
 	super onShape: aShape.
@@ -39,7 +50,6 @@ GolapCanvasController >> presenter: aGolapDandelionChartPresenter [
 { #category : 'hooks' }
 GolapCanvasController >> rightClicked: event [
 
-	(presenter golap globalImageMenu: nil) openWithSpecAt:
-		(presenter withAdapterDo: [ :a |
+	self contextMenu openWithSpecAt: (presenter withAdapterDo: [ :a |
 			 a widgetDo: [ :w | w activeHand position ] ])
 ]

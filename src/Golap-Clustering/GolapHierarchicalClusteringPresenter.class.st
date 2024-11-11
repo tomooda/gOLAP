@@ -30,7 +30,7 @@ GolapHierarchicalClusteringPresenter >> edgeWidthForScore: aNumber [
 	| denominator |
 	denominator := tree score.
 	^ denominator abs > 1.0e-8
-		  ifTrue: [ (50.0 * aNumber / denominator) abs ]
+		  ifTrue: [ (tree size * aNumber / denominator) abs ]
 		  ifFalse: [ 1.0 ]
 ]
 
@@ -99,6 +99,12 @@ GolapHierarchicalClusteringPresenter >> toggleSelectionsAll: aCollectionOfGolapN
 		ifTrue: [ golap selectAll: aCollectionOfGolapNode ]
 		ifFalse: [ golap unselectAll: aCollectionOfGolapNode ].
 	self updateNode
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringPresenter >> tree [
+
+	^ tree
 ]
 
 { #category : 'accessing' }
@@ -187,8 +193,7 @@ GolapHierarchicalClusteringPresenter >> updateTree [
 						  rank: 128;
 						  rank: 256;
 						  tree) removeAllBut:
-						 golap overviewRenderer reallyVisibleNodes asSet).
-				self updateCanvas ] ] ]
+						 golap overviewRenderer reallyVisibleNodes asSet) ] ] ]
 ]
 
 { #category : 'updating' }

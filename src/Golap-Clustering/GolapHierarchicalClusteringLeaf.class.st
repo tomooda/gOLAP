@@ -78,6 +78,12 @@ GolapHierarchicalClusteringLeaf >> setGraphNode: aGolapNode score: aNumber [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> size [
+
+	^ 1
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringLeaf >> trees [
 
 	^ #(  )

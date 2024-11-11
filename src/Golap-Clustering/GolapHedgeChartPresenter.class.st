@@ -98,8 +98,7 @@ GolapHedgeChartPresenter >> updateCanvas [
 							          (position x @ parentPosition y).
 							          parentPosition };
 					          capRound;
-					          width:
-						          ((self edgeWidthForScore: node score) * 4) ceiling;
+					          width: (self edgeWidthForScore: node score) ceiling;
 					          color: Color gray;
 					          yourself.
 				bezier @ (GolapEdgeInteraction on: self).

@@ -24,9 +24,21 @@ GolapEdgeInteraction >> createPopupFor: aShape event: event [
 ]
 
 { #category : 'hooks' }
+GolapEdgeInteraction >> edgeMenuFor: aGolapHierarchicalClusteringNode [
+
+	^ presenter newMenu
+		  addGroup: [ :group |
+			  group addItem: [ :item |
+					  item
+						  name: 'Dive into';
+						  action: [ presenter tree: aGolapHierarchicalClusteringNode ] ] ];
+		  yourself
+]
+
+{ #category : 'hooks' }
 GolapEdgeInteraction >> rightClicked: event [
 
-	(presenter golap globalImageMenu: nil) openWithSpecAt:
+	(self edgeMenuFor: event shape model value) openWithSpecAt:
 		(presenter withAdapterDo: [ :a |
 			 a widgetDo: [ :w | w activeHand position ] ])
 ]

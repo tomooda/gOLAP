@@ -202,6 +202,12 @@ GolapHierarchicalClusteringTree >> score: aNumber [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringTree >> size [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> trees [
 
 	^ self subclassResponsibility
