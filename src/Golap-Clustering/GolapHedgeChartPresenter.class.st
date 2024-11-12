@@ -104,6 +104,5 @@ GolapHedgeChartPresenter >> updateCanvas [
 				bezier @ (GolapEdgeInteraction on: self).
 				canvas addShape: bezier ].
 			terminals add: parent -> parentPosition ] ].
-	canvas @ (GolapCanvasController on: self).
 	self zoomToFit
 ]

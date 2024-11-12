@@ -40,7 +40,6 @@ GolapDandelionChartPresenter >> updateCanvas [
 								  ifFalse: [ Color transparent ]);
 						 model:
 							 (self markerModelForNode: shape model graphNode color: c)) ] ] ].
-	sunburstBuilder canvas @ (GolapCanvasController on: self).
 	sunburstBuilder shapes @ (GolapNodeInteraction on: self).
 	bezierBuilder := RSLineBuilder sunburstBezier.
 	bezierBuilder

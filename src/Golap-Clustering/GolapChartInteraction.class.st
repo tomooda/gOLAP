@@ -20,7 +20,7 @@ GolapChartInteraction class >> on: aGolapDandelionChartPresenter [
 { #category : 'hooks' }
 GolapChartInteraction >> clicked: evt [
 
-	evt signalUpdate
+	
 ]
 
 { #category : 'hooks' }

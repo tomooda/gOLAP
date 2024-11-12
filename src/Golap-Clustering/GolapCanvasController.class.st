@@ -24,12 +24,14 @@ GolapCanvasController >> clicked: event [
 { #category : 'hooks' }
 GolapCanvasController >> contextMenu [
 
-	^ presenter newMenu addGroup: [ :group |
-		  presenter tree parent ifNotNil: [ :parent |
-			  group addItem: [ :item |
-				  item
-					  name: 'Undive';
-					  action: [ presenter tree: parent ] ] ] ]
+	^ presenter newMenu
+		  addGroup: [ :group |
+			  presenter tree parent ifNotNil: [ :parent |
+					  group addItem: [ :item |
+							  item
+								  name: 'Undive';
+								  action: [ presenter tree: parent ] ] ] ];
+		  yourself
 ]
 
 { #category : 'hooks' }

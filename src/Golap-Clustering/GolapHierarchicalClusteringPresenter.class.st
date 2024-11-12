@@ -10,6 +10,13 @@ Class {
 	#tag : 'Core'
 }
 
+{ #category : 'accessing' }
+GolapHierarchicalClusteringPresenter >> canvas [
+
+	^ currentCanvas ifNil: [
+		  currentCanvas := RSCanvas new @ (GolapCanvasController on: self) ]
+]
+
 { #category : 'accessing-colors' }
 GolapHierarchicalClusteringPresenter >> colorForNode: aGolapNode [
 
@@ -30,7 +37,8 @@ GolapHierarchicalClusteringPresenter >> edgeWidthForScore: aNumber [
 	| denominator |
 	denominator := tree score.
 	^ denominator abs > 1.0e-8
-		  ifTrue: [ (tree size * aNumber / denominator) abs ]
+		  ifTrue: [
+		  ((tree size min: 50) * aNumber / denominator) abs max: 1.0 ]
 		  ifFalse: [ 1.0 ]
 ]
 
