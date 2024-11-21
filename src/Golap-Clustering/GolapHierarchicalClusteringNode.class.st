@@ -108,9 +108,19 @@ GolapHierarchicalClusteringNode >> nodesDo: aBlock [
 ]
 
 { #category : 'accessing' }
-GolapHierarchicalClusteringNode >> oneGraphNode [
+GolapHierarchicalClusteringNode >> oneLeaf [
 
-	^ trees ifNotEmpty: [ :t | t first oneGraphNode ] ifEmpty: [ nil ]
+	^ trees ifNotEmpty: [ :t | t first oneLeaf ] ifEmpty: [ nil ]
+]
+
+{ #category : 'copying' }
+GolapHierarchicalClusteringNode >> postCopy [
+
+	trees := trees collect: [ :tree |
+		         tree copy
+			         parent: self;
+			         yourself ].
+	super postCopy
 ]
 
 { #category : 'printing' }

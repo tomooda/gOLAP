@@ -563,7 +563,7 @@ GolapOverviewRenderer >> layoutReferenceNodes [
 { #category : 'accessing' }
 GolapOverviewRenderer >> layouter [
 
-	^ (layouter ifNil: [ layouter := GolapLayouter on: golap model ])
+	^ (layouter ifNil: [ layouter := GolapFriendClusteredLayouter on: golap model ])
 		  lockedNodes:
 			  ((lockedNodes collect: [ :id | golap model nodeAt: id ])
 			   , (referenceNodes collect: [ :id | golap model nodeAt: id ]))

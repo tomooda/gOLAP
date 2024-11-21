@@ -54,9 +54,9 @@ GolapHierarchicalClusteringLeaf >> nodesDo: aBlock [
 ]
 
 { #category : 'accessing' }
-GolapHierarchicalClusteringLeaf >> oneGraphNode [
+GolapHierarchicalClusteringLeaf >> oneLeaf [
 
-	^ graphNode
+	^ self
 ]
 
 { #category : 'printing' }

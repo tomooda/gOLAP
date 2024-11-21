@@ -37,6 +37,12 @@ GolapHierarchicalClusteringTree >> allLeaves [
 		  self leavesDo: [ :leaf | stream nextPut: leaf ] ]
 ]
 
+{ #category : 'converting' }
+GolapHierarchicalClusteringTree >> asArray [
+
+	^ self graphNodes
+]
+
 { #category : 'enumerating' }
 GolapHierarchicalClusteringTree >> childrenDo: aBlock [
 
@@ -74,6 +80,12 @@ GolapHierarchicalClusteringTree >> hasChild: aTree [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'testing' }
+GolapHierarchicalClusteringTree >> ifEmpty: aFullBlockClosure [
+
+	self isEmpty ifTrue: aFullBlockClosure
+]
+
 { #category : 'controlling' }
 GolapHierarchicalClusteringTree >> ifNode: aBlock [
 ]
@@ -96,6 +108,15 @@ GolapHierarchicalClusteringTree >> leavesDo: aBlock [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'enumerating' }
+GolapHierarchicalClusteringTree >> leavesWithIndexDo: aBlock [
+
+	| index |
+	index := 0.
+	self leavesDo: [ :leaf |
+		aBlock cull: leaf cull: (index := index + 1) ]
+]
+
 { #category : 'accessing' }
 GolapHierarchicalClusteringTree >> maxDepth [
 
@@ -112,6 +133,12 @@ GolapHierarchicalClusteringTree >> nodesDo: aBlock [
 
 { #category : 'accessing' }
 GolapHierarchicalClusteringTree >> oneGraphNode [
+
+	^ self oneLeaf ifNotNil: #graphNode
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> oneLeaf [
 
 	^ self subclassResponsibility
 ]
