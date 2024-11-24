@@ -65,42 +65,41 @@ GolapItemsAppearance >> initializePresenters [
 
 	minFreqSlider := self newSlider
 		                 label: 'min freq';
-		                 min: 1;
+		                 min: 0;
 		                 max: 100;
 		                 quantum: 1;
-		                 value: 1;
+		                 value: 0;
 		                 whenValueChangedDo: [ :value |
 			                 self minFrequency: value rounded ];
 		                 yourself.
 	minFreqField := self newNumberInput
 		                beInteger;
-		                minimum: 1;
+		                minimum: 0;
 		                maximum: 100;
-		                number: 1;
+		                number: 0;
 		                whenNumberChangedDo: [ :value |
 			                self minFrequency: value ];
 		                yourself.
 
 	showIsolatedNodesCheckBox := self newCheckBox
-		                                label: 'isolated';
-		                                state: false;
-		                                whenChangedDo: [ :value |
-			                                golap updateGlobalImageAfter: [  ] ];
-		                                yourself.
+		                             label: 'isolated';
+		                             state: false;
+		                             whenChangedDo: [ :value |
+			                             golap updateGlobalImageAfter: [  ] ];
+		                             yourself.
 	showHiddenConnectionNodesCheckBox := self newCheckBox
-		                                        label: 'hidden';
-		                                        state: false;
-		                                        whenChangedDo: [ :value |
-			                                        golap
-				                                        updateGlobalImageAfter: [
-					                                         ] ];
-		                                        yourself.
+		                                     label: 'hidden';
+		                                     state: false;
+		                                     whenChangedDo: [ :value |
+			                                     golap updateGlobalImageAfter: [
+					                                      ] ];
+		                                     yourself.
 	showConnectedNodesCheckBox := self newCheckBox
-		                                 label: 'connected';
-		                                 state: true;
-		                                 whenChangedDo: [ :value |
-			                                 golap updateGlobalImageAfter: [  ] ];
-		                                 yourself.
+		                              label: 'connected';
+		                              state: true;
+		                              whenChangedDo: [ :value |
+			                              golap updateGlobalImageAfter: [  ] ];
+		                              yourself.
 	numLabelsSlider := self newSlider
 		                   label: 'labels';
 		                   min: 0.0;
@@ -220,7 +219,5 @@ GolapItemsAppearance >> updateMinMaxFrequency [
 					self
 						minFrequency: 0;
 						maxFrequency: 1 ]
-				ifNotEmpty: [ :freqs |
-					self minFrequency: freqs min.
-					self maxFrequency: freqs max ] ] ]
+				ifNotEmpty: [ :freqs | self maxFrequency: freqs max ] ] ]
 ]

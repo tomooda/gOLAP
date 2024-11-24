@@ -13,7 +13,9 @@ Class {
 		'activeMap',
 		'lockedNodes',
 		'referenceNodes',
-		'inactiveMap'
+		'inactiveMap',
+		'springLayouter',
+		'friendClusteredLayouter'
 	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',
@@ -393,6 +395,20 @@ GolapOverviewRenderer >> drawSelectionsOn: aCanvas extent: extent scale: scale o
 	labelBoxes := newLabelBoxes contents
 ]
 
+{ #category : 'accessing' }
+GolapOverviewRenderer >> friendClusteredLayouter [
+
+	layouter := (friendClusteredLayouter ifNil: [
+			             friendClusteredLayouter := GolapFriendClusteredLayouter
+				                                        on: golap model ])
+		            lockedNodes:
+			            ((lockedNodes collect: [ :id | golap model nodeAt: id ])
+			             ,
+				             (referenceNodes collect: [ :id |
+						              golap model nodeAt: id ])) asIdentitySet;
+		            yourself
+]
+
 { #category : 'private' }
 GolapOverviewRenderer >> fullBoundsWithMargin: aNumber [
 
@@ -563,12 +579,8 @@ GolapOverviewRenderer >> layoutReferenceNodes [
 { #category : 'accessing' }
 GolapOverviewRenderer >> layouter [
 
-	^ (layouter ifNil: [ layouter := GolapFriendClusteredLayouter on: golap model ])
-		  lockedNodes:
-			  ((lockedNodes collect: [ :id | golap model nodeAt: id ])
-			   , (referenceNodes collect: [ :id | golap model nodeAt: id ]))
-				  asIdentitySet;
-		  yourself
+	layouter ifNil: [ self springLayouter ].
+	^ layouter
 ]
 
 { #category : 'accessing' }
@@ -758,6 +770,20 @@ GolapOverviewRenderer >> snapshotInto: aStream [
 GolapOverviewRenderer >> snapshotStreamDo: aBlock [
 
 	golap snapshotOverviewRenderer: aBlock
+]
+
+{ #category : 'accessing' }
+GolapOverviewRenderer >> springLayouter [
+
+	layouter := (springLayouter ifNil: [
+			             springLayouter := Golap2dSpringLayouter on:
+					                               golap model ])
+		            lockedNodes:
+			            ((lockedNodes collect: [ :id | golap model nodeAt: id ])
+			             ,
+				             (referenceNodes collect: [ :id |
+						              golap model nodeAt: id ])) asIdentitySet;
+		            yourself
 ]
 
 { #category : 'drawing' }

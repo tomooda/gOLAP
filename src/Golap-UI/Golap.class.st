@@ -15,6 +15,7 @@ Class {
 		'overridesYWithFrequencyCheckbox',
 		'overridesYWithFrequencyOrderCheckbox',
 		'layoutButton',
+		'layoutChooseButton',
 		'zoomInButton',
 		'zoomOutButton',
 		'resetZoomButton',
@@ -453,6 +454,22 @@ Golap >> buttonHeight [
 	^ self class buttonHeight
 ]
 
+{ #category : 'menu' }
+Golap >> chooseLayouter [
+
+	^ (self newMenu addGroup: [ :group |
+		   group
+			   addItem: [ :item |
+				   item
+					   name: 'ばね';
+					   action: [ self springLayout ] ];
+			   addItem: [ :item |
+				   item
+					   name: 'クラスター';
+					   action: [ self friendClusteredLayout ] ];
+			   yourself ]) openWithSpecAtPointer
+]
+
 { #category : 'accessing-colors' }
 Golap >> colorForEdge: aGolapEdge [
 
@@ -635,6 +652,13 @@ Golap >> font: aFont [
 { #category : 'accessing-colors' }
 Golap >> freshColor [
 	^ colorsAppearancePresenter freshColor
+]
+
+{ #category : 'operations' }
+Golap >> friendClusteredLayout [
+
+	self overviewRenderer friendClusteredLayouter.
+	self updateGlobalImageAfter: [  ] layout: true
 ]
 
 { #category : 'accessing' }
@@ -858,6 +882,7 @@ Golap >> graphLayout [
 				   height: self buttonHeight;
 				   add: (SpBoxLayout newHorizontal
 						    add: layoutButton expand: true;
+						    add: layoutChooseButton width: 20;
 						    add: (SpBoxLayout newVertical
 								     add: overridesYWithFrequencyCheckbox expand: false;
 								     add: overridesYWithFrequencyOrderCheckbox expand: false)
@@ -1042,6 +1067,10 @@ Golap >> initializePresenters [
 	layoutButton
 		label: 'layout';
 		action: [ self updateGlobalImageAfter: [  ] layout: true ].
+	layoutChooseButton := self newButton
+		                      icon: (self iconNamed: #arrowDown);
+		                      action: [ self chooseLayouter ];
+		                      yourself.
 	overridesYWithFrequencyCheckbox := self newCheckBox
 		                                   label: 'Y=freq';
 		                                   labelOnRight;
@@ -2379,6 +2408,13 @@ Golap >> snapshotSelections [
 						('pins' -> pins).
 						('frontDimension' -> frontList selectedItem).
 						('baseDimension' -> baseList selectedItem) } asOrderedDictionary ] ] ]
+]
+
+{ #category : 'operations' }
+Golap >> springLayout [
+
+	self overviewRenderer springLayouter.
+	self updateGlobalImageAfter: [  ] layout: true
 ]
 
 { #category : 'operations-photoimages' }
