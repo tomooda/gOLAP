@@ -455,19 +455,19 @@ Golap >> buttonHeight [
 ]
 
 { #category : 'menu' }
-Golap >> chooseLayouter [
+Golap >> chooseLayouterMenu [
 
-	^ (self newMenu addGroup: [ :group |
-		   group
-			   addItem: [ :item |
-				   item
-					   name: 'ばね';
-					   action: [ self springLayout ] ];
-			   addItem: [ :item |
-				   item
-					   name: 'クラスター';
-					   action: [ self friendClusteredLayout ] ];
-			   yourself ]) openWithSpecAtPointer
+	^ self newMenu addGroup: [ :group |
+		  group
+			  addItem: [ :item |
+				  item
+					  name: 'ばね';
+					  action: [ self springLayout ] ];
+			  addItem: [ :item |
+				  item
+					  name: '円周（フレンドクラスタ）';
+					  action: [ self friendClusteredLayout ] ];
+			  yourself ]
 ]
 
 { #category : 'accessing-colors' }
@@ -1069,7 +1069,8 @@ Golap >> initializePresenters [
 		action: [ self updateGlobalImageAfter: [  ] layout: true ].
 	layoutChooseButton := self newButton
 		                      icon: (self iconNamed: #arrowDown);
-		                      action: [ self chooseLayouter ];
+		                      action: [
+			                      self chooseLayouterMenu openWithSpecAtPointer ];
 		                      yourself.
 	overridesYWithFrequencyCheckbox := self newCheckBox
 		                                   label: 'Y=freq';

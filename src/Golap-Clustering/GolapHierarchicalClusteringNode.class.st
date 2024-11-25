@@ -176,6 +176,17 @@ GolapHierarchicalClusteringNode >> size [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringNode >> sort [
+
+	trees := trees
+		         do: #sort;
+		         asSortedCollection: [ :more :less |
+			         more score > less score or: [
+					         more score = less score and: [
+							         more graphNodeId >= less graphNodeId ] ] ]
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringNode >> trees [
 
 	^ trees

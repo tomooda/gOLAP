@@ -84,6 +84,12 @@ GolapHierarchicalClusteringLeaf >> size [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> sort [
+
+	
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringLeaf >> trees [
 
 	^ #(  )

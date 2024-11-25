@@ -62,6 +62,12 @@ GolapHierarchicalClusteringTree >> depth [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringTree >> graphNodeId [
+
+	^ self oneGraphNode id
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> graphNodes [
 
 	^ Array streamContents: [ :stream |
@@ -230,6 +236,12 @@ GolapHierarchicalClusteringTree >> score: aNumber [
 
 { #category : 'accessing' }
 GolapHierarchicalClusteringTree >> size [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> sort [
 
 	^ self subclassResponsibility
 ]

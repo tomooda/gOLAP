@@ -21,8 +21,9 @@ GolapFriendClusteredLayouter >> layout [
 		        rank: 256;
 		        tree.
 	tree ifEmpty: [ ^ self ].
+	tree sort.
 	numNodes := tree size.
-	divisions := numNodes * 2.1.
+	divisions := numNodes * 3.
 	minValue := maxValue := tree oneLeaf score.
 	tree leavesDo: [ :leaf |
 		| score |
@@ -30,8 +31,8 @@ GolapFriendClusteredLayouter >> layout [
 		minValue := minValue min: score.
 		maxValue := maxValue max: score ].
 	thetaScale := 2.0 * Float pi / numNodes asFloat.
-	rScale := 0.8 / (maxValue - minValue) * numNodes.
-	r0 := 0.2 * numNodes.
+	rScale := 0.6 / (maxValue - minValue) * numNodes.
+	r0 := 0.4 * numNodes.
 	tree leavesWithIndexDo: [ :leaf :index |
 		| theta r |
 		theta := (index - 1) asFloat * thetaScale.
