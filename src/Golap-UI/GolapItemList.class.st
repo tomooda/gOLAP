@@ -381,42 +381,75 @@ GolapItemList >> nodeListMenu [
 		                nodeAt:
 		                (nodeList selection selectedItem ifNil: [ ^ menu ])
 		                ifAbsent: [ ^ menu ].
-	(self markMenu: selectedNode) ifNotNil: [ :submenu |
-		menu addItem: [ :item |
-			item
-				name: 'mark';
-				subMenu: submenu ] ].
-	(self unmarkMenu: selectedNode) ifNotNil: [ :submenu |
-		menu addItem: [ :item |
-			item
-				name: 'unmark';
-				subMenu: submenu ] ].
-	nodeList selectedItems ifNotEmpty: [
-		menu
-			addItem: [ :item |
+	menu addGroup: [ :group |
+		(self markMenu: selectedNode) ifNotNil: [ :submenu |
+			group addItem: [ :item |
 				item
-					name: 'Mark selections';
-					subMenu: self markSelectionsMenu ];
-			addItem: [ :item |
+					name: 'mark';
+					subMenu: submenu ] ].
+		(self unmarkMenu: selectedNode) ifNotNil: [ :submenu |
+			group addItem: [ :item |
 				item
-					name: 'Unmark selections';
-					subMenu: self unmarkSelectionsMenu ] ].
+					name: 'unmark';
+					subMenu: submenu ] ].
+		nodeList selectedItems ifNotEmpty: [
+			group
+				addItem: [ :item |
+					item
+						name: 'Mark selections';
+						subMenu: self markSelectionsMenu ];
+				addItem: [ :item |
+					item
+						name: 'Unmark selections';
+						subMenu: self unmarkSelectionsMenu ] ] ].
 
-	(golap includesPin: selectedNode)
-		ifTrue: [
-			menu addItem: [ :item |
-				item
-					name: 'Unpin';
-					action: [ golap togglePin: selectedNode ] ] ]
-		ifFalse: [
-			menu addItem: [ :item |
-				item
-					name: 'Pin';
-					action: [ golap togglePin: selectedNode ] ] ].
-	menu addItem: [ :item |
-		item
-			name: 'Show info';
-			action: [ golap showItemView: selectedNode ] ].
+	selectedNode ifNotNil: [
+		golap rendererSelector = #overviewRenderer ifTrue: [
+			menu addGroup: [ :group |
+				(golap renderer isReferenceNode: selectedNode)
+					ifTrue: [
+						group addItem: [ :item |
+							item
+								name: 'remove from reference';
+								action: [ golap removeReferenceNode: selectedNode ] ] ]
+					ifFalse: [
+						(golap renderer isLockedNode: selectedNode)
+							ifTrue: [
+								group
+									addItem: [ :item |
+										item
+											name: 'be auto layouted';
+											action: [ golap unlockNode: selectedNode ] ];
+									addItem: [ :item |
+										item
+											name: 'add to reference';
+											action: [
+												golap
+													unlockNode: selectedNode;
+													addReferenceNode: selectedNode ] ] ]
+							ifFalse: [
+								group addItem: [ :item |
+									item
+										name: 'add to reference';
+										action: [ golap addReferenceNode: selectedNode ] ] ] ] ] ] ].
+
+	menu addGroup: [ :group |
+		(golap includesPin: selectedNode)
+			ifTrue: [
+				group addItem: [ :item |
+					item
+						name: 'Unpin';
+						action: [ golap togglePin: selectedNode ] ] ]
+			ifFalse: [
+				group addItem: [ :item |
+					item
+						name: 'Pin';
+						action: [ golap togglePin: selectedNode ] ] ] ].
+	menu addGroup: [ :group |
+		group addItem: [ :item |
+			item
+				name: 'Show info';
+				action: [ golap showItemView: selectedNode ] ] ].
 	^ menu
 ]
 

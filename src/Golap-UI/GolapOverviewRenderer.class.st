@@ -97,22 +97,37 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 		             ifFalse: [ 2.0 ].
 	reallyVisibleEdges do: [ :edge |
 		(golap model valueAtEdge: edge) ifNotNil: [ :v0 |
-			(self colorForEdge: edge) ifNotNil: [ :c |
-				| v p1 p2 str |
-				v := v0.
-				p1 := edge node1 asPoint * scale + offset.
-				p2 := edge node2 asPoint * scale + offset.
-				str := self simpleStringFor: v.
-				(v notNil and: [ v isInfinite ]) ifTrue: [
-					v := v > 0.0
-						     ifTrue: [ maxValue * 2.0 ]
-						     ifFalse: [ maxValue * -2.0 ] ].
-				v isNaN ifFalse: [
-					aCanvas
-						line: p1
-						to: p2
-						width: v abs * lineScale + 2.0
-						color: c ] ] ] ].
+			| v p1 p2 str |
+			v := v0.
+			p1 := edge node1 asPoint * scale + offset.
+			p2 := edge node2 asPoint * scale + offset.
+			str := self simpleStringFor: v.
+			(v notNil and: [ v isInfinite ]) ifTrue: [
+				v := v > 0.0
+					     ifTrue: [ maxValue * 2.0 ]
+					     ifFalse: [ maxValue * -2.0 ] ].
+			v isNaN ifFalse: [
+				| refIndex |
+				refIndex := (referenceNodes indexOf: edge node1 id) max:
+					            (referenceNodes indexOf: edge node2 id).
+				refIndex > 0
+					ifTrue: [
+						aCanvas
+							line: p1
+							to: p2
+							width: v abs * lineScale + 2.0
+							color: (Color
+									 h:
+									 (refIndex - 1) asFloat * 360.0 / referenceNodes size asFloat
+									 s: 1.0
+									 v: 1.0) ]
+					ifFalse: [
+						(self colorForEdge: edge) ifNotNil: [ :c |
+							aCanvas
+								line: p1
+								to: p2
+								width: v abs * lineScale + 2.0
+								color: c ] ] ] ] ].
 	golap positivePolishColor ifNotNil: [ :color |
 		golap model positivePolishEdgesDo: [ :edge |
 			((reallyVisibleNodes includes: edge node1) and: [
@@ -828,6 +843,16 @@ GolapOverviewRenderer >> svg [
 GolapOverviewRenderer >> unlockNode: aGolapNode [
 
 	lockedNodes remove: aGolapNode id ifAbsent: [  ]
+]
+
+{ #category : 'private' }
+GolapOverviewRenderer >> updateVisibleEdgeThresholds [
+
+	super updateVisibleEdgeThresholds.
+	reallyVisibleNodes := reallyVisibleNodes , (referenceNodes
+		                       collect: [ :id | golap model nodeAt: id ]
+		                       thenSelect: [ :node |
+		                       (reallyVisibleNodes includes: node) not ])
 ]
 
 { #category : 'view manipulation' }

@@ -55,7 +55,8 @@ Class {
 		'dandelionPresenter',
 		'snapshotBaseName',
 		'hedgePresenter',
-		'dragNode'
+		'dragNode',
+		'edgeList'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -473,6 +474,9 @@ Golap >> chooseLayouterMenu [
 { #category : 'accessing-colors' }
 Golap >> colorForEdge: aGolapEdge [
 
+	((self includesSelection: aGolapEdge node1) or: [
+		 self includesSelection: aGolapEdge node2 ]) ifTrue: [
+		^ self selectionColor ].
 	self selectedBaseDimension ifNotNil: [
 		| frontEdge baseEdge v |
 		frontEdge := self selectedFrontDimension
@@ -1133,6 +1137,7 @@ Golap >> initializePresenters [
 		                 yourself.
 	itemList := self newGolapItemList.
 	itemView := self newGolapItemView.
+	edgeList := self newGolapEdgeList.
 	itemNotebook := self newNotebook
 		                addPage: (self newNotebookPage
 				                 title: 'アイテムリスト';
@@ -1141,6 +1146,10 @@ Golap >> initializePresenters [
 		                addPage: (self newNotebookPage
 				                 title: 'アイテム情報';
 				                 presenterProvider: [ itemView ];
+				                 yourself);
+		                addPage: (self newNotebookPage
+				                 title: '隣接アイテム';
+				                 presenterProvider: [ edgeList ];
 				                 yourself);
 		                yourself.
 
@@ -1349,6 +1358,14 @@ Golap >> moveNode: aGolapNode [
 { #category : 'accessing-colors' }
 Golap >> negativePolishColor [
 	^ colorsAppearancePresenter negativePolishColor
+]
+
+{ #category : 'instance creation' }
+Golap >> newGolapEdgeList [
+
+	^ (self instantiate: GolapEdgeList)
+		  golap: self;
+		  yourself
 ]
 
 { #category : 'instance creation' }
@@ -1735,6 +1752,12 @@ Golap >> removeReferenceNode: aGolapNode [
 { #category : 'accessing-renderer' }
 Golap >> renderer [
 	^ self perform: rendererSelector
+]
+
+{ #category : 'accessing-renderer' }
+Golap >> rendererSelector [
+
+	^ rendererSelector
 ]
 
 { #category : 'operations' }
@@ -2586,7 +2609,8 @@ Golap >> updateItemView [
 { #category : 'operations' }
 Golap >> updateModel [
 	self model: self selectedModel.
-	itemList modelChanged
+	itemList modelChanged.
+	edgeList modelChanged
 ]
 
 { #category : 'private' }
@@ -2598,7 +2622,8 @@ Golap >> updateQuery [
 Golap >> updateSelection [
 
 	self updateGlobalImageAfter: [
-		itemList ifNotNil: [ itemList selectedItems: selections ] ].
+		itemList ifNotNil: [ itemList selectedItems: selections ].
+		edgeList ifNotNil: [ edgeList updateNodeDropList ] ].
 	self announcer announce: GolapViewUpdated new
 ]
 
