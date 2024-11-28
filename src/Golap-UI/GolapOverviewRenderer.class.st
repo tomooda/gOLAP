@@ -82,7 +82,7 @@ GolapOverviewRenderer >> drawEdgeLabelFor: aGolapEdge at: aPoint color: aColor o
 { #category : 'drawing' }
 GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset: offset [
 
-	| maxValue lineScale |
+	| maxValue lineScale activeReferenceNodes |
 	self edgeScale < 1.0e-6 ifTrue: [ ^ self ].
 	reallyVisibleEdges ifEmpty: [ ^ self ].
 	maxValue := (reallyVisibleEdges
@@ -95,6 +95,10 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 	lineScale := maxValue >= 1.0e-8
 		             ifTrue: [ 5.0 / maxValue * self edgeScale ]
 		             ifFalse: [ 2.0 ].
+	activeReferenceNodes := referenceNodes
+		                        collect: [ :id | golap model nodeAt: id ]
+		                        thenSelect: [ :node |
+		                        golap includesSelection: node ].
 	reallyVisibleEdges do: [ :edge |
 		(golap model valueAtEdge: edge) ifNotNil: [ :v0 |
 			| v p1 p2 str |
@@ -107,20 +111,23 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 					     ifTrue: [ maxValue * 2.0 ]
 					     ifFalse: [ maxValue * -2.0 ] ].
 			v isNaN ifFalse: [
-				| refIndex |
-				refIndex := (referenceNodes indexOf: edge node1 id) max:
-					            (referenceNodes indexOf: edge node2 id).
-				refIndex > 0
+				((referenceNodes includes: edge node1 id) or: [
+					 referenceNodes includes: edge node2 id ])
 					ifTrue: [
-						aCanvas
-							line: p1
-							to: p2
-							width: v abs * lineScale + 2.0
-							color: (Color
-									 h:
-									 (refIndex - 1) asFloat * 360.0 / referenceNodes size asFloat
-									 s: 1.0
-									 v: 1.0) ]
+						| refIndex |
+						refIndex := (activeReferenceNodes indexOf: edge node1) max:
+							            (activeReferenceNodes indexOf: edge node2).
+						refIndex > 0 ifTrue: [
+							aCanvas
+								line: p1
+								to: p2
+								width: v abs * lineScale + 2.0
+								color: (Color
+										 h:
+										 (refIndex - 1) asFloat * 360.0
+										 / activeReferenceNodes size asFloat
+										 s: 1.0
+										 v: 1.0) ] ]
 					ifFalse: [
 						(self colorForEdge: edge) ifNotNil: [ :c |
 							aCanvas
