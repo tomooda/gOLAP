@@ -55,7 +55,12 @@ GolapEdgeList >> initializePresenters [
 							                 (golap model valueAtEdge: edge) ]);
 		                addColumn:
 			                (SpStringTableColumn new evaluated: [ :edge |
-				                 (edge peerOf: nodeDropList selectedItem) name ]);
+				                 self selectedNode
+					                 ifNotNil: [ :node |
+					                 (edge peerOf: node)
+						                 ifNotNil: #name
+						                 ifNil: [ '-' ] ]
+					                 ifNil: [ '-' ] ]);
 		                whenSelectionChangedDo: [
 		                self peerNodeSelectionChanged ];
 		                contextMenu: [ self peerNodeListMenu ];
@@ -87,6 +92,14 @@ GolapEdgeList >> peerNodeSelectionChanged [
 					 (peerNodeList items collect: [ :edge | edge peerOf: node ])) ]
 ]
 
+{ #category : 'accessing' }
+GolapEdgeList >> selectedNode [
+
+	^ [ nodeDropList selectedItem ]
+		  on: SubscriptOutOfBounds
+		  do: [ :ex | ex return: nil ]
+]
+
 { #category : 'updating' }
 GolapEdgeList >> updateNodeDropList [
 
@@ -102,14 +115,14 @@ GolapEdgeList >> updateNodeDropList [
 { #category : 'updating' }
 GolapEdgeList >> updatePeerNodeList [
 
-	nodeDropList selectedItem
+	self selectedNode
 		ifNotNil: [ :node |
 			| edges |
 			edges := node edges.
 			peerNodeList
-				items: edges;
+				items: edges
 				selectItems:
-					(edges select: [ :edge |
-							 golap includesSelection: (edge peerOf: node) ]) ]
+				(edges select: [ :edge |
+					 golap includesSelection: (edge peerOf: node) ]) ]
 		ifNil: [ peerNodeList items: #(  ) ]
 ]
