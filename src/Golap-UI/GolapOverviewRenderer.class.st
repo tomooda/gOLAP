@@ -82,7 +82,7 @@ GolapOverviewRenderer >> drawEdgeLabelFor: aGolapEdge at: aPoint color: aColor o
 { #category : 'drawing' }
 GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset: offset [
 
-	| maxValue lineScale activeReferenceNodes |
+	| maxValue lineScale selectedReferenceNodes activeReferenceNodes |
 	self edgeScale < 1.0e-6 ifTrue: [ ^ self ].
 	reallyVisibleEdges ifEmpty: [ ^ self ].
 	maxValue := (reallyVisibleEdges
@@ -95,39 +95,52 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 	lineScale := maxValue >= 1.0e-8
 		             ifTrue: [ 5.0 / maxValue * self edgeScale ]
 		             ifFalse: [ 2.0 ].
+	selectedReferenceNodes := (referenceNodes
+		                           collect: [ :id | golap model nodeAt: id ]
+		                           thenSelect: [ :node |
+		                           golap includesSelection: node ])
+		                          asIdentitySet.
+	selectedReferenceNodes addAll: golap selections.
 	activeReferenceNodes := referenceNodes
 		                        collect: [ :id | golap model nodeAt: id ]
 		                        thenSelect: [ :node |
-		                        golap includesSelection: node ].
+			                        (golap includesSelection: node) or: [
+				                        node hasPeerSuchThat: [ :peer |
+					                        golap includesSelection: peer ] ] ].
+
 	reallyVisibleEdges do: [ :edge |
 		(golap model valueAtEdge: edge) ifNotNil: [ :v0 |
-			| v p1 p2 str |
+			| v n1 n2 p1 p2 str |
 			v := v0.
 			p1 := edge node1 asPoint * scale + offset.
 			p2 := edge node2 asPoint * scale + offset.
 			str := self simpleStringFor: v.
+			n1 := edge node1.
+			n2 := edge node2.
 			(v notNil and: [ v isInfinite ]) ifTrue: [
 				v := v > 0.0
 					     ifTrue: [ maxValue * 2.0 ]
 					     ifFalse: [ maxValue * -2.0 ] ].
 			v isNaN ifFalse: [
-				((referenceNodes includes: edge node1 id) or: [
-					 referenceNodes includes: edge node2 id ])
+				((referenceNodes includes: n1 id) or: [
+					 referenceNodes includes: n2 id ])
 					ifTrue: [
-						| refIndex |
-						refIndex := (activeReferenceNodes indexOf: edge node1) max:
-							            (activeReferenceNodes indexOf: edge node2).
-						refIndex > 0 ifTrue: [
-							aCanvas
-								line: p1
-								to: p2
-								width: v abs * lineScale + 2.0
-								color: (Color
-										 h:
-										 (refIndex - 1) asFloat * 360.0
-										 / activeReferenceNodes size asFloat
-										 s: 1.0
-										 v: 1.0) ] ]
+						((selectedReferenceNodes includes: n1) or: [
+							 selectedReferenceNodes includes: n2 ]) ifTrue: [
+							| refIndex |
+							refIndex := (activeReferenceNodes indexOf: edge node1) max:
+								            (activeReferenceNodes indexOf: edge node2).
+							refIndex > 0 ifTrue: [
+								aCanvas
+									line: p1
+									to: p2
+									width: v abs * lineScale + 2.0
+									color: (Color
+											 h:
+											 (refIndex - 1) asFloat * 360.0
+											 / activeReferenceNodes size asFloat
+											 s: 1.0
+											 v: 1.0) ] ] ]
 					ifFalse: [
 						(self colorForEdge: edge) ifNotNil: [ :c |
 							aCanvas

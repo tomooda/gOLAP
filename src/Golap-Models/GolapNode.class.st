@@ -242,6 +242,14 @@ GolapNode >> hasPeerNode: aGolapNode [
 	^ false
 ]
 
+{ #category : 'testing' }
+GolapNode >> hasPeerSuchThat: aBlock [
+
+	self edgesDo: [ :edge |
+		(aBlock value: (edge peerOf: self)) ifTrue: [ ^ true ] ].
+	^ false
+]
+
 { #category : 'accessing' }
 GolapNode >> hiddenEdgeTo: aGolapNode ifAbsent: errorBlock [
 
