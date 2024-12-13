@@ -161,15 +161,6 @@ GolapCSVImportPresenter >> updateColumnsTable [
 ]
 
 { #category : 'updating' }
-GolapCSVImportPresenter >> updateDataframe [
-
-	dataframe := nil.
-	self fileReference ifNotNil: [ :ref |
-		ref isFile ifTrue: [ dataframe := DataFrame readFromCsv: ref ] ].
-	self dataframeChanged
-]
-
-{ #category : 'updating' }
 GolapCSVImportPresenter >> updateEvaluatorDropList [
 
 	| selection items |

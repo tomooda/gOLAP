@@ -51,6 +51,16 @@ GolapServerProductInfoRetriever >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
+{ #category : 'defaults' }
+GolapServerProductInfoRetriever >> defaultPhotoimageRetrievers [
+
+	^ { (GolapServerPhotoImageRetriever new
+		   golapServerUrl: golapServerUrl;
+		   authenticateBlock: authenticateBlock;
+		   imageServerUrl: imageRepositoryUrl;
+		   yourself) }
+]
+
 { #category : 'accessing' }
 GolapServerProductInfoRetriever >> golapServerUrl [
 
@@ -61,12 +71,6 @@ GolapServerProductInfoRetriever >> golapServerUrl [
 GolapServerProductInfoRetriever >> golapServerUrl: aString [
 
 	golapServerUrl := aString asUrl
-]
-
-{ #category : 'testing' }
-GolapServerProductInfoRetriever >> hasPhotoImage [
-
-	^ imageRepositoryUrl notNil
 ]
 
 { #category : 'accessing' }
@@ -131,17 +135,6 @@ GolapServerProductInfoRetriever >> itemInfoRequestJsonFor: aString [
 						ifPresent:
 							[ :granularity | (q at: 'nodestat') at: 'granularity' put: granularity ] ] ].
 	^ NeoJSONWriter toString: q
-]
-
-{ #category : 'accessing' }
-GolapServerProductInfoRetriever >> photoimageFor: aGolapNode [
-
-	cachedImages
-		at: aGolapNode id
-		ifPresent: [ :photoimage | ^ photoimage ]
-		ifAbsent: [
-			^ (self retrieveImagesFor: aGolapNode id) ifNotNil: [ :photoimage |
-				  cachedImages at: aGolapNode id put: photoimage ] ]
 ]
 
 { #category : 'accessing' }

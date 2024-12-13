@@ -1,6 +1,9 @@
 Class {
 	#name : 'GolapProductInfoRetriever',
 	#superclass : 'Object',
+	#instVars : [
+		'photoimageRetrievers'
+	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',
 	#tag : 'Graph'
@@ -45,16 +48,31 @@ GolapProductInfoRetriever >> asJSON [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'defaults' }
+GolapProductInfoRetriever >> defaultPhotoimageRetrievers [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'testing' }
 GolapProductInfoRetriever >> hasPhotoImage [
 
-	^ self subclassResponsibility
+	^ self photoimageRetrievers anySatisfy: #isAvailable
 ]
 
 { #category : 'accessing' }
 GolapProductInfoRetriever >> photoimageFor: aGolapNode [
 
-	^ self subclassResponsibility
+	self photoimageRetrievers do: [ :retriever |
+		(retriever photoimageFor: aGolapNode) ifNotNil: [ :image | ^ image ] ].
+	^ nil
+]
+
+{ #category : 'accessing' }
+GolapProductInfoRetriever >> photoimageRetrievers [
+
+	^ photoimageRetrievers ifNil: [
+		  photoimageRetrievers := self defaultPhotoimageRetrievers ]
 ]
 
 { #category : 'accessing' }

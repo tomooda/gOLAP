@@ -267,7 +267,7 @@ GolapNode >> hiddenEdgesAndNodeDo: aBlock [
 { #category : 'accessing' }
 GolapNode >> id [
 
-	^ data name
+	^ data name ifNil: [ '-' ]
 ]
 
 { #category : 'enumerating' }
@@ -330,7 +330,7 @@ GolapNode >> markersDo: aBlock [
 { #category : 'accessing' }
 GolapNode >> name [
 
-	^ name
+	^ name ifNil: [ self id ]
 ]
 
 { #category : 'arithmetics' }
