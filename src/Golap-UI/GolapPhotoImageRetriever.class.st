@@ -6,6 +6,12 @@ Class {
 	#tag : 'Graph'
 }
 
+{ #category : 'instance creation' }
+GolapPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'testing' }
 GolapPhotoImageRetriever class >> isAbstract [
 
@@ -44,6 +50,12 @@ GolapPhotoImageRetriever >> cacheDirectory [
 		  yourself
 ]
 
+{ #category : 'private' }
+GolapPhotoImageRetriever >> commit: copy [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'user interface' }
 GolapPhotoImageRetriever >> configPresenter [
 
@@ -77,6 +89,12 @@ GolapPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 ]
 
 { #category : 'accessing' }
+GolapPhotoImageRetriever >> order [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
 GolapPhotoImageRetriever >> photoimageFor: aGolapNode [
 
 	^ (self photoimagesFor: aGolapNode)
@@ -98,6 +116,12 @@ GolapPhotoImageRetriever >> photoimagesFor: aGolapNode [
 
 { #category : 'accessing' }
 GolapPhotoImageRetriever >> retrieveImageNamed: aString [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapPhotoImageRetriever >> shortDescription [
 
 	^ self subclassResponsibility
 ]

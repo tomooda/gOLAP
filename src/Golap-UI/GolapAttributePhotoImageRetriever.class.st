@@ -10,6 +10,18 @@ Class {
 	#tag : 'Graph'
 }
 
+{ #category : 'instance creation' }
+GolapAttributePhotoImageRetriever class >> for: aGolapItemInfoRetriever [
+
+	^ [
+	  self new
+		  availableColumns: aGolapItemInfoRetriever availableColumns;
+		  photoColumn: aGolapItemInfoRetriever photoUrlColumn;
+		  yourself ]
+		  on: Error
+		  do: [ :ex | ex return: nil ]
+]
+
 { #category : 'accessing' }
 GolapAttributePhotoImageRetriever >> availableColumns [
 
@@ -24,10 +36,17 @@ GolapAttributePhotoImageRetriever >> availableColumns: anArrayOfString [
 		photoColumn := nil ]
 ]
 
+{ #category : 'private' }
+GolapAttributePhotoImageRetriever >> commit: copy [
+
+	photoColumn := copy photoColumn.
+	availableColumns := copy availableColumns
+]
+
 { #category : 'user interface' }
 GolapAttributePhotoImageRetriever >> configPresenter [
 
-	^ nil
+	^ GolapAttributePhotoImageRetrieverPresenter on: self
 ]
 
 { #category : 'testing' }
@@ -59,6 +78,12 @@ GolapAttributePhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 ]
 
 { #category : 'accessing' }
+GolapAttributePhotoImageRetriever >> order [
+
+	^ 1
+]
+
+{ #category : 'accessing' }
 GolapAttributePhotoImageRetriever >> photoColumn [
 
 	^ photoColumn
@@ -81,4 +106,10 @@ GolapAttributePhotoImageRetriever >> retrieveImageNamed: aString [
 		  aString asUrl retrieveBinaryContents readStream ]
 		  on: Error
 		  do: [ :ex | ex return: nil ]
+]
+
+{ #category : 'accessing' }
+GolapAttributePhotoImageRetriever >> shortDescription [
+
+	^ 'アイテム属性 ' , (photoColumn ifNil: [ '(未設定)' ])
 ]

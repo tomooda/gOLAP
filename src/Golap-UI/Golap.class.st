@@ -1538,7 +1538,8 @@ Golap >> productInfoRetriever [
 { #category : 'accessing' }
 Golap >> productInfoRetriever: aGolapProductInfoRetriever [
 
-	productInfoRetriever := aGolapProductInfoRetriever
+	productInfoRetriever := aGolapProductInfoRetriever.
+	itemsAppearancePresenter updatePhotoimageRetrievers
 ]
 
 { #category : 'accessing-dimensions' }

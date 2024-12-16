@@ -15,6 +15,23 @@ Class {
 	#tag : 'Graph'
 }
 
+{ #category : 'instance creation' }
+GolapCSVPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
+
+	^ self new
+]
+
+{ #category : 'private' }
+GolapCSVPhotoImageRetriever >> commit: aGolapCSVPhotoImageRetriever [
+
+	csvRef := aGolapCSVPhotoImageRetriever csvRef.
+	dataframe := aGolapCSVPhotoImageRetriever dataframe.
+	idColumn := aGolapCSVPhotoImageRetriever idColumn.
+	photoColumn := aGolapCSVPhotoImageRetriever photoColumn.
+	urlPrefix := aGolapCSVPhotoImageRetriever urlPrefix.
+	urlPostfix := aGolapCSVPhotoImageRetriever urlPostfix
+]
+
 { #category : 'user interface' }
 GolapCSVPhotoImageRetriever >> configPresenter [
 
@@ -125,6 +142,12 @@ GolapCSVPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 ]
 
 { #category : 'accessing' }
+GolapCSVPhotoImageRetriever >> order [
+
+	^ 100
+]
+
+{ #category : 'accessing' }
 GolapCSVPhotoImageRetriever >> photoColumn [
 
 	^ photoColumn
@@ -152,6 +175,14 @@ GolapCSVPhotoImageRetriever >> retrieveImageNamed: aString [
 			  readStream ]
 		  on: Error
 		  do: [ :ex | ex return: nil ]
+]
+
+{ #category : 'accessing' }
+GolapCSVPhotoImageRetriever >> shortDescription [
+
+	^ 'CSVファイル ' , (csvRef ifNil: [ '(未設定)' ] ifNotNil: #basename) , ' '
+	  , (idColumn ifNil: [ '(IDカラム未設定)' ]) , '->'
+	  , (photoColumn ifNil: [ '(画像カラム未設定)' ])
 ]
 
 { #category : 'updating' }

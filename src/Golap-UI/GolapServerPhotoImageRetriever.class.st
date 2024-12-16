@@ -11,6 +11,19 @@ Class {
 	#tag : 'Graph'
 }
 
+{ #category : 'instance creation' }
+GolapServerPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
+
+	^ [
+	  self new
+		  golapServerUrl: aGolapItemInfoRetriever golapServerUrl;
+		  authenticateBlock: aGolapItemInfoRetriever authenticateBlock;
+		  imageServerUrl: aGolapItemInfoRetriever imageRepositoryUrl;
+		  yourself ]
+		  on: Error
+		  do: [ :ex | ex return: nil ]
+]
+
 { #category : 'accessing' }
 GolapServerPhotoImageRetriever >> authenticateBlock [
 
@@ -23,6 +36,20 @@ GolapServerPhotoImageRetriever >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
+{ #category : 'private' }
+GolapServerPhotoImageRetriever >> commit: copy [
+
+	golapServerUrl := copy golapServerUrl.
+	authenticateBlock := copy authenticateBlock.
+	imageServerUrl := copy imageServerUrl
+]
+
+{ #category : 'user interface' }
+GolapServerPhotoImageRetriever >> configPresenter [
+
+	^ GolapServerPhotoImageRetrieverPresenter on: self
+]
+
 { #category : 'accessing' }
 GolapServerPhotoImageRetriever >> golapServerUrl [
 
@@ -33,6 +60,12 @@ GolapServerPhotoImageRetriever >> golapServerUrl [
 GolapServerPhotoImageRetriever >> golapServerUrl: aString [
 
 	golapServerUrl := aString asZnUrl
+]
+
+{ #category : 'testing' }
+GolapServerPhotoImageRetriever >> hasConfigPresenter [
+
+	^ true
 ]
 
 { #category : 'accessing' }
@@ -69,6 +102,12 @@ GolapServerPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 ]
 
 { #category : 'accessing' }
+GolapServerPhotoImageRetriever >> order [
+
+	^ 2
+]
+
+{ #category : 'accessing' }
 GolapServerPhotoImageRetriever >> retrieveImageNamed: aString [
 
 	[
@@ -79,4 +118,11 @@ GolapServerPhotoImageRetriever >> retrieveImageNamed: aString [
 		on: Error
 		do: [ :ex |  ].
 	^ nil
+]
+
+{ #category : 'accessing' }
+GolapServerPhotoImageRetriever >> shortDescription [
+
+	^ 'gOLAPサーバ ' , (golapServerUrl ifNil: [ '(未設定)' ]) asString
+	  , ' 画像サーバ' , (imageServerUrl ifNil: [ '(未設定)' ]) asString
 ]

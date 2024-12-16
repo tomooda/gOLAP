@@ -26,12 +26,13 @@ GolapCSVPhotoImageRetrieverPresenter class >> defaultLayout [
 				   add: #photoColumnTable;
 				   yourself);
 		  add: (SpBoxLayout newHorizontal
+				   vAlignEnd;
 				   add: #urlPrefixField;
 				   add: #nameLabel expand: false;
 				   add: #urlPostfixField;
 				   add: #openPreviewButton expand: false;
 				   yourself)
-		  expand: false;
+		  height: self buttonHeight * 1.5;
 		  yourself
 ]
 
@@ -54,13 +55,18 @@ GolapCSVPhotoImageRetrieverPresenter >> csvRef: aFileReference [
 
 	retriever csvRef: aFileReference.
 	idColumnTable
+		enable;
 		unselectAll;
 		items: retriever dataframe columnNames;
 		selectIndex: 1.
 	photoColumnTable
+		enable;
 		unselectAll;
 		items: retriever dataframe columnNames;
-		selectIndex: 1
+		selectIndex: 1.
+	urlPrefixField enable.
+	urlPostfixField enable.
+	openPreviewButton enable
 ]
 
 { #category : 'accessing' }
@@ -81,10 +87,11 @@ GolapCSVPhotoImageRetrieverPresenter >> initializePresenters [
 
 	changeCsvButton := self newButton
 		                   icon: (self iconNamed: #open);
-		                   label: 'Choose CSV';
+		                   label: 'CSVファイル';
 		                   action: [ self openCsv ];
 		                   yourself.
 	idColumnTable := self newTable
+		                 disable;
 		                 addColumn: (SpStringTableColumn
 				                  title: 'IDカラム名'
 				                  evaluated: [ :column | column asString ]);
@@ -101,6 +108,7 @@ GolapCSVPhotoImageRetrieverPresenter >> initializePresenters [
 			                 retriever ifNotNil: [ retriever idColumn: column ] ];
 		                 yourself.
 	photoColumnTable := self newTable
+		                    disable;
 		                    addColumn: (SpStringTableColumn
 				                     title: '画像カラム名'
 				                     evaluated: [ :column | column asString ]);
@@ -121,6 +129,8 @@ GolapCSVPhotoImageRetrieverPresenter >> initializePresenters [
 					                    '${' , (column ifNil: [ '' ]) , '}' ];
 		                    yourself.
 	urlPrefixField := self newTextInput
+		                  disable;
+		                  placeholder: 'ベースURL';
 		                  whenTextChangedDo: [ :prefix |
 			                  retriever ifNotNil: [
 					                  retriever urlPrefix: prefix ] ];
@@ -129,6 +139,8 @@ GolapCSVPhotoImageRetrieverPresenter >> initializePresenters [
 		             label: '${}';
 		             yourself.
 	urlPostfixField := self newTextInput
+		                   disable;
+		                   placeholder: 'URL拡張子など';
 		                   whenTextChangedDo: [ :postfix |
 			                   retriever ifNotNil: [
 					                   retriever urlPrefix: postfix ] ];

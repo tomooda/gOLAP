@@ -80,7 +80,7 @@ GolapItemView >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next ifNotNil: [ :json |
 		golap productInfoRetriever:
-			(GolapProductInfoRetriever fromJSON: json) ]
+			(GolapItemInfoRetriever fromJSON: json) ]
 ]
 
 { #category : 'snapshot' }

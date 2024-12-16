@@ -1,6 +1,6 @@
 Class {
 	#name : 'GolapNodeProductInfoRetriever',
-	#superclass : 'GolapProductInfoRetriever',
+	#superclass : 'GolapItemInfoRetriever',
 	#instVars : [
 		'photoUrlColumn',
 		'availableColumns'
@@ -41,15 +41,6 @@ GolapNodeProductInfoRetriever >> availableColumns [
 GolapNodeProductInfoRetriever >> availableColumns: anArrayOfString [
 
 	availableColumns := anArrayOfString
-]
-
-{ #category : 'defaults' }
-GolapNodeProductInfoRetriever >> defaultPhotoimageRetrievers [
-
-	^ { (GolapAttributePhotoImageRetriever new
-		   availableColumns: availableColumns;
-		   photoColumn: photoUrlColumn;
-		   yourself) }
 ]
 
 { #category : 'accessing' }

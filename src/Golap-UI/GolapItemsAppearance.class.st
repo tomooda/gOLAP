@@ -9,7 +9,8 @@ Class {
 		'golap',
 		'showConnectedNodesCheckBox',
 		'showHiddenConnectionNodesCheckBox',
-		'showIsolatedNodesCheckBox'
+		'showIsolatedNodesCheckBox',
+		'photoimageRetrievers'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -31,10 +32,12 @@ GolapItemsAppearance class >> defaultLayout [
 		  height: self inputTextHeight;
 		  add: #numLabelsSlider height: self inputTextHeight;
 		  add: #fontButton height: self buttonHeight;
-		  add: #showConnectedNodesCheckBox height: self inputTextHeight;
-		  add: #showHiddenConnectionNodesCheckBox
+		  add: (SpBoxLayout newHorizontal
+				   add: #showConnectedNodesCheckBox;
+				   add: #showHiddenConnectionNodesCheckBox;
+				   add: #showIsolatedNodesCheckBox)
 		  height: self inputTextHeight;
-		  add: #showIsolatedNodesCheckBox height: self inputTextHeight;
+		  add: #photoimageRetrievers;
 		  yourself
 ]
 
@@ -64,7 +67,7 @@ GolapItemsAppearance >> initialExtent [
 GolapItemsAppearance >> initializePresenters [
 
 	minFreqSlider := self newSlider
-		                 label: 'min freq';
+		                 label: '最小頻度';
 		                 min: 0;
 		                 max: 100;
 		                 quantum: 1;
@@ -82,26 +85,26 @@ GolapItemsAppearance >> initializePresenters [
 		                yourself.
 
 	showIsolatedNodesCheckBox := self newCheckBox
-		                             label: 'isolated';
+		                             label: '孤立アイテム';
 		                             state: false;
 		                             whenChangedDo: [ :value |
 			                             golap updateGlobalImageAfter: [  ] ];
 		                             yourself.
 	showHiddenConnectionNodesCheckBox := self newCheckBox
-		                                     label: 'hidden';
+		                                     label: '隠れアイテム';
 		                                     state: false;
 		                                     whenChangedDo: [ :value |
 			                                     golap updateGlobalImageAfter: [
 					                                      ] ];
 		                                     yourself.
 	showConnectedNodesCheckBox := self newCheckBox
-		                              label: 'connected';
+		                              label: '接続アイテム';
 		                              state: true;
 		                              whenChangedDo: [ :value |
 			                              golap updateGlobalImageAfter: [  ] ];
 		                              yourself.
 	numLabelsSlider := self newSlider
-		                   label: 'labels';
+		                   label: 'ラベル表示数';
 		                   min: 0.0;
 		                   max: 2.0;
 		                   quantum: 0.1;
@@ -109,13 +112,14 @@ GolapItemsAppearance >> initializePresenters [
 		                   whenValueChangedDo: [ :value |
 			                   golap updateGlobalImageAfter: [
 					                   numLabelsSlider label:
-							                   (50.0 ** value) truncated printString
-							                   , ' labels' ] ];
+							                   (50.0 ** value) truncated printString , ' 個' ] ];
 		                   yourself.
 	fontButton := self newButton
-		              label: 'font';
+		              label: 'フォント';
 		              action: [ self chooseFont ];
-		              yourself
+		              yourself.
+	photoimageRetrievers := self instantiate:
+		                        GolapPhotoImageRetrieversPresenter
 ]
 
 { #category : 'initialization' }
@@ -172,7 +176,9 @@ GolapItemsAppearance >> restore: aStream [
 GolapItemsAppearance >> setGolap: aGolap [
 
 	golap := aGolap.
-	self updateMinMaxFrequency
+	self
+		updateMinMaxFrequency;
+		updatePhotoimageRetrievers
 ]
 
 { #category : 'accessing' }
@@ -220,4 +226,10 @@ GolapItemsAppearance >> updateMinMaxFrequency [
 						minFrequency: 0;
 						maxFrequency: 1 ]
 				ifNotEmpty: [ :freqs | self maxFrequency: freqs max ] ] ]
+]
+
+{ #category : 'updating' }
+GolapItemsAppearance >> updatePhotoimageRetrievers [
+
+	photoimageRetrievers itemInfoRetriever: golap productInfoRetriever
 ]

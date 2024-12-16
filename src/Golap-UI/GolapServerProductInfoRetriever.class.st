@@ -1,6 +1,6 @@
 Class {
 	#name : 'GolapServerProductInfoRetriever',
-	#superclass : 'GolapProductInfoRetriever',
+	#superclass : 'GolapItemInfoRetriever',
 	#instVars : [
 		'cachedImages',
 		'cachedItemInfos',
@@ -49,16 +49,6 @@ GolapServerProductInfoRetriever >> authenticateBlock [
 { #category : 'accessing' }
 GolapServerProductInfoRetriever >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
-]
-
-{ #category : 'defaults' }
-GolapServerProductInfoRetriever >> defaultPhotoimageRetrievers [
-
-	^ { (GolapServerPhotoImageRetriever new
-		   golapServerUrl: golapServerUrl;
-		   authenticateBlock: authenticateBlock;
-		   imageServerUrl: imageRepositoryUrl;
-		   yourself) }
 ]
 
 { #category : 'accessing' }
