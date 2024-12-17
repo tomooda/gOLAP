@@ -111,26 +111,7 @@ GolapGooglePhotoImageRetriever >> isAvailable [
 { #category : 'enumerating' }
 GolapGooglePhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
-	self isAvailable ifFalse: [ ^ nil ].
-	[
-	| url |
-	url := self googleUrl.
-	url
-		queryAt: 'cx' put: self cseid;
-		queryAt: 'key' put: self apikey;
-		queryAt: 'searchType' put: 'image';
-		queryAt: 'num' put: numImages;
-		queryAt: 'q' put: aGolapNode name.
-	(STONJSON fromString: url retrieveContents)
-		at: 'items'
-		ifPresent: [ :items |
-			items do: [ :item |
-				item
-					at: 'image'
-					ifPresent: [ :image |
-					image at: 'thumbnailLink' ifPresent: aBlock ] ] ] ]
-		on: Error
-		do: [ :ex |  ]
+	aBlock value: aGolapNode name
 ]
 
 { #category : 'accessing' }
@@ -162,11 +143,30 @@ GolapGooglePhotoImageRetriever >> readCseid [
 { #category : 'accessing' }
 GolapGooglePhotoImageRetriever >> retrieveImageNamed: aString [
 
-	^ [
-	  ImageReadWriter formFromStream:
-		  aString asZnUrl retrieveBinaryContents readStream ]
-		  on: Exception
-		  do: [ :ex | ex return: nil ]
+	self isAvailable ifFalse: [ ^ nil ].
+	[
+	| url |
+	url := self googleUrl.
+	url
+		queryAt: 'cx' put: self cseid;
+		queryAt: 'key' put: self apikey;
+		queryAt: 'searchType' put: 'image';
+		queryAt: 'num' put: numImages;
+		queryAt: 'q' put: aString.
+	(STONJSON fromString: url retrieveContents)
+		at: 'items'
+		ifPresent: [ :items |
+			items do: [ :item |
+				item at: 'image' ifPresent: [ :image |
+					image at: 'thumbnailLink' ifPresent: [ :link |
+						[
+						^ ImageReadWriter formFromStream:
+							  link asZnUrl retrieveBinaryContents readStream ]
+							on: Exception
+							do: [ :ex |  ] ] ] ] ] ]
+		on: Error
+		do: [ :ex |  ].
+	^ nil
 ]
 
 { #category : 'accessing' }
