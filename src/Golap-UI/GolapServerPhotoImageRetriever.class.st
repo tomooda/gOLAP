@@ -86,7 +86,7 @@ GolapServerPhotoImageRetriever >> isAvailable [
 	^ golapServerUrl notNil and: [ imageServerUrl ] notNil
 ]
 
-{ #category : 'accessing' }
+{ #category : 'enumerating' }
 GolapServerPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
 	([
@@ -104,7 +104,7 @@ GolapServerPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 { #category : 'accessing' }
 GolapServerPhotoImageRetriever >> order [
 
-	^ 2
+	^ 10
 ]
 
 { #category : 'accessing' }
@@ -115,7 +115,7 @@ GolapServerPhotoImageRetriever >> retrieveImageNamed: aString [
 	response := GolapHttpClient get: imageServerUrl / aString.
 	response isSuccess ifTrue: [
 		^ ImageReadWriter formFromStream: response entity readStream ] ]
-		on: Error
+		on: Exception
 		do: [ :ex |  ].
 	^ nil
 ]

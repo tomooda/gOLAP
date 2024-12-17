@@ -126,7 +126,7 @@ GolapCSVPhotoImageRetriever >> isAvailable [
 			  and: [  dataframe columnNames includes: photoColumn ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'enumerating' }
 GolapCSVPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
 	^ (urlCache at: aGolapNode id ifAbsentPut: [
@@ -144,7 +144,7 @@ GolapCSVPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 { #category : 'accessing' }
 GolapCSVPhotoImageRetriever >> order [
 
-	^ 100
+	^ 90
 ]
 
 { #category : 'accessing' }
@@ -173,7 +173,7 @@ GolapCSVPhotoImageRetriever >> retrieveImageNamed: aString [
 	  ImageReadWriter formFromStream:
 		  (urlPrefix , aString , urlPostfix) asZnUrl retrieveBinaryContents
 			  readStream ]
-		  on: Error
+		  on: Exception
 		  do: [ :ex | ex return: nil ]
 ]
 

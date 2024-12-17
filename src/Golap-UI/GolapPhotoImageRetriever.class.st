@@ -22,13 +22,13 @@ GolapPhotoImageRetriever class >> isAbstract [
 GolapPhotoImageRetriever >> cacheAt: aString ifAbsentPut: errorBlock [
 
 	| ref |
-	(ref := self cacheDirectory / aString withExtension: 'png') isFile
+	(ref := self cacheDirectory
+	        / (aString , '.png' copyReplaceAll: '/' with: '_')) isFile
 		ifTrue: [
-			ref
-				binaryReadStreamDo: [ :stream |
-					^ [ PNGReadWriter formFromStream: stream ]
-						  on: Error
-						  do: [ :ex | ex return: nil ] ] ]
+			ref binaryReadStreamDo: [ :stream |
+				^ [ PNGReadWriter formFromStream: stream ]
+					  on: Exception
+					  do: [ :ex | ex return: nil ] ] ]
 		ifFalse: [
 			errorBlock value ifNotNil: [ :form |
 				form isForm ifTrue: [
@@ -45,7 +45,7 @@ GolapPhotoImageRetriever >> cacheAt: aString ifAbsentPut: errorBlock [
 { #category : 'accessing-cache' }
 GolapPhotoImageRetriever >> cacheDirectory [
 
-	^ (FileLocator documents / 'gOLAP' / 'imagecache')
+	^ (self golapDirectory / 'imagecache')
 		  ensureCreateDirectory;
 		  yourself
 ]
@@ -60,6 +60,12 @@ GolapPhotoImageRetriever >> commit: copy [
 GolapPhotoImageRetriever >> configPresenter [
 
 	^ nil
+]
+
+{ #category : 'accessing' }
+GolapPhotoImageRetriever >> golapDirectory [
+
+	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
 { #category : 'testing' }
@@ -82,7 +88,7 @@ GolapPhotoImageRetriever >> isAvailable [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'accessing' }
+{ #category : 'enumerating' }
 GolapPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
 	^ self subclassResponsibility
@@ -97,9 +103,11 @@ GolapPhotoImageRetriever >> order [
 { #category : 'accessing' }
 GolapPhotoImageRetriever >> photoimageFor: aGolapNode [
 
-	^ (self photoimagesFor: aGolapNode)
-		  ifNotEmpty: #first
-		  ifEmpty: [ nil ]
+	self isAvailable ifTrue: [
+		self namesFor: aGolapNode do: [ :name |
+			(self cacheAt: name ifAbsentPut: [ self retrieveImageNamed: name ])
+				ifNotNil: [ :form | ^ form ] ] ].
+	^ nil
 ]
 
 { #category : 'accessing' }

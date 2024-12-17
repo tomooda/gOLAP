@@ -69,7 +69,7 @@ GolapAttributePhotoImageRetriever >> isAvailable [
 	^ availableColumns includes: photoColumn
 ]
 
-{ #category : 'accessing' }
+{ #category : 'enumerating' }
 GolapAttributePhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
 	aGolapNode data
@@ -80,7 +80,7 @@ GolapAttributePhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 { #category : 'accessing' }
 GolapAttributePhotoImageRetriever >> order [
 
-	^ 1
+	^ 0
 ]
 
 { #category : 'accessing' }
@@ -104,7 +104,7 @@ GolapAttributePhotoImageRetriever >> retrieveImageNamed: aString [
 	^ [
 	  ImageReadWriter formFromStream:
 		  aString asUrl retrieveBinaryContents readStream ]
-		  on: Error
+		  on: Exception
 		  do: [ :ex | ex return: nil ]
 ]
 

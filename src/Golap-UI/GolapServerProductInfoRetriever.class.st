@@ -172,7 +172,7 @@ GolapServerProductInfoRetriever >> retrieveImagesFor: aString [
 			response := GolapHttpClient get: imageRepositoryUrl / filename.
 			response isSuccess ifTrue: [
 				^ ImageReadWriter formFromStream: response entity readStream ] ]
-				on: Error
+				on: Exception
 				do: [ :ex |  ].
 			500 milliSecond wait ] ].
 	^ nil
