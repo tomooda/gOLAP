@@ -138,7 +138,7 @@ GolapEdgesAppearance >> edgeScale: aNumber [
 { #category : 'accessing' }
 GolapEdgesAppearance >> friendsEdges [
 	^ golap model
-		ifNotNil: [ :model | model friendsEdges: self numFriends ]
+		ifNotNil: [ :model | model friendsEdges": self numFriends" ]
 		ifNil: [ Array new ]
 ]
 
@@ -271,7 +271,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                minimum: 1;
 		                number: 5;
 		                autoAccept: true;
-		                whenSubmitDo: [ :txt | self friendsGraph ].
+		                whenSubmitDo: [ :txt | self numFriendsChanged ].
 	edgeEvaluatorList := self newDropList
 		                     items:
 			                     (#( 'frequency' 'jaccard' 'lift' 'PMI' )
@@ -340,6 +340,14 @@ GolapEdgesAppearance >> numFriends [
 GolapEdgesAppearance >> numFriends: anInteger [
 
 	friendsField number: anInteger
+]
+
+{ #category : 'updating' }
+GolapEdgesAppearance >> numFriendsChanged [
+
+	golap model ifNotNil: [ :model |
+		model friendsEdges: friendsField number.
+		self friendsGraph ]
 ]
 
 { #category : 'operations' }

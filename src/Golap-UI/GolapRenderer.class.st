@@ -8,9 +8,9 @@ Class {
 		'reallyVisibleEdges',
 		'reallyVisibleNodes'
 	],
-	#category : 'Golap-UI-Graph',
+	#category : 'Golap-UI-Renderer',
 	#package : 'Golap-UI',
-	#tag : 'Graph'
+	#tag : 'Renderer'
 }
 
 { #category : 'instance creation' }

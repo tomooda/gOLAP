@@ -9,9 +9,9 @@ Class {
 		'imageOffset',
 		'maxLabelWidth'
 	],
-	#category : 'Golap-UI-Graph',
+	#category : 'Golap-UI-Renderer',
 	#package : 'Golap-UI',
-	#tag : 'Graph'
+	#tag : 'Renderer'
 }
 
 { #category : 'drawing' }

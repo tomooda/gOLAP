@@ -243,7 +243,7 @@ GolapModel >> flushEdgeRanks [
 { #category : 'accessing' }
 GolapModel >> flushFriendsEdges [
 
-	"friendsEdges := nil"
+	friendsEdges := nil
 ]
 
 { #category : 'visualizing-labels' }
@@ -787,9 +787,12 @@ GolapModel >> resetNodes [
 
 { #category : 'polishing' }
 GolapModel >> resetPolish [
+
 	self nodesDo: [ :v | v resetPolish ].
 	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new
+	negativePolishEdges := IdentitySet new.
+	friendsEdges := nil.
+	self flushEdgeRanks
 ]
 
 { #category : 'accessing-node' }

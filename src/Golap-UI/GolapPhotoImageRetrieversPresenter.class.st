@@ -10,9 +10,9 @@ Class {
 		'moveUpRetrieverButton',
 		'moveDownRetrieverButton'
 	],
-	#category : 'Golap-UI-PhotoImageRetriever',
+	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
-	#tag : 'PhotoImageRetriever'
+	#tag : 'Retriever'
 }
 
 { #category : 'layout' }

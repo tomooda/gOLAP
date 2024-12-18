@@ -6,9 +6,9 @@ Class {
 		'authenticateBlock',
 		'imageServerUrl'
 	],
-	#category : 'Golap-UI-Graph',
+	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
-	#tag : 'Graph'
+	#tag : 'Retriever'
 }
 
 { #category : 'instance creation' }

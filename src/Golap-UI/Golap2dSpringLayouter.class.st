@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'softDivisions'
 	],
-	#category : 'Golap-UI-Graph',
+	#category : 'Golap-UI-Layouter',
 	#package : 'Golap-UI',
-	#tag : 'Graph'
+	#tag : 'Layouter'
 }
 
 { #category : 'layouting' }

@@ -17,9 +17,9 @@ Class {
 		'springLayouter',
 		'friendClusteredLayouter'
 	],
-	#category : 'Golap-UI-Graph',
+	#category : 'Golap-UI-Renderer',
 	#package : 'Golap-UI',
-	#tag : 'Graph'
+	#tag : 'Renderer'
 }
 
 { #category : 'accessing' }
@@ -148,36 +148,77 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 								to: p2
 								width: v abs * lineScale + 2.0
 								color: c ] ] ] ] ].
-	golap positivePolishColor ifNotNil: [ :color |
+"	golap positivePolishColor ifNotNil: [ :color |
 		golap model positivePolishEdgesDo: [ :edge |
-			((reallyVisibleNodes includes: edge node1) and: [
-				 reallyVisibleNodes includes: edge node2 ]) ifTrue: [
+			| n1 n2 |
+			n1 := edge node1.
+			n2 := edge node2.
+			((reallyVisibleNodes includes: n1) and: [
+				 reallyVisibleNodes includes: n2 ]) ifTrue: [
 				| p1 p2 |
-				p1 := edge node1 asPoint * scale + offset.
-				p2 := edge node2 asPoint * scale + offset.
-				aCanvas
-					line: p1
-					to: p2
-					width: (((golap includesSelection: edge node1) or: [
-							  golap includesSelection: edge node2 ])
-							 ifTrue: [ 4 ]
-							 ifFalse: [ 2 ])
-					color: color ] ] ].
+				p1 := n1 asPoint * scale + offset.
+				p2 := n2 asPoint * scale + offset.
+
+				((referenceNodes includes: n1 id) or: [
+					 referenceNodes includes: n2 id ])
+					ifTrue: [
+						((selectedReferenceNodes includes: n1) or: [
+							 selectedReferenceNodes includes: n2 ]) ifTrue: [
+							| refIndex |
+							refIndex := (activeReferenceNodes indexOf: edge node1) max:
+								            (activeReferenceNodes indexOf: edge node2).
+							refIndex > 0 ifTrue: [
+								aCanvas
+									line: p1
+									to: p2
+									width: 4
+									color: (color mixed: 0.5 with: (Color
+												  h:
+												  (refIndex - 1) asFloat * 360.0
+												  / activeReferenceNodes size asFloat
+												  s: 1.0
+												  v: 1.0)) ] ] ]
+					ifFalse: [
+						aCanvas
+							line: p1
+							to: p2
+							width: 1
+							color: color ] ] ] ].
 	golap negativePolishColor ifNotNil: [ :color |
 		golap model negativePolishEdgesDo: [ :edge |
-			((reallyVisibleNodes includes: edge node1) and: [
-				 reallyVisibleNodes includes: edge node2 ]) ifTrue: [
+			| n1 n2 |
+			n1 := edge node1.
+			n2 := edge node2.
+			((reallyVisibleNodes includes: n1) and: [
+				 reallyVisibleNodes includes: n2 ]) ifTrue: [
 				| p1 p2 |
-				p1 := edge node1 asPoint * scale + offset.
-				p2 := edge node2 asPoint * scale + offset.
-				aCanvas
-					line: p1
-					to: p2
-					width: (((golap includesSelection: edge node1) or: [
-							  golap includesSelection: edge node2 ])
-							 ifTrue: [ 4 ]
-							 ifFalse: [ 1 ])
-					color: color ] ] ]
+				p1 := n1 asPoint * scale + offset.
+				p2 := n2 asPoint * scale + offset.
+				((referenceNodes includes: n1 id) or: [
+					 referenceNodes includes: n2 id ])
+					ifTrue: [
+						((selectedReferenceNodes includes: n1) or: [
+							 selectedReferenceNodes includes: n2 ]) ifTrue: [
+							| refIndex |
+							refIndex := (activeReferenceNodes indexOf: edge node1) max:
+								            (activeReferenceNodes indexOf: edge node2).
+							refIndex > 0 ifTrue: [
+								aCanvas
+									line: p1
+									to: p2
+									width: 4
+									color: (color mixed: 0.5 with: (Color
+												  h:
+												  (refIndex - 1) asFloat * 360.0
+												  / activeReferenceNodes size asFloat
+												  s: 1.0
+												  v: 1.0)) ] ] ]
+					ifFalse: [
+						aCanvas
+							line: p1
+							to: p2
+							width: 1
+							color: color ] ] ] ]"
 ]
 
 { #category : 'drawing' }
