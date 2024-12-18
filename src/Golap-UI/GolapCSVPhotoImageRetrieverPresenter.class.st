@@ -9,7 +9,9 @@ Class {
 		'urlPrefixField',
 		'nameLabel',
 		'urlPostfixField',
-		'openPreviewButton'
+		'openPreviewButton',
+		'defaultIdColumn',
+		'defaultPhotoColumn'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -53,17 +55,27 @@ GolapCSVPhotoImageRetrieverPresenter class >> on: aGolapCSVPhotoImageRetriever [
 { #category : 'accessing' }
 GolapCSVPhotoImageRetrieverPresenter >> csvRef: aFileReference [
 
-	retriever csvRef: aFileReference.
+	| columnNames idColumn photoColumn |
+	retriever csvRef ~= aFileReference ifTrue: [
+		retriever csvRef: aFileReference ].
+	columnNames := retriever dataframe
+		               ifNotNil: #columnNames
+		               ifNil: [ #(  ) ].
+	idColumn := idColumnTable selectedItem ifNil: [ defaultIdColumn ].
+	photoColumn := photoColumnTable selectedItem ifNil: [
+		               defaultPhotoColumn ].
 	idColumnTable
-		enable;
 		unselectAll;
-		items: retriever dataframe columnNames;
-		selectIndex: 1.
+		items: columnNames.
+	(columnNames includes: idColumn)
+		ifTrue: [ idColumnTable selectItem: idColumn ]
+		ifFalse: [ idColumnTable selectIndex: 1 ].
 	photoColumnTable
-		enable;
 		unselectAll;
-		items: retriever dataframe columnNames;
-		selectIndex: 1.
+		items: columnNames.
+	(columnNames includes: photoColumn)
+		ifTrue: [ photoColumnTable selectItem: photoColumn ]
+		ifFalse: [ photoColumnTable selectIndex: 1 ].
 	urlPrefixField enable.
 	urlPostfixField enable.
 	openPreviewButton enable
@@ -143,7 +155,7 @@ GolapCSVPhotoImageRetrieverPresenter >> initializePresenters [
 		                   placeholder: 'URL拡張子など';
 		                   whenTextChangedDo: [ :postfix |
 			                   retriever ifNotNil: [
-					                   retriever urlPrefix: postfix ] ];
+					                   retriever urlPostfix: postfix ] ];
 		                   yourself.
 	openPreviewButton := self newButton
 		                     icon: (self iconNamed: #smallFind);
@@ -195,10 +207,13 @@ GolapCSVPhotoImageRetrieverPresenter >> retriever [
 GolapCSVPhotoImageRetrieverPresenter >> retriever: aGolapCSVPhotoImageRetriever [
 
 	retriever := aGolapCSVPhotoImageRetriever.
-	idColumnTable selectItem: retriever idColumn.
-	photoColumnTable selectItem: retriever photoColumn.
+	defaultIdColumn := retriever idColumn.
+	idColumnTable selectItem: defaultIdColumn.
+	defaultPhotoColumn := retriever photoColumn.
+	photoColumnTable selectItem: defaultPhotoColumn.
 	urlPrefixField text: retriever urlPrefix.
-	urlPostfixField text: retriever urlPostfix
+	urlPostfixField text: retriever urlPostfix.
+	self csvRef: retriever csvRef
 ]
 
 { #category : 'accessing' }

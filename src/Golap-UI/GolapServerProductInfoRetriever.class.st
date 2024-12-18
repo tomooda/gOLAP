@@ -8,7 +8,8 @@ Class {
 		'authenticateBlock',
 		'imageRepositoryUrl',
 		'golapServerUrl',
-		'itemFieldQuerySpec'
+		'itemFieldQuerySpec',
+		'serverConfig'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -202,6 +203,18 @@ GolapServerProductInfoRetriever >> retrieveItemInfoFor: aString [
 	^ itemInfo
 ]
 
+{ #category : 'accessing' }
+GolapServerProductInfoRetriever >> serverConfig [
+
+	^ serverConfig
+]
+
+{ #category : 'accessing' }
+GolapServerProductInfoRetriever >> serverConfig: aDictionary [
+
+	serverConfig := aDictionary
+]
+
 { #category : 'private' }
 GolapServerProductInfoRetriever >> setApiClient: aGolapApiClient [
 
@@ -209,7 +222,8 @@ GolapServerProductInfoRetriever >> setApiClient: aGolapApiClient [
 	self golapServerUrl: aGolapApiClient url.
 	self imageRepositoryUrl: aGolapApiClient imageUrl.
 	self itemFieldQuerySpec: aGolapApiClient itemFieldQuerySpec.
-	self query: (NeoJSONReader fromString: aGolapApiClient query)
+	self query: (NeoJSONReader fromString: aGolapApiClient query).
+	self serverConfig: aGolapApiClient serverConfig
 ]
 
 { #category : 'private' }

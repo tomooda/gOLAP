@@ -19,6 +19,8 @@ Class {
 GolapCSVPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 
 	^ self new
+		  initializeWith: aGolapItemInfoRetriever;
+		  yourself
 ]
 
 { #category : 'private' }
@@ -118,6 +120,27 @@ GolapCSVPhotoImageRetriever >> initialize [
 	urlCache := Dictionary new
 ]
 
+{ #category : 'initialization' }
+GolapCSVPhotoImageRetriever >> initializeWith: aGolapItemInfoRetriever [
+
+	({ #serverConfig. #query. #golapServerUrl. #imageRepositoryUrl }
+		 allSatisfy: [ :selector |
+		 aGolapItemInfoRetriever respondsTo: selector ]) ifTrue: [
+		urlPrefix := aGolapItemInfoRetriever imageRepositoryUrl asString.
+		urlPostfix := ''.
+		aGolapItemInfoRetriever serverConfig
+			at: 'itemAttFile'
+			ifPresent: [ :itemAttFile |
+				itemAttFile
+					at: 'imageField'
+					ifPresent: [ :imageField | photoColumn := imageField ] ].
+		aGolapItemInfoRetriever query at: 'query' ifPresent: [ :q |
+			q at: 'granularity' ifPresent: [ :granularity |
+				granularity
+					at: 'node'
+					ifPresent: [ :nodeGranularity | idColumn := nodeGranularity ] ] ] ]
+]
+
 { #category : 'testing' }
 GolapCSVPhotoImageRetriever >> isAvailable [
 
@@ -190,20 +213,23 @@ GolapCSVPhotoImageRetriever >> updateDataframe [
 
 	csvRef ifNotNil: [
 		csvRef isFile ifTrue: [
-			self dataframe: (DataFrame readFromCsv: csvRef) ] ].
-	self dataframeChanged
+			self dataframe: (DataFrame readFromCsv: csvRef) ] ]
 ]
 
 { #category : 'updating' }
 GolapCSVPhotoImageRetriever >> updateIdColumn [
 
-	self idColumn: nil
+	dataframe ifNotNil: [
+		(dataframe columnNames includes: idColumn) ifFalse: [
+			self idColumn: nil ] ]
 ]
 
 { #category : 'updating' }
 GolapCSVPhotoImageRetriever >> updatePhotoColumn [
 
-	self photoColumn: nil
+	dataframe ifNotNil: [
+		(dataframe columnNames includes: photoColumn) ifFalse: [
+			self photoColumn: nil ] ]
 ]
 
 { #category : 'accessing' }
