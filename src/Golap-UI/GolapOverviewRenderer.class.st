@@ -148,77 +148,11 @@ GolapOverviewRenderer >> drawEdgesOn: aCanvas extent: extent scale: scale offset
 								to: p2
 								width: v abs * lineScale + 2.0
 								color: c ] ] ] ] ].
-"	golap positivePolishColor ifNotNil: [ :color |
-		golap model positivePolishEdgesDo: [ :edge |
-			| n1 n2 |
-			n1 := edge node1.
-			n2 := edge node2.
-			((reallyVisibleNodes includes: n1) and: [
-				 reallyVisibleNodes includes: n2 ]) ifTrue: [
-				| p1 p2 |
-				p1 := n1 asPoint * scale + offset.
-				p2 := n2 asPoint * scale + offset.
-
-				((referenceNodes includes: n1 id) or: [
-					 referenceNodes includes: n2 id ])
-					ifTrue: [
-						((selectedReferenceNodes includes: n1) or: [
-							 selectedReferenceNodes includes: n2 ]) ifTrue: [
-							| refIndex |
-							refIndex := (activeReferenceNodes indexOf: edge node1) max:
-								            (activeReferenceNodes indexOf: edge node2).
-							refIndex > 0 ifTrue: [
-								aCanvas
-									line: p1
-									to: p2
-									width: 4
-									color: (color mixed: 0.5 with: (Color
-												  h:
-												  (refIndex - 1) asFloat * 360.0
-												  / activeReferenceNodes size asFloat
-												  s: 1.0
-												  v: 1.0)) ] ] ]
-					ifFalse: [
-						aCanvas
-							line: p1
-							to: p2
-							width: 1
-							color: color ] ] ] ].
-	golap negativePolishColor ifNotNil: [ :color |
-		golap model negativePolishEdgesDo: [ :edge |
-			| n1 n2 |
-			n1 := edge node1.
-			n2 := edge node2.
-			((reallyVisibleNodes includes: n1) and: [
-				 reallyVisibleNodes includes: n2 ]) ifTrue: [
-				| p1 p2 |
-				p1 := n1 asPoint * scale + offset.
-				p2 := n2 asPoint * scale + offset.
-				((referenceNodes includes: n1 id) or: [
-					 referenceNodes includes: n2 id ])
-					ifTrue: [
-						((selectedReferenceNodes includes: n1) or: [
-							 selectedReferenceNodes includes: n2 ]) ifTrue: [
-							| refIndex |
-							refIndex := (activeReferenceNodes indexOf: edge node1) max:
-								            (activeReferenceNodes indexOf: edge node2).
-							refIndex > 0 ifTrue: [
-								aCanvas
-									line: p1
-									to: p2
-									width: 4
-									color: (color mixed: 0.5 with: (Color
-												  h:
-												  (refIndex - 1) asFloat * 360.0
-												  / activeReferenceNodes size asFloat
-												  s: 1.0
-												  v: 1.0)) ] ] ]
-					ifFalse: [
-						aCanvas
-							line: p1
-							to: p2
-							width: 1
-							color: color ] ] ] ]"
+	self
+		drawPolishedEdgesOn: aCanvas
+		extent: extent
+		scale: scale
+		offset: offset
 ]
 
 { #category : 'drawing' }
@@ -405,6 +339,47 @@ GolapOverviewRenderer >> drawPinsOn: aCanvas extent: extent scale: scale offset:
 			fillStyle: Color red;
 			fillOval: (p - (8 @ 21) extent: 16 @ 16) color: Color red;
 			fillOval: (p - (3 @ 16) extent: 6 @ 6) color: Color white ]
+]
+
+{ #category : 'drawing' }
+GolapOverviewRenderer >> drawPolishedEdgesOn: aCanvas extent: extent scale: scale offset: offset [
+
+	golap positivePolishColor ifNotNil: [ :color |
+		golap model positivePolishEdgesDo: [ :edge |
+			| n1 n2 |
+			n1 := edge node1.
+			n2 := edge node2.
+			((reallyVisibleNodes includes: n1) and: [
+				 (reallyVisibleNodes includes: n2) and: [
+					 (referenceNodes includes: n1 id) not and: [
+						 (referenceNodes includes: n2 id) not ] ] ]) ifTrue: [
+				aCanvas
+					line: n1 asPoint * scale + offset
+					to: n2 asPoint * scale + offset
+					width: 1
+					color: color
+					dashLength: 5
+					secondColor: Color transparent
+					secondDashLength: 5
+					startingOffset: 0 ] ] ].
+	golap negativePolishColor ifNotNil: [ :color |
+		golap model negativePolishEdgesDo: [ :edge |
+			| n1 n2 |
+			n1 := edge node1.
+			n2 := edge node2.
+			((reallyVisibleNodes includes: n1) and: [
+				 reallyVisibleNodes includes: n2 ]) ifTrue: [
+				((referenceNodes includes: n1 id) not and: [
+					 (referenceNodes includes: n2 id) not ]) ifTrue: [
+					aCanvas
+						line: n1 asPoint * scale + offset
+						to: n2 asPoint * scale + offset
+						width: 1
+						color: color
+						dashLength: 2
+						secondColor: Color transparent
+						secondDashLength: 5
+						startingOffset: 0 ] ] ] ]
 ]
 
 { #category : 'drawing' }
