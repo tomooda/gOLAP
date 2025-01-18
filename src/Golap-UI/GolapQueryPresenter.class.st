@@ -367,45 +367,51 @@ GolapQueryPresenter >> openLowerBoundsDialog [
 { #category : 'accessing-query' }
 GolapQueryPresenter >> query [
 
+	^ STONJSON toString: self queryDictionary
+]
+
+{ #category : 'accessing-query' }
+GolapQueryPresenter >> queryDictionary [
+
 	| q granularity |
-	q := Dictionary new.
-	self transactionFilterSpec query ifNotEmpty: [ :filter | 
+	q := OrderedDictionary new.
+	self transactionFilterSpec query ifNotEmpty: [ :filter |
 		q at: 'traFilter' put: filter ].
-	self itemFilterSpec query ifNotEmpty: [ :filter | 
+	self itemFilterSpec query ifNotEmpty: [ :filter |
 		q at: 'itemFilter' put: filter ].
-	granularity := Dictionary new.
-	granularityTransaction selectedItem ifNotNil: [ :value | 
+	granularity := OrderedDictionary new.
+	granularityTransaction selectedItem ifNotNil: [ :value |
 		granularity at: 'transaction' put: value ].
-	granularityNode selectedItem ifNotNil: [ :value | 
+	granularityNode selectedItem ifNotNil: [ :value |
 		granularity at: 'node' put: value ].
 	granularity ifNotEmpty: [ q at: 'granularity' put: granularity ].
-	dimensionsKey selectedItem ifNotNil: [ :key | 
-		dimensionsValues text asString trim ifNotEmpty: [ :values | 
+	dimensionsKey selectedItem ifNotNil: [ :key |
+		dimensionsValues text asString trim ifNotEmpty: [ :values |
 			q at: 'dimension' put: key , ',' , values ] ].
-	q at: 'selCond' put: (Dictionary new
+	q at: 'selCond' put: (OrderedDictionary new
 			 at: 'minSup' put: self minSupport;
 			 at: 'minConf' put: self minConfidence;
 			 at: 'minLift' put: self minLift;
 			 at: 'minJac' put: self minJaccard;
 			 at: 'minPMI' put: self minPMI;
 			 yourself).
-	sortKey text asString trim ifNotEmpty: [ :value | 
+	sortKey text asString trim ifNotEmpty: [ :value |
 		q at: 'sortKey' put: value ].
-	[ 
-	sendMax number in: [ :value | 
+	[
+	sendMax number in: [ :value |
 		value > 0 ifTrue: [ q at: 'sendMax' put: value ] ] ]
 		on: Error
 		do: [ :ex |  ].
 	q at: 'isolatedNodes' put: isolatedNodesCheckBox state printString.
-	^ STONJSON toString: (Dictionary new
-			   at: 'query' put: q;
-			   at: 'deadlineTimer' put: (([ deadlineTimer number asInteger ]
-					     on: Error
-					     do: [ :ex | 0 ]) in: [ :value | 
-						    value = 0
-							    ifTrue: [ 60 ]
-							    ifFalse: [ value ] ]);
-			   yourself)
+	^ OrderedDictionary new
+		  at: 'query' put: q;
+		  at: 'deadlineTimer' put: (([ deadlineTimer number asInteger ]
+				    on: Error
+				    do: [ :ex | 0 ]) in: [ :value |
+					   value = 0
+						   ifTrue: [ 60 ]
+						   ifFalse: [ value ] ]);
+		  yourself
 ]
 
 { #category : 'private' }

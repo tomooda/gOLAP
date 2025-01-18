@@ -9,15 +9,15 @@ Class {
 		'serverConfigTree',
 		'serverConfig',
 		'fieldsAndValuesCache',
-		'queryTree',
 		'queryPresenter',
 		'queryText',
 		'okButton',
 		'usesRawQuery',
 		'queryNotebook',
 		'usesRawQueryText',
-		'query',
-		'commentText'
+		'commentText',
+		'queryStem',
+		'queryHistory'
 	],
 	#classInstVars : [
 		'current'
@@ -216,7 +216,9 @@ GolapNetworkClientPresenter >> initialExtent [
 { #category : 'initialization' }
 GolapNetworkClientPresenter >> initialize [
 	super initialize.
-	fieldsAndValuesCache := Dictionary new
+	fieldsAndValuesCache := Dictionary new.
+	queryHistory := OrderedCollection new.
+	queryStem := nil
 ]
 
 { #category : 'initialization' }
@@ -237,22 +239,6 @@ GolapNetworkClientPresenter >> initializePresenters [
 		                   icon: (Smalltalk ui icons iconNamed: #back);
 		                   action: [ self openPresetUrlDialog ];
 		                   yourself.
-	query := self defaultQuery.
-	queryTree := self newTreeTable
-		             addColumn: (SpStringTableColumn evaluated: [ :assoc |
-					              assoc key , ' : '
-					              , (STONJSON toString: assoc value) ]);
-		             children: [ :assoc |
-			             assoc value isDictionary
-				             ifTrue: [
-					             assoc value keys asSortedCollection collect: [ :k |
-							             k -> (assoc value at: k) ] ]
-				             ifFalse: [ Array new ] ];
-		             roots:
-			             (query keys asSortedCollection collect: [ :key |
-					              key -> (query at: key) ]);
-		             contextMenu: [ self queryTreeMenu ];
-		             yourself.
 	queryPresenter := GolapQueryPresenter on: self.
 	queryNotebook := self newNotebook
 		                 addPage: (self newNotebookPage
@@ -371,6 +357,7 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 	self clearPreviewFilterField.
 	self openDialog
 		okAction: [
+			self recordHiDeHo.
 			[
 			aBlock cull: (GolapApiClient
 						 url: self url
@@ -441,40 +428,30 @@ GolapNetworkClientPresenter >> queryTextMenu [
 		yourself
 ]
 
-{ #category : 'menus' }
-GolapNetworkClientPresenter >> queryTreeMenu [
-	| item |
-	item := queryTree selectedItem ifNil: [ ^ self newMenu ].
-	^ self
-		perform: ('queryTree_' , item key , 'Menu:') asSymbol
-		with: item
-]
-
-{ #category : 'menus' }
-GolapNetworkClientPresenter >> queryTree_isolatedNodesMenu: anAssociation [
-	^ self newMenu
-		addGroup: [ :group | 
-			group
-				addItem: [ :item | 
-					item
-						name: 'true';
-						action: [ (query at: 'query') at: 'isolatedNodes' put: 'true'.
-							self updateQueryTree ] ].
-			group
-				addItem: [ :item | 
-					item
-						name: 'false';
-						action: [ (query at: 'query') at: 'isolatedNodes' put: 'false'.
-							self updateQueryTree ] ] ];
-		yourself
-]
-
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> readPresetUrls [
 	[ self presetUrlFile ensureCreateFile
 		readStreamDo: [ :stream | ^ (NeoJSONReader on: stream) next ] ]
 		on: Error
 		do: [ :ex | ^ Array new ]
+]
+
+{ #category : 'operations' }
+GolapNetworkClientPresenter >> recordHiDeHo [
+
+	([ GolapQueryJSONReader fromString: self query ]
+		 on: Exception
+		 do: [ :ex | ^ nil ]) ifNotNil: [ :query | self recordHiDeHo: query ]
+]
+
+{ #category : 'operations' }
+GolapNetworkClientPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
+
+	queryHistory addLast: aHiDeSyntaxDictionary.
+	queryStem := queryStem
+		             ifNil: [ aHiDeSyntaxDictionary ]
+		             ifNotNil: [
+		             queryStem intersectionWith: aHiDeSyntaxDictionary ]
 ]
 
 { #category : 'initialization' }
@@ -555,14 +532,6 @@ GolapNetworkClientPresenter >> transactionFields [
 						at: 'numFields'
 						ifAbsent: [ String new ]) substrings: ',') ]
 		ifNil: [ Array new ]
-]
-
-{ #category : 'private' }
-GolapNetworkClientPresenter >> updateQueryTree [
-	queryTree
-		roots:
-			(query keys asSortedCollection
-				collect: [ :key | key -> (query at: key) ])
 ]
 
 { #category : 'private' }
