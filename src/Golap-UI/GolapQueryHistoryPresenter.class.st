@@ -50,19 +50,16 @@ GolapQueryHistoryPresenter >> initializePresenters [
 	queryStemText := self newText
 		                 text: '';
 		                 yourself.
-	queryHistoryList := self newList
-		                    display: #key;
+	queryHistoryList := self newTable
+		                    beResizable;
+		                    showColumnHeaders;
 		                    whenSelectedItemChangedDo: [
 			                    self updateQueryPreviewText ];
 		                    yourself.
 	queryPreviewText := self newText
 		                    text: '';
 		                    yourself.
-	self whenBuiltDo: [
-		self
-			updateQueryStemText;
-			updateQueryHistoryList;
-			updateQueryPreviewText ]
+	self whenBuiltDo: [ self updatePresenters ]
 ]
 
 { #category : 'operations' }
@@ -80,22 +77,48 @@ GolapQueryHistoryPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 ]
 
 { #category : 'updating' }
+GolapQueryHistoryPresenter >> updatePresenters [
+
+	self
+		updateQueryStemText;
+		updateQueryHistoryList;
+		updateQueryPreviewText
+]
+
+{ #category : 'updating' }
 GolapQueryHistoryPresenter >> updateQueryHistoryList [
 
-	queryHistoryList items: (queryStem
-			 ifNotNil: [
-				 queryHistory collect: [ :query |
-					 (', ' join:
-						  ((query \ queryStem) syntaxAccessorsToTips collect:
-							   #printString)) -> query ] ]
-			 ifNil: [ Array new ])
+	(queryStem notNil and: [ queryHistory notEmpty ])
+		ifTrue: [
+			| done |
+			done := queryStem syntaxAccessorsToTips asSet.
+			queryHistoryList
+				columns: (Array streamContents: [ :stream |
+							 queryHistory do: [ :query |
+									 query syntaxAccessorsToTipsDo: [ :accessor |
+											 (done includes: accessor) ifFalse: [
+													 done add: accessor.
+													 stream nextPut:
+															 (SpStringTableColumn
+																  title: accessor printString
+																  evaluated: [ :item |
+																	  | value |
+																	  value := accessor read: item.
+																	  value isHiDeSyntaxTree
+																		  ifTrue: [ '' ]
+																		  ifFalse: [ value printString ] ]) ] ] ] ]);
+				items: queryHistory ]
+		ifFalse: [
+			queryHistoryList
+				columns: #(  );
+				items: #(  ) ]
 ]
 
 { #category : 'updating' }
 GolapQueryHistoryPresenter >> updateQueryPreviewText [
 
 	queryPreviewText text: (queryHistoryList selectedItem
-			 ifNotNil: [ :assoc | STONJSON toStringPretty: assoc value ]
+			 ifNotNil: [ :query | STONJSON toStringPretty: query ]
 			 ifNil: [ '' ])
 ]
 
