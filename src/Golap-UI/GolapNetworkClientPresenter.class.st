@@ -16,8 +16,7 @@ Class {
 		'queryNotebook',
 		'usesRawQueryText',
 		'commentText',
-		'queryStem',
-		'queryHistory'
+		'queryHistoryPresenter'
 	],
 	#classInstVars : [
 		'current'
@@ -215,10 +214,9 @@ GolapNetworkClientPresenter >> initialExtent [
 
 { #category : 'initialization' }
 GolapNetworkClientPresenter >> initialize [
+
 	super initialize.
-	fieldsAndValuesCache := Dictionary new.
-	queryHistory := OrderedCollection new.
-	queryStem := nil
+	fieldsAndValuesCache := Dictionary new
 ]
 
 { #category : 'initialization' }
@@ -246,11 +244,6 @@ GolapNetworkClientPresenter >> initializePresenters [
 				                  presenterProvider: [ queryPresenter ];
 				                  whenRetrievedDo: [ usesRawQuery := false ];
 				                  yourself);
-		                 "addPage:
-			(self newNotebookPage
-				title: 'Tree';
-				presenterProvider: [ queryTree ];
-				yourself);"
 		                 addPage: (self newNotebookPage
 				                  title: '高度な条件';
 				                  presenterProvider: [ queryText ];
@@ -259,12 +252,19 @@ GolapNetworkClientPresenter >> initializePresenters [
 							                  self generateQueryText ].
 					                  usesRawQuery := true ];
 				                  yourself);
+		                 addPage: (self newNotebookPage
+				                  title: '履歴';
+				                  presenterProvider: [ queryHistoryPresenter ];
+				                  whenRetrievedDo: [
+					                  self updateQueryHistoryPresenter ];
+				                  yourself);
 		                 yourself.
 	queryText := self newText
 		             text: '';
 		             contextMenu: [ self queryTextMenu ];
 		             yourself.
 	usesRawQueryText := false.
+	queryHistoryPresenter := self instantiate: GolapQueryHistoryPresenter.
 	serverConfigTree := self newTreeTable
 		                    addColumn:
 			                    (SpStringTableColumn evaluated: [ :assoc |
@@ -285,7 +285,8 @@ GolapNetworkClientPresenter >> initializePresenters [
 	commentText := self newText.
 	self whenBuiltDo: [
 		self window isDialog ifTrue: [
-			okButton := self window buttons detect: [:button | button label = 'Ok'].
+			okButton := self window buttons detect: [ :button |
+				            button label = 'Ok' ].
 			okButton enabled: false.
 			self window buttons
 				addFirst: (self newButton
@@ -441,17 +442,8 @@ GolapNetworkClientPresenter >> recordHiDeHo [
 
 	([ GolapQueryJSONReader fromString: self query ]
 		 on: Exception
-		 do: [ :ex | ^ nil ]) ifNotNil: [ :query | self recordHiDeHo: query ]
-]
-
-{ #category : 'operations' }
-GolapNetworkClientPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
-
-	queryHistory addLast: aHiDeSyntaxDictionary.
-	queryStem := queryStem
-		             ifNil: [ aHiDeSyntaxDictionary ]
-		             ifNotNil: [
-		             queryStem intersectionWith: aHiDeSyntaxDictionary ]
+		 do: [ :ex | ^ nil ]) ifNotNil: [ :query |
+		queryHistoryPresenter recordHiDeHo: query ]
 ]
 
 { #category : 'initialization' }
@@ -532,6 +524,10 @@ GolapNetworkClientPresenter >> transactionFields [
 						at: 'numFields'
 						ifAbsent: [ String new ]) substrings: ',') ]
 		ifNil: [ Array new ]
+]
+
+{ #category : 'private' }
+GolapNetworkClientPresenter >> updateQueryHistoryPresenter [
 ]
 
 { #category : 'private' }
