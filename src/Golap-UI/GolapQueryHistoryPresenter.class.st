@@ -102,11 +102,11 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 															 (SpStringTableColumn
 																  title: accessor printString
 																  evaluated: [ :item |
-																	  | value |
-																	  value := accessor read: item.
-																	  value isHiDeSyntaxTree
-																		  ifTrue: [ '' ]
-																		  ifFalse: [ value printString ] ]) ] ] ] ]);
+																	  ([ accessor read: item ]
+																		   on: HiDeSyntaxDictionaryKeyNotFound
+																		   do: [ :ex | ex return: nil ])
+																		  ifNotNil: #printString
+																		  ifNil: [ '' ] ]) ] ] ] ]);
 				items: queryHistory ]
 		ifFalse: [
 			queryHistoryList
