@@ -48,7 +48,9 @@ GolapQueryHistoryPresenter >> cherrypick [
 
 	queryHistoryList selectedItem ifNotNil: [ :selectedQuery |
 		| enabledAccessors table |
-		enabledAccessors := selectedQuery syntaxAccessorsToTips asSet.
+		enabledAccessors := (selectedQuery syntaxAccessorsToTips
+			                     copyWithoutAll:
+			                     queryStem syntaxAccessorsToTips) asSet.
 		table := self newTable
 			         beSingleSelection;
 			         addColumn: (SpStringTableColumn
