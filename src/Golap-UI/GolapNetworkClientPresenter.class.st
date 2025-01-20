@@ -41,15 +41,15 @@ GolapNetworkClientPresenter class >> defaultLayout [
 				   add: #urlInput;
 				   add: #presetUrlButton width: 20)
 		  height: self inputTextHeight;
-		  add: (SpBoxLayout newHorizontal
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.8;
 				   add: #queryNotebook;
 				   add: (SpBoxLayout newVertical
 						    add: 'サーバパラメータ' expand: false;
 						    add: #serverConfigTree;
 						    add: 'コメント' expand: false;
 						    add: #commentText height: self inputTextHeight * 4;
-						    yourself)
-				   width: 200)
+						    yourself))
 ]
 
 { #category : 'sole instance' }
@@ -74,18 +74,20 @@ GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock ifCanceled: an
 
 { #category : 'private' }
 GolapNetworkClientPresenter >> asJSON [
+
 	^ urlInput text asString trim
-		ifNotEmpty: [ :urlString | 
-			| dict |
-			dict := Dictionary new
-				at: 'url' put: urlInput text asString trim;
-				yourself.
-			usesRawQuery = true
-				ifTrue: [ dict at: 'rawQuery' put: queryText text asString ]
-				ifFalse: [ queryPresenter asJSON
-						keysAndValuesDo: [ :key :value | dict at: key put: value ] ].
-			dict ]
-		ifEmpty: [ nil ]
+		  ifNotEmpty: [ :urlString |
+			  | dict |
+			  dict := Dictionary new
+				          at: 'url' put: urlInput text asString trim;
+				          yourself.
+			  usesRawQuery = true
+				  ifTrue: [ dict at: 'rawQuery' put: queryHistoryPresenter query ]
+				  ifFalse: [
+					  queryPresenter asJSON keysAndValuesDo: [ :key :value |
+						  dict at: key put: value ] ].
+			  dict ]
+		  ifEmpty: [ nil ]
 ]
 
 { #category : 'accessing' }
@@ -194,7 +196,8 @@ GolapNetworkClientPresenter >> flushServerConfig [
 
 { #category : 'private' }
 GolapNetworkClientPresenter >> generateQueryText [
-	queryText text: queryPresenter query
+
+	queryHistoryPresenter query: queryPresenter queryDictionary
 ]
 
 { #category : 'accessing' }
@@ -246,25 +249,18 @@ GolapNetworkClientPresenter >> initializePresenters [
 				                  yourself);
 		                 addPage: (self newNotebookPage
 				                  title: '高度な条件';
-				                  presenterProvider: [ queryText ];
-				                  whenRetrievedDo: [
-					                  queryText text asString trim ifEmpty: [
-							                  self generateQueryText ].
-					                  usesRawQuery := true ];
-				                  yourself);
-		                 addPage: (self newNotebookPage
-				                  title: '履歴';
 				                  presenterProvider: [ queryHistoryPresenter ];
 				                  whenRetrievedDo: [
-					                  self updateQueryHistoryPresenter ];
+					                  self updateQueryHistoryPresenter.
+					                  self generateQueryText.
+					                  usesRawQuery := true ];
 				                  yourself);
 		                 yourself.
-	queryText := self newText
-		             text: '';
-		             contextMenu: [ self queryTextMenu ];
-		             yourself.
 	usesRawQueryText := false.
-	queryHistoryPresenter := self instantiate: GolapQueryHistoryPresenter.
+	queryHistoryPresenter := (self instantiate:
+			                          GolapQueryHistoryPresenter)
+		                         importQueryBlock: [ self generateQueryText ];
+		                         yourself.
 	serverConfigTree := self newTreeTable
 		                    addColumn:
 			                    (SpStringTableColumn evaluated: [ :assoc |
@@ -338,11 +334,11 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 
 	aDictionary
 		at: 'url' ifPresent: [ :string | self url: string ];
-		at: 'rawQuery' ifPresent: [ :string | 
-			queryText text: string.
+		at: 'rawQuery' ifPresent: [ :string |
+			queryHistoryPresenter query: string.
 			usesRawQuery := true.
 			queryNotebook selectPageIndex: 2 ]
-		ifAbsent: [ 
+		ifAbsent: [
 			queryPresenter loadJSON: aDictionary.
 			usesRawQuery := false.
 			queryNotebook selectPageIndex: 1 ].
@@ -412,21 +408,10 @@ GolapNetworkClientPresenter >> presetUrlFile [
 
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> query [
-	^ usesRawQuery = true
-		ifTrue: [ queryText text asString trim ]
-		ifFalse: [ queryPresenter query ]
-]
 
-{ #category : 'menus' }
-GolapNetworkClientPresenter >> queryTextMenu [
-	^ self newMenu
-		addGroup: [ :menuGroup | 
-			menuGroup
-				addItem: [ :menuItem | 
-					menuItem
-						name: '基本クエリからコピー';
-						action: [ self generateQueryText ] ] ];
-		yourself
+	^ usesRawQuery = true
+		  ifTrue: [ queryHistoryPresenter query ]
+		  ifFalse: [ queryPresenter query ]
 ]
 
 { #category : 'accessing' }
@@ -448,7 +433,8 @@ GolapNetworkClientPresenter >> recordHiDeHo [
 
 { #category : 'initialization' }
 GolapNetworkClientPresenter >> resetQuery [
-	queryText text: ''.
+
+	queryHistoryPresenter query: ''.
 	queryPresenter ifNotNil: #resetQuery
 ]
 

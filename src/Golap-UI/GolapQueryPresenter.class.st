@@ -45,7 +45,8 @@ GolapQueryPresenter class >> defaultLayout [
 				   positionOfSlider: 0.5)
 		  expand: true;
 		  add: #lowerBoundsDialogButton height: self buttonHeight;
-		  add: (SpBoxLayout newHorizontal
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.4;
 				   add: (SpBoxLayout newVertical
 						    add: (SpBoxLayout newHorizontal
 								     add: '集計' width: 30;
@@ -55,25 +56,25 @@ GolapQueryPresenter class >> defaultLayout [
 						    add: #isolatedNodesCheckBox;
 						    add: (SpBoxLayout newHorizontal
 								     add: 'タイムアウト' width: 100;
-								     add: #deadlineTimer)
+								     add: #deadlineTimer width: 100)
 						    height: self inputTextHeight;
 						    add: (SpBoxLayout newHorizontal
 								     add: '最大取得件数' width: 100;
-								     add: #sendMax)
+								     add: #sendMax width: 100)
 						    height: self inputTextHeight;
 						    add: (SpBoxLayout newHorizontal
 								     add: 'ソートキー' width: 100;
-								     add: #sortKey)
-						    height: self inputTextHeight)
-				   width: 400;
-				   add: (SpBoxLayout newVertical add: (SpBoxLayout newHorizontal
-							     add: (SpBoxLayout newVertical
-									      add: (SpBoxLayout newHorizontal
-											       add: '比較集計' width: 70;
-											       add: #dimensionsKey width: 200)
-									      height: self inputTextHeight;
-									      add: #dimensionsValues height: self inputTextHeight);
-							     add: #dimensionsPreview width: 200)))
+								     add: #sortKey width: 100)
+						    height: self inputTextHeight);
+				   add: (SpPanedLayout newHorizontal
+						    positionOfSlider: 0.5;
+						    add: (SpBoxLayout newVertical
+								     add: (SpBoxLayout newHorizontal
+										      add: '比較集計' width: 70;
+										      add: #dimensionsKey)
+								     height: self inputTextHeight;
+								     add: #dimensionsValues height: self inputTextHeight);
+						    add: #dimensionsPreview))
 		  height: 180
 ]
 
