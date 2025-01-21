@@ -169,19 +169,17 @@ GolapTransactionFilterPresenter >> updatePredicateField [
 
 { #category : 'updating' }
 GolapTransactionFilterPresenter >> updatePredicateList [
-	self isPredicateMode
-		ifTrue: [ ^ super updatePredicateList ].
+
+	self isPredicateMode ifTrue: [ ^ super updatePredicateList ].
 	clauseList selection selectedItem
-		ifNotNil: [ :clause | 
+		ifNotNil: [ :clause |
 			| oldSelection |
 			oldSelection := predicateList selection selectedItem.
 			predicateList items: clause itemFilter clauses.
 			(clause itemFilter clauses includes: oldSelection)
 				ifTrue: [ predicateList selectItem: oldSelection ]
 				ifFalse: [ predicateList unselectAll ] ]
-		ifNil: [ predicateList
-				items: #();
-				resetSelection ].
+		ifNil: [ predicateList items: #(  ) ].
 	self updatePredicateField.
 	self updatePreviewList
 ]
