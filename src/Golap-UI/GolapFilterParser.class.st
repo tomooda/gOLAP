@@ -10,16 +10,38 @@ Class {
 		'fieldFilter',
 		'filter'
 	],
+	#classInstVars : [
+		'current'
+	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
 	#tag : 'Query'
 }
 
 { #category : 'accessing' }
+GolapFilterParser class >> current [
+
+	^ current ifNil: [ current := self new ]
+]
+
+{ #category : 'accessing' }
+GolapFilterParser >> conjunctiveFilter [
+
+	^ ('and' asPParser trimBlanks , $( asPParser trimBlanks) flatten
+	  ,
+		  ((fieldFilter separatedBy: $, asPParser trimBlanks)
+			   withoutSeparators ==> [ :assocs |
+		   (assocs collect: #key) asSet size = assocs size
+			   ifTrue: [ assocs asHiDeSyntaxDictionary ]
+			   ifFalse: [ PP2Failure message: 'duplicated field conditions' ] ])
+	  , $) asPParser trimBlanks flatten ==> [ :triple | triple second ]
+]
+
+{ #category : 'accessing' }
 GolapFilterParser >> field [
 
 	^ (#letter asPParser , (#letter asPParser / #digit asPParser) plus)
-		  flatten trimBlanks
+		  flatten
 ]
 
 { #category : 'accessing' }
@@ -31,7 +53,8 @@ GolapFilterParser >> fieldFilter [
 { #category : 'accessing' }
 GolapFilterParser >> filter [
 
-	^ #any asPParser
+	^ fieldFilter ==> [ :assoc | { assoc } asHiDeSyntaxDictionary ]
+	  / self conjunctiveFilter / #any asPParser star flatten
 ]
 
 { #category : 'accessing' }
@@ -51,9 +74,9 @@ GolapFilterParser >> guardedIsin [
 GolapFilterParser >> isin [
 
 	^ ('isin' asPParser trimBlanks , $( asPParser trimBlanks) flatten
-	  , field
-	  , ($, asPParser , (number / string separatedBy: $, asPParser)
-		   , $) asPParser) flatten
+	  , field , ($, asPParser trimBlanks
+	   , (number / string separatedBy: $, asPParser trimBlanks)
+	   , $) asPParser trimBlanks) flatten
 	  ==> [ :triple | triple second -> ('' join: triple) ]
 ]
 
@@ -87,14 +110,13 @@ GolapFilterParser >> number [
 
 	^ ($- asPParser optional , #digit asPParser plus
 	   , ($. asPParser , #digit asPParser plus) optional) flatten
-		  trimBlanks
 ]
 
 { #category : 'accessing' }
 GolapFilterParser >> start [
 	"Answer the production to start this parser with."
 
-	^ field end
+	^ filter end
 ]
 
 { #category : 'accessing' }
@@ -102,5 +124,5 @@ GolapFilterParser >> string [
 
 	^ ($' asPParser
 	   , ('\''' asPParser / ($' asPParser not , #any asPParser)) star
-	   , $' asPParser) flatten trimBlanks
+	   , $' asPParser) flatten
 ]

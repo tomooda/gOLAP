@@ -75,7 +75,7 @@ GolapQueryHistoryPresenter >> cherrypick [
 		table openDialog
 			title: '上書きする属性を選択してください';
 			okAction: [
-				([ GolapQueryJSONReader fromString: queryText text ]
+				([ GolapQueryJSONReaderWriter fromString: queryText text ]
 					 on: Error
 					 do: [ :ex | ex return: nil ])
 					ifNotNil: [ :query |
@@ -86,7 +86,7 @@ GolapQueryHistoryPresenter >> cherrypick [
 									on: HiDeSyntaxDictionaryKeyNotFound
 									do: [ :ex |
 										ex resume: (ex signaler at: ex key put: self class new) ] ].
-						queryText text: (STONJSON toStringPretty: query) ]
+						queryText text: (GolapQueryJSONReaderWriter toString: query) ]
 					ifNil: [
 						UIManager default alert: '上書き前のクエリが不正です。' title: 'クエリ構文エラー' ] ] ]
 ]
@@ -152,11 +152,11 @@ GolapQueryHistoryPresenter >> query [
 { #category : 'accessing' }
 GolapQueryHistoryPresenter >> query: aStringOrDictionary [
 
-	queryText text:
-		(aStringOrDictionary ifNil: [ '' ] ifNotNil: [
+	queryText text: (aStringOrDictionary ifNil: [ '' ] ifNotNil: [
 			 aStringOrDictionary isString
 				 ifTrue: [ aStringOrDictionary ]
-				 ifFalse: [ STONJSON toStringPretty: aStringOrDictionary ] ])
+				 ifFalse: [
+				 GolapQueryJSONReaderWriter toString: aStringOrDictionary ] ])
 ]
 
 { #category : 'menus' }
@@ -239,8 +239,8 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 GolapQueryHistoryPresenter >> updateQueryStemText [
 
 	queryStemText text: (queryStem
-	ifNotNil: [ STONJSON toStringPretty: queryStem ]
-	ifNil: [ '' ])
+			 ifNotNil: [ GolapQueryJSONReaderWriter toString: queryStem ]
+			 ifNil: [ '' ])
 ]
 
 { #category : 'operations' }

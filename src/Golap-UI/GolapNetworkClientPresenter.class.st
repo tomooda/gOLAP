@@ -425,7 +425,7 @@ GolapNetworkClientPresenter >> readPresetUrls [
 { #category : 'operations' }
 GolapNetworkClientPresenter >> recordHiDeHo [
 
-	([ GolapQueryJSONReader fromString: self query ]
+	([ GolapQueryJSONReaderWriter fromString: self query ]
 		 on: Exception
 		 do: [ :ex | ^ nil ]) ifNotNil: [ :query |
 		queryHistoryPresenter recordHiDeHo: query ]

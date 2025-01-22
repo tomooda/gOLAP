@@ -10,7 +10,7 @@ Class {
 GolapQueryJSONReaderTest >> testFromString [
 
 	| json |
-	json := GolapQueryJSONReader fromString:
+	json := GolapQueryJSONReaderWriter fromString:
 		        '{"x": 1, "y" : {"y1": 2, "y2": 3}}'.
 	self assert: json isHiDeSyntaxTree.
 	self assert: (json at: 'x') equals: 1.
