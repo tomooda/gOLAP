@@ -1,1 +1,1 @@
-Package { #name : #'Golap-Query' }
+Package { #name : 'Golap-Query' }

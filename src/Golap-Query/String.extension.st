@@ -1,6 +1,6 @@
-Extension { #name : #String }
+Extension { #name : 'String' }
 
-{ #category : #'*Golap-Query' }
+{ #category : '*Golap-Query' }
 String >> golapQuoted [
 	"'abc''def' golapQuoted >>> '''abc\''def'''"
 
@@ -15,7 +15,7 @@ String >> golapQuoted [
 			stream nextPut: $' ]
 ]
 
-{ #category : #'*Golap-Query' }
+{ #category : '*Golap-Query' }
 String >> printGolapQueryOn: aStream [
 	aStream nextPut: $".
 	self

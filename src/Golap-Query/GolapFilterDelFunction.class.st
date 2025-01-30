@@ -1,15 +1,17 @@
 Class {
-	#name : #GolapFilterDelFunction,
-	#superclass : #GolapFilterValuesFunction,
-	#category : #'Golap-Query-StructuredEditor'
+	#name : 'GolapFilterDelFunction',
+	#superclass : 'GolapFilterValuesFunction',
+	#category : 'Golap-Query-StructuredEditor',
+	#package : 'Golap-Query',
+	#tag : 'StructuredEditor'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterDelFunction class >> functionName [
 	^ 'del'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterDelFunction >> functionName [
 	^ 'del'
 ]

@@ -1,35 +1,37 @@
 Class {
-	#name : #GolapFilterValuesFunction,
-	#superclass : #GolapFunctionNode,
+	#name : 'GolapFilterValuesFunction',
+	#superclass : 'GolapFunctionNode',
 	#instVars : [
 		'values'
 	],
-	#category : #'Golap-Query-StructuredEditor'
+	#category : 'Golap-Query-StructuredEditor',
+	#package : 'Golap-Query',
+	#tag : 'StructuredEditor'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterValuesFunction class >> values: anArray [
 	^ self new
 		values: anArray;
 		yourself
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterValuesFunction >> functionName [
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterValuesFunction >> golapQueryChildren [
 	^ values
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapFilterValuesFunction >> isValidGolapQuery [
 	^ values notNil and: [ values notEmpty ]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapFilterValuesFunction >> printGolapQueryOn: aStream [
 	aStream
 		nextPutAll: self functionName;

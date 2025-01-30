@@ -1,14 +1,16 @@
 Class {
-	#name : #GolapFilterFieldValuesFunction,
-	#superclass : #GolapFunctionNode,
+	#name : 'GolapFilterFieldValuesFunction',
+	#superclass : 'GolapFunctionNode',
 	#instVars : [
 		'values',
 		'field'
 	],
-	#category : #'Golap-Query-StructuredEditor'
+	#category : 'Golap-Query-StructuredEditor',
+	#package : 'Golap-Query',
+	#tag : 'StructuredEditor'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterFieldValuesFunction class >> field: aString values: anArray [
 	^ self new
 		field: aString;
@@ -16,7 +18,7 @@ GolapFilterFieldValuesFunction class >> field: aString values: anArray [
 		yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterFieldValuesFunction class >> fromUserOn: aGolapNetworkClientPresenter [
 	GolapQueryFunctionFieldValuesPresenter
 		on: aGolapNetworkClientPresenter
@@ -28,32 +30,32 @@ GolapFilterFieldValuesFunction class >> fromUserOn: aGolapNetworkClientPresenter
 	^ nil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterFieldValuesFunction >> field [
 	^ field
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterFieldValuesFunction >> field: aString [
 	field := aString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterFieldValuesFunction >> functionName [
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterFieldValuesFunction >> golapQueryChildren [
 	^ values
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapFilterFieldValuesFunction >> isValidGolapQuery [
 	^ field notNil and: [ values notNil and: [ values notEmpty ] ]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapFilterFieldValuesFunction >> printGolapQueryOn: aStream [
 	aStream
 		nextPutAll: self functionName;
@@ -67,12 +69,12 @@ GolapFilterFieldValuesFunction >> printGolapQueryOn: aStream [
 	aStream nextPut: $)
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterFieldValuesFunction >> values [
 	^ values
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterFieldValuesFunction >> values: anArray [
 	values := anArray
 ]

@@ -1,20 +1,22 @@
 Class {
-	#name : #GolapQueryRangeSpec,
-	#superclass : #GolapQueryPredicateSpec,
+	#name : 'GolapQueryRangeSpec',
+	#superclass : 'GolapQueryPredicateSpec',
 	#instVars : [
 		'start',
 		'end'
 	],
-	#category : #'Golap-Query'
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #examples }
+{ #category : 'examples' }
 GolapQueryRangeSpec class >> exampleAtoZ [
 	<script: 'GolapQueryRangeSpec exampleAtoZ inspect'>
 	^ GolapQueryRangeSpec fromString: 'A...Z'
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryRangeSpec class >> from: aString1 to: aString2 [
 	^ self new
 		start: aString1;
@@ -22,7 +24,7 @@ GolapQueryRangeSpec class >> from: aString1 to: aString2 [
 		yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryRangeSpec class >> fromJSON: aJSONObject [
 	^ self new
 		start: (aJSONObject at: 'start');
@@ -30,7 +32,7 @@ GolapQueryRangeSpec class >> fromJSON: aJSONObject [
 		yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryRangeSpec class >> fromString: aString ifError: errorBlock [
 	| args |
 	args := aString substrings: '...'.
@@ -39,13 +41,13 @@ GolapQueryRangeSpec class >> fromString: aString ifError: errorBlock [
 	^ self from: args first to: args second
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapQueryRangeSpec >> = anObject [
 	^ super = anObject
 		and: [ start = anObject start and: [ end = anObject end ] ]
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapQueryRangeSpec >> asJSON [
 	^ super asJSON
 		at: 'start' put: start;
@@ -53,32 +55,32 @@ GolapQueryRangeSpec >> asJSON [
 		yourself
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryRangeSpec >> bareLiteralsDo: aBlock [
 	
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryRangeSpec >> end [
 	^ end
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryRangeSpec >> end: aString [
 	end := aString asString
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryRangeSpec >> guardedLiteralsDo: aBlock [
 	
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapQueryRangeSpec >> hash [
 	^ (super hash bitXor: start hash) bitXor: end hash
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryRangeSpec >> printBareQueryWith: aString on: aStream [
 	aStream
 		nextPutAll: 'range(';
@@ -90,7 +92,7 @@ GolapQueryRangeSpec >> printBareQueryWith: aString on: aStream [
 		nextPut: $)
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryRangeSpec >> printSpecOn: aStream [
 	aStream
 		nextPutAll: start;
@@ -102,29 +104,29 @@ GolapQueryRangeSpec >> printSpecOn: aStream [
 			aStream nextPut: $) ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryRangeSpec >> rangesDo: aBlock [
 	aBlock cull: self
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryRangeSpec >> start [
 	^ start
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryRangeSpec >> start: aString [
 	start := aString asString
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryRangeSpec >> value: aStringOrNumber [
 	| str |
 	str := aStringOrNumber asString.
 	^ start <= str and: [ str <= end ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryRangeSpec >> wildcardsDo: aBlock [
 	
 ]

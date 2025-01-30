@@ -1,15 +1,17 @@
 Class {
-	#name : #GolapFilterAndFunction,
-	#superclass : #GolapFilterNaryBooleanFunction,
-	#category : #'Golap-Query-StructuredEditor'
+	#name : 'GolapFilterAndFunction',
+	#superclass : 'GolapFilterNaryBooleanFunction',
+	#category : 'Golap-Query-StructuredEditor',
+	#package : 'Golap-Query',
+	#tag : 'StructuredEditor'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterAndFunction class >> functionName [
 	^ 'and'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterAndFunction >> operatorName [
 	^  'and'
 ]

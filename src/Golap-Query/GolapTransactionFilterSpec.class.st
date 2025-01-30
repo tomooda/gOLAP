@@ -1,10 +1,12 @@
 Class {
-	#name : #GolapTransactionFilterSpec,
-	#superclass : #GolapFilterSpec,
-	#category : #'Golap-Query'
+	#name : 'GolapTransactionFilterSpec',
+	#superclass : 'GolapFilterSpec',
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #examples }
+{ #category : 'examples' }
 GolapTransactionFilterSpec class >> exampleQuery [
 	<script: 'GolapTransactionFilterSpec exampleQuery inspect'>
 	^ self
@@ -18,12 +20,12 @@ GolapTransactionFilterSpec class >> exampleQuery [
 				ifError: [ nil ])}
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapTransactionFilterSpec >> itemClausesDo: aBlock [
 	clauses do: [ :clause | clause itemClausesDo: aBlock ]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapTransactionFilterSpec >> printQueryOn: aStream [
 	| itemClauses transactionClauses |
 	itemClauses := Array
@@ -59,7 +61,7 @@ GolapTransactionFilterSpec >> printQueryOn: aStream [
 		ifTrue: [ aStream nextPut: $) ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapTransactionFilterSpec >> transactionClausesDo: aBlock [
 	clauses do: [ :clause | clause transactionClausesDo: aBlock ]
 ]

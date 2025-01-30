@@ -1,19 +1,21 @@
 Class {
-	#name : #GolapFilterSpec,
-	#superclass : #GolapAbstractQuerySpec,
+	#name : 'GolapFilterSpec',
+	#superclass : 'GolapAbstractQuerySpec',
 	#instVars : [
 		'clauses'
 	],
-	#category : #'Golap-Query'
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterSpec class >> fromJSON: aJSONObject [
 	^ self
 		withAll: (aJSONObject collect: [ :obj | GolapQueryClauseSpec fromJSON: obj ])
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterSpec class >> fromString: aString ifError: errorBlock [
 	| query |
 	query := self new.
@@ -29,7 +31,7 @@ GolapFilterSpec class >> fromString: aString ifError: errorBlock [
 	^ query
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapFilterSpec class >> withAll: aCollectionOfGolapQueryClauseSpec [
 	| query |
 	query := self new.
@@ -38,70 +40,70 @@ GolapFilterSpec class >> withAll: aCollectionOfGolapQueryClauseSpec [
 	^ query
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapFilterSpec >> = anObject [
 	^ self class = anObject class and: [ clauses = anObject clauses ]
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapFilterSpec >> addClause: aGolapQueryClauseSpec [
 	^ clauses add: aGolapQueryClauseSpec
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapFilterSpec >> asJSON [
 	^ clauses collect: #asJSON
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterSpec >> clauses [
 	^ clauses
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterSpec >> clauses: aCollectionOfGolapQueryClauseSpec [
 	clauses := aCollectionOfGolapQueryClauseSpec asOrderedCollection
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapFilterSpec >> clearWarningsAndErrors [
 	clauses do: [ :clause | clause clearWarningsAndErrors ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapFilterSpec >> guardedPredicatesDo: aBlock [
 	clauses do: [ :clause | clause guardedPredicatesDo: aBlock ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapFilterSpec >> hasPredicates [
 	^ clauses anySatisfy: #hasPredicates
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapFilterSpec >> hash [
 	^ self class hash bitXor: clauses hash
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapFilterSpec >> initialize [ 
 	super initialize.
 	clauses := OrderedCollection new
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapFilterSpec >> isFilterSpec [
 	^ true
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapFilterSpec >> printSpecOn: aStream [
 	clauses
 		do: [ :clause | clause printSpecOn: aStream ]
 		separatedBy: [ aStream nextPutAll: ' & ' ]
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapFilterSpec >> removeClause: aGolapQueryClauseSpec ifAbsent: errorBlock [
 	^ clauses remove: aGolapQueryClauseSpec ifAbsent: errorBlock
 ]

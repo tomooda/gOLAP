@@ -1,14 +1,16 @@
 Class {
-	#name : #GolapQueryTransactionClauseSpec,
-	#superclass : #GolapQueryClauseSpec,
+	#name : 'GolapQueryTransactionClauseSpec',
+	#superclass : 'GolapQueryClauseSpec',
 	#instVars : [
 		'itemFilter',
 		'itemFilterQuantifier'
 	],
-	#category : #'Golap-Query'
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryTransactionClauseSpec class >> fromJSON: aJSONObject [
 	^ (super fromJSON: aJSONObject)
 		itemFilter:
@@ -18,7 +20,7 @@ GolapQueryTransactionClauseSpec class >> fromJSON: aJSONObject [
 		yourself
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapQueryTransactionClauseSpec >> asJSON [
 	^ super asJSON
 		at: 'itemFilter' put: (itemFilter ifNotNil: #asJSON);
@@ -26,29 +28,29 @@ GolapQueryTransactionClauseSpec >> asJSON [
 		yourself
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryTransactionClauseSpec >> hasItemFilter [
 	^ itemFilter notNil
 		and: [ itemFilterQuantifier notNil and: [ itemFilter hasPredicates ] ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryTransactionClauseSpec >> isTransactionClause [
 	^ true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryTransactionClauseSpec >> itemFilter [
 	^ itemFilter
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryTransactionClauseSpec >> itemFilter: aGolapItemFilterSpec [
 	itemFilter := aGolapItemFilterSpec.
 	itemFilter ifNil: [ itemFilterQuantifier := nil ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryTransactionClauseSpec >> itemFilterFromFields: anArrayOfString quantifier: aBoolean [
 	itemFilter := GolapItemFilterSpec
 		withAll:
@@ -57,17 +59,17 @@ GolapQueryTransactionClauseSpec >> itemFilterFromFields: anArrayOfString quantif
 	itemFilterQuantifier := aBoolean = true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryTransactionClauseSpec >> itemFilterQuantifier [
 	^ itemFilterQuantifier
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryTransactionClauseSpec >> itemFilterQuantifier: aBoolean [
 	itemFilterQuantifier := aBoolean
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryTransactionClauseSpec >> printQueryOn: aStream [
 	| subqueries |
 	(predicates isEmpty
@@ -128,7 +130,7 @@ GolapQueryTransactionClauseSpec >> printQueryOn: aStream [
 		ifTrue: [ aStream nextPut: $) ]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryTransactionClauseSpec >> printSpecOn: aStream [
 	super printSpecOn: aStream.
 	itemFilter
@@ -137,13 +139,13 @@ GolapQueryTransactionClauseSpec >> printSpecOn: aStream [
 			aStream nextPut: $) ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryTransactionClauseSpec >> removeItemFilter [
 	itemFilter := nil.
 	itemFilterQuantifier := nil
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryTransactionClauseSpec >> transactionClausesDo: aBlock [
 	aBlock value: self
 ]

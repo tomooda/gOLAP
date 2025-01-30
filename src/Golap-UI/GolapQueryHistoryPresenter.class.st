@@ -85,7 +85,7 @@ GolapQueryHistoryPresenter >> cherrypick [
 								[ accessor write: value to: query ]
 									on: HiDeSyntaxDictionaryKeyNotFound
 									do: [ :ex |
-										ex resume: (ex signaler at: ex key put: self class new) ] ].
+										ex resume: (ex signaler at: ex key put: query class new) ] ].
 						queryText text: (GolapQueryJSONReaderWriter toString: query) ]
 					ifNil: [
 						UIManager default alert: '上書き前のクエリが不正です。' title: 'クエリ構文エラー' ] ] ]

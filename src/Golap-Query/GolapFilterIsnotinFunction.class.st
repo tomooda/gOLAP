@@ -1,15 +1,17 @@
 Class {
-	#name : #GolapFilterIsnotinFunction,
-	#superclass : #GolapFilterFieldValuesFunction,
-	#category : #'Golap-Query-StructuredEditor'
+	#name : 'GolapFilterIsnotinFunction',
+	#superclass : 'GolapFilterFieldValuesFunction',
+	#category : 'Golap-Query-StructuredEditor',
+	#package : 'Golap-Query',
+	#tag : 'StructuredEditor'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterIsnotinFunction class >> functionName [
 	^ 'isnotin'
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFilterIsnotinFunction >> functionName [
 	^ 'isnotin'
 ]

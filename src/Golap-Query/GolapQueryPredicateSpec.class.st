@@ -1,15 +1,17 @@
 Class {
-	#name : #GolapQueryPredicateSpec,
-	#superclass : #GolapAbstractQuerySpec,
+	#name : 'GolapQueryPredicateSpec',
+	#superclass : 'GolapAbstractQuerySpec',
 	#instVars : [
 		'guard',
 		'warnings',
 		'errors'
 	],
-	#category : #'Golap-Query'
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryPredicateSpec class >> fromJSON: aDictionary [
 	aDictionary
 		at: 'pattern'
@@ -20,37 +22,37 @@ GolapQueryPredicateSpec class >> fromJSON: aDictionary [
 	^ self shouldNotImplement
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryPredicateSpec class >> fromString: aString ifError: errorBlock [
 	(aString includesSubstring: '...')
 		ifTrue: [ ^ GolapQueryRangeSpec fromString: aString ifError: errorBlock ].
 	^ GolapQueryPatternSpec fromString: aString ifError: errorBlock
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapQueryPredicateSpec >> = anObject [
 	^ self class = anObject class and: [ guard = anObject guard ]
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapQueryPredicateSpec >> asJSON [
 	^ Dictionary new
 		at: 'guard' put: (guard ifNotNil: #asJSON);
 		yourself
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryPredicateSpec >> bareLiteralsDo: aBlock [
 	^ self subclassResponsibility
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapQueryPredicateSpec >> clearWarningsAndErrors [
 	warnings removeAll.
 	errors removeAll
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPredicateSpec >> color [
 	self hasError
 		ifTrue: [ ^ Color red darker ].
@@ -59,79 +61,79 @@ GolapQueryPredicateSpec >> color [
 	^ Color black
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPredicateSpec >> guard [
 	^ guard
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPredicateSpec >> guard: aGolapClauseOrNil [
 	guard := aGolapClauseOrNil
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPredicateSpec >> guardField [
 	^ guard ifNotNil: #field
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryPredicateSpec >> guardedLiteralsDo: aBlock [
 	^ self subclassResponsibility
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryPredicateSpec >> guardedPredicatesDo: aBlock [
 	guard ifNotNil: [ aBlock cull: self ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryPredicateSpec >> hasError [
 	^ errors notEmpty
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryPredicateSpec >> hasGuard [
 	^ guard notNil
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryPredicateSpec >> hasWarning [
 	^ warnings notEmpty
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapQueryPredicateSpec >> hash [
 	^ self class hash bitXor: guard hash
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryPredicateSpec >> initialize [
 	super initialize.
 	warnings := OrderedCollection new.
 	errors := OrderedCollection new
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryPredicateSpec >> isPredicateSpec [
 	^ true
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryPredicateSpec >> isSubClause [
 	^ false
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryPredicateSpec >> printBareQueryWith: aString on: aStream [
 	^ self subclassResponsibility
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryPredicateSpec >> printQueryOn: aStream [
 	self printQueryWith: '<field name>' on: aStream
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryPredicateSpec >> printQueryWith: aString on: aStream [
 	guard ifNotNil: [ aStream nextPutAll: 'and(' ].
 	self printBareQueryWith: aString on: aStream.
@@ -141,23 +143,23 @@ GolapQueryPredicateSpec >> printQueryWith: aString on: aStream [
 			aStream nextPutAll: '))' ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPredicateSpec >> queryWith: aFieldNameString [
 	^ String
 		streamContents: [ :stream | self printQueryWith: aFieldNameString on: stream ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryPredicateSpec >> rangesDo: aBlock [
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryPredicateSpec >> value: aStringOrNumber [
 	^ self subclassResponsibility
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryPredicateSpec >> wildcardsDo: aBlock [
 	^ self subclassResponsibility
 ]

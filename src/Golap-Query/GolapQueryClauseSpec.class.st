@@ -1,22 +1,24 @@
 Class {
-	#name : #GolapQueryClauseSpec,
-	#superclass : #GolapAbstractQuerySpec,
+	#name : 'GolapQueryClauseSpec',
+	#superclass : 'GolapAbstractQuerySpec',
 	#instVars : [
 		'field',
 		'predicates',
 		'isNegative'
 	],
-	#category : #'Golap-Query'
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryClauseSpec class >> clauseSpecClassFor: aJSONObject [
 	^ (aJSONObject includesKey: 'itemFilter')
 		ifTrue: [ GolapQueryTransactionClauseSpec ]
 		ifFalse: [ GolapQueryItemClauseSpec ]
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryClauseSpec class >> fromJSON: aJSONObject [
 	^ (self clauseSpecClassFor: aJSONObject) new
 		field: (aJSONObject at: 'field');
@@ -27,7 +29,7 @@ GolapQueryClauseSpec class >> fromJSON: aJSONObject [
 		yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryClauseSpec class >> fromString: aString ifError: errorBlock [
 	| index field |
 	index := aString indexOf: $:.
@@ -48,14 +50,14 @@ GolapQueryClauseSpec class >> fromString: aString ifError: errorBlock [
 								ifError: [ :msg | ^ errorBlock cull: msg ] ] ])
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryClauseSpec class >> on: aFieldNameString [
 	^ self new
 		field: aFieldNameString;
 		yourself
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapQueryClauseSpec class >> on: aFieldNameString withAll: aCollectionOfGolapQueryPredicateSpec [
 	| clause |
 	clause := self on: aFieldNameString.
@@ -64,7 +66,7 @@ GolapQueryClauseSpec class >> on: aFieldNameString withAll: aCollectionOfGolapQu
 	^ clause
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapQueryClauseSpec >> = anObject [
 	^ self class = anObject class
 		and: [ field = anObject field
@@ -72,12 +74,12 @@ GolapQueryClauseSpec >> = anObject [
 						and: [ self isNegative = anObject isNegative ] ] ]
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapQueryClauseSpec >> addPredicate: aGolapQueryPredicateSpec [
 	^ predicates add: aGolapQueryPredicateSpec
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapQueryClauseSpec >> asJSON [
 	^ Dictionary new
 		at: 'field' put: field;
@@ -86,99 +88,99 @@ GolapQueryClauseSpec >> asJSON [
 		yourself
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryClauseSpec >> bareLiteralsDo: aBlock [
 	predicates do: [ :predicate | predicate bareLiteralsDo: aBlock ]
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapQueryClauseSpec >> clearWarningsAndErrors [
 	predicates do: [ :spec | spec clearWarningsAndErrors ]
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> field [
 	^ field
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> field: aString [
 	field := aString asString
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryClauseSpec >> guardedLiteralsDo: aBlock [
 	predicates do: [ :predicate | predicate guardedLiteralsDo: aBlock ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryClauseSpec >> guardedPredicatesDo: aBlock [
 	predicates do: [ :spec | spec guardedPredicatesDo: aBlock ]
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryClauseSpec >> hasItemFilter [
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryClauseSpec >> hasPredicates [
 	^ predicates notEmpty
 ]
 
-{ #category : #comparing }
+{ #category : 'comparing' }
 GolapQueryClauseSpec >> hash [
 	^ ((self class hash bitXor: field hash) bitXor: predicates hash)
 		bitXor: isNegative
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 GolapQueryClauseSpec >> initialize [
 	super initialize.
 	predicates := OrderedCollection new
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryClauseSpec >> isClauseSpec [
 	^ true
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryClauseSpec >> isItemClause [
 	^ false
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> isNegative [
 	^ isNegative = true
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> isNegative: aBoolean [
 	isNegative := aBoolean = true
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapQueryClauseSpec >> isTransactionClause [
 	^ false
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryClauseSpec >> itemClausesDo: aBlock [
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> predicates [
 	^ predicates
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> predicates: aCollectionOfGolapQueryPredicateSpec [
 	predicates := aCollectionOfGolapQueryPredicateSpec
 		asOrderedCollection
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryClauseSpec >> printQueryOn: aStream [
 	| subqueries |
 	predicates ifEmpty: [ ^ self ].
@@ -221,7 +223,7 @@ GolapQueryClauseSpec >> printQueryOn: aStream [
 		ifTrue: [ aStream nextPut: $) ]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapQueryClauseSpec >> printSpecOn: aStream [
 	self isNegative
 		ifTrue: [ aStream nextPut: $- ].
@@ -233,50 +235,50 @@ GolapQueryClauseSpec >> printSpecOn: aStream [
 		separatedBy: [ aStream nextPutAll: ', ' ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryClauseSpec >> rangesDo: aBlock [
 	predicates do: [ :predicate | predicate rangesDo: aBlock ]
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapQueryClauseSpec >> removeAllNonSubClausePredicates [
 	predicates := predicates select: #isSubClause
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapQueryClauseSpec >> removeAllPredicates [
 	predicates removeAll
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapQueryClauseSpec >> removeAllSubClausePredicates [
 	predicates := predicates reject: #isSubClause
 ]
 
-{ #category : #adding }
+{ #category : 'adding' }
 GolapQueryClauseSpec >> removePredicate: aGolapQueryPredicateSpec ifAbsent: errorBlock [
 	^ predicates
 		remove: aGolapQueryPredicateSpec
 		ifAbsent: errorBlock
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> toggleNegative [
 	self isNegative: self isNegative not
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryClauseSpec >> transactionClausesDo: aBlock [
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapQueryClauseSpec >> value: aStringOrNumber [
 	^ predicates isEmpty
 		or: [ predicates
 				anySatisfy: [ :predicate | predicate value: aStringOrNumber ] ]
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapQueryClauseSpec >> wildcardsDo: aBlock [
 	predicates do: [ :predicate | predicate wildcardsDo: aBlock ]
 ]

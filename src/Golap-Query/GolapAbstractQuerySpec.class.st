@@ -1,55 +1,57 @@
 Class {
-	#name : #GolapAbstractQuerySpec,
-	#superclass : #Object,
-	#category : #'Golap-Query'
+	#name : 'GolapAbstractQuerySpec',
+	#superclass : 'Object',
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapAbstractQuerySpec class >> fromJSON: aJSONObject [
 	^ self subclassResponsibility
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapAbstractQuerySpec class >> fromString: aString [
 	^ self fromString: aString ifError: [ nil ]
 ]
 
-{ #category : #'instance creation' }
+{ #category : 'instance creation' }
 GolapAbstractQuerySpec class >> fromString: aString ifError: errorBlock [
 	^ self subclassResponsibility
 ]
 
-{ #category : #converting }
+{ #category : 'converting' }
 GolapAbstractQuerySpec >> asJSON [
 	^ self subclassResponsibility
 ]
 
-{ #category : #operations }
+{ #category : 'operations' }
 GolapAbstractQuerySpec >> clearWarningsAndErrors [
 	^ self subclassResponsibility
 ]
 
-{ #category : #enumerating }
+{ #category : 'enumerating' }
 GolapAbstractQuerySpec >> guardedPredicatesDo: aBlock [
 	^ self subclassResponsibility
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapAbstractQuerySpec >> isClauseSpec [
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapAbstractQuerySpec >> isFilterSpec [
 	^ false
 ]
 
-{ #category : #testing }
+{ #category : 'testing' }
 GolapAbstractQuerySpec >> isPredicateSpec [
 	^ false
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapAbstractQuerySpec >> printOn: aStream [
 	aStream
 		nextPutAll: self class name;
@@ -58,22 +60,22 @@ GolapAbstractQuerySpec >> printOn: aStream [
 	aStream nextPutAll: ' )'
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapAbstractQuerySpec >> printQueryOn: aStream [
 	^ self subclassResponsibility
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapAbstractQuerySpec >> printSpec [
 	^ String streamContents: [ :stream | self printSpecOn: stream ]
 ]
 
-{ #category : #printing }
+{ #category : 'printing' }
 GolapAbstractQuerySpec >> printSpecOn: aStream [
 	^ self subclassResponsibility
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapAbstractQuerySpec >> query [
 	^ String streamContents: [ :stream | self printQueryOn: stream ]
 ]

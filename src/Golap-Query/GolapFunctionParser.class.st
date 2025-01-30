@@ -1,17 +1,19 @@
 Class {
-	#name : #GolapFunctionParser,
-	#superclass : #PP2CompositeNode,
-	#category : #'Golap-Query'
+	#name : 'GolapFunctionParser',
+	#superclass : 'PP2CompositeNode',
+	#category : 'Golap-Query-AST',
+	#package : 'Golap-Query',
+	#tag : 'AST'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFunctionParser >> start [
 	"Answer the production to start this parser with."
 
 	^ self string
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 GolapFunctionParser >> string [
 	^ ($" asPParser
 		,
