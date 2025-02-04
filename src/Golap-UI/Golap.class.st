@@ -135,6 +135,12 @@ Golap class >> gOLAPSettingsOn: aBuilder [
 				label: 'End-of-Line for item name' ]
 ]
 
+{ #category : 'utilities' }
+Golap class >> golapDirectory [
+
+	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+]
+
 { #category : 'menus' }
 Golap class >> golapMenuOn: aBuilder [
 
@@ -860,7 +866,8 @@ Golap >> globalMapPane [
 
 { #category : 'accessing-presets' }
 Golap >> golapDirectory [
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+
+	^ self class golapDirectory
 ]
 
 { #category : 'layouts' }

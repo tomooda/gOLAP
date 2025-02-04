@@ -3,6 +3,7 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'queryStem',
+		'queryStorage',
 		'queryHistory',
 		'queryStemText',
 		'importQueryBlock',
@@ -41,6 +42,12 @@ GolapQueryHistoryPresenter class >> defaultLayout [
 				   add: #importQueryButton expand: false;
 				   yourself);
 		  yourself
+]
+
+{ #category : 'utilities' }
+GolapQueryHistoryPresenter class >> golapDirectory [
+
+	^ Golap golapDirectory
 ]
 
 { #category : 'operations' }
@@ -108,8 +115,13 @@ GolapQueryHistoryPresenter >> importQueryBlock: aBlock [
 GolapQueryHistoryPresenter >> initialize [
 
 	super initialize.
-	queryHistory := OrderedCollection new.
-	queryStem := nil
+	queryStorage := GolapQueryStorage new basepath:
+		                self class golapDirectory / 'Queries'.
+	queryStorage
+		loadSettings;
+		loadChronicle.
+	queryHistory := queryStorage chronicle collect: #query.
+	self updateQueryStem
 ]
 
 { #category : 'initialization' }
@@ -121,7 +133,7 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		                 yourself.
 	useQueryStemButton := self newButton
 		                      icon: (self iconNamed: #forward);
-		                      action: [ self useStemQuery ];
+		                      action: [ self useQueryStem ];
 		                      yourself.
 	queryHistoryList := self newTable
 		                    beResizable;
@@ -174,12 +186,13 @@ GolapQueryHistoryPresenter >> queryTextMenu [
 { #category : 'operations' }
 GolapQueryHistoryPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 
-	queryStem := queryStem
-		             ifNil: [ aHiDeSyntaxDictionary ]
-		             ifNotNil: [
-		             queryStem intersectionWith: aHiDeSyntaxDictionary ].
-	queryHistory addLast: aHiDeSyntaxDictionary.
+	queryStorage chronicleAdd: (GolapQueryRecord new
+			 url: queryStorage url;
+			 query: aHiDeSyntaxDictionary;
+			 yourself).
+	queryHistory := queryStorage chronicle collect: #query.
 	self
+		updateQueryStem;
 		updateQueryStemText;
 		updateQueryHistoryList;
 		query: aHiDeSyntaxDictionary
@@ -207,7 +220,7 @@ GolapQueryHistoryPresenter >> updatePresenters [
 { #category : 'updating' }
 GolapQueryHistoryPresenter >> updateQueryHistoryList [
 
-	(queryStem notNil and: [ queryHistory notEmpty ])
+	queryStem notNil
 		ifTrue: [
 			| done |
 			done := queryStem syntaxAccessorsToTips asSet.
@@ -236,6 +249,17 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 ]
 
 { #category : 'updating' }
+GolapQueryHistoryPresenter >> updateQueryStem [
+
+	queryStem := queryHistory
+		             ifNotEmpty: [
+			             queryHistory
+				             inject: queryHistory first
+				             into: [ :stem :query | stem intersectionWith: query ] ]
+		             ifEmpty: [ nil ]
+]
+
+{ #category : 'updating' }
 GolapQueryHistoryPresenter >> updateQueryStemText [
 
 	queryStemText text: (queryStem
@@ -243,8 +267,21 @@ GolapQueryHistoryPresenter >> updateQueryStemText [
 			 ifNil: [ '' ])
 ]
 
+{ #category : 'accessing' }
+GolapQueryHistoryPresenter >> url: aString [
+
+	queryStorage url = aString ifTrue: [ ^ self ].
+	queryStorage url: aString.
+	queryHistory := queryStorage chronicle collect: #query.
+	self
+		updateQueryStem;
+		updateQueryStemText;
+		updateQueryHistoryList.
+	queryHistory ifNotEmpty: [ self query: queryHistory last ]
+]
+
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> useStemQuery [
+GolapQueryHistoryPresenter >> useQueryStem [
 
 	self query: queryStem
 ]

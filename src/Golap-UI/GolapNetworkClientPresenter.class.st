@@ -234,7 +234,8 @@ GolapNetworkClientPresenter >> initializePresenters [
 			            self updateServerConfig.
 			            queryPresenter
 				            resetItemFilterSpec;
-				            resetTransactionFilterSpec ];
+				            resetTransactionFilterSpec.
+			            queryHistoryPresenter url: text trim ];
 		            yourself.
 	presetUrlButton := self newButton
 		                   icon: (Smalltalk ui icons iconNamed: #back);
@@ -245,16 +246,16 @@ GolapNetworkClientPresenter >> initializePresenters [
 		                 addPage: (self newNotebookPage
 				                  title: '基本';
 				                  presenterProvider: [ queryPresenter ];
-				                  whenRetrievedDo: [ usesRawQuery := false ];
 				                  yourself);
 		                 addPage: (self newNotebookPage
 				                  title: '高度な条件';
 				                  presenterProvider: [ queryHistoryPresenter ];
 				                  whenRetrievedDo: [
 					                  self updateQueryHistoryPresenter.
-					                  self generateQueryText.
-					                  usesRawQuery := true ];
+					                  self generateQueryText ];
 				                  yourself);
+		                 whenSelectedPageChangedDo: [
+		                 usesRawQuery := queryNotebook selectedPageIndex = 2 ];
 		                 yourself.
 	usesRawQueryText := false.
 	queryHistoryPresenter := (self instantiate:
