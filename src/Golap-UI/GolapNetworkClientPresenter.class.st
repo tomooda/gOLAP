@@ -355,16 +355,18 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 	self clearPreviewFilterField.
 	self openDialog
 		okAction: [
-			self recordHiDeHo.
+			| queryRecord |
+			queryRecord := self recordHiDeHo.
 			[
-			aBlock cull: (GolapApiClient
+			aBlock
+				cull: (GolapApiClient
 						 url: self url
 						 query: self query
 						 comment: self comment
 						 serverConfig: self serverConfig
 						 itemFieldQuerySpec: self itemFieldQuerySpec
-						 authenticateBlock: self authenticateBlock) ] forkAt:
-					Processor userBackgroundPriority ];
+						 authenticateBlock: self authenticateBlock)
+				cull: queryRecord ] forkAt: Processor userBackgroundPriority ];
 		cancelAction: anotherBlock
 ]
 
@@ -426,10 +428,10 @@ GolapNetworkClientPresenter >> readPresetUrls [
 { #category : 'operations' }
 GolapNetworkClientPresenter >> recordHiDeHo [
 
-	([ GolapQueryJSONReaderWriter fromString: self query ]
-		 on: Exception
-		 do: [ :ex | ^ nil ]) ifNotNil: [ :query |
-		queryHistoryPresenter recordHiDeHo: query ]
+	^ ([ GolapQueryJSONReaderWriter fromString: self query ]
+		   on: Exception
+		   do: [ :ex | ex return: nil ]) ifNotNil: [ :query |
+		  queryHistoryPresenter recordHiDeHo: query ]
 ]
 
 { #category : 'initialization' }

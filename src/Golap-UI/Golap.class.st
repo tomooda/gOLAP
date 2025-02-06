@@ -4,6 +4,7 @@ Class {
 	#instVars : [
 		'model',
 		'productInfoRetriever',
+		'queryRecord',
 		'url',
 		'query',
 		'overviewRenderer',
@@ -211,9 +212,10 @@ Golap class >> openClient [
 	overview := Golap new.
 	overview open maximize.
 	GolapNetworkClientPresenter
-		openDialogIfAccepted: [ :client |
+		openDialogIfAccepted: [ :client :queryRecord |
 			[
 			overview
+				queryRecord: queryRecord;
 				productInfoRetriever:
 					(GolapServerProductInfoRetriever fromApiClient: client);
 				authenticateBlock: client authenticateBlock;
@@ -1190,7 +1192,8 @@ Golap >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter
 		title: self title;
-		initialExtent: World extent
+		initialExtent: World extent.
+	aWindowPresenter whenClosedDo: [ self saveQueryRecord ]
 ]
 
 { #category : 'snapshot' }
@@ -1578,6 +1581,18 @@ Golap >> query [
 Golap >> query: aDictionary [
 
 	self setQuery: aDictionary
+]
+
+{ #category : 'accessing' }
+Golap >> queryRecord [
+
+	^ queryRecord
+]
+
+{ #category : 'accessing' }
+Golap >> queryRecord: aGolapQueryRecord [
+
+	queryRecord := aGolapQueryRecord
 ]
 
 { #category : 'menu' }
@@ -2055,6 +2070,15 @@ Golap >> saveFullImage [
 		fileReference binaryWriteStreamDo: [ :stream | 
 			Cursor wait showWhile: [ 
 				PNGReadWriter putForm: self renderer fullImage onStream: stream ] ] ]
+]
+
+{ #category : 'history' }
+Golap >> saveQueryRecord [
+
+	queryRecord ifNotNil: [
+		globalImagePane image ifNotNil: [ :image |
+			queryRecord thumbnail: (image scaledToSize: 256 @ 256) ].
+		queryRecord hideSave ]
 ]
 
 { #category : 'snapshot' }

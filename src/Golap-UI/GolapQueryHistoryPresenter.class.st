@@ -186,16 +186,19 @@ GolapQueryHistoryPresenter >> queryTextMenu [
 { #category : 'operations' }
 GolapQueryHistoryPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 
-	queryStorage chronicleAdd: (GolapQueryRecord new
-			 url: queryStorage url;
-			 query: aHiDeSyntaxDictionary;
-			 yourself).
+	| queryRecord |
+	queryRecord := GolapQueryRecord new
+		               url: queryStorage url;
+		               query: aHiDeSyntaxDictionary;
+		               yourself.
+	queryStorage chronicleAdd: queryRecord.
 	queryHistory := queryStorage chronicle collect: #query.
 	self
 		updateQueryStem;
 		updateQueryStemText;
 		updateQueryHistoryList;
-		query: aHiDeSyntaxDictionary
+		query: aHiDeSyntaxDictionary.
+	^ queryRecord
 ]
 
 { #category : 'updating' }

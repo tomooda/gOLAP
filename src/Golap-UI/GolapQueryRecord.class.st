@@ -6,7 +6,8 @@ Class {
 	#instVars : [
 		'query',
 		'result',
-		'thumbnail'
+		'thumbnail',
+		'comment'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
@@ -19,7 +20,8 @@ GolapQueryRecord >> hideLoad: aFileReference storage: aHiDeStorage [
 	self
 		loadQuery: aFileReference;
 		loadResult: aFileReference;
-		loadThumbnail: aFileReference
+		loadThumbnail: aFileReference;
+		loadComment: aFileReference
 ]
 
 { #category : 'hideho-operations' }
@@ -28,13 +30,24 @@ GolapQueryRecord >> hideSave: aFileReference storage: aHiDeStorage [
 	self
 		saveQuery: aFileReference;
 		saveResult: aFileReference;
-		saveThumbnail: aFileReference
+		saveThumbnail: aFileReference;
+		saveComment: aFileReference
 ]
 
 { #category : 'hideho-operations' }
 GolapQueryRecord >> hideUpdateMetadataStorage: aHiDeStorage [
 
 	
+]
+
+{ #category : 'hideho-operations' }
+GolapQueryRecord >> loadComment: aFileReference [
+
+	aFileReference / 'comment.txt' ifExists: [ :ref |
+		ref readStreamDo: [ :stream |
+			comment := stream upToEnd.
+			^ self ] ].
+	comment := nil
 ]
 
 { #category : 'hideho-operations' }
@@ -89,6 +102,15 @@ GolapQueryRecord >> result [
 GolapQueryRecord >> result: aString [
 
 	result := aString
+]
+
+{ #category : 'hideho-operations' }
+GolapQueryRecord >> saveComment: aFileReference [
+
+	comment ifNotNil: [
+		(aFileReference / 'comment.txt')
+			ensureDelete;
+			writeStreamDo: [ :stream | stream nextPutAll: comment ] ]
 ]
 
 { #category : 'hideho-operations' }
