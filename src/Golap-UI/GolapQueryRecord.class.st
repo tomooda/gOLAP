@@ -14,6 +14,18 @@ Class {
 	#tag : 'Query'
 }
 
+{ #category : 'accessing' }
+GolapQueryRecord >> comment [
+
+	^ comment
+]
+
+{ #category : 'accessing' }
+GolapQueryRecord >> comment: aString [
+
+	comment := aString ifNotNil: [ aString asString ]
+]
+
 { #category : 'hideho-operations' }
 GolapQueryRecord >> hideLoad: aFileReference storage: aHiDeStorage [
 
@@ -120,7 +132,7 @@ GolapQueryRecord >> saveQuery: aFileReference [
 		(aFileReference / 'query.json')
 			ensureDelete;
 			writeStreamDo: [ :stream |
-				stream nextPutAll: (GolapQueryJSONReaderWriter toString: query) ] ]
+				stream nextPutAll: (GolapQueryJSONReaderWriter toStringPretty: query) ] ]
 ]
 
 { #category : 'hideho-operations' }

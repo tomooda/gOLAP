@@ -8,6 +8,8 @@ Class {
 		'queryStemText',
 		'importQueryBlock',
 		'queryHistoryList',
+		'thumbnailImage',
+		'commentText',
 		'cherrypickButton',
 		'queryText',
 		'useQueryStemButton',
@@ -22,17 +24,25 @@ Class {
 GolapQueryHistoryPresenter class >> defaultLayout [
 
 	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.3;
+		  positionOfSlider: 0.5;
 		  add: (SpPanedLayout newVertical
-				   positionOfSlider: 0.5;
+				   positionOfSlider: 0.2;
 				   add: (SpBoxLayout newVertical
 						    add: '共通部分' expand: false;
 						    add: #queryStemText;
 						    add: #useQueryStemButton expand: false;
 						    yourself);
 				   add: (SpBoxLayout newVertical
-						    add: '変化部分' expand: false;
-						    add: #queryHistoryList;
+						    add: (SpPanedLayout newVertical
+								     add: (SpBoxLayout newVertical
+										      add: '変化部分' expand: false;
+										      add: #queryHistoryList;
+										      yourself);
+								     add: (SpPanedLayout newHorizontal
+										      add: #thumbnailImage;
+										      add: #commentText;
+										      yourself);
+								     yourself);
 						    add: #cherrypickButton expand: false;
 						    yourself);
 				   yourself);
@@ -53,8 +63,9 @@ GolapQueryHistoryPresenter class >> golapDirectory [
 { #category : 'operations' }
 GolapQueryHistoryPresenter >> cherrypick [
 
-	queryHistoryList selectedItem ifNotNil: [ :selectedQuery |
-		| enabledAccessors table |
+	queryHistoryList selectedItem ifNotNil: [ :selectedQueryRecord |
+		| selectedQuery enabledAccessors table |
+		selectedQuery := selectedQueryRecord query.
 		enabledAccessors := (selectedQuery syntaxAccessorsToTips
 			                     copyWithoutAll:
 			                     queryStem syntaxAccessorsToTips) asSet.
@@ -93,7 +104,8 @@ GolapQueryHistoryPresenter >> cherrypick [
 									on: HiDeSyntaxDictionaryKeyNotFound
 									do: [ :ex |
 										ex resume: (ex signaler at: ex key put: query class new) ] ].
-						queryText text: (GolapQueryJSONReaderWriter toString: query) ]
+						queryText text:
+								(GolapQueryJSONReaderWriter toStringPretty: query) ]
 					ifNil: [
 						UIManager default alert: '上書き前のクエリが不正です。' title: 'クエリ構文エラー' ] ] ]
 ]
@@ -120,7 +132,7 @@ GolapQueryHistoryPresenter >> initialize [
 	queryStorage
 		loadSettings;
 		loadChronicle.
-	queryHistory := queryStorage chronicle collect: #query.
+	queryHistory := queryStorage chronicle.
 	self updateQueryStem
 ]
 
@@ -138,8 +150,13 @@ GolapQueryHistoryPresenter >> initializePresenters [
 	queryHistoryList := self newTable
 		                    beResizable;
 		                    showColumnHeaders;
-		                    whenSelectedItemChangedDo: [ self updateButtons ];
+		                    whenSelectedItemChangedDo: [
+			                    self selectedQueryHistoryChanged ];
 		                    yourself.
+	thumbnailImage := self newImage
+		                  autoScale: true;
+		                  yourself.
+	commentText := self newText.
 	cherrypickButton := self newButton
 		                    icon: (self iconNamed: #forward);
 		                    action: [ self cherrypick ];
@@ -168,7 +185,7 @@ GolapQueryHistoryPresenter >> query: aStringOrDictionary [
 			 aStringOrDictionary isString
 				 ifTrue: [ aStringOrDictionary ]
 				 ifFalse: [
-				 GolapQueryJSONReaderWriter toString: aStringOrDictionary ] ])
+				 GolapQueryJSONReaderWriter toStringPretty: aStringOrDictionary ] ])
 ]
 
 { #category : 'menus' }
@@ -192,7 +209,7 @@ GolapQueryHistoryPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 		               query: aHiDeSyntaxDictionary;
 		               yourself.
 	queryStorage chronicleAdd: queryRecord.
-	queryHistory := queryStorage chronicle collect: #query.
+	queryHistory := queryStorage chronicle.
 	self
 		updateQueryStem;
 		updateQueryStemText;
@@ -202,13 +219,30 @@ GolapQueryHistoryPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 ]
 
 { #category : 'updating' }
+GolapQueryHistoryPresenter >> selectedQueryHistoryChanged [
+
+	self
+		updateThumbnailImage;
+		updateCommentText;
+		updateButtons
+]
+
+{ #category : 'updating' }
 GolapQueryHistoryPresenter >> updateButtons [
 
 	cherrypickButton enabled:
 		(queryHistoryList selectedItem notNil and: [
-			 (queryHistoryList selectedItem syntaxAccessorsToTips
+			 (queryHistoryList selectedItem query syntaxAccessorsToTips
 				  copyWithoutAll: queryStem syntaxAccessorsToTips) notEmpty ]).
 	importQueryButton enabled: importQueryBlock notNil
+]
+
+{ #category : 'updating' }
+GolapQueryHistoryPresenter >> updateCommentText [
+
+	commentText text:
+		((queryHistoryList selectedItem ifNotNil: [ :record |
+			  record comment ]) ifNil: [ '' ])
 ]
 
 { #category : 'updating' }
@@ -229,19 +263,26 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 			done := queryStem syntaxAccessorsToTips asSet.
 			queryHistoryList
 				columns: (Array streamContents: [ :stream |
-							 queryHistory do: [ :query |
+							 queryHistory do: [ :queryRecord |
+									 | query |
+									 query := queryRecord query.
 									 query syntaxAccessorsToTipsDo: [ :accessor |
 											 (done includes: accessor) ifFalse: [
 													 done add: accessor.
-													 stream nextPut:
-															 (SpStringTableColumn
-																  title: accessor printString
-																  evaluated: [ :item |
-																	  ([ accessor read: item ]
-																		   on: HiDeSyntaxDictionaryKeyNotFound
-																		   do: [ :ex | ex return: nil ])
-																		  ifNotNil: #printString
-																		  ifNil: [ '' ] ]) ] ] ] ]);
+													 stream nextPut: ((SpStringTableColumn
+																   title: accessor printString
+																   evaluated: [ :record |
+																	   ([ accessor read: record query ]
+																		    on: Exception
+																		    do: [ :ex | ex return: nil ])
+																		   ifNotNil: [ :obj |
+																			   obj isDictionary
+																				   ifTrue: [
+																					   GolapQueryJSONReaderWriter toStringPretty: obj ]
+																				   ifFalse: [ obj printString ] ]
+																		   ifNil: [ '' ] ])
+																  isSortable: true;
+																  yourself) ] ] ] ]);
 				items: (queryHistoryList columns
 						 ifEmpty: [ #(  ) ]
 						 ifNotEmpty: [ queryHistory ]) ]
@@ -257,8 +298,9 @@ GolapQueryHistoryPresenter >> updateQueryStem [
 	queryStem := queryHistory
 		             ifNotEmpty: [
 			             queryHistory
-				             inject: queryHistory first
-				             into: [ :stem :query | stem intersectionWith: query ] ]
+				             inject: queryHistory first query
+				             into: [ :stem :record |
+				             stem intersectionWith: record query ] ]
 		             ifEmpty: [ nil ]
 ]
 
@@ -266,8 +308,15 @@ GolapQueryHistoryPresenter >> updateQueryStem [
 GolapQueryHistoryPresenter >> updateQueryStemText [
 
 	queryStemText text: (queryStem
-			 ifNotNil: [ GolapQueryJSONReaderWriter toString: queryStem ]
+			 ifNotNil: [ GolapQueryJSONReaderWriter toStringPretty: queryStem ]
 			 ifNil: [ '' ])
+]
+
+{ #category : 'updating' }
+GolapQueryHistoryPresenter >> updateThumbnailImage [
+
+	thumbnailImage image:
+		(queryHistoryList selectedItem ifNotNil: #thumbnail)
 ]
 
 { #category : 'accessing' }
@@ -275,12 +324,12 @@ GolapQueryHistoryPresenter >> url: aString [
 
 	queryStorage url = aString ifTrue: [ ^ self ].
 	queryStorage url: aString.
-	queryHistory := queryStorage chronicle collect: #query.
+	queryHistory := queryStorage chronicle.
 	self
 		updateQueryStem;
 		updateQueryStemText;
 		updateQueryHistoryList.
-	queryHistory ifNotEmpty: [ self query: queryHistory last ]
+	queryHistory ifNotEmpty: [ self query: queryHistory last query ]
 ]
 
 { #category : 'operations' }
