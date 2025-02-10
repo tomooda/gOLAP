@@ -2078,6 +2078,8 @@ Golap >> saveQueryRecord [
 	queryRecord ifNotNil: [
 		globalImagePane image ifNotNil: [ :image |
 			queryRecord thumbnail: (image scaledToSize: 256 @ 256) ].
+		queryRecord comment:
+			(commentText text asString trim ifEmpty: [ nil ]).
 		queryRecord hideSave ]
 ]
 

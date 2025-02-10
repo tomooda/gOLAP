@@ -26,6 +26,12 @@ GolapQueryRecord >> comment: aString [
 	comment := aString ifNotNil: [ aString asString ]
 ]
 
+{ #category : 'testing' }
+GolapQueryRecord >> hasTag: aString [
+
+	^ hideMetadata hasTag: aString
+]
+
 { #category : 'hideho-operations' }
 GolapQueryRecord >> hideLoad: aFileReference storage: aHiDeStorage [
 
@@ -50,6 +56,20 @@ GolapQueryRecord >> hideSave: aFileReference storage: aHiDeStorage [
 GolapQueryRecord >> hideUpdateMetadataStorage: aHiDeStorage [
 
 	
+]
+
+{ #category : 'testing' }
+GolapQueryRecord >> includesSubstring: aString [
+
+	hideStorage ifNotNil: [
+		hideStorage
+			chronicleFileReferenceFor: hideMetadata
+			do: [ :baseRef |
+				(baseRef filesMatching: '*.json')
+				, (baseRef filesMatching: '*.txt') do: [ :ref |
+					ref readStreamDo: [ :stream |
+						(stream upToEnd includesSubstring: aString) ifTrue: [ ^ true ] ] ] ] ].
+	^ false
 ]
 
 { #category : 'hideho-operations' }
@@ -152,6 +172,18 @@ GolapQueryRecord >> saveThumbnail: aFileReference [
 			ensureDelete;
 			binaryWriteStreamDo: [ :stream |
 				PNGReadWriter putForm: thumbnail onStream: stream ] ]
+]
+
+{ #category : 'accessing' }
+GolapQueryRecord >> tags [
+
+	^ hideMetadata tags
+]
+
+{ #category : 'accessing' }
+GolapQueryRecord >> tags: aCollectionOfString [
+
+	hideMetadata tags: aCollectionOfString
 ]
 
 { #category : 'accessing' }
