@@ -1,6 +1,8 @@
 Class {
 	#name : 'GolapQueryHistoryPresenter',
 	#superclass : 'SpPresenter',
+	#traits : 'THiDeEditTags',
+	#classTraits : 'THiDeEditTags classTrait',
 	#instVars : [
 		'queryStem',
 		'queryStorage',
@@ -16,8 +18,6 @@ Class {
 		'commentButton',
 		'tagList',
 		'searchField',
-		'requiredTags',
-		'tagHistogram',
 		'tagButton'
 	],
 	#category : 'Golap-UI-Query',
@@ -168,40 +168,11 @@ GolapQueryHistoryPresenter >> editComment [
 GolapQueryHistoryPresenter >> editTags [
 
 	queryHistoryList selectedItem ifNotNil: [ :chronicleModel |
-		| listEditor |
-		listEditor := GolapListEditPresenter new.
-		listEditor
-			items: chronicleModel tags;
-			addAction: [
-				| menu |
-				menu := listEditor newMenu.
-				(tagHistogram asSet asArray copyWithoutAll: listEditor items)
-					asSortedCollection do: [ :tag |
-						menu addItem: [ :item |
-								item
-									name: tag;
-									action: [
-										listEditor items: (listEditor items asSortedCollection
-													 add: tag;
-													 yourself) ] ] ].
-				menu addItem: [ :item |
-					item
-						name: '新規タグ作成...';
-						action: [
-							(UIManager default request: '新規タグ作成') ifNotNil: [ :tag |
-									listEditor items: (listEditor items asSortedCollection
-												 add: tag trim;
-												 yourself) ] ] ].
-				menu openWithSpecAtPointer ];
-			removeAction: [
-				listEditor items:
-					(listEditor items copyWithout: listEditor selectedItem) ].
-		listEditor openDialog
-			title: 'タグ編集';
-			okAction: [
-				chronicleModel tags: listEditor items.
-				chronicleModel hideSave.
-				self updateQueryHistory ] ]
+		self
+			editTags: tagList items
+			on: chronicleModel
+			title: 'タグ編集'
+			createNewTagTitle: '新規タグ作成' ]
 ]
 
 { #category : 'operations' }
@@ -220,8 +191,6 @@ GolapQueryHistoryPresenter >> importQueryBlock: aBlock [
 { #category : 'initialization' }
 GolapQueryHistoryPresenter >> initialize [
 
-	tagHistogram := Bag new.
-	requiredTags := Set new.
 	super initialize.
 	queryStorage := GolapQueryStorage new basepath:
 		                self class golapDirectory / 'Queries'.
@@ -244,32 +213,10 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		                      label: 'クエリに上書き';
 		                      action: [ self useQueryStem ];
 		                      yourself.
-	tagList := self newTable
-		           beResizable;
-		           addColumn: ((SpCheckBoxTableColumn
-				             title: ''
-				             evaluated: [ :tag | requiredTags includes: tag ])
-				            onActivation: [ :tag |
-					            requiredTags add: tag.
-					            self updateQueryHistory ];
-				            onDeactivation: [ :tag |
-					            requiredTags remove: tag ifAbsent: [  ].
-					            self updateQueryHistory ];
-				            beNotExpandable;
-				            yourself);
-		           addColumn:
-		           (SpStringTableColumn
-			            title: 'タグ'
-			            evaluated: [ :tag | tag ]) beSortable;
-		           addColumn: ((SpStringTableColumn
-				             title: 'クエリ数'
-				             evaluated: [ :tag |
-					             (tagHistogram occurrencesOf: tag) asString ])
-				            width: 80;
-				            beSortable;
-				            sortFunction:
-					            [ :tag | tagHistogram occurrencesOf: tag ] ascending;
-				            yourself);
+	tagList := (self instantiate: HiDeTagFilterPresenter)
+		           tagColumnTitle: 'タグ';
+		           quantityColumnTitle: 'クエリ数';
+		           whenFilterChangedDo: [ self updateQueryHistory ];
 		           yourself.
 	searchField := self newTextInput whenSubmitDo: [ :s |
 		               self searchFieldChanged ].
@@ -456,8 +403,7 @@ GolapQueryHistoryPresenter >> updateQueryHistory [
 	| records |
 	records := queryStorage chronicle.
 	self updateTags: records.
-	requiredTags do: [ :tag |
-		records := records select: [ :m | m hasTag: tag ] ].
+	records := records select: tagList.
 	searchField text asString trim ifNotEmpty: [ :str |
 		records := records select: [ :m | m includesSubstring: str ] ].
 	queryHistory := records.
@@ -516,15 +462,7 @@ GolapQueryHistoryPresenter >> updateQueryStemText [
 { #category : 'updating' }
 GolapQueryHistoryPresenter >> updateTags: aCollectionOfQueryRecord [
 
-	tagHistogram := aCollectionOfQueryRecord
-		                inject: Bag new
-		                into: [ :tags :chronicleModel |
-			                tags
-				                addAll: chronicleModel tags;
-				                yourself ].
-	requiredTags := requiredTags select: [ :tag |
-		                tagHistogram includes: tag ].
-	tagList items: tagHistogram asSet asSortedCollection
+	tagList persistencies: aCollectionOfQueryRecord
 ]
 
 { #category : 'accessing' }

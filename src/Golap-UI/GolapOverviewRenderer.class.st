@@ -885,10 +885,11 @@ GolapOverviewRenderer >> unlockNode: aGolapNode [
 GolapOverviewRenderer >> updateVisibleEdgeThresholds [
 
 	super updateVisibleEdgeThresholds.
-	reallyVisibleNodes := reallyVisibleNodes , (referenceNodes
-		                       collect: [ :id | golap model nodeAt: id ]
-		                       thenSelect: [ :node |
-		                       (reallyVisibleNodes includes: node) not ])
+	reallyVisibleNodes := (reallyVisibleNodes ifNil: [ #(  ) ])
+	                      , (referenceNodes
+			                       collect: [ :id | golap model nodeAt: id ]
+			                       thenSelect: [ :node |
+			                       (reallyVisibleNodes includes: node) not ])
 ]
 
 { #category : 'view manipulation' }
