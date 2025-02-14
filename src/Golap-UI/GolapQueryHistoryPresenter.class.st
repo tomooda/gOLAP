@@ -172,7 +172,8 @@ GolapQueryHistoryPresenter >> editTags [
 			editTags: tagList items
 			on: chronicleModel
 			title: 'タグ編集'
-			createNewTagTitle: '新規タグ作成' ]
+			createNewTagTitle: '新規タグ作成'
+			okAction: [ self updateQueryHistory ] ]
 ]
 
 { #category : 'operations' }
