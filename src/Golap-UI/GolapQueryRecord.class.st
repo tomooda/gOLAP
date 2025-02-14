@@ -4,10 +4,10 @@ Class {
 	#traits : 'THiDePersistency',
 	#classTraits : 'THiDePersistency classTrait',
 	#instVars : [
-		'query',
-		'result',
-		'thumbnail',
-		'comment'
+		'#query => HiDePersistencySlot loader: #loadQuery',
+		'#result => HiDePersistencySlot loader: #loadResult',
+		'#thumbnail => HiDePersistencySlot loader: #loadThumbnail',
+		'#comment => HiDePersistencySlot loader: #loadComment'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
@@ -72,6 +72,23 @@ GolapQueryRecord >> includesSubstring: aString [
 	^ false
 ]
 
+{ #category : 'initialization' }
+GolapQueryRecord >> initialize [
+
+	self class initializeSlots: self.
+	super initialize.
+	self initializeHideMetadata
+]
+
+{ #category : 'hideho-operations' }
+GolapQueryRecord >> loadComment [
+
+	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
+		self loadComment: ref.
+		^ self ].
+	^ nil
+]
+
 { #category : 'hideho-operations' }
 GolapQueryRecord >> loadComment: aFileReference [
 
@@ -80,6 +97,15 @@ GolapQueryRecord >> loadComment: aFileReference [
 			comment := stream upToEnd.
 			^ self ] ].
 	comment := nil
+]
+
+{ #category : 'hideho-operations' }
+GolapQueryRecord >> loadQuery [
+
+	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
+		self loadQuery: ref.
+		^ self ].
+	^ nil
 ]
 
 { #category : 'hideho-operations' }
@@ -93,6 +119,15 @@ GolapQueryRecord >> loadQuery: aFileReference [
 ]
 
 { #category : 'hideho-operations' }
+GolapQueryRecord >> loadResult [
+
+	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
+		self loadResult: ref.
+		^ self ].
+	^ nil
+]
+
+{ #category : 'hideho-operations' }
 GolapQueryRecord >> loadResult: aFileReference [
 
 	aFileReference / 'result.csv' ifExists: [ :ref |
@@ -100,6 +135,15 @@ GolapQueryRecord >> loadResult: aFileReference [
 			result := stream upToEnd.
 			^ self ] ].
 	result := nil
+]
+
+{ #category : 'hideho-operations' }
+GolapQueryRecord >> loadThumbnail [
+
+	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
+		self loadThumbnail: ref.
+		^ self ].
+	^ nil
 ]
 
 { #category : 'hideho-operations' }
