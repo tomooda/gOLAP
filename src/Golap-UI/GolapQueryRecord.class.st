@@ -33,7 +33,7 @@ GolapQueryRecord >> hasTag: aString [
 ]
 
 { #category : 'hideho-operations' }
-GolapQueryRecord >> hideLoad: aFileReference storage: aHiDeStorage [
+GolapQueryRecord >> hideLoad: aFileReference [
 
 	self
 		loadQuery: aFileReference;
@@ -43,7 +43,7 @@ GolapQueryRecord >> hideLoad: aFileReference storage: aHiDeStorage [
 ]
 
 { #category : 'hideho-operations' }
-GolapQueryRecord >> hideSave: aFileReference storage: aHiDeStorage [
+GolapQueryRecord >> hideSave: aFileReference [
 
 	self
 		saveQuery: aFileReference;
@@ -83,10 +83,7 @@ GolapQueryRecord >> initialize [
 { #category : 'hideho-operations' }
 GolapQueryRecord >> loadComment [
 
-	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
-		self loadComment: ref.
-		^ self ].
-	^ nil
+	self hideBaseDirectoryDo: [ :ref | self loadComment: ref ]
 ]
 
 { #category : 'hideho-operations' }
@@ -102,10 +99,7 @@ GolapQueryRecord >> loadComment: aFileReference [
 { #category : 'hideho-operations' }
 GolapQueryRecord >> loadQuery [
 
-	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
-		self loadQuery: ref.
-		^ self ].
-	^ nil
+	self hideBaseDirectoryDo: [ :ref | self loadQuery: ref ]
 ]
 
 { #category : 'hideho-operations' }
@@ -121,10 +115,7 @@ GolapQueryRecord >> loadQuery: aFileReference [
 { #category : 'hideho-operations' }
 GolapQueryRecord >> loadResult [
 
-	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
-		self loadResult: ref.
-		^ self ].
-	^ nil
+	self hideBaseDirectoryDo: [ :ref | self loadResult: ref ]
 ]
 
 { #category : 'hideho-operations' }
@@ -140,10 +131,7 @@ GolapQueryRecord >> loadResult: aFileReference [
 { #category : 'hideho-operations' }
 GolapQueryRecord >> loadThumbnail [
 
-	hideStorage chronicleFileReferenceFor: hideMetadata do: [ :ref |
-		self loadThumbnail: ref.
-		^ self ].
-	^ nil
+	self hideBaseDirectoryDo: [ :ref | self loadThumbnail: ref ]
 ]
 
 { #category : 'hideho-operations' }
