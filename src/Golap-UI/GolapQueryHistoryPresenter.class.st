@@ -29,7 +29,7 @@ Class {
 GolapQueryHistoryPresenter class >> defaultLayout [
 
 	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.5;
+		  positionOfSlider: 0.6;
 		  add: (SpPanedLayout newVertical
 				   positionOfSlider: 0.4;
 				   add: (SpPanedLayout newHorizontal
