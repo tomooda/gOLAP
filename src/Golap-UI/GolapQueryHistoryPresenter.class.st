@@ -295,7 +295,7 @@ GolapQueryHistoryPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 		               url: queryStorage url;
 		               query: aHiDeSyntaxDictionary;
 		               yourself.
-	queryStorage chronicleAdd: queryRecord.
+	queryStorage chronicleSave: queryRecord.
 	self
 		updateQueryHistory;
 		query: aHiDeSyntaxDictionary.
