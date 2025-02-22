@@ -18,7 +18,12 @@ Class {
 		'commentButton',
 		'tagList',
 		'searchField',
-		'tagButton'
+		'tagButton',
+		'narrativeDropList',
+		'addToNarrativeButton',
+		'removeFromNarrativeButton',
+		'removeNarrativeButton',
+		'addNarrativeButton'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
@@ -29,36 +34,49 @@ Class {
 GolapQueryHistoryPresenter class >> defaultLayout [
 
 	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.6;
-		  add: (SpPanedLayout newVertical
-				   positionOfSlider: 0.4;
-				   add: (SpPanedLayout newHorizontal
-						    add: (SpBoxLayout newVertical
-								     add: '共通部分' expand: false;
-								     add: #queryStemText;
-								     add: #useQueryStemButton expand: false;
+		  positionOfSlider: 0.7;
+		  add: (SpBoxLayout newVertical
+				   add: (SpBoxLayout newHorizontal
+						    vAlignCenter;
+						    add: 'フィード  ' expand: false;
+						    add: #narrativeDropList width: 300;
+						    add: #addNarrativeButton width: 150;
+						    add: #removeNarrativeButton width: 150;
+						    yourself)
+				   expand: false;
+				   add: (SpPanedLayout newVertical
+						    positionOfSlider: 0.4;
+						    add: (SpPanedLayout newHorizontal
+								     add: (SpBoxLayout newVertical
+										      add: '共通部分' expand: false;
+										      add: #queryStemText;
+										      add: #useQueryStemButton expand: false;
+										      yourself);
+								     add: (SpBoxLayout newVertical
+										      add: 'タグ' expand: false;
+										      add: #tagList;
+										      add: (SpBoxLayout newHorizontal
+												       add: '検索' asPresenter expand: false;
+												       add: #searchField;
+												       yourself)
+										      expand: false;
+										      yourself);
 								     yourself);
 						    add: (SpBoxLayout newVertical
-								     add: 'タグ' expand: false;
-								     add: #tagList;
+								     add: '変化部分' expand: false;
+								     add: #queryHistoryList;
 								     add: (SpBoxLayout newHorizontal
-										      add: '検索' asPresenter expand: false;
-										      add: #searchField;
+										      add: #thumbnailButton;
+										      add: #commentButton;
+										      add: #tagButton;
+										      add: #addToNarrativeButton;
+										      add: #removeFromNarrativeButton;
+										      add: #cherrypickButton;
 										      yourself)
 								     expand: false;
 								     yourself);
 						    yourself);
-				   add: (SpBoxLayout newVertical
-						    add: '変化部分' expand: false;
-						    add: #queryHistoryList;
-						    add: (SpBoxLayout newHorizontal
-								     add: #thumbnailButton;
-								     add: #commentButton;
-								     add: #tagButton;
-								     add: #cherrypickButton;
-								     yourself)
-						    expand: false;
-						    yourself));
+				   yourself);
 		  add: (SpBoxLayout newVertical
 				   add: 'クエリ' expand: false;
 				   add: #queryText;
@@ -89,6 +107,41 @@ GolapQueryHistoryPresenter >> accessorColumn: accessor [
 				   ifNil: [ '' ] ])
 		  beSortable;
 		  yourself
+]
+
+{ #category : 'operations' }
+GolapQueryHistoryPresenter >> addToNarrative [
+
+	^ self addToNarrativeMenu ifNotNil: #openWithSpecAtPointer
+]
+
+{ #category : 'operations' }
+GolapQueryHistoryPresenter >> addToNarrativeMenu [
+
+	| currentNarrative |
+	currentNarrative := self
+		                    selectedNarrativeDo: #yourself
+		                    ifChronicleDo: [ nil ].
+	queryHistoryList selectedItems ifNotEmpty: [ :queryRecords |
+		^ self newMenu
+			  addGroup: [ :group |
+				  queryStorage narratives do: [ :narrative |
+						  currentNarrative = narrative ifFalse: [
+								  group addItem: [ :item |
+										  item
+											  icon: (self iconNamed: #forward);
+											  name: narrative name;
+											  action: [ narrative addAll: queryRecords ] ] ] ] ];
+			  addGroup: [ :group |
+				  group addItem: [ :item |
+					  item
+						  name: '新規フィード...';
+						  icon: (self iconNamed: #add);
+						  action: [
+							  self createNewNarrativeDo: [ :narrative |
+									  narrative addAll: queryRecords.
+									  self updateQueryHistory ] ] ] ] ].
+	^ nil
 ]
 
 { #category : 'operations' }
@@ -146,6 +199,35 @@ GolapQueryHistoryPresenter >> cherrypick [
 ]
 
 { #category : 'operations' }
+GolapQueryHistoryPresenter >> createNewNarrative [
+
+	self createNewNarrativeDo: [  ]
+]
+
+{ #category : 'operations' }
+GolapQueryHistoryPresenter >> createNewNarrativeDo: aBlock [
+
+	[
+	(UIManager default
+		 request: '新規フィード名'
+		 initialAnswer: '新フィード'
+		 title: 'gOLAP クエリフィード管理') ifNil: [ ^ self ] ifNotNil: [ :name |
+		(queryStorage hasNarrativeNamed: name) ifFalse: [
+			| id narrative result |
+			id := (narrative := queryStorage newNarrativeNamed: name) identity.
+			self updateNarrativeDropList: narrative.
+			narrativeDropList selectItem: (narrativeDropList items
+					 detect: [ :assoc | assoc value = id ]
+					 ifNone: [ narrativeDropList items first ]).
+			self updateQueryHistory.
+			result := aBlock cull: narrative.
+			self updateNarrativeDropList: narrative.
+			^ result ].
+		UIManager default alert: '既に使われているフィード名です' title: 'gOLAPクエリフィード管理' ] ]
+		repeat
+]
+
+{ #category : 'operations' }
 GolapQueryHistoryPresenter >> editComment [
 
 	queryHistoryList selectedItem ifNotNil: [ :record |
@@ -198,14 +280,34 @@ GolapQueryHistoryPresenter >> initialize [
 	queryStorage
 		loadSettings;
 		loadChronicle.
-	queryHistory := queryStorage chronicle.
-	self updateQueryStem
+	self updateNarrativeDropList
 ]
 
 { #category : 'initialization' }
 GolapQueryHistoryPresenter >> initializePresenters [
 
 	super initializePresenters.
+	narrativeDropList := self newDropList
+		                     display: [ :assoc | assoc key asString ];
+		                     displayIcon: [ :assoc |
+			                     assoc value = #newNarrative
+				                     ifTrue: [ self iconNamed: #add ]
+				                     ifFalse: [ nil ] ];
+		                     items: {  };
+		                     startWithSelection;
+		                     whenSelectedItemChangedDo: [
+			                     self selectedNarrativeChanged ];
+		                     yourself.
+	addNarrativeButton := self newButton
+		                      icon: (self iconNamed: #add);
+		                      label: 'フィードを作成';
+		                      action: [ self createNewNarrative ];
+		                      yourself.
+	removeNarrativeButton := self newButton
+		                         icon: (self iconNamed: #remove);
+		                         label: 'フィードを削除';
+		                         action: [ self removeNarrative ];
+		                         yourself.
 	queryStemText := self newText
 		                 text: '';
 		                 yourself.
@@ -222,6 +324,7 @@ GolapQueryHistoryPresenter >> initializePresenters [
 	searchField := self newTextInput whenSubmitDo: [ :s |
 		               self searchFieldChanged ].
 	queryHistoryList := self newTable
+		                    beMultipleSelection;
 		                    beResizable;
 		                    showColumnHeaders;
 		                    whenSelectedItemChangedDo: [
@@ -243,6 +346,16 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		             action: [ self editTags ];
 		             disable;
 		             yourself.
+	addToNarrativeButton := self newButton
+		                        iconName: #publish;
+		                        label: '他フィードに共有';
+		                        action: [ self addToNarrative ];
+		                        yourself.
+	removeFromNarrativeButton := self newButton
+		                             icon: (self iconNamed: #remove);
+		                             label: 'このフィードから削除';
+		                             action: [ self removeFromNarrative ];
+		                             yourself.
 	cherrypickButton := self newButton
 		                    icon: (self iconNamed: #forward);
 		                    label: 'クエリに注入';
@@ -253,10 +366,18 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		             contextMenu: [ self queryTextMenu ];
 		             yourself.
 	importQueryButton := self newButton
-		                     label: '基本クエリから';
+		                     icon: (self iconNamed: #down);
+		                     label: '基本クエリからコピー';
 		                     action: [ self importQuery ];
 		                     yourself.
 	self whenBuiltDo: [ self updatePresenters ]
+]
+
+{ #category : 'testing' }
+GolapQueryHistoryPresenter >> narrativeSelected [
+
+	^ (narrativeDropList ifNotNil: [
+		   narrativeDropList selectedItem value ]) notNil
 ]
 
 { #category : 'accessing' }
@@ -302,10 +423,53 @@ GolapQueryHistoryPresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 	^ queryRecord
 ]
 
+{ #category : 'operations' }
+GolapQueryHistoryPresenter >> removeFromNarrative [
+
+	queryHistoryList selectedItem ifNotNil: [ :selectedQueryRecord |
+		self
+			selectedNarrativeDo: [ :narrative |
+				narrative remove: selectedQueryRecord.
+				self updateQueryHistory ]
+			ifChronicleDo: [ nil ] ]
+]
+
+{ #category : 'operations' }
+GolapQueryHistoryPresenter >> removeNarrative [
+
+	self
+		selectedNarrativeDo: [ :narrative |
+			(UIManager default
+				 confirm: 'フィード ' , narrative name , ' を削除しますか？'
+				 label: 'gOLAPクエリフィード管理') ifTrue: [
+				queryStorage removeNarrative: narrative.
+				self updateNarrativeDropList: nil ] ]
+		ifChronicleDo: [  ]
+]
+
 { #category : 'updating' }
 GolapQueryHistoryPresenter >> searchFieldChanged [
 
 	self updateQueryHistory
+]
+
+{ #category : 'updating' }
+GolapQueryHistoryPresenter >> selectedNarrativeChanged [
+
+	narrativeDropList selectedItem ifNotNil: [ :assoc |
+		assoc value = #newNarrative ifTrue: [ ^ self createNewNarrative ] ].
+	removeNarrativeButton enabled: self narrativeSelected.
+	self updateQueryHistory
+]
+
+{ #category : 'accessing' }
+GolapQueryHistoryPresenter >> selectedNarrativeDo: narrativeBlock ifChronicleDo: chronicleBlock [
+
+	^ (narrativeDropList ifNotNil: [
+		   narrativeDropList selectedItem value ])
+		  ifNotNil: [ :narrativeId |
+			  narrativeBlock value: (queryStorage narrativeAt: narrativeId) ]
+		  ifNil: chronicleBlock
 ]
 
 { #category : 'updating' }
@@ -377,7 +541,12 @@ GolapQueryHistoryPresenter >> updateButtons [
 			{
 				thumbnailButton.
 				commentButton.
-				tagButton } do: #enable.
+				tagButton.
+				addToNarrativeButton } do: #enable.
+			self
+				selectedNarrativeDo: [ :narrative |
+				removeFromNarrativeButton enable ]
+				ifChronicleDo: [ removeFromNarrativeButton disable ].
 			cherrypickButton enabled:
 				(record query syntaxAccessorsToTips copyWithoutAll:
 					 queryStem syntaxAccessorsToTips) notEmpty ]
@@ -386,8 +555,33 @@ GolapQueryHistoryPresenter >> updateButtons [
 				thumbnailButton.
 				commentButton.
 				tagButton.
+				addToNarrativeButton.
+				removeFromNarrativeButton.
 				cherrypickButton } do: #disable ].
-	importQueryButton enabled: importQueryBlock notNil
+	importQueryButton enabled: importQueryBlock notNil.
+	removeNarrativeButton enabled: self narrativeSelected
+]
+
+{ #category : 'updating' }
+GolapQueryHistoryPresenter >> updateNarrativeDropList [
+
+	self updateNarrativeDropList: narrativeDropList selectedItem
+]
+
+{ #category : 'updating' }
+GolapQueryHistoryPresenter >> updateNarrativeDropList: aHiDeNarrative [
+
+	| selection |
+	selection := nil.
+	narrativeDropList items: { ('全クエリ' -> nil) }
+		, (queryStorage narratives collect: [ :narrative |
+				 | item |
+				 item := narrative name -> narrative identity.
+				 narrative = aHiDeNarrative ifTrue: [ selection := item ].
+				 item ]).
+	selection
+		ifNotNil: [ narrativeDropList selectItem: selection ]
+		ifNil: [ narrativeDropList selectIndex: 1 ]
 ]
 
 { #category : 'updating' }
@@ -402,8 +596,14 @@ GolapQueryHistoryPresenter >> updatePresenters [
 GolapQueryHistoryPresenter >> updateQueryHistory [
 
 	| records |
-	records := queryStorage chronicle.
-	self updateTags: records.
+	self
+		selectedNarrativeDo: [ :narrative |
+			records := narrative asArray.
+			self updateTags: queryStorage chronicle ]
+		ifChronicleDo: [
+			records := queryStorage chronicle.
+			self updateTags: records ].
+
 	records := records select: tagList.
 	searchField text asString trim ifNotEmpty: [ :str |
 		records := records select: [ :m | m includesSubstring: str ] ].

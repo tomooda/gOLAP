@@ -244,7 +244,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 	queryPresenter := GolapQueryPresenter on: self.
 	queryNotebook := self newNotebook
 		                 addPage: (self newNotebookPage
-				                  title: '基本';
+				                  title: '基本クエリ';
 				                  presenterProvider: [ queryPresenter ];
 				                  yourself);
 		                 addPage: (self newNotebookPage
