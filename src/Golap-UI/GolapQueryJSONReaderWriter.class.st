@@ -48,7 +48,7 @@ GolapQueryJSONReaderWriter class >> toStringPretty: anObject [
 					newJson ifNil: [
 						json := newJson := json copy.
 						newJson at: 'query' put: query copy ].
-					(newJson at: 'query') at: 'itemfilter' put: (itemFilter size > 1
+					(newJson at: 'query') at: 'itemFilter' put: (itemFilter size > 1
 							 ifTrue: [ 'and(' , (', ' join: itemFilter values) , ')' ]
 							 ifFalse: [ itemFilter asArray first ]) ] ].
 			query at: 'traFilter' ifPresent: [ :traFilter |
