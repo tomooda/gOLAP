@@ -23,7 +23,8 @@ Class {
 		'addToNarrativeButton',
 		'removeFromNarrativeButton',
 		'removeNarrativeButton',
-		'addNarrativeButton'
+		'addNarrativeButton',
+		'historyLengthDropList'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
@@ -40,8 +41,8 @@ GolapQueryHistoryPresenter class >> defaultLayout [
 						    vAlignCenter;
 						    add: 'フィード  ' expand: false;
 						    add: #narrativeDropList width: 300;
-						    add: #addNarrativeButton width: 150;
-						    add: #removeNarrativeButton width: 150;
+						    add: #addNarrativeButton width: self buttonHeight;
+						    add: #removeNarrativeButton width: self buttonHeight;
 						    yourself)
 				   expand: false;
 				   add: (SpPanedLayout newVertical
@@ -63,7 +64,15 @@ GolapQueryHistoryPresenter class >> defaultLayout [
 										      yourself);
 								     yourself);
 						    add: (SpBoxLayout newVertical
-								     add: '変化部分' expand: false;
+								     add: (SpBoxLayout newHorizontal
+										      add: '変化部分' expand: false;
+										      add: (SpBoxLayout newHorizontal
+												       hAlignEnd;
+												       vAlignEnd;
+												       add: '表示件数' asPresenter expand: false;
+												       add: #historyLengthDropList expand: false);
+										      yourself)
+								     expand: false;
 								     add: #queryHistoryList;
 								     add: (SpBoxLayout newHorizontal
 										      add: #thumbnailButton;
@@ -275,11 +284,8 @@ GolapQueryHistoryPresenter >> importQueryBlock: aBlock [
 GolapQueryHistoryPresenter >> initialize [
 
 	super initialize.
-	queryStorage := GolapQueryStorage new basepath:
+	queryStorage := GolapQueryStorage on:
 		                self class golapDirectory / 'Queries'.
-	queryStorage
-		loadSettings;
-		loadChronicle.
 	self updateNarrativeDropList
 ]
 
@@ -300,12 +306,10 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		                     yourself.
 	addNarrativeButton := self newButton
 		                      icon: (self iconNamed: #add);
-		                      label: 'フィードを作成';
 		                      action: [ self createNewNarrative ];
 		                      yourself.
 	removeNarrativeButton := self newButton
 		                         icon: (self iconNamed: #remove);
-		                         label: 'フィードを削除';
 		                         action: [ self removeNarrative ];
 		                         yourself.
 	queryStemText := self newText
@@ -323,6 +327,16 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		           yourself.
 	searchField := self newTextInput whenSubmitDo: [ :s |
 		               self searchFieldChanged ].
+	historyLengthDropList := self newDropList
+		                         display: [ :assoc | assoc key ];
+		                         items: {
+				                         ('~100' -> 100).
+				                         ('~1,000' -> 1000).
+				                         ('全て' -> nil) };
+		                         startWithSelection;
+		                         whenSelectedItemChangedDo: [
+			                         self updateQueryHistoryList ];
+		                         yourself.
 	queryHistoryList := self newTable
 		                    beMultipleSelection;
 		                    beResizable;
@@ -619,8 +633,14 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 
 	queryStem notNil
 		ifTrue: [
-			| done |
+			| done items |
 			done := queryStem syntaxAccessorsToTips asSet.
+			items := (historyLengthDropList selectedItem ifNotNil: #value)
+				         ifNotNil: [ :limit |
+					         queryHistory
+						         copyFrom: 1
+						         to: (limit min: queryHistory size) ]
+				         ifNil: [ queryHistory ].
 			queryHistoryList
 				columns: (Array streamContents: [ :stream |
 							 stream nextPut: self timestampColumn.
@@ -633,7 +653,7 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 													 stream nextPut: (self accessorColumn: accessor) ] ] ] ]);
 				items: (queryHistoryList columns
 						 ifEmpty: [ #(  ) ]
-						 ifNotEmpty: [ queryHistory ]) ]
+						 ifNotEmpty: [ items ]) ]
 		ifFalse: [
 			queryHistoryList
 				columns: #(  );
