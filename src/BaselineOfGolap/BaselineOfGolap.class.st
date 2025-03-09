@@ -11,6 +11,9 @@ BaselineOfGolap >> baseline: spec [
 	<baseline>
 	spec for: #common do: [
 		spec
+			baseline: 'HiDeHo'
+			with: [ spec repository: 'github.://tomooda/HiDeHo/src' ].
+		spec
 			baseline: 'DataFrame'
 			with: [ spec repository: 'github://PolyMathOrg/DataFrame/src' ].
 		spec
