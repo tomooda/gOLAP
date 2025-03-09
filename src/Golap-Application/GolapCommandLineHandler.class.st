@@ -33,4 +33,27 @@ GolapCommandLineHandler class >> generateMacOS [
 
 { #category : 'activation' }
 GolapCommandLineHandler >> activate [
+
+	OSPlatform current isMacOSX ifTrue: [
+		| main |
+		main := CocoaMenu new.
+		main
+			title: 'MainMenu';
+			addSubmenu: 'File' with: [ :m |
+				m
+					addItemWithTitle: 'Open Server...'
+					action: [ Golap openClient ]
+					shortcut: 'q';
+					addItemWithTitle: 'Open File...'
+					action: [ Golap openFile ]
+					shortcut: 'q';
+					addItemWithTitle: 'Quit'
+					action: [ Smalltalk snapshot: false andQuit: true ]
+					shortcut: 'q' ];
+			addSubmenu: 'Help' with: [ :m |
+			m
+				addItemWithTitle: 'Show Help'
+				action: [ self inform: 'Help' ]
+				shortcut: '' ].
+		main setAsMainMenu ]
 ]
