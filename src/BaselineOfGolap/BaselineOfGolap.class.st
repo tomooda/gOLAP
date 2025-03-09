@@ -37,7 +37,7 @@ BaselineOfGolap >> baseline: spec [
 			with: [ spec requires: #( 'DataFrame' 'Golap-Clustering' ) ].
 		spec
 			package: 'Golap-Clustering'
-			with: [ spec requires: #( 'Golap-UI' ) ].
+			with: [ spec requires: #(  ) ].
 		spec
 			group: 'Core'
 			with:
