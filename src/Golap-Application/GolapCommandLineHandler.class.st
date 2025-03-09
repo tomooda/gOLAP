@@ -46,12 +46,11 @@ GolapCommandLineHandler >> activate [
 			title: 'MainMenu';
 			addSubmenu: 'File' with: [ :m |
 				m
-					addItemWithTitle: 'Open Server...'
-					action: [ Golap openClient ]
-					shortcut: 'q';
-					addItemWithTitle: 'Open File...'
-					action: [ Golap openFile ]
-					shortcut: 'q';
+					addItemWithTitle: 'Settings...'
+					action: [ Golap showSettingBrowser ];
+					addItemWithTitle: 'Open Server...' action: [ Golap openClient ];
+					addItemWithTitle: 'Open CSV files...'
+					action: [ GolapCSVLauncher open ];
 					addItemWithTitle: 'Quit'
 					action: [ Smalltalk snapshot: false andQuit: true ]
 					shortcut: 'q' ];
