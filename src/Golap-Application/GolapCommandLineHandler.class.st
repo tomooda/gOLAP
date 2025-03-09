@@ -22,13 +22,17 @@ GolapCommandLineHandler class >> generateMacOS [
 				(#BundleIdentifier -> 'com.github.tomooda.gOLAP').
 				(#ShortVersion -> '0.9.0').
 				(#DisplayName -> 'gOLAP').
-				(#IconSetFile -> (IceRepository repositoryNamed: 'gOLAP') location
-				 / 'resources' / 'gOLAP.icns').
-				(#CommandLineHandler -> 'appGeneratorExample').
+				(#IconSetFile
+				 ->
+					 ((IceRepository repositoryNamed: 'gOLAP') location / 'resources'
+					  / 'gOLAP.icns')).
+				(#CommandLineHandler -> self commandName).
 				(#CompanyName -> 'gOLAP project') } asDictionary;
 		outputDirectory: FileLocator home / 'src' / 'gOLAP';
-		"addExternalDirectory: FileLocator workingDirectory / 'Fonts';"
-			generate
+		addExternalDirectory:
+			(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
+			/ 'Fonts';
+		generate
 ]
 
 { #category : 'activation' }
