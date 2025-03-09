@@ -38,6 +38,14 @@ GolapCommandLineHandler class >> generateMacOS [
 { #category : 'activation' }
 GolapCommandLineHandler >> activate [
 
+	self
+		installMenu;
+		installQuitSession
+]
+
+{ #category : 'installing' }
+GolapCommandLineHandler >> installMenu [
+
 	OSWindowDriver current startUp: true.
 	OSPlatform current isMacOSX ifTrue: [
 		| main |
@@ -60,4 +68,12 @@ GolapCommandLineHandler >> activate [
 				action: [ self inform: 'Help' ]
 				shortcut: '' ].
 		main setAsMainMenu ]
+]
+
+{ #category : 'installing' }
+GolapCommandLineHandler >> installQuitSession [
+
+	Smalltalk at: #WorldState ifPresent: [ :class |
+		class class compile:
+			'quitSession Smalltalk snapshot: false andQuit: true' ]
 ]
