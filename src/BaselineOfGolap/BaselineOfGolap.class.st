@@ -27,16 +27,17 @@ BaselineOfGolap >> baseline: spec [
 			with: [ spec requires: #( 'DataFrame' ) ].
 		spec
 			package: 'Golap-Query'
-			with: [ spec requires: #( 'Golap-Networking' 'PetitParser2Core' ) ].
+			with: [ spec requires: #( 'Golap-UI' 'PetitParser2Core' ) ].
 		spec package: 'Golap-UI' with: [
 			spec requires:
-				#( 'Golap-Models' 'Golap-Networking' 'DataFrame' 'Xenq' ) ].
+				#( 'Golap-Clustering' 'Golap-Models' 'Golap-Networking'
+				   'Golap-Query' 'HiDeHo' 'DataFrame' 'Xenq' ) ].
 		spec
 			package: 'Golap-Models'
-			with: [ spec requires: #( 'DataFrame' ) ].
+			with: [ spec requires: #( 'DataFrame' 'Golap-Clustering' ) ].
 		spec
 			package: 'Golap-Clustering'
-			with: [ spec requires: #( 'Golap-Models' ) ].
+			with: [ spec requires: #( 'Golap-UI' ) ].
 		spec
 			group: 'Core'
 			with:
