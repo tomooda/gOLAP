@@ -12,7 +12,7 @@ BaselineOfGolap >> baseline: spec [
 	spec for: #common do: [
 		spec
 			baseline: 'ObjCBridge'
-			with: [ spec repository: 'github://estebanlm/objcbridge/src' ].
+			with: [ spec repository: 'github://tesonep/objcbridge/src' ].
 		spec
 			baseline: 'HiDeHo'
 			with: [ spec repository: 'github://tomooda/HiDeHo:main/src' ].
