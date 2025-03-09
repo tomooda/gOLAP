@@ -34,6 +34,7 @@ GolapCommandLineHandler class >> generateMacOS [
 { #category : 'activation' }
 GolapCommandLineHandler >> activate [
 
+	OSWindowDriver current startUp: true.
 	OSPlatform current isMacOSX ifTrue: [
 		| main |
 		main := CocoaMenu new.

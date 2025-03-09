@@ -14,6 +14,10 @@ BaselineOfGolap >> baseline: spec [
 			baseline: 'ObjCBridge'
 			with: [ spec repository: 'github://tesonep/objcbridge/src' ].
 		spec
+			baseline: 'PharoApplicationGenerator'
+			with: [
+			spec repository: 'github://testonep/PharoApplicationGenerator/src' ].
+		spec
 			baseline: 'HiDeHo'
 			with: [ spec repository: 'github://tomooda/HiDeHo:main/src' ].
 		spec
@@ -27,7 +31,8 @@ BaselineOfGolap >> baseline: spec [
 			with: [ spec repository: 'github://tomooda/Xenq:main/src' ].
 		spec
 			package: 'Golap-Application'
-			with: [ spec requires: #( 'ObjCBridge' ) ].
+			with: [
+			spec requires: #( 'ObjCBridge' 'PharoApplicationGenerator' ) ].
 		spec
 			package: 'Golap-Networking'
 			with: [ spec requires: #( 'DataFrame' ) ].
