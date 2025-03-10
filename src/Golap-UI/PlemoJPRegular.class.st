@@ -26,19 +26,7 @@ PlemoJPRegular class >> fontContents [
 { #category : 'accessing' }
 PlemoJPRegular class >> fontReference [
 
-	^ (IceRepository repositoryNamed: 'gOLAP') ifNotNil: [ :repository |
-		  repository location / 'resources' / 'Fonts'
-		  / self originalFileName ]
-]
-
-{ #category : 'accessing' }
-PlemoJPRegular class >> initialize [
-
-	self canBeInstalled ifTrue: [
-		EmbeddedFreeTypeFontInstaller registerFont: self.
-		FreeTypeFontProvider current buildFamilies.
-		StandardFonts setAllStandardFontsTo:
-			(LogicalFont familyName: 'PlemolJP' pointSize: 10) ]
+	^ FileLocator workingDirectory / 'Fonts' / self originalFileName
 ]
 
 { #category : 'accessing' }

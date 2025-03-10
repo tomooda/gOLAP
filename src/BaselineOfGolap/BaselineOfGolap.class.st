@@ -31,8 +31,7 @@ BaselineOfGolap >> baseline: spec [
 			with: [ spec repository: 'github://tomooda/Xenq:main/src' ].
 		spec
 			package: 'Golap-Application'
-			with: [
-			spec requires: #( 'ObjCBridge' 'ApplicationGenerator' ) ].
+			with: [ spec requires: #( 'ObjCBridge' 'ApplicationGenerator' ) ].
 		spec
 			package: 'Golap-Networking'
 			with: [ spec requires: #( 'DataFrame' ) ].
@@ -47,6 +46,7 @@ BaselineOfGolap >> baseline: spec [
 			package: 'Golap-Models'
 			with: [ spec requires: #( 'DataFrame' 'Golap-Clustering' ) ].
 		spec package: 'Golap-Clustering' with: [ spec requires: #(  ) ].
+		spec postLoadDoIt: #postLoad.
 		spec
 			group: 'Core'
 			with:
@@ -59,22 +59,34 @@ BaselineOfGolap >> baseline: spec [
 BaselineOfGolap >> installDesktopLogo [
 
 	<script: 'BaselineOfGolap new installDesktopLogo'>
-	| backgroundImage response |
-	backgroundImage := FileLocator localDirectory / 'gOLAP'
-	                   / 'gOLAP-logo.png'.
+	| backgroundImage |
+	backgroundImage := (FileLocator localDirectory / 'gOLAP')
+		                   ensureCreateDirectory / 'gOLAP-logo.png'.
 	PharoLightTheme beCurrent.
-	response := ZnClient new
-		            url:
-			            'https://github.com/tomooda/gOLAP/raw/main/resources/gOLAP-logo.png';
-		            get;
-		            response.
-	(response isSuccess and: [ response entity contentType sub = 'png' ])
-		ifTrue: [
-			backgroundImage parent ensureCreateDirectory.
-			backgroundImage ensureDelete.
-			backgroundImage binaryWriteStreamDo: [ :writeStream |
-				response entity writeOn: writeStream ].
-			PolymorphSystemSettings desktopLogoFileName: ''.
-			PolymorphSystemSettings desktopLogoFileName:
-				backgroundImage fullName ]
+	backgroundImage ensureDelete.
+	(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
+	/ backgroundImage basename copyTo: backgroundImage.
+	PolymorphSystemSettings desktopLogoFileName: ''.
+	PolymorphSystemSettings desktopLogoFileName: backgroundImage fullName
+]
+
+{ #category : 'utilities' }
+BaselineOfGolap >> installFonts [
+
+	<script: 'BaselineOfGolap new installFonts'>
+	(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
+	/ 'Fonts' copyAllTo: FileLocator workingDirectory.
+	Smalltalk at: #PlemolJPRegular ifPresent: [ :fontClass |
+		EmbeddedFreeTypeFontInstaller registerFont: fontClass.
+		FreeTypeFontProvider current buildFamilies.
+		StandardFonts setAllStandardFontsTo:
+			(LogicalFont familyName: 'PlemolJP' pointSize: 10) ]
+]
+
+{ #category : 'utilities' }
+BaselineOfGolap >> postLoad [
+
+	self
+		installDesktopLogo;
+		installFonts
 ]
