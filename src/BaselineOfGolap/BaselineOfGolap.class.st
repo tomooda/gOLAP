@@ -75,7 +75,8 @@ BaselineOfGolap >> installFonts [
 
 	<script: 'BaselineOfGolap new installFonts'>
 	(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
-	/ 'Fonts' copyAllTo: FileLocator workingDirectory.
+	/ 'Fonts' copyAllTo:
+		(FileLocator workingDirectory / 'Fonts') ensureCreateDirectory.
 	Smalltalk at: #PlemolJPRegular ifPresent: [ :fontClass |
 		EmbeddedFreeTypeFontInstaller registerFont: fontClass.
 		FreeTypeFontProvider current buildFamilies.
