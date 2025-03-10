@@ -1,5 +1,5 @@
 Class {
-	#name : 'PlemoJPRegular',
+	#name : 'PlemolJPRegular',
 	#superclass : 'EmbeddedFreeTypeFontDescription',
 	#classInstVars : [
 		'fontContents'
@@ -10,13 +10,13 @@ Class {
 }
 
 { #category : 'testing' }
-PlemoJPRegular class >> canBeInstalled [
+PlemolJPRegular class >> canBeInstalled [
 
 	^ super canBeInstalled and: [ self fontReference notNil ]
 ]
 
 { #category : 'accessing' }
-PlemoJPRegular class >> fontContents [
+PlemolJPRegular class >> fontContents [
 
 	^ (fontContents ifNil: [
 		   fontContents := self fontReference binaryReadStreamDo: #contents ])
@@ -24,13 +24,13 @@ PlemoJPRegular class >> fontContents [
 ]
 
 { #category : 'accessing' }
-PlemoJPRegular class >> fontReference [
+PlemolJPRegular class >> fontReference [
 
 	^ FileLocator workingDirectory / 'Fonts' / self originalFileName
 ]
 
 { #category : 'accessing' }
-PlemoJPRegular class >> originalFileName [
+PlemolJPRegular class >> originalFileName [
 
 	^ 'PlemolJP-Regular.ttf'
 ]
