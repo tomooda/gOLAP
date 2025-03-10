@@ -16,7 +16,7 @@ BaselineOfGolap >> baseline: spec [
 		spec
 			baseline: 'PharoApplicationGenerator'
 			with: [
-			spec repository: 'github://testonep/PharoApplicationGenerator/src' ].
+			spec repository: 'github://tesonep/PharoApplicationGenerator/src' ].
 		spec
 			baseline: 'HiDeHo'
 			with: [ spec repository: 'github://tomooda/HiDeHo:main/src' ].
