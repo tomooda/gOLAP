@@ -35,7 +35,7 @@ GolapCommandLineHandler class >> generateMacOS [
 		addExternalFile:
 			(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
 			/ 'gOLAP-logo.png'
-		destination: 'gOLAP/gOLAP-logo.png';
+		destination: 'pharo-local/gOLAP/gOLAP-logo.png';
 		generate
 ]
 
