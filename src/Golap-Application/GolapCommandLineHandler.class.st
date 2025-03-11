@@ -15,7 +15,7 @@ GolapCommandLineHandler class >> commandName [
 GolapCommandLineHandler class >> generateMacOS [
 
 	<script: 'GolapCommandLineHandler generateMacOS'>
-	AppGeneratorOSXGenerator new
+	GolapAppGeneratorOSXGenerator new
 		properties: {
 				(#AppName -> 'gOLAP').
 				(#InfoString -> 'A client for gOLAP server').
@@ -28,7 +28,7 @@ GolapCommandLineHandler class >> generateMacOS [
 					  / 'gOLAP.icns')).
 				(#CommandLineHandler -> self commandName).
 				(#CompanyName -> 'gOLAP project') } asDictionary;
-		outputDirectory: FileLocator home / 'src' / 'gOLAP';
+		outputDirectory: FileLocator home / 'src' / 'gOLAP' / 'mac';
 		addExternalDirectory:
 			(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
 			/ 'Fonts';
@@ -36,6 +36,30 @@ GolapCommandLineHandler class >> generateMacOS [
 			(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
 			/ 'gOLAP-logo.png'
 		destination: 'pharo-local/gOLAP/gOLAP-logo.png';
+		generate
+]
+
+{ #category : 'utilities' }
+GolapCommandLineHandler class >> generateWindows [
+
+	<script>
+	AppGeneratorWindowsGenerator new
+		properties: {
+				(#AppName -> 'gOLAP').
+				(#InfoString -> 'A client for gOLAP server').
+				(#BundleIdentifier -> 'com.github.tomooda.gOLAP').
+				(#ShortVersion -> '0.9.0').
+				(#DisplayName -> 'gOLAP').
+				(#CommandLineHandler -> self commandName).
+				(#IconFile
+				 ->
+					 ((IceRepository repositoryNamed: 'gOLAP') location / 'resources'
+					  / 'gOLAP.ico')).
+				(#CompanyName -> 'gOLAP project').
+				(#LegalCopyright
+				 -> 'Copyright \251 https://github.com/tomooda/gOLAP/ 2020\0') }
+				asDictionary;
+		outputDirectory: FileLocator home / 'src' / 'gOLAP' / 'windows';
 		generate
 ]
 
