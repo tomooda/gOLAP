@@ -33,7 +33,8 @@ GolapCommandLineHandler class >> generate [
 				(#DeployPharoExpression -> 'Golap deploy').
 				(#CommandLineHandler -> self commandName).
 				(#CompanyName -> 'gOLAP project') } asDictionary;
-		targetPlatforms: #( 'Windows-x86_64' );
+		targetPlatforms:
+			#( 'Darwin-arm64' 'Darwin-x86_64' 'Windows-x86_64' );
 		outputDirectory: FileLocator home / 'src' / 'gOLAP' / 'build';
 		addExternalDirectory:
 			(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
