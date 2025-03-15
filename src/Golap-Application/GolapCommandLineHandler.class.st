@@ -12,23 +12,29 @@ GolapCommandLineHandler class >> commandName [
 ]
 
 { #category : 'utilities' }
-GolapCommandLineHandler class >> generateMacOS [
+GolapCommandLineHandler class >> generate [
 
-	<script: 'GolapCommandLineHandler generateMacOS'>
-	GolapAppGeneratorOSXGenerator new
+	<script: 'GolapCommandLineHandler generate'>
+	PhleeterOnOSX new
 		properties: {
 				(#AppName -> 'gOLAP').
 				(#InfoString -> 'A client for gOLAP server').
 				(#BundleIdentifier -> 'com.github.tomooda.gOLAP').
-				(#ShortVersion -> '0.9.0').
+				(#ShortVersion -> '1.0.0').
 				(#DisplayName -> 'gOLAP').
 				(#IconSetFile
 				 ->
 					 ((IceRepository repositoryNamed: 'gOLAP') location / 'resources'
 					  / 'gOLAP.icns')).
+				(#DiskIconSetFile
+				 ->
+					 ((IceRepository repositoryNamed: 'gOLAP') location / 'resources'
+					  / 'gOLAP-disk.icns')).
+				(#DeployPharoExpression -> 'Golap deploy').
 				(#CommandLineHandler -> self commandName).
 				(#CompanyName -> 'gOLAP project') } asDictionary;
-		outputDirectory: FileLocator home / 'src' / 'gOLAP' / 'mac';
+		targetPlatforms: #( 'Windows-x86_64' );
+		outputDirectory: FileLocator home / 'src' / 'gOLAP' / 'build';
 		addExternalDirectory:
 			(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
 			/ 'Fonts';
@@ -36,30 +42,6 @@ GolapCommandLineHandler class >> generateMacOS [
 			(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
 			/ 'gOLAP-logo.png'
 		destination: 'pharo-local/gOLAP/gOLAP-logo.png';
-		generate
-]
-
-{ #category : 'utilities' }
-GolapCommandLineHandler class >> generateWindows [
-
-	<script>
-	AppGeneratorWindowsGenerator new
-		properties: {
-				(#AppName -> 'gOLAP').
-				(#InfoString -> 'A client for gOLAP server').
-				(#BundleIdentifier -> 'com.github.tomooda.gOLAP').
-				(#ShortVersion -> '0.9.0').
-				(#DisplayName -> 'gOLAP').
-				(#CommandLineHandler -> self commandName).
-				(#IconFile
-				 ->
-					 ((IceRepository repositoryNamed: 'gOLAP') location / 'resources'
-					  / 'gOLAP.ico')).
-				(#CompanyName -> 'gOLAP project').
-				(#LegalCopyright
-				 -> 'Copyright \251 https://github.com/tomooda/gOLAP/ 2020\0') }
-				asDictionary;
-		outputDirectory: FileLocator home / 'src' / 'gOLAP' / 'windows';
 		generate
 ]
 

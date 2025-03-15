@@ -26,7 +26,7 @@ PlemolJPRegular class >> fontContents [
 { #category : 'accessing' }
 PlemolJPRegular class >> fontReference [
 
-	^ FileLocator workingDirectory / 'Fonts' / self originalFileName
+	^ FileLocator imageDirectory / 'Fonts' / self originalFileName
 ]
 
 { #category : 'accessing' }

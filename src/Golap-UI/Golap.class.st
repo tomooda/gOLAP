@@ -105,7 +105,7 @@ Golap class >> deploy [
 	IceRepository registry removeAll.
 	IceCredentialStore current in: [ :store |
 		store allCredentials do: [ :each | each removeFrom: store ] ].
-	World closeAllWindowsDiscardingChanges.
+	self currentWorld closeAllWindowsDiscardingChanges.
 	Deprecation
 		raiseWarning: false;
 		showWarning: false.
