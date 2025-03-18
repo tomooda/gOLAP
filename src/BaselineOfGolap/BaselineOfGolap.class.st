@@ -14,7 +14,7 @@ BaselineOfGolap >> baseline: spec [
 			baseline: 'ObjCBridge'
 			with: [ spec repository: 'github://tesonep/objcbridge/src' ].
 		spec
-			baseline: 'Fleeter'
+			baseline: 'Phleeter'
 			with: [
 			spec repository: 'github://tomooda/Phleeter:main/src' ].
 		spec
