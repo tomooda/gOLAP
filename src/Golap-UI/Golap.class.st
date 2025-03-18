@@ -99,7 +99,6 @@ Golap class >> deploy [
 
 	<script>
 	GolapNetworkClientPresenter flushCurrent.
-	Smalltalk cleanUp: true except: {  } confirming: false.
 	MCRepositoryGroup allSubInstancesDo: [ :group |
 		group repositories do: [ :repo | group removeRepository: repo ] ].
 	IceRepository registry removeAll.
