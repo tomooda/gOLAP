@@ -14,6 +14,12 @@ Class {
 	#tag : 'Query'
 }
 
+{ #category : 'hideho-operations' }
+GolapQueryRecord >> asJSONString [
+
+	^ GolapQueryJSONReaderWriter toStringPretty: query
+]
+
 { #category : 'accessing' }
 GolapQueryRecord >> comment [
 
@@ -144,6 +150,12 @@ GolapQueryRecord >> loadThumbnail: aFileReference [
 	thumbnail := nil
 ]
 
+{ #category : 'printing' }
+GolapQueryRecord >> printOn: aStream [
+
+	aStream nextPutAll: self asJSONString
+]
+
 { #category : 'accessing' }
 GolapQueryRecord >> query [
 
@@ -184,7 +196,7 @@ GolapQueryRecord >> saveQuery: aFileReference [
 		(aFileReference / 'query.json')
 			ensureDelete;
 			writeStreamDo: [ :stream |
-				stream nextPutAll: (GolapQueryJSONReaderWriter toStringPretty: query) ] ]
+				stream nextPutAll: self asJSONString ] ]
 ]
 
 { #category : 'hideho-operations' }

@@ -157,54 +157,61 @@ GolapQueryHistoryPresenter >> addToNarrativeMenu [
 GolapQueryHistoryPresenter >> cherrypick [
 
 	queryHistoryList selectedItem ifNotNil: [ :selectedQueryRecord |
-		| selectedQuery enabledAccessors table |
-		selectedQuery := selectedQueryRecord query.
-		enabledAccessors := (selectedQuery syntaxAccessorsToTips
-			                     copyWithoutAll:
-			                     queryStem syntaxAccessorsToTips) asSet.
-		table := self newTable
-			         beSingleSelection;
-			         beResizable;
-			         addColumn: ((SpCheckBoxTableColumn
-					           title: '有効'
-					           evaluated: [ :accessor |
-						           enabledAccessors includes: accessor ])
-					          onActivation: [ :accessor |
-						          enabledAccessors add: accessor ];
-					          onDeactivation: [ :accessor |
-						          enabledAccessors remove: accessor ifAbsent: [  ] ];
-					          beNotExpandable;
-					          yourself);
-			         addColumn: ((SpStringTableColumn
-					           title: 'クエリ属性'
-					           evaluated: [ :accessor | accessor printString ])
-					          beNotExpandable;
-					          yourself);
-			         addColumn: (SpStringTableColumn
-					          title: '値'
-					          evaluated: [ :accessor | accessor read: selectedQuery ]);
-			         items:
-				         (selectedQuery syntaxAccessorsToTips copyWithoutAll:
-					          queryStem syntaxAccessorsToTips);
-			         yourself.
-		table openDialog
-			title: '上書きする属性を選択してください';
-			okAction: [
-				([ GolapQueryJSONReaderWriter fromString: queryText text ]
-					 on: Error
-					 do: [ :ex | ex return: nil ])
-					ifNotNil: [ :query |
-						enabledAccessors do: [ :accessor |
-								| value |
-								value := accessor read: selectedQuery.
-								[ accessor write: value to: query ]
-									on: HiDeSyntaxDictionaryKeyNotFound
-									do: [ :ex |
-										ex resume: (ex signaler at: ex key put: query class new) ] ].
-						queryText text:
-								(GolapQueryJSONReaderWriter toStringPretty: query) ]
-					ifNil: [
-						UIManager default alert: '上書き前のクエリが不正です。' title: 'クエリ構文エラー' ] ] ]
+		self cherrypick: selectedQueryRecord ]
+]
+
+{ #category : 'operations' }
+GolapQueryHistoryPresenter >> cherrypick: selectedQueryRecord [
+
+	| selectedQuery enabledAccessors table |
+	selectedQuery := selectedQueryRecord query.
+	enabledAccessors := (selectedQuery syntaxAccessorsToTips
+		                     copyWithoutAll: queryStem syntaxAccessorsToTips)
+		                    asSet.
+	table := self newTable
+		         beSingleSelection;
+		         beResizable;
+		         addColumn: ((SpCheckBoxTableColumn
+				           title: '有効'
+				           evaluated: [ :accessor |
+					           enabledAccessors includes: accessor ])
+				          onActivation: [ :accessor |
+					          enabledAccessors add: accessor ];
+				          onDeactivation: [ :accessor |
+					          enabledAccessors remove: accessor ifAbsent: [  ] ];
+				          beNotExpandable;
+				          yourself);
+		         addColumn: ((SpStringTableColumn
+				           title: 'クエリ属性'
+				           evaluated: [ :accessor | accessor printString ])
+				          beNotExpandable;
+				          yourself);
+		         addColumn: (SpStringTableColumn
+				          title: '値'
+				          evaluated: [ :accessor | accessor read: selectedQuery ]);
+		         items:
+			         (selectedQuery syntaxAccessorsToTips copyWithoutAll:
+				          queryStem syntaxAccessorsToTips);
+		         yourself.
+	table asModalWindow
+		title: '上書きする属性を選択してください';
+		okAction: [
+			([ GolapQueryJSONReaderWriter fromString: queryText text ]
+				 on: Error
+				 do: [ :ex | ex return: nil ])
+				ifNotNil: [ :query |
+					enabledAccessors do: [ :accessor |
+							| value |
+							value := accessor read: selectedQuery.
+							[ accessor write: value to: query ]
+								on: HiDeSyntaxDictionaryKeyNotFound
+								do: [ :ex |
+									ex resume: (ex signaler at: ex key put: query class new) ] ].
+					queryText text:
+							(GolapQueryJSONReaderWriter toStringPretty: query) ]
+				ifNil: [
+					UIManager default alert: '上書き前のクエリが不正です。' title: 'クエリ構文エラー' ] ];
+		open
 ]
 
 { #category : 'operations' }
@@ -340,6 +347,7 @@ GolapQueryHistoryPresenter >> initializePresenters [
 	queryHistoryList := self newTable
 		                    beMultipleSelection;
 		                    beResizable;
+		                    dragEnabled: true;
 		                    showColumnHeaders;
 		                    whenSelectedItemChangedDo: [
 			                    self selectedQueryHistoryChanged ];
@@ -377,6 +385,13 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		                    yourself.
 	queryText := self newText
 		             text: '';
+		             dropEnabled: true;
+		             wantsDrop: [ :transfer |
+			             transfer passenger allSatisfy: [ :obj |
+					             obj isKindOf: GolapQueryRecord ] ];
+		             acceptDrop: [ :transfer |
+			             transfer passenger ifNotEmpty: [ :queryRecords |
+					             self cherrypick: queryRecords first ] ];
 		             contextMenu: [ self queryTextMenu ];
 		             yourself.
 	importQueryButton := self newButton
