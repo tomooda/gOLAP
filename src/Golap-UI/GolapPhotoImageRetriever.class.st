@@ -65,7 +65,7 @@ GolapPhotoImageRetriever >> configPresenter [
 { #category : 'accessing' }
 GolapPhotoImageRetriever >> golapDirectory [
 
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+	^ Golap golapDirectory
 ]
 
 { #category : 'testing' }

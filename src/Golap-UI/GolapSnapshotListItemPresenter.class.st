@@ -126,7 +126,8 @@ GolapSnapshotListItemPresenter >> globalImageFilename [
 
 { #category : 'accessing' }
 GolapSnapshotListItemPresenter >> golapDirectory [
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+
+	^ Golap golapDirectory
 ]
 
 { #category : 'initialization' }

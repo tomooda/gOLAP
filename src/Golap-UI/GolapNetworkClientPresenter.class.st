@@ -202,7 +202,8 @@ GolapNetworkClientPresenter >> generateQueryText [
 
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> golapDirectory [
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+
+	^ Golap golapDirectory
 ]
 
 { #category : 'accessing' }
