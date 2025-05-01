@@ -70,7 +70,7 @@ GolapGoogleApiClient >> ensureCseid [
 { #category : 'as yet unclassified' }
 GolapGoogleApiClient >> golapDirectory [
 
-	^ Golap golapDirectory
+	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
 { #category : 'accessing' }

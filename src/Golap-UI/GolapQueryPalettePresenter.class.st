@@ -1,5 +1,5 @@
 Class {
-	#name : 'GolapQueryHistoryPresenter',
+	#name : 'GolapQueryPalettePresenter',
 	#superclass : 'SpPresenter',
 	#traits : 'THiDeEditTags',
 	#classTraits : 'THiDeEditTags classTrait',
@@ -8,7 +8,14 @@ Class {
 		'queryStorage',
 		'queryHistory',
 		'queryStemText',
+		'importQueryBlock',
 		'queryHistoryList',
+		'cherrypickButton',
+		'queryText',
+		'useQueryStemButton',
+		'importQueryButton',
+		'thumbnailButton',
+		'commentButton',
 		'tagList',
 		'searchField',
 		'tagButton',
@@ -17,23 +24,84 @@ Class {
 		'removeFromNarrativeButton',
 		'removeNarrativeButton',
 		'addNarrativeButton',
-		'historyLengthDropList',
-		'thumbnailImage',
-		'commentText'
+		'historyLengthDropList'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
 	#tag : 'Query'
 }
 
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter class >> defaultLayout [
+
+	^ SpPanedLayout newHorizontal
+		  positionOfSlider: 0.7;
+		  add: (SpBoxLayout newVertical
+				   add: (SpBoxLayout newHorizontal
+						    vAlignCenter;
+						    add: 'フィード  ' expand: false;
+						    add: #narrativeDropList width: 300;
+						    add: #addNarrativeButton width: self buttonHeight;
+						    add: #removeNarrativeButton width: self buttonHeight;
+						    yourself)
+				   expand: false;
+				   add: (SpPanedLayout newVertical
+						    positionOfSlider: 0.4;
+						    add: (SpPanedLayout newHorizontal
+								     add: (SpBoxLayout newVertical
+										      add: '共通部分' expand: false;
+										      add: #queryStemText;
+										      add: #useQueryStemButton expand: false;
+										      yourself);
+								     add: (SpBoxLayout newVertical
+										      add: 'タグ' expand: false;
+										      add: #tagList;
+										      add: (SpBoxLayout newHorizontal
+												       add: '検索' asPresenter expand: false;
+												       add: #searchField;
+												       yourself)
+										      expand: false;
+										      yourself);
+								     yourself);
+						    add: (SpBoxLayout newVertical
+								     add: (SpBoxLayout newHorizontal
+										      add: '変化部分' expand: false;
+										      add: (SpBoxLayout newHorizontal
+												       hAlignEnd;
+												       vAlignEnd;
+												       add: '表示件数' asPresenter expand: false;
+												       add: #historyLengthDropList expand: false);
+										      yourself)
+								     expand: false;
+								     add: #queryHistoryList;
+								     add: (SpBoxLayout newHorizontal
+										      add: #thumbnailButton;
+										      add: #commentButton;
+										      add: #tagButton;
+										      add: #addToNarrativeButton;
+										      add: #removeFromNarrativeButton;
+										      add: #cherrypickButton;
+										      yourself)
+								     expand: false;
+								     yourself);
+						    yourself);
+				   yourself);
+		  add: (SpBoxLayout newVertical
+				   add: 'クエリ' expand: false;
+				   add: #queryText;
+				   add: #importQueryButton expand: false;
+				   yourself);
+		  yourself
+]
+
 { #category : 'utilities' }
-GolapQueryHistoryPresenter class >> golapDirectory [
+GolapQueryPalettePresenter class >> golapDirectory [
 
 	^ Golap golapDirectory
 ]
 
 { #category : 'columns' }
-GolapQueryHistoryPresenter >> accessorColumn: accessor [
+GolapQueryPalettePresenter >> accessorColumn: accessor [
 
 	^ (SpStringTableColumn
 		   title: accessor printString
@@ -51,13 +119,13 @@ GolapQueryHistoryPresenter >> accessorColumn: accessor [
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> addToNarrative [
+GolapQueryPalettePresenter >> addToNarrative [
 
 	^ self addToNarrativeMenu ifNotNil: #openWithSpecAtPointer
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> addToNarrativeMenu [
+GolapQueryPalettePresenter >> addToNarrativeMenu [
 
 	| currentNarrative |
 	currentNarrative := self
@@ -85,20 +153,75 @@ GolapQueryHistoryPresenter >> addToNarrativeMenu [
 	^ nil
 ]
 
-{ #category : 'accessing' }
-GolapQueryHistoryPresenter >> buttonHeight [
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> cherrypick [
 
-	^ self class buttonHeight
+	queryHistoryList selectedItem ifNotNil: [ :selectedQueryRecord |
+		self cherrypick: selectedQueryRecord ]
+]
+
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> cherrypick: selectedQueryRecord [
+
+	| selectedQuery enabledAccessors table |
+	selectedQuery := selectedQueryRecord query.
+	enabledAccessors := (selectedQuery syntaxAccessorsToTips
+		                     copyWithoutAll: queryStem syntaxAccessorsToTips)
+		                    asSet.
+	table := self newTable
+		         beSingleSelection;
+		         beResizable;
+		         addColumn: ((SpCheckBoxTableColumn
+				           title: '有効'
+				           evaluated: [ :accessor |
+					           enabledAccessors includes: accessor ])
+				          onActivation: [ :accessor |
+					          enabledAccessors add: accessor ];
+				          onDeactivation: [ :accessor |
+					          enabledAccessors remove: accessor ifAbsent: [  ] ];
+				          beNotExpandable;
+				          yourself);
+		         addColumn: ((SpStringTableColumn
+				           title: 'クエリ属性'
+				           evaluated: [ :accessor | accessor printString ])
+				          beNotExpandable;
+				          yourself);
+		         addColumn: (SpStringTableColumn
+				          title: '値'
+				          evaluated: [ :accessor | accessor read: selectedQuery ]);
+		         items:
+			         (selectedQuery syntaxAccessorsToTips copyWithoutAll:
+				          queryStem syntaxAccessorsToTips);
+		         yourself.
+	table asModalWindow
+		title: '上書きする属性を選択してください';
+		okAction: [
+			([ GolapQueryJSONReaderWriter fromString: queryText text ]
+				 on: Error
+				 do: [ :ex | ex return: nil ])
+				ifNotNil: [ :query |
+					enabledAccessors do: [ :accessor |
+							| value |
+							value := accessor read: selectedQuery.
+							[ accessor write: value to: query ]
+								on: HiDeSyntaxDictionaryKeyNotFound
+								do: [ :ex |
+									ex resume: (ex signaler at: ex key put: query class new) ] ].
+					queryText text:
+							(GolapQueryJSONReaderWriter toStringPretty: query) ]
+				ifNil: [
+					UIManager default alert: '上書き前のクエリが不正です。' title: 'クエリ構文エラー' ] ];
+		open
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> createNewNarrative [
+GolapQueryPalettePresenter >> createNewNarrative [
 
 	self createNewNarrativeDo: [  ]
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> createNewNarrativeDo: aBlock [
+GolapQueryPalettePresenter >> createNewNarrativeDo: aBlock [
 
 	[
 	(UIManager default
@@ -120,59 +243,8 @@ GolapQueryHistoryPresenter >> createNewNarrativeDo: aBlock [
 		repeat
 ]
 
-{ #category : 'layout' }
-GolapQueryHistoryPresenter >> defaultLayout [
-
-	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   vAlignCenter;
-				   add: 'フィード  ' expand: false;
-				   add: narrativeDropList width: 300;
-				   add: addNarrativeButton width: self buttonHeight;
-				   add: removeNarrativeButton width: self buttonHeight;
-				   yourself)
-		  expand: false;
-		  add: (SpPanedLayout newVertical
-				   positionOfSlider: 0.4;
-				   add: (SpPanedLayout newHorizontal
-						    add: (SpBoxLayout newVertical
-								     add: '共通部分' expand: false;
-								     add: queryStemText;
-								     yourself);
-						    add: (SpBoxLayout newVertical
-								     add: 'タグ' expand: false;
-								     add: tagList;
-								     add: (SpBoxLayout newHorizontal
-										      add: '検索' asPresenter expand: false;
-										      add: searchField;
-										      yourself)
-								     expand: false;
-								     yourself);
-						    yourself);
-				   add: (SpBoxLayout newVertical
-						    add: (SpBoxLayout newHorizontal
-								     add: '変化部分' expand: false;
-								     add: (SpBoxLayout newHorizontal
-										      hAlignEnd;
-										      vAlignEnd;
-										      add: '表示件数' asPresenter expand: false;
-										      add: historyLengthDropList expand: false);
-								     yourself)
-						    expand: false;
-						    add: queryHistoryList;
-						    add: (SpBoxLayout newHorizontal
-								     add: tagButton;
-								     add: addToNarrativeButton;
-								     add: removeFromNarrativeButton;
-								     yourself)
-						    expand: false;
-						    yourself);
-				   yourself);
-		  yourself
-]
-
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> editComment [
+GolapQueryPalettePresenter >> editComment [
 
 	queryHistoryList selectedItem ifNotNil: [ :record |
 		| text |
@@ -191,7 +263,7 @@ GolapQueryHistoryPresenter >> editComment [
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> editTags [
+GolapQueryPalettePresenter >> editTags [
 
 	queryHistoryList selectedItem ifNotNil: [ :chronicleModel |
 		self
@@ -202,14 +274,21 @@ GolapQueryHistoryPresenter >> editTags [
 			okAction: [ self updateQueryHistory ] ]
 ]
 
-{ #category : 'accessing' }
-GolapQueryHistoryPresenter >> historyRecord [
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> importQuery [
 
-	^ queryHistoryList selectedItem
+	importQueryBlock ifNotNil: [ importQueryBlock value ]
+]
+
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> importQueryBlock: aBlock [
+
+	importQueryBlock := aBlock.
+	self updateButtons
 ]
 
 { #category : 'initialization' }
-GolapQueryHistoryPresenter >> initialize [
+GolapQueryPalettePresenter >> initialize [
 
 	super initialize.
 	queryStorage := GolapQueryStorage on:
@@ -218,7 +297,7 @@ GolapQueryHistoryPresenter >> initialize [
 ]
 
 { #category : 'initialization' }
-GolapQueryHistoryPresenter >> initializePresenters [
+GolapQueryPalettePresenter >> initializePresenters [
 
 	super initializePresenters.
 	narrativeDropList := self newDropList
@@ -243,6 +322,11 @@ GolapQueryHistoryPresenter >> initializePresenters [
 	queryStemText := self newText
 		                 text: '';
 		                 yourself.
+	useQueryStemButton := self newButton
+		                      icon: (self iconNamed: #forward);
+		                      label: 'クエリに上書き';
+		                      action: [ self useQueryStem ];
+		                      yourself.
 	tagList := (self instantiate: HiDeTagFilterPresenter)
 		           tagColumnTitle: 'タグ';
 		           quantityColumnTitle: 'クエリ数';
@@ -268,12 +352,16 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		                    whenSelectedItemChangedDo: [
 			                    self selectedQueryHistoryChanged ];
 		                    yourself.
-	thumbnailImage := self newImage
-		                  autoScale: true;
-		                  yourself.
-	commentText := self newText
-		               text: '';
-		               yourself.
+	thumbnailButton := self newButton
+		                   icon: (self iconNamed: #objects);
+		                   label: 'グラフ';
+		                   action: [ self showThumbnail ];
+		                   yourself.
+	commentButton := self newButton
+		                 icon: (self iconNamed: #announcement);
+		                 label: 'コメント';
+		                 action: [ self editComment ];
+		                 yourself.
 	tagButton := self newButton
 		             icon: self tagIcon;
 		             label: 'タグ編集';
@@ -290,18 +378,82 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		                             label: 'このフィードから削除';
 		                             action: [ self removeFromNarrative ];
 		                             yourself.
+	cherrypickButton := self newButton
+		                    icon: (self iconNamed: #forward);
+		                    label: 'クエリに注入';
+		                    action: [ self cherrypick ];
+		                    yourself.
+	queryText := self newText
+		             text: '';
+		             dropEnabled: true;
+		             wantsDrop: [ :transfer |
+			             transfer passenger allSatisfy: [ :obj |
+					             obj isKindOf: GolapQueryRecord ] ];
+		             acceptDrop: [ :transfer |
+			             transfer passenger ifNotEmpty: [ :queryRecords |
+					             self cherrypick: queryRecords first ] ];
+		             contextMenu: [ self queryTextMenu ];
+		             yourself.
+	importQueryButton := self newButton
+		                     icon: (self iconNamed: #down);
+		                     label: '基本クエリからコピー';
+		                     action: [ self importQuery ];
+		                     yourself.
 	self whenBuiltDo: [ self updatePresenters ]
 ]
 
 { #category : 'testing' }
-GolapQueryHistoryPresenter >> narrativeSelected [
+GolapQueryPalettePresenter >> narrativeSelected [
 
 	^ (narrativeDropList ifNotNil: [
 		   narrativeDropList selectedItem value ]) notNil
 ]
 
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> query [
+
+	^ queryText text asString trim
+]
+
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> query: aStringOrDictionary [
+
+	queryText text: (aStringOrDictionary ifNil: [ '' ] ifNotNil: [
+			 aStringOrDictionary isString
+				 ifTrue: [ aStringOrDictionary ]
+				 ifFalse: [
+				 GolapQueryJSONReaderWriter toStringPretty: aStringOrDictionary ] ])
+]
+
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> queryTextMenu [
+
+	^ self newMenu
+		  addGroup: [ :menuGroup |
+			  menuGroup addItem: [ :menuItem |
+					  menuItem
+						  name: '基本クエリからコピー';
+						  action: [ self importQuery ] ] ];
+		  yourself
+]
+
+{ #category : 'as yet unclassified' }
+GolapQueryPalettePresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
+
+	| queryRecord |
+	queryRecord := GolapQueryRecord new
+		               url: queryStorage url;
+		               query: aHiDeSyntaxDictionary;
+		               yourself.
+	queryStorage chronicleSave: queryRecord.
+	self
+		updateQueryHistory;
+		query: aHiDeSyntaxDictionary.
+	^ queryRecord
+]
+
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> removeFromNarrative [
+GolapQueryPalettePresenter >> removeFromNarrative [
 
 	queryHistoryList selectedItem ifNotNil: [ :selectedQueryRecord |
 		self
@@ -312,7 +464,7 @@ GolapQueryHistoryPresenter >> removeFromNarrative [
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> removeNarrative [
+GolapQueryPalettePresenter >> removeNarrative [
 
 	self
 		selectedNarrativeDo: [ :narrative |
@@ -325,13 +477,13 @@ GolapQueryHistoryPresenter >> removeNarrative [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> searchFieldChanged [
+GolapQueryPalettePresenter >> searchFieldChanged [
 
 	self updateQueryHistory
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> selectedNarrativeChanged [
+GolapQueryPalettePresenter >> selectedNarrativeChanged [
 
 	narrativeDropList selectedItem ifNotNil: [ :assoc |
 		assoc value = #newNarrative ifTrue: [ ^ self createNewNarrative ] ].
@@ -340,7 +492,7 @@ GolapQueryHistoryPresenter >> selectedNarrativeChanged [
 ]
 
 { #category : 'accessing' }
-GolapQueryHistoryPresenter >> selectedNarrativeDo: narrativeBlock ifChronicleDo: chronicleBlock [
+GolapQueryPalettePresenter >> selectedNarrativeDo: narrativeBlock ifChronicleDo: chronicleBlock [
 
 	^ (narrativeDropList ifNotNil: [
 		   narrativeDropList selectedItem value ])
@@ -350,13 +502,13 @@ GolapQueryHistoryPresenter >> selectedNarrativeDo: narrativeBlock ifChronicleDo:
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> selectedQueryHistoryChanged [
+GolapQueryPalettePresenter >> selectedQueryHistoryChanged [
 
 	self updateButtons
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> showThumbnail [
+GolapQueryPalettePresenter >> showThumbnail [
 
 	queryHistoryList selectedItem ifNotNil: [ :record |
 		record hideLoad.
@@ -368,7 +520,7 @@ GolapQueryHistoryPresenter >> showThumbnail [
 ]
 
 { #category : 'icons' }
-GolapQueryHistoryPresenter >> tagIcon [
+GolapQueryPalettePresenter >> tagIcon [
 
 	| form fillColor a |
 	fillColor := Color white.
@@ -389,7 +541,7 @@ GolapQueryHistoryPresenter >> tagIcon [
 ]
 
 { #category : 'columns' }
-GolapQueryHistoryPresenter >> timestampColumn [
+GolapQueryPalettePresenter >> timestampColumn [
 
 	^ (SpStringTableColumn title: 'タイムスタンプ' evaluated: [ :record |
 			   | timestamp |
@@ -411,40 +563,42 @@ GolapQueryHistoryPresenter >> timestampColumn [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateButtons [
+GolapQueryPalettePresenter >> updateButtons [
 
 	queryHistoryList selectedItem
 		ifNotNil: [ :record |
 			{
+				thumbnailButton.
+				commentButton.
 				tagButton.
 				addToNarrativeButton } do: #enable.
 			self
 				selectedNarrativeDo: [ :narrative |
 				removeFromNarrativeButton enable ]
-				ifChronicleDo: [ removeFromNarrativeButton disable ] ]
+				ifChronicleDo: [ removeFromNarrativeButton disable ].
+			cherrypickButton enabled:
+				(record query syntaxAccessorsToTips copyWithoutAll:
+					 queryStem syntaxAccessorsToTips) notEmpty ]
 		ifNil: [
 			{
+				thumbnailButton.
+				commentButton.
 				tagButton.
 				addToNarrativeButton.
-				removeFromNarrativeButton } do: #disable ].
+				removeFromNarrativeButton.
+				cherrypickButton } do: #disable ].
+	importQueryButton enabled: importQueryBlock notNil.
 	removeNarrativeButton enabled: self narrativeSelected
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateCommentText [
-
-	commentText text:
-		(self historyRecord ifNotNil: #comment ifNil: [ '' ])
-]
-
-{ #category : 'updating' }
-GolapQueryHistoryPresenter >> updateNarrativeDropList [
+GolapQueryPalettePresenter >> updateNarrativeDropList [
 
 	self updateNarrativeDropList: narrativeDropList selectedItem
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateNarrativeDropList: aHiDeNarrative [
+GolapQueryPalettePresenter >> updateNarrativeDropList: aHiDeNarrative [
 
 	| selection |
 	selection := nil.
@@ -460,16 +614,15 @@ GolapQueryHistoryPresenter >> updateNarrativeDropList: aHiDeNarrative [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updatePresenters [
+GolapQueryPalettePresenter >> updatePresenters [
 
 	self
 		updateQueryHistory;
-		updateQueryHistoryList;
 		updateButtons
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateQueryHistory [
+GolapQueryPalettePresenter >> updateQueryHistory [
 
 	| records |
 	self
@@ -491,7 +644,7 @@ GolapQueryHistoryPresenter >> updateQueryHistory [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateQueryHistoryList [
+GolapQueryPalettePresenter >> updateQueryHistoryList [
 
 	queryStem notNil
 		ifTrue: [
@@ -513,8 +666,7 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 											 (done includes: accessor) ifFalse: [
 													 done add: accessor.
 													 stream nextPut: (self accessorColumn: accessor) ] ] ] ]);
-				items:
-					(queryHistoryList columns
+				items: (queryHistoryList columns
 						 ifEmpty: [ #(  ) ]
 						 ifNotEmpty: [ items ]) ]
 		ifFalse: [
@@ -524,7 +676,7 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateQueryStem [
+GolapQueryPalettePresenter >> updateQueryStem [
 
 	queryStem := queryHistory
 		             ifNotEmpty: [
@@ -536,7 +688,7 @@ GolapQueryHistoryPresenter >> updateQueryStem [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateQueryStemText [
+GolapQueryPalettePresenter >> updateQueryStemText [
 
 	queryStemText text: (queryStem
 			 ifNotNil: [ GolapQueryJSONReaderWriter toStringPretty: queryStem ]
@@ -544,19 +696,13 @@ GolapQueryHistoryPresenter >> updateQueryStemText [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateTags: aCollectionOfQueryRecord [
+GolapQueryPalettePresenter >> updateTags: aCollectionOfQueryRecord [
 
 	tagList persistencies: aCollectionOfQueryRecord
 ]
 
-{ #category : 'updating' }
-GolapQueryHistoryPresenter >> updateThumbnailImage [
-
-	thumbnailImage image: (self historyRecord ifNotNil: #thumbnail)
-]
-
 { #category : 'accessing' }
-GolapQueryHistoryPresenter >> url: aString [
+GolapQueryPalettePresenter >> url: aString [
 
 	queryStorage url = aString ifTrue: [ ^ self ].
 	queryStorage url: aString.
@@ -564,11 +710,12 @@ GolapQueryHistoryPresenter >> url: aString [
 	self
 		updateQueryStem;
 		updateQueryStemText;
-		updateQueryHistoryList
+		updateQueryHistoryList.
+	queryHistory ifNotEmpty: [ self query: queryHistory last query ]
 ]
 
 { #category : 'operations' }
-GolapQueryHistoryPresenter >> useQueryStem [
+GolapQueryPalettePresenter >> useQueryStem [
 
 	self query: queryStem
 ]

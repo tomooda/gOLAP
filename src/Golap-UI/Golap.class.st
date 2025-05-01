@@ -148,31 +148,27 @@ Golap class >> golapMenuOn: aBuilder [
 	(aBuilder item: #Golap)
 		label: 'gOLAP';
 		order: 1;
-		with: [
+		with: [ 
 			(aBuilder item: #'Snapshot Browser')
 				parent: 'Golap';
-				order: 2;
-				target: GolapSnapshotBrowser;
+				target: GolapSnapshotBrowser ;
 				selector: #open;
 				help: 'Open a snapshot launcher';
 				withSeparatorAfter.
 			(aBuilder item: #'Open File...')
 				parent: 'Golap';
-				order: 3;
 				target: self;
 				selector: #openFile;
 				help: 'Open a CSV file with dimensions';
 				withSeparatorAfter.
 			(aBuilder item: #'Open URL...')
 				parent: 'Golap';
-				order: 4;
 				target: self;
 				selector: #openNewClient;
 				help:
 					'Open a CSV file with dimensions from a server with a blank query'.
 			(aBuilder item: #'Open URL again...')
 				parent: 'Golap';
-				order: 5;
 				target: self;
 				selector: #openClient;
 				help:
@@ -180,18 +176,9 @@ Golap class >> golapMenuOn: aBuilder [
 				withSeparatorAfter.
 			(aBuilder item: #'Settings...')
 				parent: 'Golap';
-				order: 6;
 				target: self;
 				selector: #showSettingBrowser;
-				help: 'Open a settings dialog for gOLAP';
-				withSeparatorAfter.
-			(aBuilder item: #'About...')
-				parent: 'Golap';
-				order: 7;
-				target: self;
-				selector: #openAboutDialog;
-				help: 'Open a logo image and version of this application';
-				withSeparatorAfter ]
+				help: 'Open a settings dialog for gOLAP' ]
 ]
 
 { #category : 'accessing' }
@@ -216,66 +203,60 @@ Golap class >> open [
 		  yourself
 ]
 
-{ #category : 'utilities' }
-Golap class >> openAboutDialog [
-
-	<script>
-	BaselineOfGolap logoImageWithCodename asPresenter open
-		title: 'about gOLAP ' , BaselineOfGolap codename;
-		beNotResizable
-]
-
 { #category : 'examples' }
 Golap class >> openClient [
 
 	<script: 'GolapOverview openClient'>
 	| overview |
-	overview := Golap new.
+	overview := self new.
 	overview open maximize.
 	GolapNetworkClientPresenter
 		openDialogIfAccepted: [ :client :queryRecord |
-			[
-			overview
-				queryRecord: queryRecord;
-				productInfoRetriever:
-					(GolapServerProductInfoRetriever fromApiClient: client);
-				authenticateBlock: client authenticateBlock;
-				query: (NeoJSONReader fromString: client query);
-				url: client url;
-				comment: client comment;
-				imageRepositoryUrl: client imageUrl;
-				itemFieldQuerySpec: client itemFieldQuerySpec;
-				itemViewUrl: client url ]
-				on: Error
-				do: [ :ex |
-					UIManager default alert:
-						'Can''t open the given URL: ' , client url asString ].
-			overview snapshotData: client readStream do: [ :readStream |
-				readStream ifNil: [ overview delete ] ifNotNil: [
-					readStream isString
-						ifTrue: [
-							UIManager default alert: readStream.
-							overview delete ]
-						ifFalse: [
-							Cursor wait showWhile: [
-								UIManager default informUserDuring: [ :bar |
-									bar
-										min: 0;
-										max: readStream size.
-									overview
-										updateGlobalImageAfter: [
-											[
-											bar value: readStream position.
-											readStream atEnd ] whileFalse: [
-												overview readDimensionFrom: readStream ].
-											bar label: 'updating dimensions'.
-											overview updateDimensions.
-											bar label: 'updating models'.
-											overview updateModel.
-											overview numFriends: 5.
-											bar label: 'updating graph' ]
-										layout: true.
-									overview updateGlobalImageAfter: [  ] layout: true ] ] ] ] ] ]
+			client
+				ifNotNil: [
+					[
+					overview
+						queryRecord: queryRecord;
+						productInfoRetriever:
+							(GolapServerProductInfoRetriever fromApiClient: client);
+						authenticateBlock: client authenticateBlock;
+						query: (NeoJSONReader fromString: client query);
+						url: client url;
+						comment: client comment;
+						imageRepositoryUrl: client imageUrl;
+						itemFieldQuerySpec: client itemFieldQuerySpec;
+						itemViewUrl: client url ]
+						on: Error
+						do: [ :ex |
+							UIManager default alert:
+								'Can''t open the given URL: ' , client url asString ].
+					overview snapshotData: client readStream do: [ :readStream |
+						readStream ifNil: [ overview delete ] ifNotNil: [
+							readStream isString
+								ifTrue: [
+									UIManager default alert: readStream.
+									overview delete ]
+								ifFalse: [
+									Cursor wait showWhile: [
+										UIManager default informUserDuring: [ :bar |
+											bar
+												min: 0;
+												max: readStream size.
+											overview
+												updateGlobalImageAfter: [
+													[
+													bar value: readStream position.
+													readStream atEnd ] whileFalse: [
+														overview readDimensionFrom: readStream ].
+													bar label: 'updating dimensions'.
+													overview updateDimensions.
+													bar label: 'updating models'.
+													overview updateModel.
+													overview numFriends: 5.
+													bar label: 'updating graph' ]
+												layout: true.
+											overview updateGlobalImageAfter: [  ] layout: true ] ] ] ] ] ]
+				ifNil: [ overview loadFromQueryRecord: queryRecord ] ]
 		ifCanceled: [ overview delete ]
 ]
 
@@ -1242,6 +1223,18 @@ Golap >> itemViewUrl: aString [
 	productInfoRetriever golapServerUrl: aString
 ]
 
+{ #category : 'history' }
+Golap >> loadFromQueryRecord: aGolapQueryRecord [
+
+	aGolapQueryRecord graph ifNotNil: [ :graph |
+		dimensions removeAll.
+		graph keysAndValuesDo: [ :name :json |
+			dimensions at: name put: (GolapModel fromJSON: json) ].
+		self updateDimensions.
+		self disableSnapshotWhile: [
+			self updateGlobalImageAfter: [ self friendsEdges ] layout: true ] ]
+]
+
 { #category : 'menu' }
 Golap >> lockNode: aGolapNode [
 
@@ -1362,18 +1355,19 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 				v2
 					x: v1 x;
 					y: v1 y ] ] ].
-	self
-		updateGlobalImageAfter: [
-			model := aGolapModel.
-			model flushFriendsEdges.
-			self overviewRenderer layouter model: model.
-			self unselectAll.
-			model ifNotNil: [
-				itemsAppearancePresenter updateMinMaxFrequency.
-				edgesAppearancePresenter updateModel: model.
-				itemList updateNodeList ] ]
-		layout: (aGolapModel nodes anySatisfy: [ :node |
-				 node x isNil or: [ node y isNil ] ]).
+	model := aGolapModel.
+	model ifNotNil: [
+		self
+			updateGlobalImageAfter: [
+				model flushFriendsEdges.
+				self overviewRenderer layouter model: model.
+				self unselectAll.
+				model ifNotNil: [
+					itemsAppearancePresenter updateMinMaxFrequency.
+					edgesAppearancePresenter updateModel: model.
+					itemList updateNodeList ] ]
+			layout: (aGolapModel nodes anySatisfy: [ :node |
+					 node x isNil or: [ node y isNil ] ]) ].
 	self announceGolapModelUpdated
 ]
 
@@ -1972,9 +1966,9 @@ Golap >> restoreSnapshot: aFileReference [
 
 	self window ifNotNil: [ :w | w title: aFileReference basename ].
 	snapshotDirectory := aFileReference.
-	self disableSnapshotWhile: [ 
+	self disableSnapshotWhile: [
 		self
-			updateGlobalImageAfter: [ 
+			updateGlobalImageAfter: [
 				self
 					restoreQuery;
 					restoreItemList;
@@ -1987,7 +1981,8 @@ Golap >> restoreSnapshot: aFileReference [
 					restoreColorsAppearance;
 					restoreEdgesAppearance;
 					restoreItemsAppearance;
-					yourself ]
+					yourself.
+				self friendsEdges ]
 			layout: true ].
 	self updateGlobalImageAfter: [  ] layout: true
 ]
@@ -2101,6 +2096,8 @@ Golap >> saveQueryRecord [
 			queryRecord thumbnail: (image scaledToSize: 256 @ 256) ].
 		queryRecord comment:
 			(commentText text asString trim ifEmpty: [ nil ]).
+		queryRecord graph: (dimensions associations collect: [ :assoc |
+				 assoc key -> assoc value asJSON ]) asOrderedDictionary.
 		queryRecord hideSave ]
 ]
 

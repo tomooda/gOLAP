@@ -16,7 +16,9 @@ Class {
 		'queryNotebook',
 		'usesRawQueryText',
 		'commentText',
-		'queryHistoryPresenter'
+		'queryHistoryPresenter',
+		'usesQueryHistory',
+		'queryPalettePresenter'
 	],
 	#classInstVars : [
 		'current'
@@ -82,7 +84,7 @@ GolapNetworkClientPresenter >> asJSON [
 				          at: 'url' put: urlInput text asString trim;
 				          yourself.
 			  usesRawQuery = true
-				  ifTrue: [ dict at: 'rawQuery' put: queryHistoryPresenter query ]
+				  ifTrue: [ dict at: 'rawQuery' put: queryPalettePresenter query ]
 				  ifFalse: [
 					  queryPresenter asJSON keysAndValuesDo: [ :key :value |
 						  dict at: key put: value ] ].
@@ -197,13 +199,12 @@ GolapNetworkClientPresenter >> flushServerConfig [
 { #category : 'private' }
 GolapNetworkClientPresenter >> generateQueryText [
 
-	queryHistoryPresenter query: queryPresenter queryDictionary
+	queryPalettePresenter query: queryPresenter queryDictionary
 ]
 
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> golapDirectory [
-
-	^ Golap golapDirectory
+	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
 { #category : 'accessing' }
@@ -236,6 +237,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 			            queryPresenter
 				            resetItemFilterSpec;
 				            resetTransactionFilterSpec.
+			            queryPalettePresenter url: text trim.
 			            queryHistoryPresenter url: text trim ];
 		            yourself.
 	presetUrlButton := self newButton
@@ -250,19 +252,30 @@ GolapNetworkClientPresenter >> initializePresenters [
 				                  yourself);
 		                 addPage: (self newNotebookPage
 				                  title: '高度な条件';
-				                  presenterProvider: [ queryHistoryPresenter ];
+				                  presenterProvider: [ queryPalettePresenter ];
 				                  whenRetrievedDo: [
 					                  self updateQueryHistoryPresenter.
 					                  self generateQueryText ];
 				                  yourself);
+		                 addPage: (self newNotebookPage
+				                  title: '履歴';
+				                  presenterProvider: [ queryHistoryPresenter ];
+				                  yourself);
 		                 whenSelectedPageChangedDo: [
-		                 usesRawQuery := queryNotebook selectedPageIndex = 2 ];
+			                 usesRawQuery := queryNotebook selectedPageIndex
+			                                 = 2.
+			                 usesQueryHistory := queryNotebook
+				                                     selectedPageIndex = 3.
+			                 usesQueryHistory ifTrue: [
+				                 okButton ifNotNil: #enable ] ];
 		                 yourself.
 	usesRawQueryText := false.
-	queryHistoryPresenter := (self instantiate:
-			                          GolapQueryHistoryPresenter)
+	queryPalettePresenter := (self instantiate:
+			                          GolapQueryPalettePresenter)
 		                         importQueryBlock: [ self generateQueryText ];
 		                         yourself.
+	usesQueryHistory := false.
+	queryHistoryPresenter := self instantiate: GolapQueryHistoryPresenter.
 	serverConfigTree := self newTreeTable
 		                    addColumn:
 			                    (SpStringTableColumn evaluated: [ :assoc |
@@ -337,7 +350,7 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 	aDictionary
 		at: 'url' ifPresent: [ :string | self url: string ];
 		at: 'rawQuery' ifPresent: [ :string |
-			queryHistoryPresenter query: string.
+			queryPalettePresenter query: string.
 			usesRawQuery := true.
 			queryNotebook selectPageIndex: 2 ]
 		ifAbsent: [
@@ -356,18 +369,22 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 	self clearPreviewFilterField.
 	self openDialog
 		okAction: [
-			| queryRecord |
-			queryRecord := self recordHiDeHo.
-			[
-			aBlock
-				cull: (GolapApiClient
-						 url: self url
-						 query: self query
-						 comment: self comment
-						 serverConfig: self serverConfig
-						 itemFieldQuerySpec: self itemFieldQuerySpec
-						 authenticateBlock: self authenticateBlock)
-				cull: queryRecord ] forkAt: Processor userBackgroundPriority ];
+			usesQueryHistory
+				ifTrue: [
+					aBlock cull: nil cull: queryHistoryPresenter historyRecord ]
+				ifFalse: [
+					[
+					| queryRecord |
+					queryRecord := self recordHiDeHo.
+					aBlock
+						cull: (GolapApiClient
+								 url: self url
+								 query: self query
+								 comment: self comment
+								 serverConfig: self serverConfig
+								 itemFieldQuerySpec: self itemFieldQuerySpec
+								 authenticateBlock: self authenticateBlock)
+						cull: queryRecord ] forkAt: Processor userBackgroundPriority ] ];
 		cancelAction: anotherBlock
 ]
 
@@ -414,7 +431,7 @@ GolapNetworkClientPresenter >> presetUrlFile [
 GolapNetworkClientPresenter >> query [
 
 	^ usesRawQuery = true
-		  ifTrue: [ queryHistoryPresenter query ]
+		  ifTrue: [ queryPalettePresenter query ]
 		  ifFalse: [ queryPresenter query ]
 ]
 
@@ -432,13 +449,13 @@ GolapNetworkClientPresenter >> recordHiDeHo [
 	^ ([ GolapQueryJSONReaderWriter fromString: self query ]
 		   on: Exception
 		   do: [ :ex | ex return: nil ]) ifNotNil: [ :query |
-		  queryHistoryPresenter recordHiDeHo: query ]
+		  queryPalettePresenter recordHiDeHo: query ]
 ]
 
 { #category : 'initialization' }
 GolapNetworkClientPresenter >> resetQuery [
 
-	queryHistoryPresenter query: ''.
+	queryPalettePresenter query: ''.
 	queryPresenter ifNotNil: #resetQuery
 ]
 

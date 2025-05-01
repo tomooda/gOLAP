@@ -36,6 +36,7 @@ GolapServerProductInfoRetriever >> asJSON [
 	^ OrderedDictionary new
 		  at: self class tag put: {
 				  ('server-url' -> golapServerUrl asString).
+				  ('server-config' -> serverConfig).
 				  ('image-url' -> imageRepositoryUrl asString).
 				  ('item-query' -> itemFieldQuerySpec).
 				  ('query' -> query) } asOrderedDictionary;
@@ -235,5 +236,6 @@ GolapServerProductInfoRetriever >> setFromJSON: aDictionary [
 			at: 'image-url'
 			ifPresent: [ :url | self imageRepositoryUrl: url ].
 		json at: 'item-query' ifPresent: [ :q | self itemFieldQuerySpec: q ].
+		json at: 'server-config' ifPresent: [ :s | self serverConfig: s ].
 		json at: 'query' ifPresent: [ :q | self query: q ] ]
 ]

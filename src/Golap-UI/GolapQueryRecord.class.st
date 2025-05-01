@@ -5,7 +5,7 @@ Class {
 	#classTraits : 'THiDePersistency classTrait',
 	#instVars : [
 		'#query => HiDePersistencySlot loader: #loadQuery',
-		'#result => HiDePersistencySlot loader: #loadResult',
+		'#graph => HiDePersistencySlot loader: #loadGraph',
 		'#thumbnail => HiDePersistencySlot loader: #loadThumbnail',
 		'#comment => HiDePersistencySlot loader: #loadComment'
 	],
@@ -32,6 +32,18 @@ GolapQueryRecord >> comment: aString [
 	comment := aString ifNotNil: [ aString asString ]
 ]
 
+{ #category : 'accessing' }
+GolapQueryRecord >> graph [
+
+	^ graph
+]
+
+{ #category : 'accessing' }
+GolapQueryRecord >> graph: anOrderedDictionary [
+
+	graph := anOrderedDictionary
+]
+
 { #category : 'testing' }
 GolapQueryRecord >> hasTag: aString [
 
@@ -43,7 +55,7 @@ GolapQueryRecord >> hideLoad: aFileReference [
 
 	self
 		loadQuery: aFileReference;
-		loadResult: aFileReference;
+		loadGraph: aFileReference;
 		loadThumbnail: aFileReference;
 		loadComment: aFileReference
 ]
@@ -53,7 +65,7 @@ GolapQueryRecord >> hideSave: aFileReference [
 
 	self
 		saveQuery: aFileReference;
-		saveResult: aFileReference;
+		saveGraph: aFileReference;
 		saveThumbnail: aFileReference;
 		saveComment: aFileReference
 ]
@@ -103,6 +115,22 @@ GolapQueryRecord >> loadComment: aFileReference [
 ]
 
 { #category : 'hideho-operations' }
+GolapQueryRecord >> loadGraph [
+
+	self hideBaseDirectoryDo: [ :ref | self loadGraph: ref ]
+]
+
+{ #category : 'hideho-operations' }
+GolapQueryRecord >> loadGraph: aFileReference [
+
+	aFileReference / 'graph.json' ifExists: [ :ref |
+		ref readStreamDo: [ :stream |
+			graph := (GolapQueryJSONReaderWriter on: stream) next.
+			^ self ] ].
+	graph := nil
+]
+
+{ #category : 'hideho-operations' }
 GolapQueryRecord >> loadQuery [
 
 	self hideBaseDirectoryDo: [ :ref | self loadQuery: ref ]
@@ -116,22 +144,6 @@ GolapQueryRecord >> loadQuery: aFileReference [
 			query := (GolapQueryJSONReaderWriter on: stream) next.
 			^ self ] ].
 	query := nil
-]
-
-{ #category : 'hideho-operations' }
-GolapQueryRecord >> loadResult [
-
-	self hideBaseDirectoryDo: [ :ref | self loadResult: ref ]
-]
-
-{ #category : 'hideho-operations' }
-GolapQueryRecord >> loadResult: aFileReference [
-
-	aFileReference / 'result.csv' ifExists: [ :ref |
-		ref readStreamDo: [ :stream |
-			result := stream upToEnd.
-			^ self ] ].
-	result := nil
 ]
 
 { #category : 'hideho-operations' }
@@ -168,18 +180,6 @@ GolapQueryRecord >> query: aHiDeSyntaxDictionary [
 	query := aHiDeSyntaxDictionary
 ]
 
-{ #category : 'accessing' }
-GolapQueryRecord >> result [
-
-	^ result
-]
-
-{ #category : 'accessing' }
-GolapQueryRecord >> result: aString [
-
-	result := aString
-]
-
 { #category : 'hideho-operations' }
 GolapQueryRecord >> saveComment: aFileReference [
 
@@ -190,6 +190,15 @@ GolapQueryRecord >> saveComment: aFileReference [
 ]
 
 { #category : 'hideho-operations' }
+GolapQueryRecord >> saveGraph: aFileReference [
+
+	graph ifNotNil: [
+		(aFileReference / 'graph.json')
+			ensureDelete;
+			writeStreamDo: [ :stream | STONJSON put: graph onStream: stream ] ]
+]
+
+{ #category : 'hideho-operations' }
 GolapQueryRecord >> saveQuery: aFileReference [
 
 	query ifNotNil: [
@@ -197,15 +206,6 @@ GolapQueryRecord >> saveQuery: aFileReference [
 			ensureDelete;
 			writeStreamDo: [ :stream |
 				stream nextPutAll: self asJSONString ] ]
-]
-
-{ #category : 'hideho-operations' }
-GolapQueryRecord >> saveResult: aFileReference [
-
-	result ifNotNil: [
-		(aFileReference / 'result.csv')
-			ensureDelete;
-			writeStreamDo: [ :stream | stream nextPutAll: result ] ]
 ]
 
 { #category : 'hideho-operations' }

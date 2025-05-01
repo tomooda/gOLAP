@@ -5,48 +5,6 @@ Class {
 	#package : 'BaselineOfGolap'
 }
 
-{ #category : 'accessing' }
-BaselineOfGolap class >> codename [
-
-	^ '吉祥寺'
-]
-
-{ #category : 'accessing' }
-BaselineOfGolap class >> logoImage [
-
-	^ Form fromFileNamed: self logoImageFileReference
-]
-
-{ #category : 'accessing' }
-BaselineOfGolap class >> logoImageFileReference [
-
-	^ (FileLocator localDirectory / 'gOLAP') ensureCreateDirectory
-	  / 'gOLAP-logo.png'
-]
-
-{ #category : 'accessing' }
-BaselineOfGolap class >> logoImageWithCodename [
-
-	<script>
-	| logoImage font form codename |
-	logoImage := self logoImage.
-	font := (LogicalFont familyName: 'PlemolJP' pointSize: 24) realFont.
-	form := Form
-		        extent: logoImage extent + (0 @ (font height + 2))
-		        depth: 32.
-	codename := self codename.
-	form getCanvas
-		fillColor: Color white;
-		translucentImage: logoImage at: 0 @ 0;
-		drawString: codename
-		at:
-			form extent
-			- ((font widthOfString: codename) + 10 @ (font height + 4))
-		font: font
-		color: Color lightGray.
-	^ form
-]
-
 { #category : 'baseline' }
 BaselineOfGolap >> baseline: spec [
 
@@ -102,7 +60,8 @@ BaselineOfGolap >> installDesktopLogo [
 
 	<script: 'BaselineOfGolap new installDesktopLogo'>
 	| backgroundImage |
-	backgroundImage := self class logoImageFileReference.
+	backgroundImage := (FileLocator localDirectory / 'gOLAP')
+		                   ensureCreateDirectory / 'gOLAP-logo.png'.
 	PharoLightTheme beCurrent.
 	backgroundImage ensureDelete.
 	(IceRepository repositoryNamed: 'gOLAP') location / 'resources'

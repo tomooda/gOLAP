@@ -73,8 +73,7 @@ GolapSnapshotBrowser >> copySnapshot [
 
 { #category : 'accessing' }
 GolapSnapshotBrowser >> golapDirectory [
-
-	^ Golap golapDirectory
+	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
 ]
 
 { #category : 'initialization' }

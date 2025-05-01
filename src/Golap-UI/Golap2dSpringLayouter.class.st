@@ -100,9 +100,9 @@ Golap2dSpringLayouter >> centralize: aCollectionOfGolapNode [
 
 { #category : 'layouting' }
 Golap2dSpringLayouter >> layout [
-
+	self model ifNotNil: [ :model | 
 	| nodes boundNodes bindings reps isolatedNodes |
-	nodes := self model nodes asSortedCollection: [ :node1 :node2 |
+	nodes :=  model nodes asSortedCollection: [ :node1 :node2 |
 		         node2 id <= node1 id ].
 	boundNodes := nodes reject: [ :node | node isIsolated ].
 	divisions := (boundNodes size sqrt * 1.4) ceiling max: 1.
@@ -201,7 +201,7 @@ Golap2dSpringLayouter >> layout [
 			divisions := divisions ceiling.
 			^ self ].
 		self move: isolatedNodes next toX: divisions - 0.25 y: y - 0.25 ] ]
-		repeat
+		repeat]
 ]
 
 { #category : 'layouting' }
