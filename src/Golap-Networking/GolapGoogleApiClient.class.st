@@ -10,7 +10,7 @@ Class {
 	#package : 'Golap-Networking'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 GolapGoogleApiClient class >> cseid: aString apikey: anotherString [
 
 	^ self new
@@ -19,7 +19,7 @@ GolapGoogleApiClient class >> cseid: aString apikey: anotherString [
 		  yourself
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 GolapGoogleApiClient class >> searchThumbnail: aString [
 
 	^ self new searchThumbnail: aString
@@ -37,7 +37,7 @@ GolapGoogleApiClient >> apikey: aString [
 	apikey := aString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> at: queryKey put: aString [
 
 	^ params at: queryKey put: aString asString
@@ -67,10 +67,10 @@ GolapGoogleApiClient >> ensureCseid [
 	^ cseid ifNil: [ cseid := self requestCseid ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> golapDirectory [
 
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+	^ Golap golapDirectory
 ]
 
 { #category : 'accessing' }
@@ -79,7 +79,7 @@ GolapGoogleApiClient >> googleUrl [
 	^ 'https://customsearch.googleapis.com/customsearch/v1' asZnUrl
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> initialize [
 
 	super initialize.
@@ -95,19 +95,19 @@ GolapGoogleApiClient >> isAvailable [
 	^ cseid notNil and: [ apikey notNil ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> paramAt: queryKey ifAbsent: errorBlock [
 
 	^ params at: queryKey ifAbsent: errorBlock
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> paramAt: queryKey ifPresent: aBlock [
 
 	^ params at: queryKey ifPresent: aBlock
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> requestApikey [
 
 	| ref |
@@ -121,7 +121,7 @@ GolapGoogleApiClient >> requestApikey [
 	^ ref contents
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> requestCseid [
 
 	| ref |
@@ -135,7 +135,7 @@ GolapGoogleApiClient >> requestCseid [
 	^ ref contents
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapGoogleApiClient >> searchThumbnail: aString [
 
 	self isAvailable ifTrue: [

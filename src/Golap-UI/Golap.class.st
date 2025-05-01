@@ -148,27 +148,31 @@ Golap class >> golapMenuOn: aBuilder [
 	(aBuilder item: #Golap)
 		label: 'gOLAP';
 		order: 1;
-		with: [ 
+		with: [
 			(aBuilder item: #'Snapshot Browser')
 				parent: 'Golap';
-				target: GolapSnapshotBrowser ;
+				order: 2;
+				target: GolapSnapshotBrowser;
 				selector: #open;
 				help: 'Open a snapshot launcher';
 				withSeparatorAfter.
 			(aBuilder item: #'Open File...')
 				parent: 'Golap';
+				order: 3;
 				target: self;
 				selector: #openFile;
 				help: 'Open a CSV file with dimensions';
 				withSeparatorAfter.
 			(aBuilder item: #'Open URL...')
 				parent: 'Golap';
+				order: 4;
 				target: self;
 				selector: #openNewClient;
 				help:
 					'Open a CSV file with dimensions from a server with a blank query'.
 			(aBuilder item: #'Open URL again...')
 				parent: 'Golap';
+				order: 5;
 				target: self;
 				selector: #openClient;
 				help:
@@ -176,9 +180,18 @@ Golap class >> golapMenuOn: aBuilder [
 				withSeparatorAfter.
 			(aBuilder item: #'Settings...')
 				parent: 'Golap';
+				order: 6;
 				target: self;
 				selector: #showSettingBrowser;
-				help: 'Open a settings dialog for gOLAP' ]
+				help: 'Open a settings dialog for gOLAP';
+				withSeparatorAfter.
+			(aBuilder item: #'About...')
+				parent: 'Golap';
+				order: 7;
+				target: self;
+				selector: #openAboutDialog;
+				help: 'Open a logo image and version of this application';
+				withSeparatorAfter ]
 ]
 
 { #category : 'accessing' }
@@ -201,6 +214,15 @@ Golap class >> open [
 	^ overview
 		  updateGlobalImageAfter: [ overview model: nil ] layout: true;
 		  yourself
+]
+
+{ #category : 'utilities' }
+Golap class >> openAboutDialog [
+
+	<script>
+	BaselineOfGolap logoImageWithCodename asPresenter open
+		title: 'about gOLAP ' , BaselineOfGolap codename;
+		beNotResizable
 ]
 
 { #category : 'examples' }
