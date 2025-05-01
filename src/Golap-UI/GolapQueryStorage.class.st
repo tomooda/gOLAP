@@ -4,10 +4,26 @@ Class {
 	#instVars : [
 		'url'
 	],
+	#classInstVars : [
+		'forQuery'
+	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
 	#tag : 'Query'
 }
+
+{ #category : 'instance creation' }
+GolapQueryStorage class >> forQuery [
+
+	^ forQuery ifNil: [
+		  forQuery := self on: self golapDirectory / 'Queries' ]
+]
+
+{ #category : 'accessing' }
+GolapQueryStorage class >> golapDirectory [
+
+	^ Golap golapDirectory
+]
 
 { #category : 'operations-chronicle' }
 GolapQueryStorage >> chronicleMetadataDo: aBlock [

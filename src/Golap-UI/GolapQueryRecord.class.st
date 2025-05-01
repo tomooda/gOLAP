@@ -243,6 +243,25 @@ GolapQueryRecord >> thumbnail: aForm [
 ]
 
 { #category : 'accessing' }
+GolapQueryRecord >> timestampString [
+
+	| timestamp |
+	timestamp := self hideMetadata timestamp.
+	^ String streamContents: [ :stream |
+		  timestamp year printOn: stream base: 10 nDigits: 4.
+		  stream nextPut: $/.
+		  timestamp month printOn: stream base: 10 nDigits: 2.
+		  stream nextPut: $/.
+		  timestamp dayOfMonth printOn: stream base: 10 nDigits: 2.
+		  stream space.
+		  timestamp hour printOn: stream base: 10 nDigits: 2.
+		  stream nextPut: $:.
+		  timestamp minute printOn: stream base: 10 nDigits: 2.
+		  stream nextPut: $:.
+		  timestamp second printOn: stream base: 10 nDigits: 2 ]
+]
+
+{ #category : 'accessing' }
 GolapQueryRecord >> url [
 
 	^ hideMetadata at: 'url'

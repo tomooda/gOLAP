@@ -260,6 +260,8 @@ GolapNetworkClientPresenter >> initializePresenters [
 		                 addPage: (self newNotebookPage
 				                  title: '履歴';
 				                  presenterProvider: [ queryHistoryPresenter ];
+				                  whenRetrievedDo: [
+					                  queryHistoryPresenter updateQueryHistoryList ];
 				                  yourself);
 		                 whenSelectedPageChangedDo: [
 			                 usesRawQuery := queryNotebook selectedPageIndex

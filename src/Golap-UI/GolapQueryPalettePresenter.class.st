@@ -153,14 +153,14 @@ GolapQueryPalettePresenter >> addToNarrativeMenu [
 	^ nil
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'operations' }
 GolapQueryPalettePresenter >> cherrypick [
 
 	queryHistoryList selectedItem ifNotNil: [ :selectedQueryRecord |
 		self cherrypick: selectedQueryRecord ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'operations' }
 GolapQueryPalettePresenter >> cherrypick: selectedQueryRecord [
 
 	| selectedQuery enabledAccessors table |
@@ -274,13 +274,13 @@ GolapQueryPalettePresenter >> editTags [
 			okAction: [ self updateQueryHistory ] ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'operations' }
 GolapQueryPalettePresenter >> importQuery [
 
 	importQueryBlock ifNotNil: [ importQueryBlock value ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'operations' }
 GolapQueryPalettePresenter >> importQueryBlock: aBlock [
 
 	importQueryBlock := aBlock.
@@ -291,8 +291,7 @@ GolapQueryPalettePresenter >> importQueryBlock: aBlock [
 GolapQueryPalettePresenter >> initialize [
 
 	super initialize.
-	queryStorage := GolapQueryStorage on:
-		                self class golapDirectory / 'Queries'.
+	queryStorage := GolapQueryStorage forQuery.
 	self updateNarrativeDropList
 ]
 
@@ -409,13 +408,13 @@ GolapQueryPalettePresenter >> narrativeSelected [
 		   narrativeDropList selectedItem value ]) notNil
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapQueryPalettePresenter >> query [
 
 	^ queryText text asString trim
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GolapQueryPalettePresenter >> query: aStringOrDictionary [
 
 	queryText text: (aStringOrDictionary ifNil: [ '' ] ifNotNil: [
@@ -425,7 +424,7 @@ GolapQueryPalettePresenter >> query: aStringOrDictionary [
 				 GolapQueryJSONReaderWriter toStringPretty: aStringOrDictionary ] ])
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'menus' }
 GolapQueryPalettePresenter >> queryTextMenu [
 
 	^ self newMenu
@@ -437,7 +436,7 @@ GolapQueryPalettePresenter >> queryTextMenu [
 		  yourself
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'operations' }
 GolapQueryPalettePresenter >> recordHiDeHo: aHiDeSyntaxDictionary [
 
 	| queryRecord |
