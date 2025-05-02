@@ -1248,6 +1248,7 @@ Golap >> itemViewUrl: aString [
 { #category : 'history' }
 Golap >> loadFromQueryRecord: aGolapQueryRecord [
 
+	queryRecord := aGolapQueryRecord.
 	aGolapQueryRecord graph ifNotNil: [ :graph |
 		dimensions removeAll.
 		graph keysAndValuesDo: [ :name :json |

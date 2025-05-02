@@ -166,7 +166,7 @@ GolapQueryHistoryPresenter >> defaultLayout [
 						    add: 'クエリ' expand: false;
 						    add: queryText expand: true;
 						    add: 'グラフ' expand: false;
-						    add: thumbnailImage height: 200;
+						    add: thumbnailImage height: 256;
 						    add: 'コメント' expand: false;
 						    add: commentText height: self buttonHeight * 3;
 						    yourself);

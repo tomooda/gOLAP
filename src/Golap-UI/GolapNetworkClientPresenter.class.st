@@ -373,7 +373,8 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 		okAction: [
 			usesQueryHistory
 				ifTrue: [
-					aBlock cull: nil cull: queryHistoryPresenter historyRecord ]
+					queryHistoryPresenter historyRecord ifNotNil: [ :record |
+							aBlock cull: nil cull: record hideDuplicate ] ]
 				ifFalse: [
 					[
 					| queryRecord |

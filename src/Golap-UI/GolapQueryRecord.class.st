@@ -51,6 +51,18 @@ GolapQueryRecord >> hasTag: aString [
 ]
 
 { #category : 'hideho-operations' }
+GolapQueryRecord >> hideDuplicate [
+
+	| duplicate |
+	duplicate := self copy.
+	duplicate hideMetadata
+		identity: nil;
+		timestamp: DateAndTime now.
+	hideStorage chronicleSave: duplicate.
+	^ duplicate
+]
+
+{ #category : 'hideho-operations' }
 GolapQueryRecord >> hideLoad: aFileReference [
 
 	self
