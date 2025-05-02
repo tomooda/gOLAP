@@ -5,7 +5,6 @@ Class {
 	#classTraits : 'THiDeEditTags classTrait',
 	#instVars : [
 		'queryStorage',
-		'queryStemText',
 		'queryHistoryList',
 		'tagList',
 		'searchField',
@@ -17,7 +16,8 @@ Class {
 		'addNarrativeButton',
 		'historyLengthDropList',
 		'thumbnailImage',
-		'commentText'
+		'commentText',
+		'queryText'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
@@ -145,7 +145,7 @@ GolapQueryHistoryPresenter >> defaultLayout [
 								     yourself);
 						    add: (SpBoxLayout newVertical
 								     add: (SpBoxLayout newHorizontal
-										      add: 'クエリ' expand: false;
+										      add: '履歴' expand: false;
 										      add: (SpBoxLayout newHorizontal
 												       hAlignEnd;
 												       vAlignEnd;
@@ -162,9 +162,13 @@ GolapQueryHistoryPresenter >> defaultLayout [
 								     expand: false;
 								     yourself);
 						    yourself);
-				   add: (SpPanedLayout newVertical
-						    add: commentText;
-						    add: thumbnailImage;
+				   add: (SpBoxLayout newVertical
+						    add: 'クエリ' expand: false;
+						    add: queryText expand: true;
+						    add: 'グラフ' expand: false;
+						    add: thumbnailImage height: 200;
+						    add: 'コメント' expand: false;
+						    add: commentText height: self buttonHeight * 3;
 						    yourself);
 				   yourself);
 		  yourself
@@ -238,9 +242,9 @@ GolapQueryHistoryPresenter >> initializePresenters [
 		                         icon: (self iconNamed: #remove);
 		                         action: [ self removeNarrative ];
 		                         yourself.
-	queryStemText := self newText
-		                 text: '';
-		                 yourself.
+	queryText := self newText
+		             text: '';
+		             yourself.
 	tagList := (self instantiate: HiDeTagFilterPresenter)
 		           tagColumnTitle: 'タグ';
 		           quantityColumnTitle: 'クエリ数';
@@ -277,7 +281,11 @@ GolapQueryHistoryPresenter >> initializePresenters [
 			                    self selectedQueryHistoryChanged ];
 		                    yourself.
 	thumbnailImage := self newImage
-		                  autoScale: true;
+		                  autoScale: false;
+		                  color: Color white;
+		                  whenBuiltDo: [
+			                  thumbnailImage withAdapterDo: [ :a |
+					                  a widgetDo: [ :w | w color: Color white ] ] ];
 		                  yourself.
 	commentText := self newText
 		               text: '';
@@ -360,7 +368,11 @@ GolapQueryHistoryPresenter >> selectedNarrativeDo: narrativeBlock ifChronicleDo:
 { #category : 'updating' }
 GolapQueryHistoryPresenter >> selectedQueryHistoryChanged [
 
-	self updateButtons
+	self
+		updateQueryText;
+		updateThumbnailImage;
+		updateCommentText;
+		updateButtons
 ]
 
 { #category : 'operations' }
@@ -442,7 +454,7 @@ GolapQueryHistoryPresenter >> updateButtons [
 GolapQueryHistoryPresenter >> updateCommentText [
 
 	commentText text:
-		(self historyRecord ifNotNil: #comment ifNil: [ '' ])
+		((self historyRecord ifNotNil: #comment) ifNil: [ '' ])
 ]
 
 { #category : 'updating' }
@@ -476,7 +488,7 @@ GolapQueryHistoryPresenter >> updatePresenters [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateQueryHistory [
+GolapQueryHistoryPresenter >> updateQueryHistoryList [
 
 	| records |
 	self
@@ -493,20 +505,11 @@ GolapQueryHistoryPresenter >> updateQueryHistory [
 ]
 
 { #category : 'updating' }
-GolapQueryHistoryPresenter >> updateQueryHistoryList [
+GolapQueryHistoryPresenter >> updateQueryText [
 
-	| records |
-	self
-		selectedNarrativeDo: [ :narrative |
-			records := narrative asArray.
-			self updateTags: queryStorage chronicle ]
-		ifChronicleDo: [
-			records := queryStorage chronicle.
-			self updateTags: records ].
-	records := records select: tagList.
-	searchField text asString trim ifNotEmpty: [ :str |
-		records := records select: [ :m | m includesSubstring: str ] ].
-	queryHistoryList items: records
+	queryText text: (self historyRecord
+			 ifNotNil: [ :record | STONJSON toStringPretty: record query ]
+			 ifNil: [ '' ])
 ]
 
 { #category : 'updating' }
