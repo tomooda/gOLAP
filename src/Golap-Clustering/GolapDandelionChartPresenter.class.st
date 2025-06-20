@@ -6,12 +6,6 @@ Class {
 	#tag : 'Dandelion'
 }
 
-{ #category : 'accessing' }
-GolapDandelionChartPresenter >> title [
-
-	^ 'Dandelion Chart'
-]
-
 { #category : 'updating' }
 GolapDandelionChartPresenter >> updateCanvas [
 
@@ -52,4 +46,10 @@ GolapDandelionChartPresenter >> updateCanvas [
 				color: (self edgeColorForScore: bezier model value score) ];
 		@ (GolapEdgeInteraction on: self).
 	self zoomToFit
+]
+
+{ #category : 'accessing' }
+GolapDandelionChartPresenter >> windowTitle [
+
+	^ 'Dandelion Chart'
 ]

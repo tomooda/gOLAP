@@ -80,12 +80,6 @@ GolapServerPhotoImageRetrieverPresenter >> retriever: aGolapServerPhotoImageRetr
 	self updateButtons
 ]
 
-{ #category : 'accessing' }
-GolapServerPhotoImageRetrieverPresenter >> title [
-
-	^ 'gOLAPサーバ画像設定'
-]
-
 { #category : 'updating' }
 GolapServerPhotoImageRetrieverPresenter >> updateButtons [
 
@@ -94,4 +88,10 @@ GolapServerPhotoImageRetrieverPresenter >> updateButtons [
 			window buttons first enabled:
 				(golapServerUrlField text notEmpty and: [
 					 imageServerUrlField text notEmpty ]) ] ]
+]
+
+{ #category : 'accessing' }
+GolapServerPhotoImageRetrieverPresenter >> windowTitle [
+
+	^ 'gOLAPサーバ画像設定'
 ]

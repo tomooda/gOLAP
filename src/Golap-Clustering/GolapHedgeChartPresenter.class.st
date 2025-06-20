@@ -26,12 +26,6 @@ GolapHedgeChartPresenter >> friendScoreBetween: aGolapNode1 and: aGolapNode2 [
 	^ friend1 max: friend2
 ]
 
-{ #category : 'accessing' }
-GolapHedgeChartPresenter >> title [
-
-	^ 'Hedge Chart'
-]
-
 { #category : 'updating' }
 GolapHedgeChartPresenter >> updateCanvas [
 
@@ -105,4 +99,10 @@ GolapHedgeChartPresenter >> updateCanvas [
 				canvas addShape: bezier ].
 			terminals add: parent -> parentPosition ] ].
 	self zoomToFit
+]
+
+{ #category : 'accessing' }
+GolapHedgeChartPresenter >> windowTitle [
+
+	^ 'Hedge Chart'
 ]

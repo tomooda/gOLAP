@@ -217,7 +217,7 @@ GolapCSVPhotoImageRetrieverPresenter >> retriever: aGolapCSVPhotoImageRetriever 
 ]
 
 { #category : 'accessing' }
-GolapCSVPhotoImageRetrieverPresenter >> title [
+GolapCSVPhotoImageRetrieverPresenter >> windowTitle [
 
 	^ '画像テーブル設定'
 ]

@@ -87,7 +87,7 @@ GolapGooglePhotoImageRetrieverPresenter >> retriever: aGolapPhotoImageRetriever 
 ]
 
 { #category : 'accessing' }
-GolapGooglePhotoImageRetrieverPresenter >> title [
+GolapGooglePhotoImageRetrieverPresenter >> windowTitle [
 
 	^ 'Google検索API設定'
 ]

@@ -2548,15 +2548,6 @@ Golap >> temporaryDirectoryName [
 	^ 'temporary'
 ]
 
-{ #category : 'accessing' }
-Golap >> title [
-
-	^ (self basicSnapshotDirectory notNil and: [ 
-		   self isTemporarySnapshot not ])
-		  ifTrue: [ self snapshotDirectory basename ]
-		  ifFalse: [ 'gOLAP' ]
-]
-
 { #category : 'accessing-selection' }
 Golap >> togglePin: aGolapNode [
 
@@ -2728,6 +2719,15 @@ Golap >> visibleEdgeMinPercentile [
 Golap >> visibleEdges [
 
 	^ edgesAppearancePresenter visibleEdges
+]
+
+{ #category : 'accessing' }
+Golap >> windowTitle [
+
+	^ (self basicSnapshotDirectory notNil and: [ 
+		   self isTemporarySnapshot not ])
+		  ifTrue: [ self snapshotDirectory basename ]
+		  ifFalse: [ 'gOLAP' ]
 ]
 
 { #category : 'accessing-presets' }

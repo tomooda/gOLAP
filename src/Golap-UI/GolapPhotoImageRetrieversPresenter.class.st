@@ -178,12 +178,6 @@ GolapPhotoImageRetrieversPresenter >> selectedRetrieverChanged [
 	self updateButtons
 ]
 
-{ #category : 'accessing' }
-GolapPhotoImageRetrieversPresenter >> title [
-
-	^ 'アイテム画像設定'
-]
-
 { #category : 'updating' }
 GolapPhotoImageRetrieversPresenter >> updateAddRetrieverButton [
 
@@ -239,4 +233,10 @@ GolapPhotoImageRetrieversPresenter >> updateRetrieverList [
 		items:
 			(itemInfoRetriever ifNotNil: #photoimageRetrievers ifNil: [ #(  ) ]).
 	self updateButtons
+]
+
+{ #category : 'accessing' }
+GolapPhotoImageRetrieversPresenter >> windowTitle [
+
+	^ 'アイテム画像設定'
 ]

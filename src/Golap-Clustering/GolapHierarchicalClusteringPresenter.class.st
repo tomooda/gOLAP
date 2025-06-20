@@ -86,12 +86,6 @@ GolapHierarchicalClusteringPresenter >> markerWidth [
 	^ 10
 ]
 
-{ #category : 'accessing' }
-GolapHierarchicalClusteringPresenter >> title [
-
-	^ self subclassResponsibility
-]
-
 { #category : 'operations' }
 GolapHierarchicalClusteringPresenter >> toggleSelection: aGolapNode [
 
@@ -202,6 +196,12 @@ GolapHierarchicalClusteringPresenter >> updateTree [
 						  rank: 256;
 						  tree) removeAllBut:
 						 golap overviewRenderer reallyVisibleNodes asSet) ] ] ]
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringPresenter >> windowTitle [
+
+	^ self subclassResponsibility
 ]
 
 { #category : 'updating' }

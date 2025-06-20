@@ -50,16 +50,16 @@ GolapAttributePhotoImageRetrieverPresenter >> selectedAttributeChanged [
 	self updateButtons
 ]
 
-{ #category : 'accessing' }
-GolapAttributePhotoImageRetrieverPresenter >> title [
-
-	^ '画像アイテム属性設定'
-]
-
 { #category : 'updating' }
 GolapAttributePhotoImageRetrieverPresenter >> updateButtons [
 
 	self window ifNotNil: [ :window |
 		window isDialog ifTrue: [
 			window buttons first enabled: attributeList selectedItem notNil ] ]
+]
+
+{ #category : 'accessing' }
+GolapAttributePhotoImageRetrieverPresenter >> windowTitle [
+
+	^ '画像アイテム属性設定'
 ]
