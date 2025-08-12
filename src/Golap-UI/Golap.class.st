@@ -57,7 +57,8 @@ Class {
 		'snapshotBaseName',
 		'hedgePresenter',
 		'dragNode',
-		'edgeList'
+		'edgeList',
+		'heatmapPresenter'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -997,16 +998,16 @@ Golap >> initializePresenters [
 	globalImagePane := self newImage
 		                   autoScale: true;
 		                   whenBuiltDo: [
-			                   globalImagePane adapter widget
-				                   on: #mouseMove
-				                   send: #globalImageMouseMove:
-				                   to: self;
-				                   on: #mouseUp
-				                   send: #globalImageMouseClick:
-				                   to: self;
-				                   on: #mouseWheel
-				                   send: #globalImageMouseWheel:
-				                   to: self ];
+				                   globalImagePane adapter widget
+					                   on: #mouseMove
+					                   send: #globalImageMouseMove:
+					                   to: self;
+					                   on: #mouseUp
+					                   send: #globalImageMouseClick:
+					                   to: self;
+					                   on: #mouseWheel
+					                   send: #globalImageMouseWheel:
+					                   to: self ];
 		                   bindKeyCombination:
 		                   Character arrowUp asKeyCombination
 		                   toAction: [ self zoomIn ];
@@ -1017,16 +1018,16 @@ Golap >> initializePresenters [
 	globalMapPane := self newImage
 		                 autoScale: false;
 		                 whenBuiltDo: [
-			                 globalMapPane adapter widget
-				                 on: #mouseMove
-				                 send: #globalMapMouseMove:
-				                 to: self;
-				                 on: #mouseUp
-				                 send: #globalMapMouseClick:
-				                 to: self;
-				                 on: #mouseWheel
-				                 send: #globalImageMouseWheel:
-				                 to: self ];
+				                 globalMapPane adapter widget
+					                 on: #mouseMove
+					                 send: #globalMapMouseMove:
+					                 to: self;
+					                 on: #mouseUp
+					                 send: #globalMapMouseClick:
+					                 to: self;
+					                 on: #mouseWheel
+					                 send: #globalImageMouseWheel:
+					                 to: self ];
 		                 bindKeyCombination: Character arrowUp
 		                 toAction: [ self zoomIn ];
 		                 bindKeyCombination: Character arrowDown
@@ -1046,24 +1047,24 @@ Golap >> initializePresenters [
 		                   yourself.
 	frontList := self newDropList
 		             display: [ :string |
-			             string isSymbol
-				             ifTrue: [ self pseudoDimensionNameAt: string ]
-				             ifFalse: [ string asString ] ];
+				             string isSymbol
+					             ifTrue: [ self pseudoDimensionNameAt: string ]
+					             ifFalse: [ string asString ] ];
 		             displayIcon: [ :string |
-			             string isSymbol
-				             ifTrue: [ self pseudoDimensionIconAt: string ]
-				             ifFalse: [ nil ] ];
+				             string isSymbol
+					             ifTrue: [ self pseudoDimensionIconAt: string ]
+					             ifFalse: [ nil ] ];
 		             whenSelectedItemChangedDo: [ :front |
-			             front isSymbol
-				             ifTrue: [ self perform: front ]
-				             ifFalse: [
-					             baseList
-						             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [
-									              dimensions keys asArray collect: [ :back |
-											              front = back
-												              ifTrue: [ String new ]
-												              ifFalse: [ back ] ] ]);
-						             selectItem: String new ] ];
+				             front isSymbol
+					             ifTrue: [ self perform: front ]
+					             ifFalse: [
+							             baseList
+								             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [
+												              dimensions keys asArray collect: [ :back |
+															              front = back
+																              ifTrue: [ String new ]
+																              ifFalse: [ back ] ] ]);
+								             selectItem: String new ] ];
 		             yourself.
 	baseList := self newDropList
 		            display: [ :string | string asString ];
@@ -1103,7 +1104,7 @@ Golap >> initializePresenters [
 	layoutButton := self newButton.
 	layoutButton
 		label: 'layout';
-		action: [ self updateGlobalImageAfter: [  ] layout: true ].
+		action: [ self updateGlobalImageAfter: [ ] layout: true ].
 	layoutChooseButton := self newButton
 		                      icon: (self iconNamed: #arrowDown);
 		                      action: [
@@ -1114,26 +1115,26 @@ Golap >> initializePresenters [
 		                                   labelOnRight;
 		                                   state: false;
 		                                   whenChangedDo: [
-			                                   overridesYWithFrequencyCheckbox
-				                                   state ifTrue: [
-					                                   overridesYWithFrequencyOrderCheckbox
-						                                   state: false ].
-			                                   self
-				                                   updateGlobalImageAfter: [  ]
-				                                   layout: true ].
+				                                   overridesYWithFrequencyCheckbox
+					                                   state ifTrue: [
+						                                   overridesYWithFrequencyOrderCheckbox
+							                                   state: false ].
+				                                   self
+					                                   updateGlobalImageAfter: [ ]
+					                                   layout: true ].
 	overridesYWithFrequencyOrderCheckbox := self newCheckBox
 		                                        label: 'Y=freq order';
 		                                        labelOnRight;
 		                                        state: false;
 		                                        whenChangedDo: [
-			                                        overridesYWithFrequencyOrderCheckbox
-				                                        state ifTrue: [
-					                                        overridesYWithFrequencyCheckbox
-						                                        state: false ].
-			                                        self
-				                                        updateGlobalImageAfter: [
-					                                         ]
-				                                        layout: true ].
+				                                        overridesYWithFrequencyOrderCheckbox
+					                                        state ifTrue: [
+						                                        overridesYWithFrequencyCheckbox
+							                                        state: false ].
+				                                        self
+					                                        updateGlobalImageAfter: [
+						                                         ]
+					                                        layout: true ].
 	commentText := self newText.
 	saveAsButton := self newButton
 		                label: 'save...';
@@ -1161,11 +1162,11 @@ Golap >> initializePresenters [
 					                  assoc key , ' : '
 					                  , (STONJSON toString: assoc value) ]);
 		                 children: [ :assoc |
-			                 assoc value isDictionary
-				                 ifTrue: [
-					                 assoc value keys asSortedCollection collect: [
-							                 :k | k -> (assoc value at: k) ] ]
-				                 ifFalse: [ Array new ] ];
+				                 assoc value isDictionary
+					                 ifTrue: [
+							                 assoc value keys asSortedCollection collect: [
+									                 :k | k -> (assoc value at: k) ] ]
+					                 ifFalse: [ Array new ] ];
 		                 contextMenu: [ self queryViewTreeMenu ];
 		                 yourself.
 	itemList := self newGolapItemList.
@@ -1190,25 +1191,28 @@ Golap >> initializePresenters [
 		                      (GolapDandelionChartPresenter new golap: self).
 	hedgePresenter := self instantiate:
 		                  (GolapHedgeChartPresenter new golap: self).
+	heatmapPresenter := self instantiate:
+		                    (GolapClusteredHeatmapPresenter new golap: self).
 	viewsNotebook := self newNotebook
 		                 addPageTitle: 'グラフ' provider: [
-			                 SpPresenter new
-				                 layout: self graphLayout;
-				                 yourself ];
+				                 SpPresenter new
+					                 layout: self graphLayout;
+					                 yourself ];
 		                 addPageTitle: 'たんぽぽ図'
 		                 provider: [ dandelionPresenter ];
 		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
+		                 addPageTitle: 'ヒートマップ' provider: [ heatmapPresenter ];
 		                 whenSelectedPageChangedDo: [ :page |
-			                 page activePresenter ifNotNil: [ :p |
-				                 (p respondsTo: #updateTree) ifTrue: [
-					                 p updateTree ] ] ];
+				                 page activePresenter ifNotNil: [ :p |
+					                 (p respondsTo: #updateTree) ifTrue: [
+						                 p updateTree ] ] ];
 		                 yourself.
 
 	self whenBuiltDo: [ :w |
-		| f |
-		f := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m |
-			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
+			| f |
+			f := TextStyle defaultFont.
+			w widget allMorphsDo: [ :m |
+				(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
 { #category : 'initialization' }
@@ -1516,14 +1520,6 @@ Golap >> openPresetQueryDialog [
 				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection |
 					itemList queryField text: selection ] ];
 		openModal
-]
-
-{ #category : 'operations' }
-Golap >> openSunburst [
-
-	(GolapDandelionChartPresenter new
-		 golap: self;
-		 yourself) open maximize
 ]
 
 { #category : 'accessing-widgets' }

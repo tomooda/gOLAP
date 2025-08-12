@@ -486,24 +486,6 @@ GolapModel >> nodesDo: aBlock [
 		aBlock cull: (nodes at: id) cull: id ]
 ]
 
-{ #category : 'visualization' }
-GolapModel >> openSunburst [
-	"(GolapHierarchicalClustering on: self)
-		rank: 2;
-		rank: 4;
-		rank: 8;
-		rank: 16;
-		rank: 32;
-		rank: 64;
-		rank: 128;
-		rank: 256;
-		openSunburst"
-
-	(GolapDandelionChartPresenter new
-		 golap: self;
-		 yourself) open
-]
-
 { #category : 'private' }
 GolapModel >> originalNodes [
 

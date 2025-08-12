@@ -64,13 +64,6 @@ GolapHierarchicalClusteringPresenter >> golapChanged [
 	golap model ifNotNil: [ self updateTree ]
 ]
 
-{ #category : 'initialization' }
-GolapHierarchicalClusteringPresenter >> initializeWindow: aSpWindowPresenter [
-
-	super initializeWindow: aSpWindowPresenter.
-	aSpWindowPresenter title: self title
-]
-
 { #category : 'private' }
 GolapHierarchicalClusteringPresenter >> markerModelForNode: aGolapNode color: aColor [
 
