@@ -122,27 +122,29 @@ GolapClusteredHeatmapPresenter >> updateNode [
 	self canvas shapes copy do: [ :shape |
 		shape model = #selection ifTrue: [ shape remove ] ].
 	self golapModelDo: [ :golapModel |
-			| nodes |
-			nodes := tree graphNodes.
-			nodes doWithIndex: [ :columnNode :columnIndex |
-					(golap includesSelection: columnNode) ifTrue: [
-							self canvas add: (RSBox new
-									 model: #selection;
-									 border: (RSBorder new color: Color gray);
-									 color: Color transparent;
-									 origin: columnIndex - 0.5 * self grid @ 0
-									 corner:
-										 columnIndex + 0.5 * self grid
-										 @ (nodes size + 1 * self grid)) ].
-					nodes doWithIndex: [ :rowNode :rowIndex |
-							(golap includesSelection: rowNode) ifTrue: [
+			tree notNil ifTrue: [
+					| nodes |
+					nodes := tree graphNodes.
+					nodes doWithIndex: [ :columnNode :columnIndex |
+							(golap includesSelection: columnNode) ifTrue: [
 									self canvas add: (RSBox new
 											 model: #selection;
 											 border: (RSBorder new color: Color gray);
 											 color: Color transparent;
-											 origin: 0 @ (rowIndex - 0.5 * self grid)
+											 origin: columnIndex - 0.5 * self grid @ 0
 											 corner:
-												 nodes size + 1 * self grid @ (rowIndex + 0.5 * self grid)) ] ] ] ].
+												 columnIndex + 0.5 * self grid
+												 @ (nodes size + 1 * self grid)) ].
+							nodes doWithIndex: [ :rowNode :rowIndex |
+									(golap includesSelection: rowNode) ifTrue: [
+											self canvas add: (RSBox new
+													 model: #selection;
+													 border: (RSBorder new color: Color gray);
+													 color: Color transparent;
+													 origin: 0 @ (rowIndex - 0.5 * self grid)
+													 corner:
+														 nodes size + 1 * self grid
+														 @ (rowIndex + 0.5 * self grid)) ] ] ] ] ].
 	self canvas signalUpdate
 ]
 
