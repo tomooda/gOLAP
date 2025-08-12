@@ -43,17 +43,18 @@ GolapCSVNodeImporterPresenter class >> defaultLayout [
 GolapCSVNodeImporterPresenter >> availableEvaluators [
 
 	^ Array streamContents: [ :stream |
-		  dataframe ifNotNil: [
-			  dataframe rows ifNotEmpty: [ :rows |
-				  ((rows first keys copyWithoutAll: {
-						    self idColumn.
-						    self nameColumn }) select: [ :column |
-					   (rows first at: column) isNumber ]) do: [ :column |
-					  stream nextPut: (GolapNodeColumnEvaluator column: column) ] ] ].
-		  stream
-			  nextPut: GolapNodeSumEvaluator new;
-			  nextPut: GolapNodeMaxEvaluator new;
-			  nextPut: GolapNodeAverageEvaluator new ]
+			  (dataframe notNil and: [ dataframe notEmpty ]) ifTrue: [
+					  | row |
+					  row := dataframe rowAt: 1.
+					  ((row keys copyWithoutAll: {
+							    self idColumn.
+							    self nameColumn }) select: [ :column |
+						   (row at: column) isNumber ]) do: [ :column |
+						  stream nextPut: (GolapNodeColumnEvaluator column: column) ] ].
+			  stream
+				  nextPut: GolapNodeSumEvaluator new;
+				  nextPut: GolapNodeMaxEvaluator new;
+				  nextPut: GolapNodeAverageEvaluator new ]
 ]
 
 { #category : 'operations' }
@@ -87,9 +88,11 @@ GolapCSVNodeImporterPresenter >> dataframeChanged [
 GolapCSVNodeImporterPresenter >> defaultNameColumn [
 
 	^ dataframe ifNotNil: [
-		  dataframe columnNames
-			  detect: [ :column | (dataframe rows first at: column) isString ]
-			  ifNone: [ nil ] ]
+			  dataframe columnNames
+				  detect: [ :column |
+					  (dataframe at: 1 at: (dataframe indexOfColumnNamed: column))
+						  isString ]
+				  ifNone: [ nil ] ]
 ]
 
 { #category : 'accessing' }

@@ -30,7 +30,7 @@ GolapCSVImportPresenter >> availableAggregatorsFor: aString [
 	^ dataframe
 		  ifNotNil: [
 			  | row |
-			  row := dataframe rows first.
+			  row := dataframe rowAt: 1.
 			  (row at: aString ifAbsent: [ nil ]) isNumber
 				  ifTrue: [
 					  Array streamContents: [ :stream |
@@ -56,10 +56,12 @@ GolapCSVImportPresenter >> availableEvaluators [
 { #category : 'accessing' }
 GolapCSVImportPresenter >> availableStringColumns [
 
-	^ dataframe rows ifEmpty: [ {  } ] ifNotEmpty: [ :rows |
-		  Array streamContents: [ :stream |
-			  rows first keysAndValuesDo: [ :column :value |
-				  value isString ifTrue: [ stream nextPut: column ] ] ] ]
+	^ dataframe ifEmpty: [ {  } ] ifNotEmpty: [
+			  | row |
+			  row := dataframe rowAt: 1.
+			  Array streamContents: [ :stream |
+					  row keysAndValuesDo: [ :column :value |
+						  value isString ifTrue: [ stream nextPut: column ] ] ] ]
 ]
 
 { #category : 'operations' }
@@ -145,11 +147,11 @@ GolapCSVImportPresenter >> updateColumnsTable [
 		columns: {
 				(SpStringTableColumn title: 'カラム名' evaluated: #asString).
 				(SpStringTableColumn title: 'データ例' evaluated: [ :column |
-						 dataframe ifNotNil: [
-								 dataframe rows
-									 ifEmpty: [ '-' ]
-									 ifNotEmpty: [ :rows |
-										 rows first at: column ifAbsent: [ '-' ] ] ] ]).
+							 dataframe ifNotNil: [
+										 dataframe ifEmpty: [ '-' ] ifNotEmpty: [
+													 (dataframe indexOfColumnNamed: column ifAbsent: [ nil ])
+														 ifNotNil: [ :index | dataframe at: 1 at: index ]
+														 ifNil: [ '-' ] ] ] ]).
 				((SpDropListTableColumn
 					  title: 'マージ'
 					  evaluated: [ :column | self availableAggregatorsFor: column ])

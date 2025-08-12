@@ -234,6 +234,18 @@ GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
 	edgeEvaluator := aGolapEdgeEvaluator
 ]
 
+{ #category : 'enumerating' }
+GolapModel >> edgesDo: aBlock [
+
+	| done |
+	done := IdentitySet new: nodes size.
+	self nodesDo: [ :node |
+			node edgesDo: [ :edge |
+					(done includes: edge) ifFalse: [
+							done add: edge.
+							aBlock value: edge ] ] ]
+]
+
 { #category : 'private' }
 GolapModel >> flushEdgeRanks [
 
@@ -361,6 +373,21 @@ GolapModel >> initialize [
 	edgeRanks := IdentityDictionary new
 ]
 
+{ #category : 'accessing' }
+GolapModel >> maxEdgeValue [
+
+	| maxValue maxEdge |
+	maxValue := Float negativeInfinity.
+	maxEdge := nil.
+	self edgesDo: [ :edge |
+			| value |
+			value := self valueAtEdge: edge.
+			maxValue < value ifTrue: [
+					maxValue := value.
+					maxEdge := edge ] ].
+	^ maxEdge ifNotNil: [ maxValue ] ifNil: [ 1.0 ]
+]
+
 { #category : 'accessing-node' }
 GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
@@ -405,6 +432,21 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 		friendsEdges := nil.
 		self friendsEdges: self friendsRank.
 		^ newNode ]
+]
+
+{ #category : 'accessing' }
+GolapModel >> minEdgeValue [
+
+	| minValue minEdge |
+	minValue := Float infinity.
+	minEdge := nil.
+	self edgesDo: [ :edge |
+			| value |
+			value := self valueAtEdge: edge.
+			value < minValue ifTrue: [
+					minValue := value.
+					minEdge := edge ] ].
+	^ minEdge ifNotNil: [ minValue ] ifNil: [ 0.0 ]
 ]
 
 { #category : 'polishing' }

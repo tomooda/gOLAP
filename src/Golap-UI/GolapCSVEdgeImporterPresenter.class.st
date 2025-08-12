@@ -37,13 +37,14 @@ GolapCSVEdgeImporterPresenter class >> defaultLayout [
 GolapCSVEdgeImporterPresenter >> availableEvaluators [
 
 	^ Array streamContents: [ :stream |
-		  dataframe ifNotNil: [
-			  dataframe rows ifNotEmpty: [ :rows |
-				  ((rows first keys copyWithoutAll: {
-						    self idColumn1.
-						    self idColumn2 }) select: [ :column |
-					   (rows first at: column) isNumber ]) do: [ :column |
-					  stream nextPut: (GolapEdgeColumnEvaluator column: column) ] ] ] ]
+			  (dataframe notNil and: [ dataframe notEmpty ]) ifTrue: [
+					  | row |
+					  row := dataframe rowAt: 1.
+					  ((row keys copyWithoutAll: {
+							    self idColumn1.
+							    self idColumn2 }) select: [ :column |
+						   (row at: column) isNumber ]) do: [ :column |
+						  stream nextPut: (GolapEdgeColumnEvaluator column: column) ] ] ]
 ]
 
 { #category : 'operations' }

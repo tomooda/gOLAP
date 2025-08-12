@@ -10,26 +10,6 @@ Class {
 	#tag : 'Core'
 }
 
-{ #category : 'instance creation' }
-GolapHierarchicalClusteringTree class >> friendsClusterFrom: aGolapModel depth: anInteger [
-
-	| done edges rank trees |
-	edges := OrderedCollection new.
-	done := IdentitySet new: aGolapModel graphNodes size.
-	aGolapModel graphNodesDo: [ :node |
-		done add: node.
-		node basicEdgesAndNodesDo: [ :edge :peer |
-			(done includes: peer) ifFalse: [
-				edges add: edge -> (aGolapModel valueAtEdge: edge) ] ] ].
-	edges := edges sorted: #value.
-	rank := 1.
-	trees := aGolapModel graphNodes asArray collect: [ :node |
-		         GolapHierarchicalClusteringLeaf
-			         node: node
-			         score: (aGolapModel valueAtNode: node) ].
-	anInteger timesRepeat: [  ]
-]
-
 { #category : 'accessing' }
 GolapHierarchicalClusteringTree >> allLeaves [
 

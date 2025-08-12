@@ -7,18 +7,19 @@ DataFrameTypeDetector >> canAllBeDateAndTime: aDataSeries [
 
 { #category : '*Golap-Models' }
 DataFrameTypeDetector >> canAllBeNumber: aDataSeries [
-	| regex |
-	regex := '^nan|-nan|NaN|-NaN|inf|[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$'
-		asRegex.
-	^ aDataSeries
-		detect: [ :each | 
-			[ each isNil
-				ifTrue: [ false ]
-				ifFalse: [ (regex matches: each) not ] ]
-				on: Error
-				do: [ ^ false ] ]
-		ifFound: [ false ]
-		ifNone: [ true ]
+
+	| regex nans |
+	regex := '^[-+]?[0-9].*' asRegex.
+	nans := #( 'nan' '-nan' 'NaN' '-NaN' 'inf' '-inf' ) asSet.
+	^ [
+		  aDataSeries
+			  detect: [ :each |
+					  each notNil and: [
+						  ((regex matches: each) or: [ nans includes: each ]) not ] ]
+			  ifFound: [ false ]
+			  ifNone: [ true ] ]
+		  on: Error
+		  do: [ :ex | ex return: false ]
 ]
 
 { #category : '*Golap-Models' }

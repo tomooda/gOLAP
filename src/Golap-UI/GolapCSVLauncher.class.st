@@ -70,20 +70,20 @@ GolapCSVLauncher class >> open [
 GolapCSVLauncher >> addPair [
 
 	pairPresenter openDialog okAction: [
-		| nodeFile edgeFile selection |
-		nodeFile := pairPresenter nodeCSVFileReference.
-		edgeFile := pairPresenter edgeCSVFileReference.
-		(nodeFile notNil and: [ edgeFile notNil ]) ifTrue: [
-			selection := pairsTable selectedItem.
-			pairsTable items: (pairsTable items copyWith: {
-						 nodeFile.
-						 edgeFile.
-						 (pairPresenter pairName ifEmpty: [
-							  nodeFile basenameWithoutExtension: 'csv' ]).
-						 nil }).
-			selection
-				ifNotNil: [ pairsTable selectItem: selection ]
-				ifNil: [ pairsTable selectIndex: 1 ] ] ]
+			| nodeFile edgeFile selection |
+			nodeFile := pairPresenter nodeCSVFileReference.
+			edgeFile := pairPresenter edgeCSVFileReference.
+			(nodeFile notNil and: [ edgeFile notNil ]) ifTrue: [
+					selection := pairsTable selectedItem.
+					pairsTable items: (pairsTable items copyWith: {
+								 nodeFile.
+								 edgeFile.
+								 (pairPresenter pairName ifEmpty: [
+									  nodeFile basenameWithoutExtension: 'csv' ]).
+								 nil }).
+					selection
+						ifNotNil: [ pairsTable selectItem: selection ]
+						ifNil: [ pairsTable selectIndex: 1 ] ] ]
 ]
 
 { #category : 'enumerating' }
@@ -218,19 +218,31 @@ GolapCSVLauncher >> removePair [
 GolapCSVLauncher >> selectedPairChanged [
 
 	pairsTable selectedItem ifNotNil: [ :item |
-		item last ifNil: [
-			| csv1 csv2 |
-			csv1 := nil.
-			csv2 := nil.
-			item first isFile ifTrue: [
-				csv1 := DataFrame readFromCsv: item first ].
-			item second isFile ifTrue: [
-				csv2 := DataFrame readFromCsv: item second ].
-			(csv1 notNil and: [ csv2 notNil ]) ifTrue: [
-				item at: item size put: {
-						csv1.
-						csv2 } ] ].
-		item last ifNotNil: [ :pair |
-			nodeImporterPresenter dataframe: pair first.
-			edgeImporterPresenter dataframe: pair second ] ]
+			item last ifNil: [
+					| csv1 csv2 |
+					csv1 := nil.
+					csv2 := nil.
+					item first isFile ifTrue: [
+							self
+								informUser: 'Reading ' , item first basename
+								during: [ :job |
+										csv1 := DataFrame
+											        readFromCsv: item first
+											        interim: [ :v | job progress: v ]
+											        frequency: 100 ] ].
+					item second isFile ifTrue: [
+							self
+								informUser: 'Reading ' , item second basename
+								during: [ :job |
+										csv2 := DataFrame
+											        readFromCsv: item second
+											        interim: [ :v | job progress: v ]
+											        frequency: 100 ] ].
+					(csv1 notNil and: [ csv2 notNil ]) ifTrue: [
+							item at: item size put: {
+									csv1.
+									csv2 } ] ].
+			item last ifNotNil: [ :pair |
+					nodeImporterPresenter dataframe: pair first.
+					edgeImporterPresenter dataframe: pair second ] ]
 ]
