@@ -31,7 +31,7 @@ GolapHedgeChartPresenter >> updateCanvas [
 
 	| canvas markers terminals y ystep |
 	canvas := self canvas.
-	canvas clear.
+	self canvas shapes copy do: #remove.
 	markers := golap allMarkerColors.
 	terminals := OrderedCollection new: golap model nodes size.
 	tree allLeaves doWithIndex: [ :leaf :index |

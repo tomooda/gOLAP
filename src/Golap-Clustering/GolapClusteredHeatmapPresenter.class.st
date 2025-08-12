@@ -46,7 +46,7 @@ GolapClusteredHeatmapPresenter >> menuForNode: aGolapNode [
 { #category : 'updating' }
 GolapClusteredHeatmapPresenter >> updateCanvas [
 
-	self canvas clear.
+	self canvas shapes copy do: #remove.
 	self canvas color: Color black.
 	self golapModelDo: [ :golapModel |
 			| nodes minValue maxValue valueScale cells |

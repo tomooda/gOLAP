@@ -12,7 +12,7 @@ GolapDandelionChartPresenter >> updateCanvas [
 	| markers sunburstBuilder bezierBuilder |
 	markers := golap allMarkerColors.
 	sunburstBuilder := RSSunburstBuilder new.
-	self canvas clear.
+	self canvas shapes copy do: #remove.
 	sunburstBuilder
 		container: self canvas;
 		sliceColor: [ :slice |
