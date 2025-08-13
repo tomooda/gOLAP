@@ -82,16 +82,46 @@ Golap class >> defaultFont: aFont [
 Golap class >> defaultLayout [
 
 	<spec>
-	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.75;
-		  add: #viewsNotebook;
+	^ SpBoxLayout newHorizontal
 		  add: (SpBoxLayout newVertical
-				   add: #saveSnapshotButton height: self buttonHeight;
-				   add: #saveAsSvgButton height: self buttonHeight;
-				   add: #saveAsPngButton height: self buttonHeight;
-				   add: #resentQueryButton height: self buttonHeight;
-				   add: #queryViewTree height: 200;
-				   add: #itemNotebook);
+				   add: #globalMapPane height: 200;
+				   add: (SpBoxLayout newHorizontal
+						    add: #zoomInButton width: 110;
+						    add: #resetZoomButton width: 80;
+						    add: #zoomOutButton width: 110)
+				   height: self buttonHeight;
+				   add: (SpBoxLayout newHorizontal
+						    add: #frontList width: 150;
+						    add: #baseList)
+				   height: self buttonHeight;
+				   add: #appearanceNotebook height: 300;
+				   add: (SpBoxLayout newHorizontal
+						    add: #overviewRendererButton;
+						    add: #elaborationRendererButton)
+				   height: self buttonHeight;
+				   add: (SpBoxLayout newHorizontal
+						    add: #layoutButton expand: true;
+						    add: #layoutChooseButton width: 20;
+						    add: (SpBoxLayout newVertical
+								     add: #overridesYWithFrequencyCheckbox expand: false;
+								     add: #overridesYWithFrequencyOrderCheckbox expand: false)
+						    width: 100)
+				   expand: false;
+				   add: 'コメント' expand: false;
+				   add: #commentText;
+				   yourself)
+		  width: 350;
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.75;
+				   add: #viewsNotebook;
+				   add: (SpBoxLayout newVertical
+						    add: #saveSnapshotButton height: self buttonHeight;
+						    add: #saveAsSvgButton height: self buttonHeight;
+						    add: #saveAsPngButton height: self buttonHeight;
+						    add: #resentQueryButton height: self buttonHeight;
+						    add: #queryViewTree height: 200;
+						    add: #itemNotebook);
+				   yourself);
 		  yourself
 ]
 
@@ -333,11 +363,12 @@ Golap class >> openNewClient [
 
 { #category : 'menus' }
 Golap class >> showSettingBrowser [
+
 	<script>
 	SettingBrowser new
-		changePackageSet:
-			{(RPackageOrganizer default packageNamed: #'Network-Kernel').
-			(RPackageOrganizer default packageNamed: #'Golap-UI')};
+		changePackageSet: {
+				(self packageOrganizer packageNamed: #'Network-Kernel').
+				(self packageOrganizer packageNamed: #'Golap-UI') };
 		open
 ]
 
@@ -1194,18 +1225,16 @@ Golap >> initializePresenters [
 	heatmapPresenter := self instantiate:
 		                    (GolapClusteredHeatmapPresenter new golap: self).
 	viewsNotebook := self newNotebook
-		                 addPageTitle: 'グラフ' provider: [
-				                 SpPresenter new
-					                 layout: self graphLayout;
-					                 yourself ];
+		                 addPageTitle: 'グラフ' provider: [ globalImagePane ];
 		                 addPageTitle: 'たんぽぽ図'
 		                 provider: [ dandelionPresenter ];
 		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
-		                 addPageTitle: 'ヒートマップ' provider: [ heatmapPresenter ];
+		                 addPageTitle: 'ヒートマップ'
+		                 provider: [ heatmapPresenter ];
 		                 whenSelectedPageChangedDo: [ :page |
 				                 page activePresenter ifNotNil: [ :p |
-					                 (p respondsTo: #updateTree) ifTrue: [
-						                 p updateTree ] ] ];
+						                 (p respondsTo: #updateTree) ifTrue: [
+								                 p updateTree ] ] ];
 		                 yourself.
 
 	self whenBuiltDo: [ :w |

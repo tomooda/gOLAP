@@ -107,15 +107,15 @@ GolapEdgesAppearance class >> on: aGolap [
 GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 
 	aGolapEdgeEvaluator ifNotNil: [
-		golap model ifNotNil: [ :model |
-			self updateGlobalImageAfter: [
-				model edgeEvaluator: aGolapEdgeEvaluator.
-				model friendsEdges: nil.
-				self resetVisibleEdgeThresholds.
-				golap updateQuery.
-				nodeEvaluatorList withAdapterDo: [ :a |
-					a widgetDo: [ :w | w updateContents ] ].
-				golap announceGolapModelUpdated ] ] ]
+			golap model ifNotNil: [ :model |
+					self updateGlobalImageAfter: [
+							model edgeEvaluator: aGolapEdgeEvaluator.
+							model flushFriendsEdges.
+							self resetVisibleEdgeThresholds.
+							golap updateQuery.
+							nodeEvaluatorList withAdapterDo: [ :a |
+								a widgetDo: [ :w | w updateContents ] ].
+							golap announceGolapModelUpdated ] ] ]
 ]
 
 { #category : 'accessing' }

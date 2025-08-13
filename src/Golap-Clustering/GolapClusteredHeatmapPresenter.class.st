@@ -1,6 +1,9 @@
 Class {
 	#name : 'GolapClusteredHeatmapPresenter',
 	#superclass : 'GolapHierarchicalClusteringPresenter',
+	#instVars : [
+		'grid'
+	],
 	#category : 'Golap-Clustering-Heatmap',
 	#package : 'Golap-Clustering',
 	#tag : 'Heatmap'
@@ -34,7 +37,7 @@ GolapClusteredHeatmapPresenter >> golapModelDo: aBlock [
 { #category : 'accessing' }
 GolapClusteredHeatmapPresenter >> grid [
 
-	^ 10
+	^ grid ifNil: [ grid := RSLabel defaultFont height * 2 ]
 ]
 
 { #category : 'menus' }
@@ -49,23 +52,25 @@ GolapClusteredHeatmapPresenter >> updateCanvas [
 	self canvas shapes copy do: #remove.
 	self canvas color: Color black.
 	self golapModelDo: [ :golapModel |
-			| nodes minValue maxValue valueScale cells |
+			| nodes rightBound minValue maxValue valueScale cells |
 			nodes := tree graphNodes.
+			rightBound := nodes size + 0.5 * self grid.
 			minValue := golapModel minEdgeValue.
 			maxValue := golapModel maxEdgeValue.
 			minValue := minValue - (maxValue - minValue / 10.0).
 			valueScale := 1.0 / (maxValue - minValue).
 			cells := (Array streamContents: [ :stream |
-					          nodes doWithIndex: [ :columnNode :columnIndex |
-							          (golap includesSelection: columnNode) ifTrue: [
-									          self canvas add: (RSBox new
-											           border: (RSBorder new color: Color lightGray);
-											           color: Color transparent;
-											           origin: columnIndex - 0.5 * self grid @ 0
-											           corner:
-												           columnIndex + 0.5 * self grid
-												           @ (nodes size * self grid)) ].
-							          nodes doWithIndex: [ :rowNode :rowIndex |
+					          nodes doWithIndex: [ :rowNode :rowIndex |
+							          | rowLabel |
+							          rowLabel := RSLabel new
+								                      model: #rowLabel;
+								                      text: rowNode name;
+								                      color: Color lightGray.
+							          rowLabel position:
+								          rightBound + self grid + (rowLabel width * 0.5)
+								          @ (rowIndex * self grid).
+							          self canvas add: rowLabel.
+							          nodes doWithIndex: [ :columnNode :columnIndex |
 									          (columnNode edgeTo: rowNode ifAbsent: [ nil ])
 										          ifNotNil: [ :edge |
 												          | value |
@@ -119,32 +124,80 @@ GolapClusteredHeatmapPresenter >> updateCanvas [
 { #category : 'updating' }
 GolapClusteredHeatmapPresenter >> updateNode [
 
+	| rightBound |
+	rightBound := 0.
 	self canvas shapes copy do: [ :shape |
-		shape model = #selection ifTrue: [ shape remove ] ].
+			shape model = #selection ifTrue: [ shape remove ].
+			shape model = #rowLabel ifTrue: [
+					rightBound := shape encompassingRectangle right + self grid max:
+						              rightBound ] ].
 	self golapModelDo: [ :golapModel |
 			tree notNil ifTrue: [
-					| nodes |
+					| nodes origin corner startIndex |
 					nodes := tree graphNodes.
-					nodes doWithIndex: [ :columnNode :columnIndex |
-							(golap includesSelection: columnNode) ifTrue: [
-									self canvas add: (RSBox new
-											 model: #selection;
-											 border: (RSBorder new color: Color gray);
-											 color: Color transparent;
-											 origin: columnIndex - 0.5 * self grid @ 0
-											 corner:
-												 columnIndex + 0.5 * self grid
-												 @ (nodes size + 1 * self grid)) ].
-							nodes doWithIndex: [ :rowNode :rowIndex |
-									(golap includesSelection: rowNode) ifTrue: [
-											self canvas add: (RSBox new
-													 model: #selection;
-													 border: (RSBorder new color: Color gray);
-													 color: Color transparent;
-													 origin: 0 @ (rowIndex - 0.5 * self grid)
-													 corner:
-														 nodes size + 1 * self grid
-														 @ (rowIndex + 0.5 * self grid)) ] ] ] ] ].
+					origin := 0.0.
+					corner := (nodes size + 1 * self grid) asFloat.
+					rightBound := rightBound max: corner.
+					startIndex := nil.
+					(nodes copyWith: nil) doWithIndex: [ :node :index |
+							(node notNil and: [ golap includesSelection: node ])
+								ifTrue: [ startIndex ifNil: [ startIndex := index ] ]
+								ifFalse: [
+										startIndex ifNotNil: [
+												| s e |
+												s := startIndex - 0.5 * self grid.
+												e := index - 0.5 * self grid.
+												self canvas
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: s @ origin;
+															 endPoint: s @ corner);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: s @ corner;
+															 endPoint: e @ corner);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: e @ corner;
+															 endPoint: e @ origin);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: e @ origin;
+															 endPoint: s @ origin).
+												self canvas
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: origin @ s;
+															 endPoint: rightBound @ s);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: rightBound @ s;
+															 endPoint: rightBound @ e);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: rightBound @ e;
+															 endPoint: origin @ e);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: origin @ e;
+															 endPoint: origin @ s).
+												startIndex := nil ] ] ] ] ].
 	self canvas signalUpdate
 ]
 
