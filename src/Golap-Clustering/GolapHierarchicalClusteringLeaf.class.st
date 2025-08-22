@@ -36,6 +36,12 @@ GolapHierarchicalClusteringLeaf >> hasChild: aTree [
 ]
 
 { #category : 'testing' }
+GolapHierarchicalClusteringLeaf >> isEmpty [
+
+	^ false
+]
+
+{ #category : 'testing' }
 GolapHierarchicalClusteringLeaf >> isLeaf [
 
 	^ true
@@ -62,6 +68,16 @@ GolapHierarchicalClusteringLeaf >> oneLeaf [
 { #category : 'printing' }
 GolapHierarchicalClusteringLeaf >> printOn: aStream [
 	aStream nextPutAll: graphNode name
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> rank [
+
+	^ 0
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> rank: anInteger [
 ]
 
 { #category : 'private' }

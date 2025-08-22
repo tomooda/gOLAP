@@ -2,12 +2,22 @@ Class {
 	#name : 'GolapClusteredHeatmapPresenter',
 	#superclass : 'GolapHierarchicalClusteringPresenter',
 	#instVars : [
-		'grid'
+		'currentTree',
+		'grid',
+		'showsSingletonClustersCheckbox',
+		'rankSlider',
+		'rankLabel'
 	],
 	#category : 'Golap-Clustering-Heatmap',
 	#package : 'Golap-Clustering',
 	#tag : 'Heatmap'
 }
+
+{ #category : 'accessing' }
+GolapClusteredHeatmapPresenter >> availableRanks [
+
+	^ #( 2 4 8 16 32 64 128 256 )
+]
 
 { #category : 'menus' }
 GolapClusteredHeatmapPresenter >> cellMenuFor: aRSShape [
@@ -28,6 +38,21 @@ GolapClusteredHeatmapPresenter >> cellMenuFor: aRSShape [
 							  subMenu: (self menuForNode: node) ] ]
 ]
 
+{ #category : 'layout' }
+GolapClusteredHeatmapPresenter >> defaultLayout [
+
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: showsSingletonClustersCheckbox expand: false;
+				   add: ' クラスタランク';
+				   add: rankSlider expand: false;
+				   add: rankLabel expand: false;
+				   yourself)
+		  expand: false;
+		  add: roassal;
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapClusteredHeatmapPresenter >> golapModelDo: aBlock [
 
@@ -40,10 +65,60 @@ GolapClusteredHeatmapPresenter >> grid [
 	^ grid ifNil: [ grid := RSLabel defaultFont height * 2 ]
 ]
 
+{ #category : 'initialization' }
+GolapClusteredHeatmapPresenter >> initializePresenters [
+
+	super initializePresenters.
+	showsSingletonClustersCheckbox := self newCheckBox
+		                                  label: '単独クラスタも表示';
+		                                  state: true;
+		                                  whenChangedDo: [
+			                                  self
+				                                  showsSingletonClustersChanged ];
+		                                  yourself.
+	rankSlider := self newSlider
+		              min: 1;
+		              max: self availableRanks size;
+		              quantum: 1;
+		              value: 1;
+		              whenValueChangedDo: [ self rankChanged ];
+		              yourself.
+	rankLabel := self newLabel
+		             label: self rank printString;
+		             yourself
+]
+
 { #category : 'menus' }
 GolapClusteredHeatmapPresenter >> menuForNode: aGolapNode [
 
 	^ golap globalImageMenu: aGolapNode
+]
+
+{ #category : 'accessing' }
+GolapClusteredHeatmapPresenter >> rank [
+
+	^ self availableRanks at: rankSlider value
+]
+
+{ #category : 'updating' }
+GolapClusteredHeatmapPresenter >> rankChanged [
+
+	self
+		updateRankLabel;
+		updateCanvas
+]
+
+{ #category : 'updating' }
+GolapClusteredHeatmapPresenter >> showsSingletonClustersChanged [
+
+	self updateCanvas
+]
+
+{ #category : 'accessing' }
+GolapClusteredHeatmapPresenter >> tree: aGolapHierarchicalClusteringTree [
+
+	currentTree := aGolapHierarchicalClusteringTree.
+	super tree: aGolapHierarchicalClusteringTree
 ]
 
 { #category : 'updating' }
@@ -53,7 +128,7 @@ GolapClusteredHeatmapPresenter >> updateCanvas [
 	self canvas color: Color black.
 	self golapModelDo: [ :golapModel |
 			| nodes rightBound minValue maxValue valueScale cells |
-			nodes := tree graphNodes.
+			nodes := self visibleNodes.
 			rightBound := nodes size + 0.5 * self grid.
 			minValue := golapModel minEdgeValue.
 			maxValue := golapModel maxEdgeValue.
@@ -132,9 +207,9 @@ GolapClusteredHeatmapPresenter >> updateNode [
 					rightBound := shape encompassingRectangle right + self grid max:
 						              rightBound ] ].
 	self golapModelDo: [ :golapModel |
-			tree notNil ifTrue: [
+			currentTree notNil ifTrue: [
 					| nodes origin corner startIndex |
-					nodes := tree graphNodes.
+					nodes := self visibleNodes.
 					origin := 0.0.
 					corner := (nodes size + 1 * self grid) asFloat.
 					rightBound := rightBound max: corner.
@@ -199,6 +274,24 @@ GolapClusteredHeatmapPresenter >> updateNode [
 															 endPoint: origin @ s).
 												startIndex := nil ] ] ] ] ].
 	self canvas signalUpdate
+]
+
+{ #category : 'updating' }
+GolapClusteredHeatmapPresenter >> updateRankLabel [
+
+	rankLabel label: self rank printString
+]
+
+{ #category : 'accessing' }
+GolapClusteredHeatmapPresenter >> visibleNodes [
+
+	^ showsSingletonClustersCheckbox state = true
+		  ifTrue: [ currentTree graphNodes ]
+		  ifFalse: [
+				  Array streamContents: [ :stream |
+						  currentTree childrenDo: [ :treeNode |
+							  treeNode graphNodesDo: [ :graphNode |
+								  stream nextPut: graphNode ] ] ] ]
 ]
 
 { #category : 'accessing' }

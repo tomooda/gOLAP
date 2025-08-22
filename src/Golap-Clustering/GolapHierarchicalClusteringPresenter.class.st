@@ -1,9 +1,10 @@
 Class {
 	#name : 'GolapHierarchicalClusteringPresenter',
-	#superclass : 'SpRoassalPresenter',
+	#superclass : 'SpPresenter',
 	#instVars : [
 		'golap',
-		'tree'
+		'tree',
+		'roassal'
 	],
 	#category : 'Golap-Clustering-Core',
 	#package : 'Golap-Clustering',
@@ -13,14 +14,21 @@ Class {
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> canvas [
 
-	^ currentCanvas ifNil: [
-		  currentCanvas := RSCanvas new @ (GolapCanvasController on: self) ]
+	^ roassal canvas
 ]
 
 { #category : 'accessing-colors' }
 GolapHierarchicalClusteringPresenter >> colorForNode: aGolapNode [
 
 	^ golap colorForNode: aGolapNode
+]
+
+{ #category : 'layout' }
+GolapHierarchicalClusteringPresenter >> defaultLayout [
+
+	^ SpBoxLayout newVertical
+		  add: roassal;
+		  yourself
 ]
 
 { #category : 'private' }
@@ -62,6 +70,15 @@ GolapHierarchicalClusteringPresenter >> golap: aGolap [
 GolapHierarchicalClusteringPresenter >> golapChanged [
 
 	golap model ifNotNil: [ self updateTree ]
+]
+
+{ #category : 'initialization' }
+GolapHierarchicalClusteringPresenter >> initializePresenters [
+
+	super initializePresenters.
+	roassal := self newRoassal
+		           canvas: RSCanvas new @ RSCanvasController;
+		           yourself
 ]
 
 { #category : 'private' }

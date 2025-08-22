@@ -39,14 +39,6 @@ GolapHierarchicalClusteringNode class >> withAll: aCollectionOfGolapTree rank: a
 		  yourself
 ]
 
-{ #category : 'adding' }
-GolapHierarchicalClusteringNode >> add: aGolapHierarchicalClusteringTree score: aNumber [
-
-	trees add: aGolapHierarchicalClusteringTree.
-	aGolapHierarchicalClusteringTree parent: self.
-	score := score + aNumber
-]
-
 { #category : 'enumerating' }
 GolapHierarchicalClusteringNode >> childrenDo: aBlock [
 

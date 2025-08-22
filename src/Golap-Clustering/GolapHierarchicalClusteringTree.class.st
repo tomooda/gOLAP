@@ -77,6 +77,12 @@ GolapHierarchicalClusteringTree >> ifNode: aBlock [
 ]
 
 { #category : 'testing' }
+GolapHierarchicalClusteringTree >> isEmpty [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'testing' }
 GolapHierarchicalClusteringTree >> isLeaf [
 
 	^ false
@@ -109,6 +115,22 @@ GolapHierarchicalClusteringTree >> maxDepth [
 	^ self allLeaves
 		  ifNotEmpty: [ :leaves | (leaves collect: #depth) max ]
 		  ifEmpty: [ 0 ]
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> mean [
+
+	self ifEmpty: [ ^ 0 ].
+	^ self score / self size
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> meanAtRank: anInteger [
+
+	self rank ifNil: [ ^ self mean ].
+	self parent ifNil: [ ^ self mean ].
+	self parent rank > anInteger ifTrue: [ ^ self mean ].
+	self parent meanAtRank: anInteger
 ]
 
 { #category : 'enumerating' }
@@ -194,6 +216,18 @@ GolapHierarchicalClusteringTree >> parent [
 GolapHierarchicalClusteringTree >> parent: aGolapHierarchicalClusteringNode [
 
 	parent := aGolapHierarchicalClusteringNode
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> rank [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> rank: anInteger [
+
+	^ self subclassResponsibility
 ]
 
 { #category : 'private' }
