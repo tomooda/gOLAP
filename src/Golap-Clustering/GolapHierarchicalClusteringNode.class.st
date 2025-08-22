@@ -40,6 +40,15 @@ GolapHierarchicalClusteringNode class >> withAll: aCollectionOfGolapTree rank: a
 ]
 
 { #category : 'enumerating' }
+GolapHierarchicalClusteringNode >> atRank: anInteger do: aBlock [
+
+	(rank notNil and: [ rank <= anInteger ])
+		ifTrue: [ aBlock value: self ]
+		ifFalse: [
+		self childrenDo: [ :node | node atRank: anInteger do: aBlock ] ]
+]
+
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringNode >> childrenDo: aBlock [
 
 	^ trees do: aBlock

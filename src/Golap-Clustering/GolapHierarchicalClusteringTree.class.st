@@ -24,6 +24,12 @@ GolapHierarchicalClusteringTree >> asArray [
 ]
 
 { #category : 'enumerating' }
+GolapHierarchicalClusteringTree >> atRank: anInteger do: aBlock [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringTree >> childrenDo: aBlock [
 
 	^ self subclassResponsibility
@@ -95,6 +101,13 @@ GolapHierarchicalClusteringTree >> isNode [
 ]
 
 { #category : 'enumerating' }
+GolapHierarchicalClusteringTree >> leaves [
+
+	^ Array streamContents: [ :stream |
+		  self leavesDo: [ :leafNode | stream nextPut: leafNode ] ]
+]
+
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringTree >> leavesDo: aBlock [
 
 	^ self subclassResponsibility
@@ -122,15 +135,6 @@ GolapHierarchicalClusteringTree >> mean [
 
 	self ifEmpty: [ ^ 0 ].
 	^ self score / self size
-]
-
-{ #category : 'accessing' }
-GolapHierarchicalClusteringTree >> meanAtRank: anInteger [
-
-	self rank ifNil: [ ^ self mean ].
-	self parent ifNil: [ ^ self mean ].
-	self parent rank > anInteger ifTrue: [ ^ self mean ].
-	self parent meanAtRank: anInteger
 ]
 
 { #category : 'enumerating' }
@@ -219,6 +223,14 @@ GolapHierarchicalClusteringTree >> parent: aGolapHierarchicalClusteringNode [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringTree >> parentAtRank: anInteger [
+
+	self rank >= anInteger ifTrue: [ ^ self ].
+	self parent ifNil: [ ^ self ].
+	^ self parent parentAtRank: anInteger
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> rank [
 
 	^ self subclassResponsibility
@@ -264,4 +276,11 @@ GolapHierarchicalClusteringTree >> sort [
 GolapHierarchicalClusteringTree >> trees [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> treesAtRank: anInteger [
+
+	^ Array streamContents: [ :stream |
+		  self atRank: anInteger do: [ :tree | stream nextPut: tree ] ]
 ]

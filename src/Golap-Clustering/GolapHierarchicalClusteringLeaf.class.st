@@ -18,6 +18,12 @@ GolapHierarchicalClusteringLeaf class >> node: aGolapNode score: aNumber [
 ]
 
 { #category : 'enumerating' }
+GolapHierarchicalClusteringLeaf >> atRank: anInteger do: aBlock [
+
+	aBlock value: self
+]
+
+{ #category : 'enumerating' }
 GolapHierarchicalClusteringLeaf >> childrenDo: aBlock [
 
 	
