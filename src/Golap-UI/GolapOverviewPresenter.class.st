@@ -4,12 +4,31 @@ Class {
 	#instVars : [
 		'roassal',
 		'scale',
+		'offset',
 		'golap'
 	],
 	#category : 'Golap-UI-Overview',
 	#package : 'Golap-UI',
 	#tag : 'Overview'
 }
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> camera [
+
+	^ self canvas camera
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> cameraScale [
+
+	^ self camera scale
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> cameraScale: aNumber [
+
+	self camera scale: aNumber
+]
 
 { #category : 'accessing' }
 GolapOverviewPresenter >> canvas [
@@ -25,12 +44,6 @@ GolapOverviewPresenter >> defaultLayout [
 		  yourself
 ]
 
-{ #category : 'defaults' }
-GolapOverviewPresenter >> defaultScale [
-
-	^ 1.0
-]
-
 { #category : 'accessing' }
 GolapOverviewPresenter >> golap: aGolap [
 	golap := aGolap.
@@ -40,7 +53,7 @@ GolapOverviewPresenter >> golap: aGolap [
 { #category : 'updating' }
 GolapOverviewPresenter >> golapChanged [
 
-	self updateCanvas
+	
 ]
 
 { #category : 'enumerating' }
@@ -52,8 +65,9 @@ GolapOverviewPresenter >> golapModelDo: aBlock [
 { #category : 'initialization' }
 GolapOverviewPresenter >> initialize [
 
-	scale := self defaultScale.
-	super initialize
+	super initialize.
+	scale := 1.0.
+	offset := 0.0 @ 0.0
 ]
 
 { #category : 'initialization' }
@@ -61,8 +75,24 @@ GolapOverviewPresenter >> initializePresenters [
 
 	super initializePresenters.
 	roassal := self newRoassal
-		           canvas: RSCanvas new @ GolapOverviewController;
+		           canvas: RSCanvas new @ self newCanvasController;
 		           yourself
+]
+
+{ #category : 'operations' }
+GolapOverviewPresenter >> move: aPoint [
+
+	self offset: aPoint / scale + offset.
+	self updateNodePositions.
+	self canvas signalUpdate
+]
+
+{ #category : 'instance creation' }
+GolapOverviewPresenter >> newCanvasController [
+
+	^ GolapOverviewController new
+		  presenter: self;
+		  yourself
 ]
 
 { #category : 'instance creation' }
@@ -73,6 +103,49 @@ GolapOverviewPresenter >> newLabelFor: aGolapNode [
 		  yourself
 ]
 
+{ #category : 'accessing' }
+GolapOverviewPresenter >> offset [
+
+	^ offset
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> offset: aPoint [
+
+	offset := aPoint
+]
+
+{ #category : 'enumerating' }
+GolapOverviewPresenter >> reallyVisibleNodesDo: aBlock [
+
+	golap ifNotNil: [
+			golap renderer ifNotNil: [ :renderer |
+					renderer updateVisibleEdgeThresholds.
+					renderer reallyVisibleNodes do: aBlock ] ]
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> scale [
+
+	^ scale
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> scale: aNumber [
+
+	scale := aNumber
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> scale: aNumber at: aPoint [
+
+	| oldFocus newFocus |
+	oldFocus := aPoint / scale.
+	self scale: aNumber.
+	newFocus := aPoint / scale.
+	self offset: offset - oldFocus + newFocus
+]
+
 { #category : 'updating' }
 GolapOverviewPresenter >> updateCanvas [
 
@@ -80,22 +153,26 @@ GolapOverviewPresenter >> updateCanvas [
 	self canvas color: Color white.
 	golap ifNotNil: [
 			golap renderer ifNotNil: [ :renderer |
-					| bounds offset scale |
 					renderer updateVisibleEdgeThresholds.
-					bounds := renderer fullBoundsWithMargin: 200 @ 50.
-					extent := bounds extent.
-					offset := bounds origin negated.
-					scale := renderer scale.
 					renderer reallyVisibleNodes ifNotNil: [ :nodes |
 							nodes do: [ :node |
 									node asPoint ifNotNil: [ :p |
 											| shape |
 											shape := self newLabelFor: node.
 											shape
+												model: node;
 												color: Color black;
-												position: p * scale + offset.
+												position: p + offset * scale.
 											self canvas add: shape ] ] ] ].
 			self zoomToFit ]
+]
+
+{ #category : 'updating' }
+GolapOverviewPresenter >> updateNodePositions [
+
+	self canvas shapes do: [ :shape |
+			(shape model isKindOf: GolapNode) ifTrue: [
+				shape position: shape model asPoint + offset * scale ] ]
 ]
 
 { #category : 'updating' }
@@ -105,9 +182,33 @@ GolapOverviewPresenter >> updateTree [
 ]
 
 { #category : 'operations' }
+GolapOverviewPresenter >> zoomInAt: aPoint [
+
+	self scale: self scale * 1.1 at: aPoint.
+	self updateNodePositions.
+	self canvas signalUpdate
+]
+
+{ #category : 'operations' }
+GolapOverviewPresenter >> zoomOutAt: aPoint [
+
+	self scale: self scale / 1.1 at: aPoint.
+	self updateNodePositions.
+	self canvas signalUpdate
+]
+
+{ #category : 'operations' }
 GolapOverviewPresenter >> zoomToFit [
 
-	self canvas
-		zoomToFit;
-		signalUpdate
+	| rect ext |
+	rect := (Array streamContents: [ :stream |
+			         self reallyVisibleNodesDo: [ :node |
+				         node asPoint ifNotNil: [ :point | stream nextPut: point ] ] ])
+		        ifEmpty: [ ^ self ]
+		        ifNotEmpty: [ :points | Rectangle encompassing: points ].
+	roassal withAdapterDo: [ :a | a widgetDo: [ :w | ext := w extent ] ].
+	self scale: (ext x / rect width min: ext y / rect height) * 0.9.
+	self offset: rect floatCenter negated.
+	self updateNodePositions.
+	self canvas signalUpdate
 ]
