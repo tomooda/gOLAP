@@ -58,7 +58,8 @@ Class {
 		'hedgePresenter',
 		'dragNode',
 		'edgeList',
-		'heatmapPresenter'
+		'heatmapPresenter',
+		'overviewPresenter'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -1217,7 +1218,8 @@ Golap >> initializePresenters [
 				                 presenterProvider: [ edgeList ];
 				                 yourself);
 		                yourself.
-
+	overviewPresenter := self instantiate:
+		                     (GolapOverviewPresenter new golap: self).
 	dandelionPresenter := self instantiate:
 		                      (GolapDandelionChartPresenter new golap: self).
 	hedgePresenter := self instantiate:
@@ -1226,6 +1228,8 @@ Golap >> initializePresenters [
 		                    (GolapClusteredHeatmapPresenter new golap: self).
 	viewsNotebook := self newNotebook
 		                 addPageTitle: 'グラフ' provider: [ globalImagePane ];
+		                 addPageTitle: '俯瞰図'
+		                 provider: [ overviewPresenter ];
 		                 addPageTitle: 'たんぽぽ図'
 		                 provider: [ dandelionPresenter ];
 		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
@@ -1837,7 +1841,8 @@ Golap >> removeReferenceNode: aGolapNode [
 
 { #category : 'accessing-renderer' }
 Golap >> renderer [
-	^ self perform: rendererSelector
+
+	^ rendererSelector ifNotNil: [ self perform: rendererSelector ]
 ]
 
 { #category : 'accessing-renderer' }
