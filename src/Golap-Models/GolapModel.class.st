@@ -631,7 +631,6 @@ GolapModel >> postCopy [
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
 	friendsEdges := nil.
-	friendsRank := nil.
 	self flushEdgeRanks
 ]
 

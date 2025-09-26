@@ -129,13 +129,6 @@ GolapItemsAppearance >> initializeWindow: aWindowPresenter [
 ]
 
 { #category : 'accessing' }
-GolapItemsAppearance >> maxFrequency: anInteger [
-
-	minFreqSlider max: anInteger.
-	minFreqField maximum: anInteger
-]
-
-{ #category : 'accessing' }
 GolapItemsAppearance >> minFrequency [
 
 	^ minFreqField number
@@ -218,14 +211,20 @@ GolapItemsAppearance >> snapshotInto: aStream [
 { #category : 'updating' }
 GolapItemsAppearance >> updateMinMaxFrequency [
 
+	| min max |
+	min := 0.0.
+	max := 1.0.
 	golap ifNotNil: [
-		golap model ifNotNil: [ :model |
-			(golap nodes collect: golap model nodeEvaluator)
-				ifEmpty: [
-					self
-						minFrequency: 0;
-						maxFrequency: 1 ]
-				ifNotEmpty: [ :freqs | self maxFrequency: freqs max ] ] ]
+			golap model ifNotNil: [ :model |
+					(golap nodes collect: golap model nodeEvaluator) ifNotEmpty: [
+							:freqs |
+							min := freqs min rounded.
+							max := freqs max rounded ] ] ].
+	minFreqSlider
+		min: min;
+		max: max.
+	minFreqField number: (minFreqField number min: max max: min).
+	golap updateGlobalImageAfter: [ ]
 ]
 
 { #category : 'updating' }

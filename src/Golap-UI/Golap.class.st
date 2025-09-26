@@ -1402,7 +1402,11 @@ Golap >> model [
 
 { #category : 'accessing' }
 Golap >> model: aGolapModel [
-	self model: aGolapModel forceUpdate: true
+
+	self model: aGolapModel forceUpdate: true.
+	overviewPresenter
+		updateCanvas;
+		zoomToFit
 ]
 
 { #category : 'accessing' }
@@ -2227,12 +2231,12 @@ Golap >> selectedFrontDimension [
 { #category : 'accessing-dimensions' }
 Golap >> selectedModel [
 
-	^ (self selectedFrontDimension ifNil: [ nil ] ifNotNil: [ :front | 
-		   self selectedBaseDimension ifNil: [ front ] ifNotNil: [ :base | 
-			   self
-				   applyMergesToModel: front;
-				   applyMergesToModel: base.
-			   front - base ] ]) ifNotNil: [ :m | self applyMergesToModel: m ]
+	^ (self selectedFrontDimension ifNil: [ nil ] ifNotNil: [ :front |
+			   self selectedBaseDimension ifNil: [ front ] ifNotNil: [ :base |
+					   self
+						   applyMergesToModel: front;
+						   applyMergesToModel: base.
+					   front - base ] ]) ifNotNil: [ :m | self applyMergesToModel: m ]
 ]
 
 { #category : 'enumerating' }
