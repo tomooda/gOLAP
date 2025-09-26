@@ -2664,10 +2664,11 @@ Golap >> updateDimensions [
 Golap >> updateGlobalImage [
 
 	drawingSemaphore critical: [
-		| imageAndMap |
-		imageAndMap := self renderer globalImageAndMap.
-		globalImagePane image: imageAndMap first.
-		globalMapPane image: imageAndMap second ].
+			| imageAndMap |
+			imageAndMap := self renderer globalImageAndMap.
+			globalImagePane image: imageAndMap first.
+			globalMapPane image: imageAndMap second.
+			overviewPresenter updateCanvas ].
 	self ensurePhotoimageRetrievingProcess.
 	self announcer announce: GolapViewUpdated new
 ]

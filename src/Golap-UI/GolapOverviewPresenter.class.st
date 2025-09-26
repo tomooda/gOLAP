@@ -12,7 +12,8 @@ Class {
 		'reallyVisibleNodes',
 		'freqScale',
 		'lineScale',
-		'nodes'
+		'nodes',
+		'labelNodes'
 	],
 	#category : 'Golap-UI-Overview',
 	#package : 'Golap-UI',
@@ -51,6 +52,18 @@ GolapOverviewPresenter >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'private' }
+GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
+
+	| v |
+	v := 0 @ 0.
+	aGolapNode asPoint ifNotNil: [ :p0 |
+			aGolapNode edgesAndNodeDo: [ :edge :node |
+					(reallyVisibleEdges includes: edge) ifTrue: [
+						node asPoint ifNotNil: [ :p1 | v := v + (p0 - p1) normal ] ] ] ].
+	^ v normal
+]
+
 { #category : 'accessing' }
 GolapOverviewPresenter >> golap: aGolap [
 	golap := aGolap.
@@ -64,6 +77,12 @@ GolapOverviewPresenter >> golapChanged [
 ]
 
 { #category : 'enumerating' }
+GolapOverviewPresenter >> golapDo: aBlock [
+
+	^ golap ifNotNil: aBlock
+]
+
+{ #category : 'enumerating' }
 GolapOverviewPresenter >> golapModelDo: aBlock [
 
 	^ golap ifNotNil: [ golap model ifNotNil: aBlock ]
@@ -74,7 +93,8 @@ GolapOverviewPresenter >> initialize [
 
 	super initialize.
 	scale := 1.0.
-	offset := 0.0 @ 0.0
+	offset := 0.0 @ 0.0.
+	labelNodes := Array new
 ]
 
 { #category : 'initialization' }
@@ -103,6 +123,64 @@ GolapOverviewPresenter >> newCanvasController [
 ]
 
 { #category : 'instance creation' }
+GolapOverviewPresenter >> newLabelForEdge: aGolapEdge [
+
+	^ self golapModelDo: [ :golapModel |
+			  ((golap includesSelection: aGolapEdge node1) or: [
+				   golap includesSelection: aGolapEdge node2 ])
+				  ifTrue: [
+						  | string label |
+						  string := String streamContents: [ :stream |
+								            stream nextPutAll:
+									            (golap simpleStringFor:
+										             (golapModel valueAtEdge: aGolapEdge)).
+								            golap selectedFrontDimension ifNotNil: [
+										            :frontModel |
+										            golap selectedBaseDimension ifNotNil: [
+												            :baseModel |
+												            stream
+													            nextPutAll: '=';
+													            nextPutAll: ((frontModel
+															              edgeBetween: aGolapEdge node1 id
+															              and: aGolapEdge node2 id
+															              ifAbsent: [
+																	              frontModel
+																		              hiddenEdgeBetween: aGolapEdge node1 id
+																		              and: aGolapEdge node2 id
+																		              ifAbsent: [ nil ] ])
+															             ifNotNil: [ :e |
+																             golap simpleStringFor:
+																		             (frontModel valueAtEdge: e) ]
+															             ifNil: [ '0' ]);
+													            nextPutAll: '-';
+													            nextPutAll: ((baseModel
+															              edgeBetween: aGolapEdge node1 id
+															              and: aGolapEdge node2 id
+															              ifAbsent: [
+																	              baseModel
+																		              hiddenEdgeBetween: aGolapEdge node1 id
+																		              and: aGolapEdge node2 id
+																		              ifAbsent: [ nil ] ])
+															             ifNotNil: [ :e |
+																             golap simpleStringFor:
+																		             (baseModel valueAtEdge: e) ]
+															             ifNil: [ '0' ]);
+													            space ] ] ].
+						  label := RSLabel new
+							           text: string;
+							           color: Color black.
+						  {
+							  (RSBox new
+								   extent: label extent + 4 asPoint;
+								   color: Color white;
+								   borderColor: Color black;
+								   borderWidth: 1;
+								   yourself).
+							  label } asShape ]
+				  ifFalse: [ nil ] ]
+]
+
+{ #category : 'instance creation' }
 GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 
 	self golapModelDo: [ :golapModel |
@@ -118,6 +196,13 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 						        to: toShape;
 						        width: v asFloat abs * lineScale + 2.0;
 						        color: color.
+					(self newLabelForEdge: aGolapEdge) ifNotNil: [ :label |
+							line
+								when: RSExtentChangedEvent
+								do: [ label position: line position ]
+								for: line.
+							label position: line position.
+							self canvas add: label ].
 					^ line ] ].
 	^ nil
 ]
@@ -126,24 +211,50 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 
 	self golapModelDo: [ :golapModel |
-			| shapes |
+			| shapes markersAndNodes |
 			shapes := RSGroup new.
+			markersAndNodes := Array streamContents: [ :stream |
+					                   golap markersAndNodesDo: [ :color :vs |
+						                   color ifNotNil: [
+							                   stream nextPut: color -> vs asIdentitySet ] ] ].
 			(golap colorForNode: aGolapNode) ifNotNil: [ :color |
-					| r circle label |
+					| r shape |
 					r := ((golapModel valueAtNode: aGolapNode) abs + 0.1) log
 					     - 1.0 log * freqScale max: 10.
-					circle := RSCircle new
-						          extent: r asPoint;
-						          color: color.
-					self canvas addNode: circle.
-					nodes at: aGolapNode put: circle.
-					shapes add: circle.
-					label := RSLabel new
-						         text: aGolapNode name;
-						         color: color;
-						         yourself.
-					label position: 0 @ (circle extent y + label extent y * 0.5 + 10).
-					shapes add: label ].
+					shape := RSCircle new
+						         extent: r asPoint;
+						         color: color.
+					self canvas addNode: shape.
+					nodes at: aGolapNode put: shape.
+					shapes add: shape.
+					markersAndNodes do: [ :colorAndVs |
+							(colorAndVs value includes: aGolapNode) ifTrue: [
+									shape := RSEllipse new
+										         extent: shape extent + 4 asPoint;
+										         borderWidth: 4;
+										         borderColor: colorAndVs key;
+										         color: Color transparent;
+										         yourself.
+									shapes add: shape ] ].
+					((labelNodes includes: aGolapNode) or: [
+						 golap includesSelection: aGolapNode ]) ifTrue: [
+							| label |
+							label := RSLabel new
+								         text: aGolapNode name;
+								         color: color;
+								         yourself.
+
+							label position: (self edgeVectorOf: aGolapNode) negated
+								* (shape extent y + label extent y * 0.5 + 4).
+							(golap includesSelection: aGolapNode) ifTrue: [
+									shapes add: (RSBox new
+											 extent: label extent + 4 asPoint;
+											 position: label position;
+											 color: Color white;
+											 borderColor: Color gray;
+											 borderWidth: 1;
+											 yourself) ].
+							shapes add: label ] ].
 			^ shapes asShapeFor: aGolapNode ].
 	^ nil
 ]
@@ -176,17 +287,23 @@ GolapOverviewPresenter >> renderEdgesIn: aRSCanvas [
 			(self newShapeForEdge: edge) ifNotNil: [ :line |
 					aRSCanvas
 						add: line;
-						addLine: line ] ]
+						addLine: line.
+					line pushBack ] ]
 ]
 
 { #category : 'rendering' }
 GolapOverviewPresenter >> renderNodesIn: aRSCanvas [
 
+	| interaction |
+	interaction := GolapOverviewNodeInteraction new
+		               presenter: self;
+		               yourself.
 	nodes := IdentityDictionary new: reallyVisibleNodes size.
 	reallyVisibleNodes do: [ :node |
 			node asPoint ifNotNil: [ :p |
 					(self newShapeForNode: node) ifNotNil: [ :shape |
 							shape position: p + offset * scale.
+							shape @ interaction.
 							self canvas add: shape ] ] ]
 ]
 
@@ -218,13 +335,14 @@ GolapOverviewPresenter >> updateCanvas [
 	self updateVisibility.
 	self
 		updateFreqScale;
-		updateLineScale.
+		updateLineScale;
+		updateLabelNodes.
 	self canvas shapes copy do: #remove.
 	self canvas color: Color white.
 	self
 		renderNodesIn: self canvas;
 		renderEdgesIn: self canvas.
-	self zoomToFit
+	self canvas signalUpdate
 ]
 
 { #category : 'updating' }
@@ -234,6 +352,20 @@ GolapOverviewPresenter >> updateFreqScale [
 			freqScale := 30.0 / ((golap nodes collect: [ :node |
 				               ((golapModel valueAtNode: node) abs + 0.1) log
 				               - 1.0 log ]) ifEmpty: [ 1 ] ifNotEmpty: #max) ]
+]
+
+{ #category : 'updating' }
+GolapOverviewPresenter >> updateLabelNodes [
+
+	| numLabels sortedNodes |
+	numLabels := (50.0 ** golap numLabels) truncated.
+	sortedNodes := (SortedCollection new: numLabels + 1) sortBlock:
+		               #value descending.
+	self golapModelDo: [ :golapModel |
+			reallyVisibleNodes do: [ :node |
+					sortedNodes add: node -> (golapModel valueAtNode: node).
+					sortedNodes size > numLabels ifTrue: [ sortedNodes removeLast ] ] ].
+	labelNodes := (sortedNodes collect: #key) asIdentitySet
 ]
 
 { #category : 'updating' }

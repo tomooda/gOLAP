@@ -32,7 +32,7 @@ GolapOverviewZoomableCanvasInteraction >> presenter: aGolapOverviewPresenter [
 	presenter := aGolapOverviewPresenter
 ]
 
-{ #category : 'events - processing' }
+{ #category : 'event processing' }
 GolapOverviewZoomableCanvasInteraction >> processKeyDown: evt [
 
 	| keyName |
@@ -46,25 +46,25 @@ GolapOverviewZoomableCanvasInteraction >> processKeyDown: evt [
 	keyName = #SPACE ifTrue: [ ^ presenter zoomToFit ]
 ]
 
-{ #category : 'events - processing' }
+{ #category : 'event processing' }
 GolapOverviewZoomableCanvasInteraction >> processMouseDragEnd: evt [
 
 	
 ]
 
-{ #category : 'events - processing' }
+{ #category : 'event processing' }
 GolapOverviewZoomableCanvasInteraction >> processMouseDragStart: evt [
 
 	self removeRectanglesFor: evt canvas
 ]
 
-{ #category : 'events - processing' }
+{ #category : 'event processing' }
 GolapOverviewZoomableCanvasInteraction >> processMouseDragging: evt [
 
 	presenter move: evt step
 ]
 
-{ #category : 'events - processing' }
+{ #category : 'event processing' }
 GolapOverviewZoomableCanvasInteraction >> processMouseWheelEvent: evt [
 
 	evt isUp ifTrue: [ ^ presenter zoomInAt: evt position ].
@@ -75,7 +75,7 @@ GolapOverviewZoomableCanvasInteraction >> processMouseWheelEvent: evt [
 GolapOverviewZoomableCanvasInteraction >> renderLegendOn: legend [
 
 	legend
-		text: 'Wheel, I or O' description: 'To zoom in-out the view';
-		text: 'Mouse drag, ←, →, ↑ or ↓' description: 'To move the view';
-		text: 'SPACE' description: 'To reset the view'
+		text: 'マウスホイール, I, O' description: 'To zoom in-out the view';
+		text: 'マウスドラッグ, ←, →, ↑ or ↓' description: 'To move the view';
+		text: 'スペース' description: 'To reset the view'
 ]
