@@ -210,46 +210,48 @@ GolapOverviewPresenter >> newPinShape [
 GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 
 	self golapModelDo: [ :golapModel |
-			(((referenceNodes includes: aGolapEdge node1 id) or: [
-				  referenceNodes includes: aGolapEdge node2 id ])
-				 ifTrue: [
-						 ((selectedReferenceNodes includes: aGolapEdge node1) or: [
-							  selectedReferenceNodes includes: aGolapEdge node2 ])
+		(((referenceNodes includes: aGolapEdge node1 id) or: [
+			  referenceNodes includes: aGolapEdge node2 id ])
+			 ifTrue: [
+				 ((selectedReferenceNodes includes: aGolapEdge node1) or: [
+					  selectedReferenceNodes includes: aGolapEdge node2 ])
+					 ifTrue: [
+						 | refIndex |
+						 refIndex := (activeReferenceNodes indexOf: aGolapEdge node1)
+							             max:
+							             (activeReferenceNodes indexOf: aGolapEdge node2).
+						 refIndex > 0
 							 ifTrue: [
-									 | refIndex |
-									 refIndex := (activeReferenceNodes indexOf: aGolapEdge node1)
-										             max:
-										             (activeReferenceNodes indexOf: aGolapEdge node2).
-									 refIndex > 0
-										 ifTrue: [
-												 Color
-													 h:
-													 (refIndex - 1) asFloat * 360.0
-													 / activeReferenceNodes size asFloat
-													 s: 1.0
-													 v: 1.0 ]
-										 ifFalse: [ nil ] ]
+								 Color
+									 h:
+									 (refIndex - 1) asFloat * 360.0
+									 / activeReferenceNodes size asFloat
+									 s: 1.0
+									 v: 1.0 ]
 							 ifFalse: [ nil ] ]
-				 ifFalse: [ golap colorForEdge: aGolapEdge ]) ifNotNil: [ :color |
-					| fromShape toShape v line |
-					fromShape := nodes at: aGolapEdge node1 ifAbsent: [ ^ nil ].
-					toShape := nodes at: aGolapEdge node2 ifAbsent: [ ^ nil ].
-					v := golapModel valueAtEdge: aGolapEdge.
-					(v notNil and: [ v asFloat isFinite ]) ifFalse: [ ^ nil ].
-					line := RSLine new
-						        withCenteredAttachPoint;
-						        from: fromShape;
-						        to: toShape;
-						        width: v asFloat abs * lineScale + 2.0;
-						        color: color.
-					(self newLabelForEdge: aGolapEdge) ifNotNil: [ :label |
-							line
-								when: RSExtentChangedEvent
-								do: [ label position: line position ]
-								for: line.
-							label position: line position.
-							self canvas add: label ].
-					^ line ] ].
+					 ifFalse: [ nil ] ]
+			 ifFalse: [ golap colorForEdge: aGolapEdge ]) ifNotNil: [ :color |
+			| fromShape toShape v line |
+			fromShape := nodes at: aGolapEdge node1 ifAbsent: [ ^ nil ].
+			toShape := nodes at: aGolapEdge node2 ifAbsent: [ ^ nil ].
+			v := golapModel valueAtEdge: aGolapEdge.
+			(v notNil and: [ v asFloat isFinite ]) ifFalse: [ ^ nil ].
+			line := RSLine new
+				        withCenteredAttachPoint;
+				        from: fromShape;
+				        to: toShape;
+				        width: v asFloat abs * lineScale + 2.0;
+				        color: color.
+			aGolapEdge isPositivePolishEdge ifTrue: [ line dashArray: #( 4 2 ) ].
+			aGolapEdge isNegativePolishEdge ifTrue: [ line dashArray: #( 2 4 ) ].
+			(self newLabelForEdge: aGolapEdge) ifNotNil: [ :label |
+				line
+					when: RSExtentChangedEvent
+					do: [ label position: line position ]
+					for: line.
+				label position: line position.
+				self canvas add: label ].
+			^ line ] ].
 	^ nil
 ]
 

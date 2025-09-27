@@ -74,6 +74,22 @@ GolapEdge >> hasNode: aGolapNode [
 	^ node1 == aGolapNode or: [ node2 == aGolapNode ]
 ]
 
+{ #category : 'testing' }
+GolapEdge >> isNegativePolishEdge [
+
+	node1 negativePolishEdgesDo: [ :edge |
+		self == edge ifTrue: [ ^ true ] ].
+	^ false
+]
+
+{ #category : 'testing' }
+GolapEdge >> isPositivePolishEdge [
+
+	node1 positivePolishEdgesDo: [ :edge |
+		self == edge ifTrue: [ ^ true ] ].
+	^ false
+]
+
 { #category : 'arithmetics' }
 GolapEdge >> negated [
 
