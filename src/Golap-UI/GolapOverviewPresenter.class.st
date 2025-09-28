@@ -256,6 +256,41 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 ]
 
 { #category : 'instance creation' }
+GolapOverviewPresenter >> newShapeForNegativePolishedEdge: aGolapEdge [
+
+	(self canvas shapes contains: [ :shape | shape model == aGolapEdge ])
+		ifTrue: [ ^ nil ].
+	self golapModelDo: [ :golapModel |
+		| color fromShape toShape |
+		color := (golap colorForEdge: aGolapEdge) ifNil: [ Color red ].
+		fromShape := nodes at: aGolapEdge node1 ifAbsentPut: [
+			             | shape |
+			             shape := (self newShapeForNode: aGolapEdge node1)
+				                      ifNil: [ ^ nil ].
+			             self canvas
+				             add: shape;
+				             addNode: shape.
+			             shape ].
+		toShape := nodes at: aGolapEdge node2 ifAbsent: [
+			           | shape |
+			           shape := (self newShapeForNode: aGolapEdge node2)
+				                    ifNil: [ ^ nil ].
+			           self canvas
+				           add: shape;
+				           addNode: shape.
+			           shape ].
+		^ RSLine new
+			  withCenteredAttachPoint;
+			  from: fromShape;
+			  to: toShape;
+			  width: 1;
+			  dashArray: #( 3 7 );
+			  color: color;
+			  yourself ].
+	^ nil
+]
+
+{ #category : 'instance creation' }
 GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 
 	self golapModelDo: [ :golapModel |
@@ -318,6 +353,41 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 	^ nil
 ]
 
+{ #category : 'instance creation' }
+GolapOverviewPresenter >> newShapeForPositivePolishedEdge: aGolapEdge [
+
+	(self canvas shapes contains: [ :shape | shape model == aGolapEdge ])
+		ifTrue: [ ^ nil ].
+	self golapModelDo: [ :golapModel |
+		| color fromShape toShape |
+		color := (golap colorForEdge: aGolapEdge) ifNil: [ Color green ].
+		fromShape := nodes at: aGolapEdge node1 ifAbsentPut: [
+			             | shape |
+			             shape := (self newShapeForNode: aGolapEdge node1)
+				                      ifNil: [ ^ nil ].
+			             self canvas
+				             add: shape;
+				             addNode: shape.
+			             shape ].
+		toShape := nodes at: aGolapEdge node2 ifAbsent: [
+			           | shape |
+			           shape := (self newShapeForNode: aGolapEdge node2)
+				                    ifNil: [ ^ nil ].
+			           self canvas
+				           add: shape;
+				           addNode: shape.
+			           shape ].
+		^ RSLine new
+			  withCenteredAttachPoint;
+			  from: fromShape;
+			  to: toShape;
+			  width: 1;
+			  dashArray: #( 4 4 );
+			  color: color;
+			  yourself ].
+	^ nil
+]
+
 { #category : 'accessing' }
 GolapOverviewPresenter >> offset [
 
@@ -343,11 +413,23 @@ GolapOverviewPresenter >> reallyVisibleNodesDo: aBlock [
 GolapOverviewPresenter >> renderEdgesIn: aRSCanvas [
 
 	reallyVisibleEdges do: [ :edge |
-			(self newShapeForEdge: edge) ifNotNil: [ :line |
+		(self newShapeForEdge: edge) ifNotNil: [ :line |
+			aRSCanvas
+				add: line;
+				addLine: line.
+			line pushBack ] ].
+	self golapModelDo: [ :golapModel |
+		golapModel
+			positivePolishEdgesDo: [ :edge |
+				(self newShapeForPositivePolishedEdge: edge) ifNotNil: [ :line |
+						aRSCanvas
+							add: line;
+							addLine: line ] ];
+			negativePolishEdgesDo: [ :edge |
+				(self newShapeForNegativePolishedEdge: edge) ifNotNil: [ :line |
 					aRSCanvas
 						add: line;
-						addLine: line.
-					line pushBack ] ]
+						addLine: line ] ] ]
 ]
 
 { #category : 'rendering' }
