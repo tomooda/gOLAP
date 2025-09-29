@@ -59,7 +59,8 @@ Class {
 		'dragNode',
 		'edgeList',
 		'heatmapPresenter',
-		'overviewPresenter'
+		'polishOverviewPresenter',
+		'friendOverviewPresenter'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -1218,8 +1219,10 @@ Golap >> initializePresenters [
 				                 presenterProvider: [ edgeList ];
 				                 yourself);
 		                yourself.
-	overviewPresenter := self instantiate:
-		                     (GolapOverviewPresenter new golap: self).
+	polishOverviewPresenter := self instantiate:
+		                     (GolapPolishOverviewPresenter new golap: self).
+	friendOverviewPresenter := self instantiate:
+		                     (GolapFriendOverviewPresenter new golap: self).
 	dandelionPresenter := self instantiate:
 		                      (GolapDandelionChartPresenter new golap: self).
 	hedgePresenter := self instantiate:
@@ -1227,9 +1230,11 @@ Golap >> initializePresenters [
 	heatmapPresenter := self instantiate:
 		                    (GolapClusteredHeatmapPresenter new golap: self).
 	viewsNotebook := self newNotebook
-		                 addPageTitle: 'グラフ' provider: [ globalImagePane ];
+"		                 addPageTitle: 'グラフ' provider: [ globalImagePane ];"
 		                 addPageTitle: '俯瞰図'
-		                 provider: [ overviewPresenter ];
+		                 provider: [ polishOverviewPresenter ];
+		                 addPageTitle: 'フレンド俯瞰図'
+		                 provider: [ friendOverviewPresenter ];
 		                 addPageTitle: 'たんぽぽ図'
 		                 provider: [ dandelionPresenter ];
 		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
@@ -1404,7 +1409,7 @@ Golap >> model [
 Golap >> model: aGolapModel [
 
 	self model: aGolapModel forceUpdate: true.
-	overviewPresenter
+	polishOverviewPresenter
 		updateCanvas;
 		zoomToFit
 ]
@@ -2672,7 +2677,7 @@ Golap >> updateGlobalImage [
 			imageAndMap := self renderer globalImageAndMap.
 			globalImagePane image: imageAndMap first.
 			globalMapPane image: imageAndMap second.
-			overviewPresenter updateCanvas ].
+			polishOverviewPresenter updateCanvas ].
 	self ensurePhotoimageRetrievingProcess.
 	self announcer announce: GolapViewUpdated new
 ]

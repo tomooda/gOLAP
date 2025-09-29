@@ -23,6 +23,18 @@ Class {
 	#tag : 'Overview'
 }
 
+{ #category : 'testing' }
+GolapOverviewPresenter class >> isAbstract [
+
+	^ self = GolapOverviewPresenter
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> availableEdges [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'accessing' }
 GolapOverviewPresenter >> camera [
 
@@ -242,8 +254,8 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 				        to: toShape;
 				        width: v asFloat abs * lineScale + 2.0;
 				        color: color.
-			aGolapEdge isPositivePolishEdge ifTrue: [ line dashArray: #( 4 2 ) ].
-			aGolapEdge isNegativePolishEdge ifTrue: [ line dashArray: #( 2 4 ) ].
+			aGolapEdge isPositivePolishEdge ifTrue: [ line dashArray: #( 12 2 ) ].
+			aGolapEdge isNegativePolishEdge ifTrue: [ line dashArray: #( 2 6 ) ].
 			(self newLabelForEdge: aGolapEdge) ifNotNil: [ :label |
 				line
 					when: RSExtentChangedEvent
@@ -252,41 +264,6 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 				label position: line position.
 				self canvas add: label ].
 			^ line ] ].
-	^ nil
-]
-
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newShapeForNegativePolishedEdge: aGolapEdge [
-
-	(self canvas shapes contains: [ :shape | shape model == aGolapEdge ])
-		ifTrue: [ ^ nil ].
-	self golapModelDo: [ :golapModel |
-		| color fromShape toShape |
-		color := (golap colorForEdge: aGolapEdge) ifNil: [ Color red ].
-		fromShape := nodes at: aGolapEdge node1 ifAbsentPut: [
-			             | shape |
-			             shape := (self newShapeForNode: aGolapEdge node1)
-				                      ifNil: [ ^ nil ].
-			             self canvas
-				             add: shape;
-				             addNode: shape.
-			             shape ].
-		toShape := nodes at: aGolapEdge node2 ifAbsent: [
-			           | shape |
-			           shape := (self newShapeForNode: aGolapEdge node2)
-				                    ifNil: [ ^ nil ].
-			           self canvas
-				           add: shape;
-				           addNode: shape.
-			           shape ].
-		^ RSLine new
-			  withCenteredAttachPoint;
-			  from: fromShape;
-			  to: toShape;
-			  width: 1;
-			  dashArray: #( 3 7 );
-			  color: color;
-			  yourself ].
 	^ nil
 ]
 
@@ -353,41 +330,6 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 	^ nil
 ]
 
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newShapeForPositivePolishedEdge: aGolapEdge [
-
-	(self canvas shapes contains: [ :shape | shape model == aGolapEdge ])
-		ifTrue: [ ^ nil ].
-	self golapModelDo: [ :golapModel |
-		| color fromShape toShape |
-		color := (golap colorForEdge: aGolapEdge) ifNil: [ Color green ].
-		fromShape := nodes at: aGolapEdge node1 ifAbsentPut: [
-			             | shape |
-			             shape := (self newShapeForNode: aGolapEdge node1)
-				                      ifNil: [ ^ nil ].
-			             self canvas
-				             add: shape;
-				             addNode: shape.
-			             shape ].
-		toShape := nodes at: aGolapEdge node2 ifAbsent: [
-			           | shape |
-			           shape := (self newShapeForNode: aGolapEdge node2)
-				                    ifNil: [ ^ nil ].
-			           self canvas
-				           add: shape;
-				           addNode: shape.
-			           shape ].
-		^ RSLine new
-			  withCenteredAttachPoint;
-			  from: fromShape;
-			  to: toShape;
-			  width: 1;
-			  dashArray: #( 4 4 );
-			  color: color;
-			  yourself ].
-	^ nil
-]
-
 { #category : 'accessing' }
 GolapOverviewPresenter >> offset [
 
@@ -413,23 +355,11 @@ GolapOverviewPresenter >> reallyVisibleNodesDo: aBlock [
 GolapOverviewPresenter >> renderEdgesIn: aRSCanvas [
 
 	reallyVisibleEdges do: [ :edge |
-		(self newShapeForEdge: edge) ifNotNil: [ :line |
-			aRSCanvas
-				add: line;
-				addLine: line.
-			line pushBack ] ].
-	self golapModelDo: [ :golapModel |
-		golapModel
-			positivePolishEdgesDo: [ :edge |
-				(self newShapeForPositivePolishedEdge: edge) ifNotNil: [ :line |
-						aRSCanvas
-							add: line;
-							addLine: line ] ];
-			negativePolishEdgesDo: [ :edge |
-				(self newShapeForNegativePolishedEdge: edge) ifNotNil: [ :line |
+			(self newShapeForEdge: edge) ifNotNil: [ :line |
 					aRSCanvas
 						add: line;
-						addLine: line ] ] ]
+						addLine: line.
+					line pushBack ] ]
 ]
 
 { #category : 'rendering' }
@@ -473,7 +403,7 @@ GolapOverviewPresenter >> scale: aNumber at: aPoint [
 { #category : 'updating' }
 GolapOverviewPresenter >> updateCanvas [
 
-	self updateVisibility.
+	self updateGraph.
 	self
 		updateFreqScale;
 		updateLineScale;
@@ -494,6 +424,70 @@ GolapOverviewPresenter >> updateFreqScale [
 			freqScale := 30.0 / ((golap nodes collect: [ :node |
 				               ((golapModel valueAtNode: node) abs + 0.1) log
 				               - 1.0 log ]) ifEmpty: [ 1 ] ifNotEmpty: #max) ]
+]
+
+{ #category : 'updating' }
+GolapOverviewPresenter >> updateGraph [
+
+	self golapModelDo: [ :model |
+			| min max minFreq visibleEdges d connectedNodes |
+			min := 0.0.
+			max := 0.0.
+			minFreq := golap minFrequency.
+			visibleEdges := self availableEdges.
+			d := (visibleEdges
+				      collect: [ :edge | model valueAtEdge: edge ]
+				      thenSelect: [ :value |
+				      value notNil and: [ value isNaN not ] ]) asArray
+				     asSortedCollection.
+			d ifNotEmpty: [
+					min := d at:
+						       (d size - 1 * golap visibleEdgeMinPercentile value)
+							       rounded + 1.
+					max := d at:
+						       (d size - 1 * golap visibleEdgeMaxPercentile value)
+							       rounded + 1 ].
+			visibleEdgeMaxValue := max.
+			visibleEdgeMinValue := min.
+			golap visibleEdgeMinPercentile label:
+				'min ' , visibleEdgeMinValue printString.
+			golap visibleEdgeMaxPercentile label:
+				'max ' , visibleEdgeMaxValue printString.
+			reallyVisibleEdges := visibleEdges select: [ :edge |
+					                      (edge node1 notNil and: [
+							                       edge node1 x notNil and: [
+									                       edge node2 y notNil and: [
+											                       edge node2 notNil and: [
+													                       edge node2 x notNil and: [
+															                       edge node2 y notNil and: [
+																	                       (model valueAtNode: edge node1)
+																	                       >= minFreq and:
+																		                       (model valueAtNode:
+																			                        edge node2) > minFreq ] ] ] ] ] ])
+						                      and: [
+								                      (model valueAtEdge: edge)
+									                      ifNil: [ true ]
+									                      ifNotNil: [ :v |
+									                      v
+										                      between: visibleEdgeMinValue
+										                      and: visibleEdgeMaxValue ] ] ].
+			connectedNodes := IdentitySet new: reallyVisibleEdges size.
+			reallyVisibleEdges do: [ :edge |
+					connectedNodes
+						add: edge node1;
+						add: edge node2 ].
+			reallyVisibleNodes := Array streamContents: [ :stream |
+					                      golap showsConnectedNodes ifTrue: [
+						                      stream nextPutAll: connectedNodes ].
+					                      self nodesDo: [ :v |
+							                      (connectedNodes includes: v) ifFalse: [
+									                      v isIsolated
+										                      ifTrue: [
+										                      golap showsIsolatedNodes ifTrue: [
+											                      stream nextPut: v ] ]
+										                      ifFalse: [
+										                      golap showsHiddenConnectionNodes
+											                      ifTrue: [ stream nextPut: v ] ] ] ] ] ]
 ]
 
 { #category : 'updating' }
@@ -559,70 +553,6 @@ GolapOverviewPresenter >> updateReferenceNodes [
 GolapOverviewPresenter >> updateTree [
 
 	self updateCanvas
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateVisibility [
-
-	self golapModelDo: [ :model |
-		| min max minFreq connectedNodes |
-		min := 0.0.
-		max := 0.0.
-		minFreq := golap minFrequency.
-		model ifNotNil: [
-			| d |
-			d := (golap visibleEdges
-				      collect: [ :edge | model valueAtEdge: edge ]
-				      thenSelect: [ :value |
-				      value notNil and: [ value isNaN not ] ]) asArray
-				     asSortedCollection.
-			d ifNotEmpty: [
-				min := d at:
-					       (d size - 1 * golap visibleEdgeMinPercentile value)
-						       rounded + 1.
-				max := d at:
-					       (d size - 1 * golap visibleEdgeMaxPercentile value)
-						       rounded + 1 ] ].
-		visibleEdgeMaxValue := max.
-		visibleEdgeMinValue := min.
-		golap visibleEdgeMinPercentile label:
-			'min ' , visibleEdgeMinValue printString.
-		golap visibleEdgeMaxPercentile label:
-			'max ' , visibleEdgeMaxValue printString.
-		reallyVisibleEdges := golap visibleEdges select: [ :edge |
-			                      (edge node1 notNil and: [
-				                       edge node1 x notNil and: [
-					                       edge node2 y notNil and: [
-						                       edge node2 notNil and: [
-							                       edge node2 x notNil and: [
-								                       edge node2 y notNil and: [
-									                       (model valueAtNode: edge node1)
-									                       >= minFreq and:
-										                       (model valueAtNode: edge node2)
-										                       > minFreq ] ] ] ] ] ]) and: [
-				                      (model valueAtEdge: edge)
-					                      ifNil: [ true ]
-					                      ifNotNil: [ :v |
-					                      v
-						                      between: visibleEdgeMinValue
-						                      and: visibleEdgeMaxValue ] ] ].
-		connectedNodes := IdentitySet new: reallyVisibleEdges size.
-		reallyVisibleEdges do: [ :edge |
-			connectedNodes
-				add: edge node1;
-				add: edge node2 ].
-		reallyVisibleNodes := Array streamContents: [ :stream |
-			                      golap showsConnectedNodes ifTrue: [
-				                      stream nextPutAll: connectedNodes ].
-			                      self nodesDo: [ :v |
-				                      (connectedNodes includes: v) ifFalse: [
-					                      v isIsolated
-						                      ifTrue: [
-						                      golap showsIsolatedNodes ifTrue: [
-							                      stream nextPut: v ] ]
-						                      ifFalse: [
-						                      golap showsHiddenConnectionNodes ifTrue: [
-							                      stream nextPut: v ] ] ] ] ] ]
 ]
 
 { #category : 'operations' }
