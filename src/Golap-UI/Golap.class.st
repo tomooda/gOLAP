@@ -745,119 +745,119 @@ Golap >> globalImageMenu: aGolapNode [
 	| menu |
 	menu := self newMenu.
 	menu addGroup: [ :group |
-		aGolapNode ifNotNil: [
-			(self includesSelection: aGolapNode)
-				ifTrue: [
+			aGolapNode ifNotNil: [
+					(self includesSelection: aGolapNode)
+						ifTrue: [
+								group addItem: [ :item |
+										item
+											name: 'Unselect';
+											action: [ self toggleSelection: aGolapNode ] ] ]
+						ifFalse: [
+								group addItem: [ :item |
+										item
+											name: 'Select';
+											action: [ self toggleSelection: aGolapNode ] ] ] ].
+			self selections ifNotEmpty: [
 					group addItem: [ :item |
-						item
-							name: 'Unselect';
-							action: [ self toggleSelection: aGolapNode ] ] ]
-				ifFalse: [
-					group addItem: [ :item |
-						item
-							name: 'Select';
-							action: [ self toggleSelection: aGolapNode ] ] ] ].
-		self selections ifNotEmpty: [
-			group addItem: [ :item |
-				item
-					name: 'Unselect all';
-					action: [ self unselectAll ] ] ] ].
-	menu addGroup: [ :group |
-		aGolapNode ifNotNil: [
-			(itemList markMenu: aGolapNode) ifNotNil: [ :submenu |
-				group addItem: [ :item |
-					item
-						name: 'Mark';
-						subMenu: submenu ] ].
-			(itemList unmarkMenu: aGolapNode) ifNotNil: [ :submenu |
-				group addItem: [ :item |
-					item
-						name: 'Unmark';
-						subMenu: submenu ] ] ].
-		self selections ifNotEmpty: [
-			group
-				addItem: [ :item |
-					item
-						name: 'Mark selections';
-						subMenu: itemList markSelectionsMenu ];
-				addItem: [ :item |
-					item
-						name: 'Unmark selections';
-						subMenu: itemList unmarkSelectionsMenu ] ] ].
-	aGolapNode ifNotNil: [
-		rendererSelector = #overviewRenderer ifTrue: [
-			menu addGroup: [ :group |
-				(self renderer isReferenceNode: aGolapNode)
-					ifTrue: [
-						group addItem: [ :item |
 							item
-								name: 'remove from reference';
-								action: [ self removeReferenceNode: aGolapNode ] ] ]
-					ifFalse: [
-						(self renderer isLockedNode: aGolapNode)
+								name: 'Unselect all';
+								action: [ self unselectAll ] ] ] ].
+	menu addGroup: [ :group |
+			aGolapNode ifNotNil: [
+					(itemList markMenu: aGolapNode) ifNotNil: [ :submenu |
+							group addItem: [ :item |
+									item
+										name: 'Mark';
+										subMenu: submenu ] ].
+					(itemList unmarkMenu: aGolapNode) ifNotNil: [ :submenu |
+							group addItem: [ :item |
+									item
+										name: 'Unmark';
+										subMenu: submenu ] ] ].
+			self selections ifNotEmpty: [
+					group
+						addItem: [ :item |
+								item
+									name: 'Mark selections';
+									subMenu: itemList markSelectionsMenu ];
+						addItem: [ :item |
+								item
+									name: 'Unmark selections';
+									subMenu: itemList unmarkSelectionsMenu ] ] ].
+	aGolapNode ifNotNil: [
+			rendererSelector = #overviewRenderer ifTrue: [
+					menu addGroup: [ :group |
+							(self renderer isReferenceNode: aGolapNode)
+								ifTrue: [
+										group addItem: [ :item |
+												item
+													name: 'remove from reference';
+													action: [ self removeReferenceNode: aGolapNode ] ] ]
+								ifFalse: [
+										(self renderer isLockedNode: aGolapNode)
+											ifTrue: [
+													group
+														addItem: [ :item |
+																item
+																	name: 'move';
+																	action: [ self moveNode: aGolapNode ] ];
+														addItem: [ :item |
+																item
+																	name: 'be auto layouted';
+																	action: [ self unlockNode: aGolapNode ] ];
+														addItem: [ :item |
+																item
+																	name: 'add to reference';
+																	action: [
+																			self
+																				unlockNode: aGolapNode;
+																				addReferenceNode: aGolapNode ] ] ]
+											ifFalse: [
+													group
+														addItem: [ :item |
+																item
+																	name: 'add to reference';
+																	action: [ self addReferenceNode: aGolapNode ] ];
+														addItem: [ :item |
+																item
+																	name: 'be manual layouted';
+																	action: [
+																			self
+																				lockNode: aGolapNode;
+																				moveNode: aGolapNode ] ] ] ] ] ].
+			menu
+				addGroup: [ :group |
+						(self includesPin: aGolapNode)
 							ifTrue: [
-								group
-									addItem: [ :item |
-										item
-											name: 'move';
-											action: [ self moveNode: aGolapNode ] ];
-									addItem: [ :item |
-										item
-											name: 'be auto layouted';
-											action: [ self unlockNode: aGolapNode ] ];
-									addItem: [ :item |
-										item
-											name: 'add to reference';
-											action: [
-												self
-													unlockNode: aGolapNode;
-													addReferenceNode: aGolapNode ] ] ]
+									group addItem: [ :item |
+												item
+													name: 'Unpin';
+													action: [ self togglePin: aGolapNode ] ] ]
 							ifFalse: [
-								group
-									addItem: [ :item |
-										item
-											name: 'add to reference';
-											action: [ self addReferenceNode: aGolapNode ] ];
-									addItem: [ :item |
-										item
-											name: 'be manual layouted';
-											action: [
-												self
-													lockNode: aGolapNode;
-													moveNode: aGolapNode ] ] ] ] ] ].
-		menu
-			addGroup: [ :group |
-				(self includesPin: aGolapNode)
-					ifTrue: [
+									group addItem: [ :item |
+											item
+												name: 'Pin';
+												action: [ self togglePin: aGolapNode ] ] ] ];
+				addGroup: [ :group |
 						group addItem: [ :item |
 								item
-									name: 'Unpin';
-									action: [ self togglePin: aGolapNode ] ] ]
-					ifFalse: [
-						group addItem: [ :item |
-							item
-								name: 'Pin';
-								action: [ self togglePin: aGolapNode ] ] ] ];
-			addGroup: [ :group |
-				group addItem: [ :item |
-					item
-						name: 'Show info';
-						action: [ itemView node: aGolapNode ] ] ] ].
+									name: 'Show info';
+									action: [ itemView node: aGolapNode ] ] ] ].
 	menu addGroup: [ :group |
-		group addItem: [ :item |
-			item
-				name: 'merge';
-				subMenu: self mergeMenu ].
-		merges ifNotEmpty: [
 			group addItem: [ :item |
-				item
-					name: 'unmerge';
-					subMenu: self unmergeMenu ] ] ].
+					item
+						name: 'merge';
+						subMenu: self mergeMenu ].
+			merges ifNotEmpty: [
+					group addItem: [ :item |
+							item
+								name: 'unmerge';
+								subMenu: self unmergeMenu ] ] ].
 	menu addGroup: [ :group |
-		group addItem: [ :item |
-			item
-				name: 'Inspect';
-				action: [ self inspect ] ] ].
+			group addItem: [ :item |
+					item
+						name: 'Inspect';
+						action: [ aGolapNode inspect ] ] ].
 	^ menu
 ]
 

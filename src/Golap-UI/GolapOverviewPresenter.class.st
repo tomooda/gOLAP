@@ -75,8 +75,13 @@ GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
 	aGolapNode asPoint ifNotNil: [ :p0 |
 			aGolapNode edgesAndNodeDo: [ :edge :node |
 					(reallyVisibleEdges includes: edge) ifTrue: [
-						node asPoint ifNotNil: [ :p1 | v := v + (p1 - p0) normalized ] ] ] ].
-	^ v normalized
+							node asPoint ifNotNil: [ :p1 |
+									| v1 |
+									v1 := p1 - p0.
+									v1 isZero ifFalse: [ v := v + v1 normalized ] ] ] ] ].
+	^ v isZero
+		  ifTrue: [ v ]
+		  ifFalse: [ v normalized ]
 ]
 
 { #category : 'private' }
@@ -510,47 +515,12 @@ GolapOverviewPresenter >> updateFreqScale [
 GolapOverviewPresenter >> updateGraph [
 
 	self golapModelDo: [ :model |
-			| min max minFreq visibleEdges d connectedNodes |
-			min := 0.0.
-			max := 0.0.
-			minFreq := golap minFrequency.
+			| visibleEdges connectedNodes |
 			visibleEdges := self availableEdges.
-			d := (visibleEdges
-				      collect: [ :edge | model valueAtEdge: edge ]
-				      thenSelect: [ :value |
-				      value notNil and: [ value isNaN not ] ]) asArray
-				     asSortedCollection.
-			d ifNotEmpty: [
-					min := d at:
-						       (d size - 1 * golap visibleEdgeMinPercentile value)
-							       rounded + 1.
-					max := d at:
-						       (d size - 1 * golap visibleEdgeMaxPercentile value)
-							       rounded + 1 ].
-			visibleEdgeMaxValue := max.
-			visibleEdgeMinValue := min.
-			golap visibleEdgeMinPercentile label:
-				'min ' , visibleEdgeMinValue printString.
-			golap visibleEdgeMaxPercentile label:
-				'max ' , visibleEdgeMaxValue printString.
 			reallyVisibleEdges := visibleEdges select: [ :edge |
-					                      (edge node1 notNil and: [
-							                       edge node1 x notNil and: [
-									                       edge node2 y notNil and: [
-											                       edge node2 notNil and: [
-													                       edge node2 x notNil and: [
-															                       edge node2 y notNil and: [
-																	                       (model valueAtNode: edge node1)
-																	                       >= minFreq and:
-																		                       (model valueAtNode:
-																			                        edge node2) > minFreq ] ] ] ] ] ])
-						                      and: [
-								                      (model valueAtEdge: edge)
-									                      ifNil: [ true ]
-									                      ifNotNil: [ :v |
-									                      v
-										                      between: visibleEdgeMinValue
-										                      and: visibleEdgeMaxValue ] ] ].
+					                      edge node1 asPoint notNil and: [
+						                      edge node2 asPoint notNil and: [
+							                      (model valueAtEdge: edge) notNil ] ] ].
 			connectedNodes := IdentitySet new: reallyVisibleEdges size.
 			reallyVisibleEdges do: [ :edge |
 					connectedNodes
