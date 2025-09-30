@@ -362,9 +362,9 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 			| shapes markersAndNodes color |
 			shapes := RSGroup new.
 			markersAndNodes := Array streamContents: [ :stream |
-					                   golap markersAndNodesDo: [ :color :vs |
-						                   color ifNotNil: [
-							                   stream nextPut: color -> vs asIdentitySet ] ] ].
+					                   golap markersAndNodesDo: [ :c :vs |
+						                   c ifNotNil: [
+							                   stream nextPut: c -> vs asIdentitySet ] ] ].
 			(golap colorForNode: aGolapNode) ifNotNil: [ :c |
 					| v r shape |
 					color := c.
@@ -409,8 +409,8 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 						do: [ label position: shapes position + labelOffset ]
 						for: label.
 					label position: shapes position + labelOffset.
-					self canvas add: label.
-					^ shapes ] ].
+					self canvas add: label ].
+			^ shapes ].
 	^ nil
 ]
 

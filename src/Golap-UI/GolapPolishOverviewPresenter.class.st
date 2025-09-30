@@ -250,7 +250,7 @@ GolapPolishOverviewPresenter >> updateGraph [
 			reallyVisibleNodes := Array streamContents: [ :stream |
 					                      golap showsConnectedNodes ifTrue: [
 						                      stream nextPutAll: connectedNodes ].
-					                      self nodesDo: [ :v |
+					                      golap nodesDo: [ :v |
 							                      (connectedNodes includes: v) ifFalse: [
 									                      v isIsolated
 										                      ifTrue: [
