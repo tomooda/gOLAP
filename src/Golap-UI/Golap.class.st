@@ -1230,7 +1230,7 @@ Golap >> initializePresenters [
 	heatmapPresenter := self instantiate:
 		                    (GolapClusteredHeatmapPresenter new golap: self).
 	viewsNotebook := self newNotebook
-"		                 addPageTitle: 'グラフ' provider: [ globalImagePane ];"
+		                 "addPageTitle: 'グラフ' provider: [ globalImagePane ];"
 		                 addPageTitle: '俯瞰図'
 		                 provider: [ polishOverviewPresenter ];
 		                 addPageTitle: 'フレンド俯瞰図'
@@ -1410,6 +1410,9 @@ Golap >> model: aGolapModel [
 
 	self model: aGolapModel forceUpdate: true.
 	polishOverviewPresenter
+		updateCanvas;
+		zoomToFit.
+	friendOverviewPresenter
 		updateCanvas;
 		zoomToFit
 ]
@@ -2677,7 +2680,8 @@ Golap >> updateGlobalImage [
 			imageAndMap := self renderer globalImageAndMap.
 			globalImagePane image: imageAndMap first.
 			globalMapPane image: imageAndMap second.
-			polishOverviewPresenter updateCanvas ].
+			polishOverviewPresenter updateCanvas.
+			friendOverviewPresenter updateCanvas ].
 	self ensurePhotoimageRetrievingProcess.
 	self announcer announce: GolapViewUpdated new
 ]
