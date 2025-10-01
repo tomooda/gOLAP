@@ -25,13 +25,13 @@ GolapItemsAppearance class >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
+"		  add: (SpBoxLayout newHorizontal
 				   add: #minFreqSlider;
 				   add: '  ' expand: false;
 				   add: #minFreqField width: 50)
 		  height: self inputTextHeight;
 		  add: #numLabelsSlider height: self inputTextHeight;
-		  add: #fontButton height: self buttonHeight;
+"		  add: #fontButton height: self buttonHeight;
 		  add: (SpBoxLayout newHorizontal
 				   add: #showConnectedNodesCheckBox;
 				   add: #showHiddenConnectionNodesCheckBox;
@@ -50,12 +50,12 @@ GolapItemsAppearance class >> on: aGolap [
 
 { #category : 'private' }
 GolapItemsAppearance >> chooseFont [
-	golap
-		ifNotNil: [ StandardFonts
-				chooseFontWithTitle: 'Font for gOLAP'
-				for: golap
-				setSelector: #font:
-				getSelector: #font ]
+
+	golap ifNotNil: [
+			FontChooser
+				openModalWithTitle: 'Font for Golap'
+				initialFont: Golap defaultFont
+				onAcceptDo: [ :font | Golap defaultFont: font ] ]
 ]
 
 { #category : 'initialization' }

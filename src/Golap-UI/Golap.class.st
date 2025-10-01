@@ -86,18 +86,21 @@ Golap class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newHorizontal
 		  add: (SpBoxLayout newVertical
-				   add: #globalMapPane height: 200;
+"				   add: #globalMapPane height: 200;
 				   add: (SpBoxLayout newHorizontal
 						    add: #zoomInButton width: 110;
 						    add: #resetZoomButton width: 80;
 						    add: #zoomOutButton width: 110)
 				   height: self buttonHeight;
-				   add: (SpBoxLayout newHorizontal
+"				   add: (SpBoxLayout newHorizontal
 						    add: #frontList width: 150;
 						    add: #baseList)
 				   height: self buttonHeight;
-				   add: #appearanceNotebook height: 300;
-				   add: (SpBoxLayout newHorizontal
+				add: #edgesAppearancePresenter  height: 70;
+				add: #itemsAppearancePresenter height: 150;
+				add: #colorsAppearancePresenter height: 250;
+
+"				   add: (SpBoxLayout newHorizontal
 						    add: #overviewRendererButton;
 						    add: #elaborationRendererButton)
 				   height: self buttonHeight;
@@ -109,7 +112,7 @@ Golap class >> defaultLayout [
 								     add: #overridesYWithFrequencyOrderCheckbox expand: false)
 						    width: 100)
 				   expand: false;
-				   add: 'コメント' expand: false;
+"				   add: 'コメント' expand: false;
 				   add: #commentText;
 				   yourself)
 		  width: 350;
@@ -1106,24 +1109,6 @@ Golap >> initializePresenters [
 	itemsAppearancePresenter := GolapItemsAppearance on: self.
 	edgesAppearancePresenter := GolapEdgesAppearance on: self.
 	colorsAppearancePresenter := GolapColorsAppearance on: self.
-	appearanceNotebook := self newNotebook
-		                      addPage: (self newNotebookPage
-				                       title: 'グラフ';
-				                       presenterProvider: [
-					                       edgesAppearancePresenter ];
-				                       yourself);
-		                      addPage: (self newNotebookPage
-				                       title: 'アイテム';
-				                       presenterProvider: [
-					                       itemsAppearancePresenter ];
-				                       yourself);
-		                      addPage: (self newNotebookPage
-				                       title: '色';
-				                       presenterProvider: [
-					                       colorsAppearancePresenter ];
-				                       yourself);
-		                      yourself.
-
 	overviewRendererButton := self newButton
 		                          state: true;
 		                          label: 'overview';

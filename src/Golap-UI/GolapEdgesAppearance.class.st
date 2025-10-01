@@ -62,7 +62,7 @@ GolapEdgesAppearance class >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newVertical
-		  add: #edgeWidthSlider height: self buttonHeight;
+"		  add: #edgeWidthSlider height: self buttonHeight;
 		  add: #visibleEdgeMinPercentile height: self buttonHeight * 3 // 4;
 		  add: #visibleEdgeMaxPercentile height: self buttonHeight * 3 // 4;
 		  add: (SpBoxLayout newHorizontal
@@ -85,7 +85,7 @@ GolapEdgesAppearance class >> defaultLayout [
 				   add: 'フレンドランク' asPresenter expand: true;
 				   add: #friendsField width: 150)
 		  expand: false;
-		  add: (SpBoxLayout newHorizontal
+"		  add: (SpBoxLayout newHorizontal
 				   add: '関連指標' asPresenter expand: true;
 				   add: #edgeEvaluatorList width: 150)
 		  height: self buttonHeight;
