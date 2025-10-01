@@ -22,14 +22,13 @@ GolapRenderer class >> on: aGolap [
 
 { #category : 'accessing' }
 GolapRenderer >> colorForEdge: aGolapEdge [
-	| v |
-	v := golap model valueAtEdge: aGolapEdge.
-	v ifNil: [ ^ Color green ].
-	((v between: visibleEdgeMinValue and: visibleEdgeMaxValue)
-		or: [ (golap includesSelection: aGolapEdge node1)
-				or: [ golap includesSelection: aGolapEdge node2 ] ])
-		ifFalse: [ ^ nil ].
-	^ golap colorForEdge: aGolapEdge
+
+	^ (golap model valueAtEdge: aGolapEdge) ifNotNil: [ :v |
+			  ((v between: visibleEdgeMinValue and: visibleEdgeMaxValue) or: [
+					   (golap includesSelection: aGolapEdge node1) or: [
+						   golap includesSelection: aGolapEdge node2 ] ])
+				  ifTrue: [ golap colorForEdge: aGolapEdge ]
+				  ifFalse: [ nil ] ]
 ]
 
 { #category : 'accessing' }

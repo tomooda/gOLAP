@@ -11,7 +11,8 @@ Class {
 		'positivePolishField',
 		'negativePolishSlider',
 		'negativePolishField',
-		'polishMinDenominatorField'
+		'polishMinDenominatorField',
+		'showsPolishEdgesCheckbox'
 	],
 	#category : 'Golap-UI-Overview',
 	#package : 'Golap-UI',
@@ -23,9 +24,13 @@ GolapPolishOverviewPresenter >> availableEdges [
 
 	^ Array streamContents: [ :stream |
 			  self golapModelDo: [ :golapModel |
-					  golapModel
-						  edgesDo: [ :edge | stream nextPut: edge ];
-						  negativePolishEdgesDo: [ :edge | stream nextPut: edge ] ] ]
+					  showsPolishEdgesCheckbox state
+						  ifTrue: [
+								  golapModel
+									  edgesDo: [ :edge | stream nextPut: edge ];
+									  negativePolishEdgesDo: [ :edge | stream nextPut: edge ] ]
+						  ifFalse: [
+						  golapModel edgesDo: [ :edge | stream nextPut: edge ] ] ] ]
 ]
 
 { #category : 'layout' }
@@ -33,9 +38,11 @@ GolapPolishOverviewPresenter >> defaultLayout [
 
 	^ SpBoxLayout newVertical
 		  add: (SpBoxLayout newHorizontal
+				   vAlignCenter;
 				   add: (SpBoxLayout newVertical
 						    add:
-							    ('関連値' asPresenter displayBackgroundColor: [ Color gray: 0.8 ])
+							    ('関連値' asPresenter displayBackgroundColor: [
+									     Color gray: 0.8 ])
 						    expand: false;
 						    add: resetVisibleEdgePercentileButton expand: false;
 						    yourself)
@@ -56,13 +63,15 @@ GolapPolishOverviewPresenter >> defaultLayout [
 				   add: '    ' asPresenter expand: false;
 				   add: (SpBoxLayout newVertical
 						    add:
-							    ('研磨' asPresenter displayBackgroundColor: [ Color gray: 0.8 ])
+							    ('研磨' asPresenter displayBackgroundColor: [
+									     Color gray: 0.8 ])
 						    expand: false;
-						    add: (SpBoxLayout newHorizontal
-								     add: '最小関連数' expand: false;
-								     add: polishMinDenominatorField width: 50;
-								     yourself)
-						    expand: false;
+						    add: showsPolishEdgesCheckbox expand: false;
+						    yourself)
+				   expand: false;
+				   add: (SpBoxLayout newHorizontal
+						    add: '最小関連数' expand: false;
+						    add: polishMinDenominatorField width: 50;
 						    yourself)
 				   expand: false;
 				   add: (SpBoxLayout newVertical
@@ -124,9 +133,9 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                        value: 1.0;
 		                        quantum: 0.01;
 		                        whenValueChangedDo: [
-			                        positivePolishField number:
-					                        positivePolishSlider value.
-			                        self polish ];
+				                        positivePolishField number:
+						                        positivePolishSlider value.
+				                        self polish ];
 		                        borderWidth: 0;
 		                        yourself.
 	positivePolishField := self newNumberInput
@@ -136,9 +145,9 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                       maximum: 1.0;
 		                       number: 1.0;
 		                       whenSubmitDo: [ :txt |
-			                       positivePolishSlider value:
-					                       positivePolishField number.
-			                       self polish ].
+				                       positivePolishSlider value:
+						                       positivePolishField number.
+				                       self polish ].
 	negativePolishSlider := self newSlider
 		                        label: '-研磨';
 		                        min: 0.0;
@@ -146,9 +155,9 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                        value: 0.0;
 		                        quantum: 0.01;
 		                        whenValueChangedDo: [
-			                        negativePolishField number:
-					                        negativePolishSlider value.
-			                        self polish ];
+				                        negativePolishField number:
+						                        negativePolishSlider value.
+				                        self polish ];
 		                        borderWidth: 0;
 		                        yourself.
 	negativePolishField := self newNumberInput
@@ -158,15 +167,20 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                       maximum: 0.2;
 		                       number: 0.0;
 		                       whenSubmitDo: [ :txt |
-			                       negativePolishSlider value:
-					                       negativePolishField number.
-			                       self polish ].
+				                       negativePolishSlider value:
+						                       negativePolishField number.
+				                       self polish ].
 	polishMinDenominatorField := self newNumberInput
 		                             beInteger;
 		                             placeholder: 'min edges';
 		                             minimum: 1;
 		                             number: 3;
 		                             whenSubmitDo: [ :txt | self polish ].
+	showsPolishEdgesCheckbox := self newCheckBox
+		                            label: '研磨結果を強調';
+		                            state: false;
+		                            whenChangedDo: [ self updateCanvas ];
+		                            yourself.
 	layoutButton := self newButton
 		                label: ' 再配置 ';
 		                action: [
@@ -182,6 +196,20 @@ GolapPolishOverviewPresenter >> initializePresenters [
 GolapPolishOverviewPresenter >> negativePolishFactor [
 
 	^ negativePolishField number ifNil: [ 0.0 ]
+]
+
+{ #category : 'instance creation' }
+GolapPolishOverviewPresenter >> newShapeForEdge: aGolapEdge [
+
+	^ (super newShapeForEdge: aGolapEdge) ifNotNil: [ :line |
+			  showsPolishEdgesCheckbox state ifTrue: [
+					  aGolapEdge isPositivePolishEdge ifTrue: [
+						  line color: golap positivePolishColor ].
+					  aGolapEdge isNegativePolishEdge ifTrue: [
+							  line
+								  color: golap negativePolishColor;
+								  dashArray: #( 2 6 ) ] ].
+			  line ]
 ]
 
 { #category : 'operations' }
@@ -202,6 +230,16 @@ GolapPolishOverviewPresenter >> polish [
 GolapPolishOverviewPresenter >> positivePolishFactor [
 
 	^ positivePolishField number ifNil: [ 1.0 ]
+]
+
+{ #category : 'rendering' }
+GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
+
+	super renderEdgesIn: aRSCanvas.
+	showsPolishEdgesCheckbox state ifTrue: [
+			aRSCanvas lines do: [ :line |
+					line model ifNotNil: [ :edge |
+						edge isPositivePolishEdge ifTrue: [ line pushFront ] ] ] ]
 ]
 
 { #category : 'updating' }

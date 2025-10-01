@@ -75,7 +75,10 @@ GolapOverviewZoomableCanvasInteraction >> processMouseWheelEvent: evt [
 GolapOverviewZoomableCanvasInteraction >> renderLegendOn: legend [
 
 	legend
-		text: 'マウスホイール, I, O' description: 'To zoom in-out the view';
-		text: 'マウスドラッグ, ←, →, ↑ or ↓' description: 'To move the view';
-		text: 'スペース' description: 'To reset the view'
+		defaultTitle: '操作説明';
+		text: 'マウスホイール, I, O' description: 'ズームイン/ズームアウト';
+		text: 'マウスドラッグ, ←, →, ↑ or ↓' description: '視点移動';
+		text: 'スペース' description: '視点・ズームをリセット'.
+	GolapOverviewNodeInteraction new renderLegendOn: legend.
+	GolapOverviewEdgeInteraction new renderLegendOn: legend
 ]

@@ -49,6 +49,6 @@ GolapOverviewNodeInteraction >> processMouseRightClick: evt [
 GolapOverviewNodeInteraction >> renderLegendOn: legend [
 
 	legend
-		text: 'アイテムをクリック' description: 'アイテムを選択する';
+		text: 'アイテムをクリック' description: 'アイテムを選択/選択解除する';
 		text: 'アイテム上で右クリック' description: '商品メニュー'
 ]
