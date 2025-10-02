@@ -172,12 +172,12 @@ GolapPolishOverviewPresenter >> initializePresenters [
 				                       self polish ].
 	polishMinDenominatorField := self newNumberInput
 		                             beInteger;
-		                             placeholder: 'min edges';
+		                             placeholder: '最小関連数';
 		                             minimum: 1;
 		                             number: 3;
 		                             whenSubmitDo: [ :txt | self polish ].
 	showsPolishEdgesCheckbox := self newCheckBox
-		                            label: '研磨結果を強調';
+		                            label: '研磨を表示する';
 		                            state: false;
 		                            whenChangedDo: [ self updateCanvas ];
 		                            yourself.

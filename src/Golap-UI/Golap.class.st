@@ -52,7 +52,6 @@ Class {
 		'retrievalProcessCount',
 		'drawingSemaphore',
 		'commentText',
-		'openSunburstButton',
 		'dandelionPresenter',
 		'snapshotBaseName',
 		'hedgePresenter',
@@ -60,7 +59,8 @@ Class {
 		'edgeList',
 		'heatmapPresenter',
 		'polishOverviewPresenter',
-		'friendOverviewPresenter'
+		'friendOverviewPresenter',
+		'elaborationPresenter'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -1205,9 +1205,13 @@ Golap >> initializePresenters [
 				                 yourself);
 		                yourself.
 	polishOverviewPresenter := self instantiate:
-		                     (GolapPolishOverviewPresenter new golap: self).
+		                           (GolapPolishOverviewPresenter new golap:
+			                            self).
 	friendOverviewPresenter := self instantiate:
-		                     (GolapFriendOverviewPresenter new golap: self).
+		                           (GolapFriendOverviewPresenter new golap:
+			                            self).
+	elaborationPresenter := self instantiate:
+		                        (GolapElaborationPresenter new golap: self).
 	dandelionPresenter := self instantiate:
 		                      (GolapDandelionChartPresenter new golap: self).
 	hedgePresenter := self instantiate:
@@ -1215,11 +1219,12 @@ Golap >> initializePresenters [
 	heatmapPresenter := self instantiate:
 		                    (GolapClusteredHeatmapPresenter new golap: self).
 	viewsNotebook := self newNotebook
-		                 "addPageTitle: 'グラフ' provider: [ globalImagePane ];"
 		                 addPageTitle: '俯瞰図'
 		                 provider: [ polishOverviewPresenter ];
 		                 addPageTitle: 'フレンド俯瞰図'
 		                 provider: [ friendOverviewPresenter ];
+		                 addPageTitle: '特化グラフ'
+		                 provider: [ elaborationPresenter ];
 		                 addPageTitle: 'たんぽぽ図'
 		                 provider: [ dandelionPresenter ];
 		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
@@ -1230,6 +1235,7 @@ Golap >> initializePresenters [
 						                 (p respondsTo: #updateTree) ifTrue: [
 								                 p updateTree ] ] ];
 		                 yourself.
+	"addPageTitle: 'グラフ' provider: [ globalImagePane ];"
 
 	self whenBuiltDo: [ :w |
 			| f |
@@ -1398,6 +1404,9 @@ Golap >> model: aGolapModel [
 		updateCanvas;
 		zoomToFit.
 	friendOverviewPresenter
+		updateCanvas;
+		zoomToFit.
+	elaborationPresenter
 		updateCanvas;
 		zoomToFit
 ]
@@ -2666,7 +2675,8 @@ Golap >> updateGlobalImage [
 			globalImagePane image: imageAndMap first.
 			globalMapPane image: imageAndMap second.
 			polishOverviewPresenter updateCanvas.
-			friendOverviewPresenter updateCanvas ].
+			friendOverviewPresenter updateCanvas.
+			elaborationPresenter updateCanvas ].
 	self ensurePhotoimageRetrievingProcess.
 	self announcer announce: GolapViewUpdated new
 ]
@@ -2683,13 +2693,13 @@ Golap >> updateGlobalImageAfter: aBlock layout: aBoolean [
 	| sender |
 	sender := thisContext sender.
 	aBlock ensure: [
-		(self window notNil and: [ self window isClosed not ]) ifTrue: [
-			[ sender notNil ] whileTrue: [
-				sender selector = #updateGlobalImageAfter:layout: ifTrue: [
-					^ self ].
-				sender := sender sender ].
-			aBoolean = true ifTrue: [ self basicLayout ].
-			self updateGlobalImage ] ]
+			(self window notNil and: [ self window isClosed not ]) ifTrue: [
+					[ sender notNil ] whileTrue: [
+							sender selector = #updateGlobalImageAfter:layout: ifTrue: [
+								^ self ].
+							sender := sender sender ].
+					aBoolean = true ifTrue: [ self basicLayout ].
+					self updateGlobalImage ] ]
 ]
 
 { #category : 'operations' }
