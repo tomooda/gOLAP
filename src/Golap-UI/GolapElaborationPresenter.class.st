@@ -2,7 +2,7 @@ Class {
 	#name : 'GolapElaborationPresenter',
 	#superclass : 'SpPresenter',
 	#instVars : [
-		'showsPolishedEdgesCheckBox',
+		'gapSlider',
 		'roassal',
 		'scale',
 		'offset',
@@ -13,7 +13,8 @@ Class {
 		'positions',
 		'barScale',
 		'nodeInteraction',
-		'edgeInteraction'
+		'edgeInteraction',
+		'associateBaseX'
 	],
 	#category : 'Golap-UI-Elaboration',
 	#package : 'Golap-UI',
@@ -50,11 +51,19 @@ GolapElaborationPresenter >> defaultLayout [
 	^ SpBoxLayout newVertical
 		  add: (SpBoxLayout newHorizontal
 				   vAlignCenter;
-				   add: showsPolishedEdgesCheckBox expand: false;
+				   add: '左右ギャップ' expand: false;
+				   add: gapSlider width: 200;
 				   yourself)
 		  expand: false;
 		  add: roassal expand: true;
 		  yourself
+]
+
+{ #category : 'updating' }
+GolapElaborationPresenter >> gapSliderChanged [
+
+	self updateAssociateNodePositions.
+	self canvas signalUpdate
 ]
 
 { #category : 'accessing' }
@@ -100,11 +109,16 @@ GolapElaborationPresenter >> initialize [
 GolapElaborationPresenter >> initializePresenters [
 
 	super initializePresenters.
+	gapSlider := self newSlider
+		             min: 0;
+		             max: 1000;
+		             quantum: 100;
+		             value: 500;
+		             whenValueChangedDo: [ self gapSliderChanged ];
+		             yourself.
 	roassal := self newRoassal
 		           canvas: RSCanvas new @ self newCanvasController;
-		           yourself.
-	showsPolishedEdgesCheckBox := self newCheckBox 
-		label: '研磨を表示する'
+		           yourself
 ]
 
 { #category : 'operations' }
@@ -445,15 +459,16 @@ GolapElaborationPresenter >> renderEdgesIn: aRSCanvas [
 { #category : 'rendering' }
 GolapElaborationPresenter >> renderNodesIn: aRSCanvas [
 
-	|  associateX |
+	| gap |
+	gap := gapSlider value.
 	nodes := IdentityDictionary new.
 	positions := IdentityDictionary new.
-	associateX := 0.
+	associateBaseX := 0.
 	(rootNodes collect: [ :rootNode | self newShapeForRootNode: rootNode ])
 		ifNotEmpty: [ :nodeShapes |
 				| shapeExtent |
 				shapeExtent := (nodeShapes collect: #extent) max.
-				associateX := shapeExtent x + 1000.
+				associateBaseX := shapeExtent x.
 				nodeShapes doWithIndex: [ :shape :index |
 						| point nodeShape |
 						nodeShape := {
@@ -486,7 +501,7 @@ GolapElaborationPresenter >> renderNodesIn: aRSCanvas [
 							              color: Color transparent;
 							              yourself).
 						             shape } asShapeFor: shape model.
-					point := associateX + shapeExtent x * 0.5
+					point := associateBaseX + gap + (shapeExtent x * 0.5)
 					         @ (shapeExtent y + 10 * (index - 0.5)).
 					positions at: nodeShape put: point.
 					nodes at: nodeShape model put: nodeShape.
@@ -517,6 +532,21 @@ GolapElaborationPresenter >> scale: aNumber at: aPoint [
 	self scale: aNumber.
 	newFocus := aPoint / scale.
 	self offset: offset - oldFocus + newFocus
+]
+
+{ #category : 'updating' }
+GolapElaborationPresenter >> updateAssociateNodePositions [
+
+	| gap |
+	gap := gapSlider value.
+	associateNodes do: [ :associateNode |
+			nodes at: associateNode ifPresent: [ :shape |
+					positions at: shape ifPresent: [ :oldPosition |
+							| newPosition |
+							newPosition := associateBaseX + gap + (shape extent x * 0.5)
+							               @ oldPosition y.
+							positions at: shape put: newPosition.
+							shape translateTo: newPosition + offset * scale ] ] ]
 ]
 
 { #category : 'updating' }

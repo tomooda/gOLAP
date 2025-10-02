@@ -864,62 +864,9 @@ Golap >> globalImageMenu: aGolapNode [
 	^ menu
 ]
 
-{ #category : 'operations' }
-Golap >> globalImageMouseClick: anEvent [
-
-	anEvent wasHandled: true.
-	dragNode
-		ifNil: [
-			| target |
-			target := self renderer nodeAtPoint:
-				          anEvent position
-				          - globalImagePane adapter widget position.
-			anEvent yellowButtonChanged ifTrue: [
-				^ (self globalImageMenu: target) openWithSpecAt: anEvent position ].
-			target ifNotNil: [ self toggleSelection: target ] ]
-		ifNotNil: [
-			self renderer
-				moveNode: dragNode
-				to: anEvent position - globalImagePane adapter widget position.
-			dragNode := nil.
-			anEvent hand showTemporaryCursor: nil.
-			self updateGlobalImage ]
-]
-
-{ #category : 'operations' }
-Golap >> globalImageMouseMove: anEvent [
-
-	anEvent anyButtonPressed ifFalse: [ ^ self ].
-	anEvent wasHandled: true.
-	self updateGlobalImageAfter: [ 
-		self renderer moveImageOffset: anEvent endPoint - anEvent startPoint ]
-]
-
-{ #category : 'operations' }
-Golap >> globalImageMouseWheel: anEvent [
-
-	anEvent direction = Character arrowUp ifTrue: [ ^ self zoomIn ].
-	anEvent direction = Character arrowDown ifTrue: [ ^ self zoomOut ]
-]
-
 { #category : 'accessing-widgets' }
 Golap >> globalImagePane [
 	^ globalImagePane
-]
-
-{ #category : 'operations' }
-Golap >> globalMapMouseClick: anEvent [
-
-	anEvent wasHandled: true
-]
-
-{ #category : 'operations' }
-Golap >> globalMapMouseMove: anEvent [
-
-	anEvent anyButtonPressed ifFalse: [ ^ self ].
-	anEvent wasHandled: true.
-	self updateGlobalImageAfter: [ 
-		self renderer moveMapOffset: anEvent startPoint - anEvent endPoint ]
 ]
 
 { #category : 'accessing-widgets' }
@@ -931,43 +878,6 @@ Golap >> globalMapPane [
 Golap >> golapDirectory [
 
 	^ self class golapDirectory
-]
-
-{ #category : 'layouts' }
-Golap >> graphLayout [
-
-	<spec>
-	^ SpBoxLayout newHorizontal
-		  add: (SpBoxLayout newVertical
-				   add: globalMapPane height: 200;
-				   add: (SpBoxLayout newHorizontal
-						    add: zoomInButton width: 110;
-						    add: resetZoomButton width: 80;
-						    add: zoomOutButton width: 110)
-				   height: self buttonHeight;
-				   add: (SpBoxLayout newHorizontal
-						    add: frontList width: 150;
-						    add: baseList)
-				   height: self buttonHeight;
-				   add: appearanceNotebook height: 300;
-				   add: (SpBoxLayout newHorizontal
-						    add: overviewRendererButton;
-						    add: elaborationRendererButton)
-				   height: self buttonHeight;
-				   add: (SpBoxLayout newHorizontal
-						    add: layoutButton expand: true;
-						    add: layoutChooseButton width: 20;
-						    add: (SpBoxLayout newVertical
-								     add: overridesYWithFrequencyCheckbox expand: false;
-								     add: overridesYWithFrequencyOrderCheckbox expand: false)
-						    width: 100)
-				   expand: false;
-				   add: 'コメント' expand: false;
-				   add: commentText;
-				   yourself)
-		  width: 350;
-		  add: globalImagePane;
-		  yourself
 ]
 
 { #category : 'accessing-colors' }
@@ -1031,56 +941,11 @@ Golap >> initialize [
 { #category : 'initialization' }
 Golap >> initializePresenters [
 
-	globalImagePane := self newImage
-		                   autoScale: true;
-		                   whenBuiltDo: [
-				                   globalImagePane adapter widget
-					                   on: #mouseMove
-					                   send: #globalImageMouseMove:
-					                   to: self;
-					                   on: #mouseUp
-					                   send: #globalImageMouseClick:
-					                   to: self;
-					                   on: #mouseWheel
-					                   send: #globalImageMouseWheel:
-					                   to: self ];
-		                   bindKeyCombination:
-		                   Character arrowUp asKeyCombination
-		                   toAction: [ self zoomIn ];
-		                   bindKeyCombination:
-		                   Character arrowDown asKeyCombination
-		                   toAction: [ self zoomOut ];
-		                   yourself.
-	globalMapPane := self newImage
-		                 autoScale: false;
-		                 whenBuiltDo: [
-				                 globalMapPane adapter widget
-					                 on: #mouseMove
-					                 send: #globalMapMouseMove:
-					                 to: self;
-					                 on: #mouseUp
-					                 send: #globalMapMouseClick:
-					                 to: self;
-					                 on: #mouseWheel
-					                 send: #globalImageMouseWheel:
-					                 to: self ];
-		                 bindKeyCombination: Character arrowUp
-		                 toAction: [ self zoomIn ];
-		                 bindKeyCombination: Character arrowDown
-		                 toAction: [ self zoomOut ];
-		                 yourself.
+	globalImagePane := self newImage.
+	globalMapPane := self newImage.
 	zoomInButton := self newButton.
-	zoomInButton
-		label: '+';
-		action: [ self zoomInCenter ].
 	zoomOutButton := self newButton.
-	zoomOutButton
-		label: '-';
-		action: [ self zoomOutCenter ].
-	resetZoomButton := self newButton
-		                   label: 'reset';
-		                   action: [ self resetZoom ];
-		                   yourself.
+	resetZoomButton := self newButton.
 	frontList := self newDropList
 		             display: [ :string |
 				             string isSymbol
@@ -1109,50 +974,16 @@ Golap >> initializePresenters [
 	itemsAppearancePresenter := GolapItemsAppearance on: self.
 	edgesAppearancePresenter := GolapEdgesAppearance on: self.
 	colorsAppearancePresenter := GolapColorsAppearance on: self.
-	overviewRendererButton := self newButton
-		                          state: true;
-		                          label: 'overview';
-		                          action: [ self setOverviewRenderer ];
-		                          yourself.
-	elaborationRendererButton := self newButton
-		                             state: false;
-		                             label: 'elaboration';
-		                             action: [ self setElaborationRenderer ];
-		                             yourself.
+	overviewRendererButton := self newButton.
+	elaborationRendererButton := self newButton.
 	layoutButton := self newButton.
-	layoutButton
-		label: 'layout';
-		action: [ self updateGlobalImageAfter: [ ] layout: true ].
-	layoutChooseButton := self newButton
-		                      icon: (self iconNamed: #arrowDown);
-		                      action: [
-			                      self chooseLayouterMenu openWithSpecAtPointer ];
-		                      yourself.
+	layoutChooseButton := self newButton.
 	overridesYWithFrequencyCheckbox := self newCheckBox
-		                                   label: 'Y=freq';
-		                                   labelOnRight;
 		                                   state: false;
-		                                   whenChangedDo: [
-				                                   overridesYWithFrequencyCheckbox
-					                                   state ifTrue: [
-						                                   overridesYWithFrequencyOrderCheckbox
-							                                   state: false ].
-				                                   self
-					                                   updateGlobalImageAfter: [ ]
-					                                   layout: true ].
+		                                   yourself.
 	overridesYWithFrequencyOrderCheckbox := self newCheckBox
-		                                        label: 'Y=freq order';
-		                                        labelOnRight;
 		                                        state: false;
-		                                        whenChangedDo: [
-				                                        overridesYWithFrequencyOrderCheckbox
-					                                        state ifTrue: [
-						                                        overridesYWithFrequencyCheckbox
-							                                        state: false ].
-				                                        self
-					                                        updateGlobalImageAfter: [
-						                                         ]
-					                                        layout: true ].
+		                                        yourself.
 	commentText := self newText.
 	saveAsButton := self newButton
 		                label: 'save...';
@@ -1235,7 +1066,6 @@ Golap >> initializePresenters [
 						                 (p respondsTo: #updateTree) ifTrue: [
 								                 p updateTree ] ] ];
 		                 yourself.
-	"addPageTitle: 'グラフ' provider: [ globalImagePane ];"
 
 	self whenBuiltDo: [ :w |
 			| f |
@@ -1315,11 +1145,6 @@ Golap >> maxPhotoimageRetrievalProcesses [
 	^ 3
 ]
 
-{ #category : 'private' }
-Golap >> maxScale [
-	^ 50.0
-]
-
 { #category : 'menu' }
 Golap >> mergeMenu [
 
@@ -1384,11 +1209,6 @@ Golap >> mergeSelectedNodes [
 Golap >> minFrequency [
 
 	^ itemsAppearancePresenter minFrequency
-]
-
-{ #category : 'private' }
-Golap >> minScale [
-	^ 0.9
 ]
 
 { #category : 'accessing' }
@@ -1877,11 +1697,6 @@ Golap >> resendQuery [
 	overview open title: overview snapshotDirectory basename.
 	overview snapshotData: client readStream do: [ :readStream |  ].
 	overview restoreSnapshot: overview snapshotDirectory
-]
-
-{ #category : 'private' }
-Golap >> resetVisibleEdgeThresholds [
-	edgesAppearancePresenter resetVisibleEdgeThresholds 
 ]
 
 { #category : 'operations' }
@@ -2669,14 +2484,9 @@ Golap >> updateDimensions [
 { #category : 'drawing' }
 Golap >> updateGlobalImage [
 
-	drawingSemaphore critical: [
-			| imageAndMap |
-			imageAndMap := self renderer globalImageAndMap.
-			globalImagePane image: imageAndMap first.
-			globalMapPane image: imageAndMap second.
-			polishOverviewPresenter updateCanvas.
-			friendOverviewPresenter updateCanvas.
-			elaborationPresenter updateCanvas ].
+	polishOverviewPresenter updateCanvas.
+	friendOverviewPresenter updateCanvas.
+	elaborationPresenter updateCanvas.
 	self ensurePhotoimageRetrievingProcess.
 	self announcer announce: GolapViewUpdated new
 ]
@@ -2773,44 +2583,4 @@ Golap >> windowTitle [
 Golap >> writePresetQueries: anArrayOfString [
 	self presetQueryFile ensureDelete
 		writeStreamDo: [ :stream | ^ (NeoJSONWriter on: stream) nextPut: anArrayOfString ]
-]
-
-{ #category : 'operations' }
-Golap >> zoomIn [
-
-	(lastZoomTimestamp notNil and: [ 
-		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
-		^ self ].
-	lastZoomTimestamp := DateAndTime now.
-	self updateGlobalImageAfter: [ self renderer zoomIn ]
-]
-
-{ #category : 'operations' }
-Golap >> zoomInCenter [
-
-	(lastZoomTimestamp notNil and: [ 
-		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
-		^ self ].
-	lastZoomTimestamp := DateAndTime now.
-	self updateGlobalImageAfter: [ self renderer zoomInCenter ]
-]
-
-{ #category : 'operations' }
-Golap >> zoomOut [
-
-	(lastZoomTimestamp notNil and: [ 
-		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
-		^ self ].
-	lastZoomTimestamp := DateAndTime now.
-	self updateGlobalImageAfter: [ self renderer zoomOut ]
-]
-
-{ #category : 'operations' }
-Golap >> zoomOutCenter [
-
-	(lastZoomTimestamp notNil and: [ 
-		 DateAndTime now - lastZoomTimestamp < 0.1 seconds ]) ifTrue: [ 
-		^ self ].
-	lastZoomTimestamp := DateAndTime now.
-	self updateGlobalImageAfter: [ self renderer zoomOutCenter ]
 ]

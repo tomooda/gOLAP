@@ -193,19 +193,18 @@ GolapHierarchicalClusteringPresenter >> updatePhotoimage: shape [
 GolapHierarchicalClusteringPresenter >> updateTree [
 
 	self withAdapterDo: [ :a |
-		a widgetDo: [ :w |
-			w world ifNotNil: [
-				self tree: (((GolapHierarchicalClustering on: golap model)
-						  rank: 2;
-						  rank: 4;
-						  rank: 8;
-						  rank: 16;
-						  rank: 32;
-						  rank: 64;
-						  rank: 128;
-						  rank: 256;
-						  tree) removeAllBut:
-						 golap overviewRenderer reallyVisibleNodes asSet) ] ] ]
+			a widgetDo: [ :w |
+					w world ifNotNil: [
+							self tree: (((GolapHierarchicalClustering on: golap model)
+									  rank: 2;
+									  rank: 4;
+									  rank: 8;
+									  rank: 16;
+									  rank: 32;
+									  rank: 64;
+									  rank: 128;
+									  rank: 256;
+									  tree) removeAllBut: golap nodes asSet) ] ] ]
 ]
 
 { #category : 'accessing' }
