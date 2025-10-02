@@ -75,9 +75,14 @@ GolapHierarchicalClusteringPresenter >> golapChanged [
 { #category : 'initialization' }
 GolapHierarchicalClusteringPresenter >> initializePresenters [
 
+	| controller |
 	super initializePresenters.
+	controller := RSCanvasController new.
+	controller configuration
+		shouldAnimateZoom: false;
+		useBasicZoom.
 	roassal := self newRoassal
-		           canvas: RSCanvas new @ RSCanvasController;
+		           canvas: RSCanvas new @ controller;
 		           yourself
 ]
 
