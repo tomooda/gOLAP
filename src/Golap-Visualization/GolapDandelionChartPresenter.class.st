@@ -1,9 +1,9 @@
 Class {
 	#name : 'GolapDandelionChartPresenter',
 	#superclass : 'GolapHierarchicalClusteringPresenter',
-	#category : 'Golap-Clustering-Dandelion',
-	#package : 'Golap-Clustering',
-	#tag : 'Dandelion'
+	#category : 'Golap-Visualization-Clustering',
+	#package : 'Golap-Visualization',
+	#tag : 'Clustering'
 }
 
 { #category : 'updating' }

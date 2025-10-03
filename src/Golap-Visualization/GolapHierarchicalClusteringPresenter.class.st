@@ -6,9 +6,9 @@ Class {
 		'tree',
 		'roassal'
 	],
-	#category : 'Golap-Clustering-Core',
-	#package : 'Golap-Clustering',
-	#tag : 'Core'
+	#category : 'Golap-Visualization-Clustering',
+	#package : 'Golap-Visualization',
+	#tag : 'Clustering'
 }
 
 { #category : 'accessing' }

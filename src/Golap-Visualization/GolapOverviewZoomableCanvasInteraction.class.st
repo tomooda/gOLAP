@@ -4,8 +4,8 @@ Class {
 	#instVars : [
 		'presenter'
 	],
-	#category : 'Golap-UI-Overview',
-	#package : 'Golap-UI',
+	#category : 'Golap-Visualization-Overview',
+	#package : 'Golap-Visualization',
 	#tag : 'Overview'
 }
 

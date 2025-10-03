@@ -18,8 +18,8 @@ Class {
 		'selectedReferenceNodes',
 		'activeReferenceNodes'
 	],
-	#category : 'Golap-UI-Overview',
-	#package : 'Golap-UI',
+	#category : 'Golap-Visualization-Overview',
+	#package : 'Golap-Visualization',
 	#tag : 'Overview'
 }
 

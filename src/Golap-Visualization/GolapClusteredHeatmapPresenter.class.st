@@ -10,9 +10,9 @@ Class {
 		'showsSingletonClustersCheckBox',
 		'showsClusterBoundariesCheckBox'
 	],
-	#category : 'Golap-Clustering-Heatmap',
-	#package : 'Golap-Clustering',
-	#tag : 'Heatmap'
+	#category : 'Golap-Visualization-Clustering',
+	#package : 'Golap-Visualization',
+	#tag : 'Clustering'
 }
 
 { #category : 'accessing' }
