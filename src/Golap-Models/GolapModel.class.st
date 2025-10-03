@@ -87,6 +87,16 @@ GolapModel >> addPositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges add: aGolapEdge
 ]
 
+{ #category : 'algorithms-articulation points' }
+GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
+
+	| finder |
+	finder := GolapArticulationPointFinder new
+		          edges: aCollectionOfGolapEdge;
+		          yourself.
+	finder articulationPoints do: aBlock
+]
+
 { #category : 'snapshot' }
 GolapModel >> asJSON [
 
