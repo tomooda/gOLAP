@@ -66,7 +66,7 @@ GolapPolishOverviewPresenter >> defaultLayout [
 							    ('研磨' asPresenter displayBackgroundColor: [
 									     Color gray: 0.8 ])
 						    expand: false;
-						    add: showsPolishEdgesCheckbox expand: false;
+						    add: showsPolishEdgesCheckbox width: 80;
 						    yourself)
 				   expand: false;
 				   add: (SpBoxLayout newHorizontal
@@ -84,9 +84,15 @@ GolapPolishOverviewPresenter >> defaultLayout [
 						    add: positivePolishField expand: false;
 						    yourself)
 				   width: 50;
-				   add: polishIterationCheckbox expand: false;
-				   add: '    ' asPresenter expand: false;
-				   add: layoutButton expand: false;
+				   add: polishIterationCheckbox width: 100;
+				   add: (SpBoxLayout newVertical
+						    add:
+							    ('更新' asPresenter displayBackgroundColor: [
+									     Color gray: 0.8 ])
+						    expand: false;
+						    add: layoutButton expand: false;
+						    yourself)
+				   expand: false;
 				   yourself)
 		  expand: false;
 		  add: roassal expand: true;
@@ -177,7 +183,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                             number: 3;
 		                             whenSubmitDo: [ :txt | self polish ].
 	showsPolishEdgesCheckbox := self newCheckBox
-		                            label: '研磨を表示する';
+		                            label: '表示';
 		                            state: false;
 		                            whenChangedDo: [ self updateCanvas ];
 		                            yourself.
