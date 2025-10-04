@@ -1,9 +1,9 @@
 Class {
 	#name : 'GolapHedgeChartPresenter',
 	#superclass : 'GolapHierarchicalClusteringPresenter',
-	#category : 'Golap-Visualization-Clustering',
+	#category : 'Golap-Visualization-Hedge',
 	#package : 'Golap-Visualization',
-	#tag : 'Clustering'
+	#tag : 'Hedge'
 }
 
 { #category : 'private' }

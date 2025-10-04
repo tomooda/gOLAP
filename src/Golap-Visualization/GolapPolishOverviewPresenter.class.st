@@ -14,9 +14,9 @@ Class {
 		'polishMinDenominatorField',
 		'showsPolishEdgesCheckbox'
 	],
-	#category : 'Golap-Visualization-Overview',
+	#category : 'Golap-Visualization-Polish',
 	#package : 'Golap-Visualization',
-	#tag : 'Overview'
+	#tag : 'Polish'
 }
 
 { #category : 'accessing' }

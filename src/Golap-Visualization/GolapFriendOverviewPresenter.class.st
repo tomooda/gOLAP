@@ -5,9 +5,9 @@ Class {
 		'friendsRankField',
 		'layoutButton'
 	],
-	#category : 'Golap-Visualization-Overview',
+	#category : 'Golap-Visualization-Friend',
 	#package : 'Golap-Visualization',
-	#tag : 'Overview'
+	#tag : 'Friend'
 }
 
 { #category : 'accessing' }

@@ -1,5 +1,5 @@
 Class {
-	#name : 'GolapCanvasController',
+	#name : 'GolapHierarchicalClusteringCanvasController',
 	#superclass : 'RSCanvasController',
 	#instVars : [
 		'presenter'
@@ -10,7 +10,7 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapCanvasController class >> on: aGolapDandelionChartPresenter [
+GolapHierarchicalClusteringCanvasController class >> on: aGolapDandelionChartPresenter [
 
 	^ self new
 		  presenter: aGolapDandelionChartPresenter;
@@ -18,11 +18,11 @@ GolapCanvasController class >> on: aGolapDandelionChartPresenter [
 ]
 
 { #category : 'hooks' }
-GolapCanvasController >> clicked: event [
+GolapHierarchicalClusteringCanvasController >> clicked: event [
 ]
 
 { #category : 'hooks' }
-GolapCanvasController >> contextMenu [
+GolapHierarchicalClusteringCanvasController >> contextMenu [
 
 	^ presenter newMenu
 		  addGroup: [ :group |
@@ -35,7 +35,7 @@ GolapCanvasController >> contextMenu [
 ]
 
 { #category : 'hooks' }
-GolapCanvasController >> onShape: aShape [
+GolapHierarchicalClusteringCanvasController >> onShape: aShape [
 
 	super onShape: aShape.
 	aShape
@@ -44,14 +44,13 @@ GolapCanvasController >> onShape: aShape [
 ]
 
 { #category : 'accessing' }
-GolapCanvasController >> presenter: aGolapDandelionChartPresenter [
+GolapHierarchicalClusteringCanvasController >> presenter: aGolapDandelionChartPresenter [
 
 	presenter := aGolapDandelionChartPresenter
 ]
 
 { #category : 'hooks' }
-GolapCanvasController >> rightClicked: event [
+GolapHierarchicalClusteringCanvasController >> rightClicked: event [
 
-	self contextMenu openWithSpecAt: (presenter withAdapterDo: [ :a |
-			 a widgetDo: [ :w | w activeHand position ] ])
+	self contextMenu openWithSpecAtPointer
 ]

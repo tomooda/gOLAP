@@ -5,9 +5,9 @@ Class {
 		'presenter',
 		'golapModel'
 	],
-	#category : 'Golap-Visualization-Clustering',
+	#category : 'Golap-Visualization-Heatmap',
 	#package : 'Golap-Visualization',
-	#tag : 'Clustering'
+	#tag : 'Heatmap'
 }
 
 { #category : 'hooks' }
