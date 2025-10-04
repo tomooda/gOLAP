@@ -17,6 +17,7 @@ GolapOverviewZoomableCanvasInteraction >> onShape: aCanvas [
 		when: RSMouseDragging send: #processMouseDragging: to: self;
 		when: RSMouseDragEnd send: #processMouseDragEnd: to: self;
 		when: RSMouseWheelEvent send: #processMouseWheelEvent: to: self;
+		when: RSMouseRightClick send: #processMouseRightClick: to: self;
 		when: RSKeyDown send: #processKeyDown: to: self
 ]
 
@@ -62,6 +63,13 @@ GolapOverviewZoomableCanvasInteraction >> processMouseDragStart: evt [
 GolapOverviewZoomableCanvasInteraction >> processMouseDragging: evt [
 
 	presenter move: evt step
+]
+
+{ #category : 'event processing' }
+GolapOverviewZoomableCanvasInteraction >> processMouseRightClick: evt [
+
+	presenter golapDo: [ :golap |
+		(golap globalImageMenu: nil) openWithSpecAtPointer ]
 ]
 
 { #category : 'event processing' }

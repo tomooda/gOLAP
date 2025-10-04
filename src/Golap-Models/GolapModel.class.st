@@ -88,6 +88,15 @@ GolapModel >> addPositivePolishEdge: aGolapEdge [
 ]
 
 { #category : 'algorithms-articulation points' }
+GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge [
+
+	^ Array streamContents: [ :stream |
+		  self
+			  articulationNodesInEdges: aCollectionOfGolapEdge
+			  do: [ :node | stream nextPut: node ] ]
+]
+
+{ #category : 'algorithms-articulation points' }
 GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
 
 	| finder |
