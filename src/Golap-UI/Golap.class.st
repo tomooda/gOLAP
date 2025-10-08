@@ -39,7 +39,6 @@ Class {
 		'colorsAppearancePresenter',
 		'lastSelectedMarkerItem',
 		'saveAsPngButton',
-		'appearanceNotebook',
 		'itemList',
 		'itemNotebook',
 		'snapshotDirectory',
@@ -87,33 +86,14 @@ Golap class >> defaultLayout [
 	<spec>
 	^ SpBoxLayout newHorizontal
 		  add: (SpBoxLayout newVertical
-"				   add: #globalMapPane height: 200;
 				   add: (SpBoxLayout newHorizontal
-						    add: #zoomInButton width: 110;
-						    add: #resetZoomButton width: 80;
-						    add: #zoomOutButton width: 110)
-				   height: self buttonHeight;
-"				   add: (SpBoxLayout newHorizontal
 						    add: #frontList width: 150;
 						    add: #baseList)
 				   height: self buttonHeight;
 				add: #edgesAppearancePresenter  height: 70;
-				add: #itemsAppearancePresenter height: 150;
+				add: #itemsAppearancePresenter height: 250;
 				add: #colorsAppearancePresenter height: 250;
-
-"				   add: (SpBoxLayout newHorizontal
-						    add: #overviewRendererButton;
-						    add: #elaborationRendererButton)
-				   height: self buttonHeight;
-				   add: (SpBoxLayout newHorizontal
-						    add: #layoutButton expand: true;
-						    add: #layoutChooseButton width: 20;
-						    add: (SpBoxLayout newVertical
-								     add: #overridesYWithFrequencyCheckbox expand: false;
-								     add: #overridesYWithFrequencyOrderCheckbox expand: false)
-						    width: 100)
-				   expand: false;
-"				   add: 'コメント' expand: false;
+				   add: 'コメント' expand: false;
 				   add: #commentText;
 				   yourself)
 		  width: 350;
@@ -1878,10 +1858,14 @@ Golap >> retreatingColor [
 { #category : 'operations-photoimages' }
 Golap >> retrievePhotoimage [
 
-	rendererSelector = #overviewRenderer ifTrue: [ 
-		self retrievePhotoimageOnOverviewRenderer ].
-	rendererSelector = #elaborationRenderer ifTrue: [ 
-		self retrievePhotoimageOnElaborationRenderer ]
+	[
+		self nodesDo: [ :node |
+				node basicPhotoimage ifNil: [ ^ self retrievePhotoimageFor: node ].
+				Processor yield ].
+		self updateGlobalImage.
+		Processor activeProcess terminate ]
+		on: Error
+		do: [ :ex |  ]
 ]
 
 { #category : 'operations-photoimages' }
@@ -1892,60 +1876,14 @@ Golap >> retrievePhotoimageFor: aGolapNode [
 		whileTrue: [ 300 milliSecond wait ].
 	retrievalProcessCount := retrievalProcessCount + 1.
 	[
-	productInfoRetriever ifNotNil: [
-		[
-		(productInfoRetriever photoimageFor: aGolapNode) ifNotNil: [ :image |
-			aGolapNode photoimage:
-				(image scaledToSize: self photoimageSize asPoint).
-			self updateGlobalImageAfter: [  ] ] ] ensure: [
-			retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
+		productInfoRetriever ifNotNil: [
+				[
+					(productInfoRetriever photoimageFor: aGolapNode) ifNotNil: [
+							:image |
+							aGolapNode photoimage:
+								(image scaledToSize: self photoimageSize asPoint) ] ] ensure: [
+					retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
 		Processor userBackgroundPriority - 5
-]
-
-{ #category : 'operations-photoimages' }
-Golap >> retrievePhotoimageOnElaborationRenderer [
-
-	[
-	elaborationRenderer ifNotNil: [
-		overviewRenderer nodesDo: [ :node |
-			node basicPhotoimage ifNil: [ ^ self retrievePhotoimageFor: node ].
-			Processor yield ] ] ]
-		on: Error
-		do: [ :ex |  ]
-]
-
-{ #category : 'operations-photoimages' }
-Golap >> retrievePhotoimageOnOverviewRenderer [
-
-	[
-	overviewRenderer ifNotNil: [
-		globalImagePane withAdapterDo: [ :a |
-			a widgetDo: [ :w |
-				| origin corner mouse minD minV |
-				origin := overviewRenderer nodePointAtPoint:
-					          (-10 @ -10 min: w extent // 10).
-				corner := overviewRenderer nodePointAtPoint:
-					          w extent + (10 @ 10 max: w extent // 10).
-				mouse := overviewRenderer nodePointAtPoint:
-					         w activeHand position - w position.
-				minD := Float infinity.
-				minV := nil.
-				overviewRenderer reallyVisibleNodesDo: [ :node |
-					node basicPhotoimage ifNil: [
-						node x ifNotNil: [ :x |
-							node y ifNotNil: [ :y |
-								((x between: origin x and: corner x) and: [
-									 y between: origin y and: corner y ]) ifTrue: [
-									| d |
-									d := (x - mouse x) squared + (y - mouse y) squared.
-									d < minD ifTrue: [
-										minD := d.
-										minV := node ] ] ] ] ].
-					Processor yield ].
-
-				minV ifNotNil: [ ^ self retrievePhotoimageFor: minV ] ] ] ] ]
-		on: Error
-		do: [ :ex |  ]
 ]
 
 { #category : 'operations' }

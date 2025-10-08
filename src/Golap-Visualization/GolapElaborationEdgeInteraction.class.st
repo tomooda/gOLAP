@@ -4,8 +4,8 @@ Class {
 	#instVars : [
 		'presenter'
 	],
-	#category : 'Golap-UI-Elaboration',
-	#package : 'Golap-UI',
+	#category : 'Golap-Visualization-Elaboration',
+	#package : 'Golap-Visualization',
 	#tag : 'Elaboration'
 }
 

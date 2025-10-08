@@ -16,8 +16,8 @@ Class {
 		'edgeInteraction',
 		'associateBaseX'
 	],
-	#category : 'Golap-UI-Elaboration',
-	#package : 'Golap-UI',
+	#category : 'Golap-Visualization-Elaboration',
+	#package : 'Golap-Visualization',
 	#tag : 'Elaboration'
 }
 
@@ -264,6 +264,14 @@ GolapElaborationPresenter >> newLabelForNode: aGolapNode [
 																				              (baseModel valueAtNode: v) ]
 																	              ifNil: [ '0' ]) ] ] ]))
 						           color: color.
+					  aGolapNode photoimage ifNotNil: [ :form |
+							  | bitmap |
+							  bitmap := RSBitmap new form: form.
+							  label := {
+								           (bitmap translateTo: bitmap extent * 0.5).
+								           (label translateTo:
+									            label extent * 0.5 + (0 @ bitmap extent y)) }
+								           asShape ].
 					  (golap includesSelection: aGolapNode) ifTrue: [
 							  label := {
 								           (RSBox new
@@ -610,7 +618,7 @@ GolapElaborationPresenter >> updateTree [
 { #category : 'operations' }
 GolapElaborationPresenter >> zoomInAt: aPoint [
 
-	self scale: self scale * (1 @ 1.1) at: aPoint.
+	self scale: self scale * (1.1 @ 1.0) at: aPoint.
 	self updateNodePositions.
 	self canvas signalUpdate
 ]
@@ -618,7 +626,7 @@ GolapElaborationPresenter >> zoomInAt: aPoint [
 { #category : 'operations' }
 GolapElaborationPresenter >> zoomOutAt: aPoint [
 
-	self scale: self scale / (1 @ 1.1) at: aPoint.
+	self scale: self scale / (1.1 @ 1.0) at: aPoint.
 	self updateNodePositions.
 	self canvas signalUpdate
 ]

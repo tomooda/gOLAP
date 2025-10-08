@@ -4,8 +4,8 @@ Class {
 	#instVars : [
 		'presenter'
 	],
-	#category : 'Golap-UI-Elaboration',
-	#package : 'Golap-UI',
+	#category : 'Golap-Visualization-Elaboration',
+	#package : 'Golap-Visualization',
 	#tag : 'Elaboration'
 }
 
@@ -13,7 +13,7 @@ Class {
 GolapElaborationController >> defaultInteractions [
 	"create a subclass of RSCanvasController and define your own custom interactions for your canvas"
 
-	^ { GolapOverviewZoomableCanvasInteraction }
+	^ { GolapElaborationCanvasInteraction }
 ]
 
 { #category : 'accessing' }

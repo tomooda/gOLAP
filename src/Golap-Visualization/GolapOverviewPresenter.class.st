@@ -16,7 +16,8 @@ Class {
 		'labelNodes',
 		'referenceNodes',
 		'selectedReferenceNodes',
-		'activeReferenceNodes'
+		'activeReferenceNodes',
+		'lock'
 	],
 	#category : 'Golap-Visualization-Overview',
 	#package : 'Golap-Visualization',
@@ -126,7 +127,8 @@ GolapOverviewPresenter >> initialize [
 	super initialize.
 	scale := 1.0.
 	offset := 0.0 @ 0.0.
-	labelNodes := Array new
+	labelNodes := Array new.
+	lock := Semaphore forMutualExclusion
 ]
 
 { #category : 'initialization' }
@@ -369,16 +371,19 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 					color := c.
 					v := golapModel valueAtNode: aGolapNode.
 					r := (v abs + 0.1) log - 1.0 log * freqScale max: 10.
-					shape := RSCircle new
-						         extent: r asPoint;
-						         color: color.
+					shape := aGolapNode photoimage
+						         ifNotNil: [ :form | RSBitmap new form: form ]
+						         ifNil: [
+								         RSCircle new
+									         extent: r asPoint;
+									         color: color ].
 					self canvas addNode: shape.
 					nodes at: aGolapNode put: shape.
 					shapes add: shape.
 					markersAndNodes do: [ :colorAndVs |
 							(colorAndVs value includes: aGolapNode) ifTrue: [
 									shape := RSEllipse new
-										         extent: shape extent + 4 asPoint;
+										         extent: (shape extent x max: shape extent y) + 4 asPoint;
 										         borderWidth: 4;
 										         borderColor: colorAndVs key;
 										         color: Color transparent;
@@ -492,18 +497,19 @@ GolapOverviewPresenter >> scale: aNumber at: aPoint [
 GolapOverviewPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
-			self updateGraph.
-			self
-				updateFreqScale;
-				updateLineScale;
-				updateLabelNodes;
-				updateReferenceNodes.
-			self canvas shapes copy do: #remove.
-			self canvas color: Color white.
-			self
-				renderNodesIn: self canvas;
-				renderEdgesIn: self canvas.
-			self canvas signalUpdate ]
+			lock critical: [
+					self updateGraph.
+					self
+						updateFreqScale;
+						updateLineScale;
+						updateLabelNodes;
+						updateReferenceNodes.
+					self canvas shapes copy do: #remove.
+					self canvas color: Color white.
+					self
+						renderNodesIn: self canvas;
+						renderEdgesIn: self canvas.
+					self canvas signalUpdate ] ]
 ]
 
 { #category : 'updating' }
