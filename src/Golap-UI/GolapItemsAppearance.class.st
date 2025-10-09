@@ -169,6 +169,7 @@ GolapItemsAppearance >> restore: aStream [
 GolapItemsAppearance >> setGolap: aGolap [
 
 	golap := aGolap.
+	photoimageRetrievers golap: aGolap.
 	self
 		updateMinMaxFrequency;
 		updatePhotoimageRetrievers

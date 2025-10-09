@@ -2321,14 +2321,13 @@ Golap >> startPhotoimageRetrievingProcess [
 	(productInfoRetriever isNil or: [
 		 productInfoRetriever hasPhotoImage not ]) ifTrue: [ ^ self ].
 	photoImageRetrievingProcess := [
-	                               retrievalProcessCount := 0.
-	                               [
-	                               self ifNotActive: [
-		                               photoImageRetrievingProcess := nil.
-		                               Processor activeProcess terminate ].
-	                               self retrievePhotoimage.
-	                               100 milliSecond wait ] repeat ]
-		                               forkAt:
+		                               retrievalProcessCount := 0.
+		                               [
+			                               self ifNotActive: [
+					                               photoImageRetrievingProcess := nil.
+					                               Processor activeProcess terminate ].
+			                               self retrievePhotoimage.
+			                               Processor yield ] repeat ] forkAt:
 		                               Processor userBackgroundPriority
 ]
 
@@ -2435,7 +2434,6 @@ Golap >> updateGlobalImage [
 	friendOverviewPresenter updateCanvas.
 	articulationPointOverviewPresenter updateCanvas.
 	elaborationPresenter updateCanvas.
-	self ensurePhotoimageRetrievingProcess.
 	self announcer announce: GolapViewUpdated new
 ]
 
@@ -2471,9 +2469,11 @@ Golap >> updateItemView [
 
 { #category : 'operations' }
 Golap >> updateModel [
+
 	self model: self selectedModel.
 	itemList modelChanged.
-	edgeList modelChanged
+	edgeList modelChanged.
+	self ensurePhotoimageRetrievingProcess
 ]
 
 { #category : 'private' }
