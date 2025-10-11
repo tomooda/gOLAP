@@ -537,7 +537,8 @@ GolapModel >> nodes [
 	^ nodes ifNil: [
 		  nodes := Dictionary new.
 		  friendsEdges := nil.
-		  self flushEdgeRanks ]
+		  self flushEdgeRanks.
+		  nodes ]
 ]
 
 { #category : 'enumerating' }

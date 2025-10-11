@@ -1332,6 +1332,12 @@ Golap >> numLabels [
 	^ itemsAppearancePresenter numLabels
 ]
 
+{ #category : 'accessing' }
+Golap >> numNodes [
+
+	^ model nodes size
+]
+
 { #category : 'instance creation' }
 Golap >> open [
 
@@ -1858,32 +1864,36 @@ Golap >> retreatingColor [
 { #category : 'operations-photoimages' }
 Golap >> retrievePhotoimage [
 
-	[
-		self nodesDo: [ :node |
-				node basicPhotoimage ifNil: [ ^ self retrievePhotoimageFor: node ].
-				Processor yield ].
-		self updateGlobalImage.
-		Processor activeProcess terminate ]
-		on: Error
-		do: [ :ex |  ]
+	| agenda |
+	agenda := OrderedCollection new: self numNodes.
+	self nodesDo: [ :node | node photoimage ifNil: [ agenda add: node ] ].
+	3 timesRepeat: [
+		agenda := agenda reject: [ :node |
+			          (productInfoRetriever photoimageFor: node)
+				          ifNotNil: [ :photoimage |
+					          node photoimage:
+						          (photoimage scaledToSize: self photoimageSize asPoint).
+					          true ]
+				          ifNil: [ false ] ] ]
 ]
 
 { #category : 'operations-photoimages' }
 Golap >> retrievePhotoimageFor: aGolapNode [
 
-	aGolapNode photoimage: false.
-	[ retrievalProcessCount > self maxPhotoimageRetrievalProcesses ]
-		whileTrue: [ 300 milliSecond wait ].
-	retrievalProcessCount := retrievalProcessCount + 1.
-	[
-		productInfoRetriever ifNotNil: [
-				[
-					(productInfoRetriever photoimageFor: aGolapNode) ifNotNil: [
-							:image |
-							aGolapNode photoimage:
-								(image scaledToSize: self photoimageSize asPoint) ] ] ensure: [
-					retrievalProcessCount := retrievalProcessCount - 1 ] ] ] forkAt:
-		Processor userBackgroundPriority - 5
+	| old |
+	old := aGolapNode basicPhotoimage.
+	old isInteger ifFalse: [ ^ nil ].
+	productInfoRetriever
+		ifNotNil: [
+			(productInfoRetriever photoimageFor: aGolapNode)
+				ifNotNil: [ :image |
+					aGolapNode photoimage:
+						(image scaledToSize: self photoimageSize asPoint) ]
+				ifNil: [
+					old := old - 1.
+					old < 0 ifTrue: [ old := nil ].
+					aGolapNode photoimage: old ] ]
+		ifNil: [ aGolapNode photoimage: nil ]
 ]
 
 { #category : 'operations' }
@@ -2320,14 +2330,7 @@ Golap >> startPhotoimageRetrievingProcess [
 	self stopPhotoimageRetrievingProcess.
 	(productInfoRetriever isNil or: [
 		 productInfoRetriever hasPhotoImage not ]) ifTrue: [ ^ self ].
-	photoImageRetrievingProcess := [
-		                               retrievalProcessCount := 0.
-		                               [
-			                               self ifNotActive: [
-					                               photoImageRetrievingProcess := nil.
-					                               Processor activeProcess terminate ].
-			                               self retrievePhotoimage.
-			                               Processor yield ] repeat ] forkAt:
+	photoImageRetrievingProcess := [ self retrievePhotoimage ] forkAt:
 		                               Processor userBackgroundPriority
 ]
 
