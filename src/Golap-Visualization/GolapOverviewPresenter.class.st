@@ -13,7 +13,6 @@ Class {
 		'freqScale',
 		'lineScale',
 		'nodes',
-		'labelNodes',
 		'referenceNodes',
 		'selectedReferenceNodes',
 		'activeReferenceNodes',
@@ -127,7 +126,6 @@ GolapOverviewPresenter >> initialize [
 	super initialize.
 	scale := 1.0.
 	offset := 0.0 @ 0.0.
-	labelNodes := Array new.
 	lock := Semaphore forMutualExclusion
 ]
 
@@ -360,61 +358,59 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 
 	self golapModelDo: [ :golapModel |
-			| shapes markersAndNodes color |
-			shapes := RSGroup new.
-			markersAndNodes := Array streamContents: [ :stream |
-					                   golap markersAndNodesDo: [ :c :vs |
-						                   c ifNotNil: [
-							                   stream nextPut: c -> vs asIdentitySet ] ] ].
-			(golap colorForNode: aGolapNode) ifNotNil: [ :c |
-					| v r shape |
-					color := c.
-					v := golapModel valueAtNode: aGolapNode.
-					r := (v abs + 0.1) log - 1.0 log * freqScale max: 10.
-					shape := aGolapNode photoimage
-						         ifNotNil: [ :form | RSBitmap new form: form ]
-						         ifNil: [
-								         RSCircle new
-									         extent: r asPoint;
-									         color: color ].
-					self canvas addNode: shape.
-					nodes at: aGolapNode put: shape.
-					shapes add: shape.
-					markersAndNodes do: [ :colorAndVs |
-							(colorAndVs value includes: aGolapNode) ifTrue: [
-									shape := RSEllipse new
-										         extent: (shape extent x max: shape extent y) + 4 asPoint;
-										         borderWidth: 4;
-										         borderColor: colorAndVs key;
-										         color: Color transparent;
-										         yourself.
-									shapes add: shape ] ].
-					golap selectedBaseDimension ifNotNil: [
-							| p |
-							p := shape extent x * 0.5 + 4.0 @ 0.
-							shapes add: (RSArrowedLine new
-									 startPoint: p;
-									 endPoint: p + (0 @ (r * v sign negated));
-									 color: color;
-									 width: 2;
-									 yourself) ].
-					(golap includesPin: aGolapNode) ifTrue: [
-						shapes add: self newPinShape ] ].
-			shapes := shapes asShapeFor: aGolapNode.
-			((labelNodes includes: aGolapNode) or: [
-				 golap includesSelection: aGolapNode ]) ifTrue: [
-					| label labelOffset |
-					label := self newLabelForNode: aGolapNode.
-					labelOffset := (self fourDirectionFrom:
-						                (self edgeVectorOf: aGolapNode)) negated
-					               * (shapes extent + label extent * 0.5 + 4).
-					shapes
-						when: RSPositionChangedEvent
-						do: [ label position: shapes position + labelOffset ]
-						for: label.
-					label position: shapes position + labelOffset.
-					self canvas add: label ].
-			^ shapes ].
+		| shapes markersAndNodes color label labelOffset |
+		shapes := RSGroup new.
+		markersAndNodes := Array streamContents: [ :stream |
+			                   golap markersAndNodesDo: [ :c :vs |
+				                   c ifNotNil: [
+					                   stream nextPut: c -> vs asIdentitySet ] ] ].
+		(golap colorForNode: aGolapNode) ifNotNil: [ :c |
+			| v r shape |
+			color := c.
+			v := golapModel valueAtNode: aGolapNode.
+			r := (v abs + 0.1) log - 1.0 log * freqScale max: 10.
+			shape := aGolapNode photoimage
+				         ifNotNil: [ :form | RSBitmap new form: form ]
+				         ifNil: [
+					         RSCircle new
+						         extent: r asPoint;
+						         color: color ].
+			self canvas addNode: shape.
+			nodes at: aGolapNode put: shape.
+			shapes add: shape.
+			markersAndNodes do: [ :colorAndVs |
+				(colorAndVs value includes: aGolapNode) ifTrue: [
+					shape := RSEllipse new
+						         extent:
+							         (shape extent x max: shape extent y) + 4 asPoint;
+						         borderWidth: 4;
+						         borderColor: colorAndVs key;
+						         color: Color transparent;
+						         yourself.
+					shapes add: shape ] ].
+			golap selectedBaseDimension ifNotNil: [
+				| p |
+				p := shape extent x * 0.5 + 4.0 @ 0.
+				shapes add: (RSArrowedLine new
+						 startPoint: p;
+						 endPoint: p + (0 @ (r * v sign negated));
+						 color: color;
+						 width: 2;
+						 yourself) ].
+			(golap includesPin: aGolapNode) ifTrue: [
+				shapes add: self newPinShape ] ].
+		shapes := shapes asShapeFor: aGolapNode.
+		label := self newLabelForNode: aGolapNode.
+		labelOffset := (self fourDirectionFrom:
+			                (self edgeVectorOf: aGolapNode)) negated
+		               * (shapes extent + label extent * 0.5 + 4).
+		shapes
+			when: RSPositionChangedEvent
+			do: [ label position: shapes position + labelOffset ]
+			for: label.
+		label position: shapes position + labelOffset.
+		self canvas add: label.
+		^ shapes ].
 	^ nil
 ]
 
@@ -502,7 +498,6 @@ GolapOverviewPresenter >> updateCanvas [
 					self
 						updateFreqScale;
 						updateLineScale;
-						updateLabelNodes;
 						updateReferenceNodes.
 					self canvas shapes copy do: #remove.
 					self canvas color: Color white.
@@ -548,20 +543,6 @@ GolapOverviewPresenter >> updateGraph [
 										                      ifFalse: [
 										                      golap showsHiddenConnectionNodes
 											                      ifTrue: [ stream nextPut: v ] ] ] ] ] ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateLabelNodes [
-
-	| numLabels sortedNodes |
-	numLabels := (50.0 ** golap numLabels) truncated.
-	sortedNodes := (SortedCollection new: numLabels + 1) sortBlock:
-		               #value descending.
-	self golapModelDo: [ :golapModel |
-			reallyVisibleNodes do: [ :node |
-					sortedNodes add: node -> (golapModel valueAtNode: node).
-					sortedNodes size > numLabels ifTrue: [ sortedNodes removeLast ] ] ].
-	labelNodes := (sortedNodes collect: #key) asIdentitySet
 ]
 
 { #category : 'updating' }

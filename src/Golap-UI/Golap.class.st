@@ -3,7 +3,6 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'model',
-		'productInfoRetriever',
 		'queryRecord',
 		'url',
 		'query',
@@ -60,7 +59,8 @@ Class {
 		'polishOverviewPresenter',
 		'friendOverviewPresenter',
 		'elaborationPresenter',
-		'articulationPointOverviewPresenter'
+		'articulationPointOverviewPresenter',
+		'itemInfoRetriever'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -91,7 +91,7 @@ Golap class >> defaultLayout [
 						    add: #baseList)
 				   height: self buttonHeight;
 				add: #edgesAppearancePresenter  height: 70;
-				add: #itemsAppearancePresenter height: 250;
+				add: #itemsAppearancePresenter height: 300;
 				add: #colorsAppearancePresenter height: 250;
 				   add: 'コメント' expand: false;
 				   add: #commentText;
@@ -256,7 +256,7 @@ Golap class >> openClient [
 					[
 					overview
 						queryRecord: queryRecord;
-						productInfoRetriever:
+						itemInfoRetriever:
 							(GolapServerProductInfoRetriever fromApiClient: client);
 						authenticateBlock: client authenticateBlock;
 						query: (NeoJSONReader fromString: client query);
@@ -479,8 +479,8 @@ Golap >> authenticateBlock [
 Golap >> authenticateBlock: aBlock [
 
 	authenticateBlock := aBlock.
-	productInfoRetriever ifNotNil: [
-		productInfoRetriever authenticateBlock: aBlock ]
+	itemInfoRetriever ifNotNil: [
+		itemInfoRetriever authenticateBlock: aBlock ]
 ]
 
 { #category : 'accessing-renderer' }
@@ -889,7 +889,7 @@ Golap >> ifSnapshotEnabled: aBlock [
 { #category : 'accessing' }
 Golap >> imageRepositoryUrl: aString [
 
-	productInfoRetriever imageRepositoryUrl: aString
+	itemInfoRetriever imageRepositoryUrl: aString
 ]
 
 { #category : 'accessing-selection' }
@@ -1080,7 +1080,20 @@ Golap >> isTemporarySnapshot [
 { #category : 'accessing' }
 Golap >> itemFieldQuerySpec: aDictionary [
 
-	productInfoRetriever itemFieldQuerySpec: aDictionary
+	itemInfoRetriever itemFieldQuerySpec: aDictionary
+]
+
+{ #category : 'accessing' }
+Golap >> itemInfoRetriever [
+
+	^ itemInfoRetriever
+]
+
+{ #category : 'accessing' }
+Golap >> itemInfoRetriever: aGolapItemInfoRetriever [
+
+	itemInfoRetriever := aGolapItemInfoRetriever.
+	itemsAppearancePresenter updatePhotoimageRetrievers
 ]
 
 { #category : 'accessing-widgets' }
@@ -1091,7 +1104,7 @@ Golap >> itemView [
 { #category : 'accessing' }
 Golap >> itemViewUrl: aString [
 
-	productInfoRetriever golapServerUrl: aString
+	itemInfoRetriever golapServerUrl: aString
 ]
 
 { #category : 'history' }
@@ -1123,12 +1136,6 @@ Golap >> markedNodes [
 Golap >> markersAndNodesDo: aBlock [
 
 	itemList markersAndNodesDo: aBlock
-]
-
-{ #category : 'operations-photoimages' }
-Golap >> maxPhotoimageRetrievalProcesses [
-
-	^ 3
 ]
 
 { #category : 'menu' }
@@ -1238,7 +1245,6 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 				self overviewRenderer layouter model: model.
 				self unselectAll.
 				model ifNotNil: [
-					itemsAppearancePresenter updateMinMaxFrequency.
 					edgesAppearancePresenter updateModel: model.
 					itemList updateNodeList ] ]
 			layout: (aGolapModel nodes anySatisfy: [ :node |
@@ -1393,6 +1399,12 @@ Golap >> overviewRenderer [
 ]
 
 { #category : 'operations-photoimages' }
+Golap >> photoimageRetrievalProgressBar [
+
+	^ itemsAppearancePresenter photoimageRetrievalProgressBar
+]
+
+{ #category : 'operations-photoimages' }
 Golap >> photoimageSize [
 
 	^ 64
@@ -1425,19 +1437,6 @@ Golap >> positivePolishColor [
 { #category : 'accessing-presets' }
 Golap >> presetQueryFile [
 	^ self golapDirectory / 'presetQueries.json'
-]
-
-{ #category : 'accessing' }
-Golap >> productInfoRetriever [
-
-	^ productInfoRetriever
-]
-
-{ #category : 'accessing' }
-Golap >> productInfoRetriever: aGolapProductInfoRetriever [
-
-	productInfoRetriever := aGolapProductInfoRetriever.
-	itemsAppearancePresenter updatePhotoimageRetrievers
 ]
 
 { #category : 'accessing-dimensions' }
@@ -1862,38 +1861,39 @@ Golap >> retreatingColor [
 ]
 
 { #category : 'operations-photoimages' }
-Golap >> retrievePhotoimage [
+Golap >> retrievePhotoimages [
 
-	| agenda |
-	agenda := OrderedCollection new: self numNodes.
-	self nodesDo: [ :node | node photoimage ifNil: [ agenda add: node ] ].
-	3 timesRepeat: [
+	model ifNotNil: [
+		| agenda total tried done |
+		agenda := IdentitySet new.
+		model edgesDo: [ :edge |
+			edge node1 photoimage ifNil: [ agenda add: edge node1 ].
+			edge node2 photoimage ifNil: [ agenda add: edge node2 ] ].
+		agenda := agenda asArray.
+		total := agenda size.
+		done := 0.
+		tried := 0.
 		agenda := agenda reject: [ :node |
-			          (productInfoRetriever photoimageFor: node)
+			          tried := tried + 1.
+			          self photoimageRetrievalProgressBar
+				          value: tried asFloat / total asFloat
+				          message:
+					          '画像取得中 (' , done asString , ') ' , tried asString
+					          , ' / ' , total asString , ')'.
+			          self ifNotActive: [
+				          photoImageRetrievingProcess := nil.
+				          Processor activeProcess terminate ].
+			          (itemInfoRetriever photoimageFor: node)
 				          ifNotNil: [ :photoimage |
 					          node photoimage:
 						          (photoimage scaledToSize: self photoimageSize asPoint).
+					          done := done + 1.
 					          true ]
-				          ifNil: [ false ] ] ]
-]
-
-{ #category : 'operations-photoimages' }
-Golap >> retrievePhotoimageFor: aGolapNode [
-
-	| old |
-	old := aGolapNode basicPhotoimage.
-	old isInteger ifFalse: [ ^ nil ].
-	productInfoRetriever
-		ifNotNil: [
-			(productInfoRetriever photoimageFor: aGolapNode)
-				ifNotNil: [ :image |
-					aGolapNode photoimage:
-						(image scaledToSize: self photoimageSize asPoint) ]
-				ifNil: [
-					old := old - 1.
-					old < 0 ifTrue: [ old := nil ].
-					aGolapNode photoimage: old ] ]
-		ifNil: [ aGolapNode photoimage: nil ]
+				          ifNil: [ false ] ].
+		self photoimageRetrievalProgressBar
+			value: 1
+			message: '画像取得完了 (' , agenda size asString , '個取得不可)'.
+		self updateGlobalImage ]
 ]
 
 { #category : 'operations' }
@@ -2078,8 +2078,8 @@ Golap >> setQuery: aDictionary [
 	queryViewTree roots:
 		(query keys asSortedCollection collect: [ :key |
 			 key -> (query at: key) ]).
-	productInfoRetriever ifNotNil: [
-		productInfoRetriever query: aDictionary ]
+	itemInfoRetriever ifNotNil: [
+		itemInfoRetriever query: aDictionary ]
 ]
 
 { #category : 'accessing-selection' }
@@ -2328,9 +2328,9 @@ Golap >> springLayout [
 Golap >> startPhotoimageRetrievingProcess [
 
 	self stopPhotoimageRetrievingProcess.
-	(productInfoRetriever isNil or: [
-		 productInfoRetriever hasPhotoImage not ]) ifTrue: [ ^ self ].
-	photoImageRetrievingProcess := [ self retrievePhotoimage ] forkAt:
+	(itemInfoRetriever isNil or: [
+		 itemInfoRetriever hasPhotoImage not ]) ifTrue: [ ^ self ].
+	photoImageRetrievingProcess := [ self retrievePhotoimages ] forkAt:
 		                               Processor userBackgroundPriority
 ]
 

@@ -79,7 +79,7 @@ GolapItemView >> node: aGolapNode [
 GolapItemView >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next ifNotNil: [ :json |
-		golap productInfoRetriever:
+		golap itemInfoRetriever:
 			(GolapItemInfoRetriever fromJSON: json) ]
 ]
 
@@ -92,15 +92,14 @@ GolapItemView >> snapshot [
 { #category : 'snapshot' }
 GolapItemView >> snapshotInto: aStream [
 
-	(NeoJSONWriter on: aStream) nextPut:
-		golap productInfoRetriever asJSON
+	(NeoJSONWriter on: aStream) nextPut: golap itemInfoRetriever asJSON
 ]
 
 { #category : 'updating' }
 GolapItemView >> updateImage [
 
 	node ifNotNil: [
-		golap productInfoRetriever ifNotNil: [ :retriever |
+		golap itemInfoRetriever ifNotNil: [ :retriever |
 			retriever hasPhotoImage ifTrue: [
 				(retriever photoimageFor: node) ifNotNil: [ :photoimage |
 					node photoimage ifNil: [
@@ -114,6 +113,6 @@ GolapItemView >> updateImage [
 GolapItemView >> updateItemInfo [
 
 	^ infoList items: ((node ifNotNil: [
-			    golap productInfoRetriever ifNotNil: [ :retriever |
+			    golap itemInfoRetriever ifNotNil: [ :retriever |
 				    retriever productDataFor: node ] ]) ifNil: [ #(  ) ])
 ]

@@ -181,7 +181,7 @@ GolapCSVLauncher >> launch [
 		edgeEvaluators: edgeImporterPresenter availableEvaluators;
 		nodeEvaluator: nodeImporterPresenter evaluator;
 		edgeEvaluator: edgeImporterPresenter evaluator;
-		productInfoRetriever: (GolapNodeProductInfoRetriever
+		itemInfoRetriever: (GolapNodeProductInfoRetriever
 				 photoUrlColumn: nodeImporterPresenter photoUrlColumn
 				 availableColumns: nodeImporterPresenter availableColumns).
 	self golapModelsAndNamesDo: [ :golapModel :name |
