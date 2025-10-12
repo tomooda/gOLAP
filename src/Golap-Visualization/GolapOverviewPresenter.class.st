@@ -59,6 +59,18 @@ GolapOverviewPresenter >> canvas [
 	^ roassal canvas
 ]
 
+{ #category : 'accessing' }
+GolapOverviewPresenter >> colorForEdge: aGolapEdge [
+
+	^ golap colorForEdge: aGolapEdge
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> colorForNode: aGolapNode [
+
+	^ golap colorForNode: aGolapNode
+]
+
 { #category : 'layout' }
 GolapOverviewPresenter >> defaultLayout [
 
@@ -158,7 +170,7 @@ GolapOverviewPresenter >> newCanvasController [
 GolapOverviewPresenter >> newLabelForEdge: aGolapEdge [
 
 	^ self golapModelDo: [ :golapModel |
-			  (golap colorForEdge: aGolapEdge) ifNotNil: [ :color |
+			  (self colorForEdge: aGolapEdge) ifNotNil: [ :color |
 					  ((golap includesSelection: aGolapEdge node1) or: [
 						   golap includesSelection: aGolapEdge node2 ])
 						  ifTrue: [
@@ -219,7 +231,7 @@ GolapOverviewPresenter >> newLabelForEdge: aGolapEdge [
 GolapOverviewPresenter >> newLabelForNode: aGolapNode [
 
 	^ self golapModelDo: [ :model |
-			  (golap colorForNode: aGolapNode) ifNotNil: [ :color |
+			  (self colorForNode: aGolapNode) ifNotNil: [ :color |
 					  | label |
 					  label := self
 						           newLabelFromLines:
@@ -310,47 +322,47 @@ GolapOverviewPresenter >> newPinShape [
 GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 
 	self golapModelDo: [ :golapModel |
-			(((referenceNodes includes: aGolapEdge node1 id) or: [
-				  referenceNodes includes: aGolapEdge node2 id ])
-				 ifTrue: [
-						 ((selectedReferenceNodes includes: aGolapEdge node1) or: [
-							  selectedReferenceNodes includes: aGolapEdge node2 ])
+		(((referenceNodes includes: aGolapEdge node1 id) or: [
+			  referenceNodes includes: aGolapEdge node2 id ])
+			 ifTrue: [
+				 ((selectedReferenceNodes includes: aGolapEdge node1) or: [
+					  selectedReferenceNodes includes: aGolapEdge node2 ])
+					 ifTrue: [
+						 | refIndex |
+						 refIndex := (activeReferenceNodes indexOf: aGolapEdge node1)
+							             max:
+							             (activeReferenceNodes indexOf: aGolapEdge node2).
+						 refIndex > 0
 							 ifTrue: [
-									 | refIndex |
-									 refIndex := (activeReferenceNodes indexOf: aGolapEdge node1)
-										             max:
-										             (activeReferenceNodes indexOf: aGolapEdge node2).
-									 refIndex > 0
-										 ifTrue: [
-												 Color
-													 h:
-													 (refIndex - 1) asFloat * 360.0
-													 / activeReferenceNodes size asFloat
-													 s: 1.0
-													 v: 1.0 ]
-										 ifFalse: [ nil ] ]
+								 Color
+									 h:
+									 (refIndex - 1) asFloat * 360.0
+									 / activeReferenceNodes size asFloat
+									 s: 1.0
+									 v: 1.0 ]
 							 ifFalse: [ nil ] ]
-				 ifFalse: [ golap colorForEdge: aGolapEdge ]) ifNotNil: [ :color |
-					| fromShape toShape v line |
-					fromShape := nodes at: aGolapEdge node1 ifAbsent: [ ^ nil ].
-					toShape := nodes at: aGolapEdge node2 ifAbsent: [ ^ nil ].
-					v := golapModel valueAtEdge: aGolapEdge.
-					(v notNil and: [ v asFloat isFinite ]) ifFalse: [ ^ nil ].
-					line := RSLine new
-						        model: aGolapEdge;
-						        withCenteredAttachPoint;
-						        from: fromShape;
-						        to: toShape;
-						        width: v asFloat abs * lineScale + 2.0;
-						        color: color.
-					(self newLabelForEdge: aGolapEdge) ifNotNil: [ :label |
-							line
-								when: RSExtentChangedEvent
-								do: [ label position: line position ]
-								for: label.
-							label position: line position.
-							self canvas add: label ].
-					^ line ] ].
+					 ifFalse: [ nil ] ]
+			 ifFalse: [ self colorForEdge: aGolapEdge ]) ifNotNil: [ :color |
+			| fromShape toShape v line |
+			fromShape := nodes at: aGolapEdge node1 ifAbsent: [ ^ nil ].
+			toShape := nodes at: aGolapEdge node2 ifAbsent: [ ^ nil ].
+			v := golapModel valueAtEdge: aGolapEdge.
+			(v notNil and: [ v asFloat isFinite ]) ifFalse: [ ^ nil ].
+			line := RSLine new
+				        model: aGolapEdge;
+				        withCenteredAttachPoint;
+				        from: fromShape;
+				        to: toShape;
+				        width: v asFloat abs * lineScale + 2.0;
+				        color: color.
+			(self newLabelForEdge: aGolapEdge) ifNotNil: [ :label |
+				line
+					when: RSExtentChangedEvent
+					do: [ label position: line position ]
+					for: label.
+				label position: line position.
+				self canvas add: label ].
+			^ line ] ].
 	^ nil
 ]
 
@@ -358,13 +370,13 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 
 	self golapModelDo: [ :golapModel |
-		| shapes markersAndNodes color label labelOffset |
+		| shapes markersAndNodes color |
 		shapes := RSGroup new.
 		markersAndNodes := Array streamContents: [ :stream |
 			                   golap markersAndNodesDo: [ :c :vs |
 				                   c ifNotNil: [
 					                   stream nextPut: c -> vs asIdentitySet ] ] ].
-		(golap colorForNode: aGolapNode) ifNotNil: [ :c |
+		(self colorForNode: aGolapNode) ifNotNil: [ :c |
 			| v r shape |
 			color := c.
 			v := golapModel valueAtNode: aGolapNode.
@@ -399,17 +411,19 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 						 yourself) ].
 			(golap includesPin: aGolapNode) ifTrue: [
 				shapes add: self newPinShape ] ].
+		shapes ifEmpty: [ ^ nil ].
 		shapes := shapes asShapeFor: aGolapNode.
-		label := self newLabelForNode: aGolapNode.
-		labelOffset := (self fourDirectionFrom:
-			                (self edgeVectorOf: aGolapNode)) negated
-		               * (shapes extent + label extent * 0.5 + 4).
-		shapes
-			when: RSPositionChangedEvent
-			do: [ label position: shapes position + labelOffset ]
-			for: label.
-		label position: shapes position + labelOffset.
-		self canvas add: label.
+		(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
+			| labelOffset |
+			labelOffset := (self fourDirectionFrom:
+				                (self edgeVectorOf: aGolapNode)) negated
+			               * (shapes extent + label extent * 0.5 + 4).
+			shapes
+				when: RSPositionChangedEvent
+				do: [ label position: shapes position + labelOffset ]
+				for: label.
+			label position: shapes position + labelOffset.
+			self canvas add: label ].
 		^ shapes ].
 	^ nil
 ]

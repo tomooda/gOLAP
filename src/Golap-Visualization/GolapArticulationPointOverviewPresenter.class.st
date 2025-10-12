@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'friendsRankField',
 		'layoutButton',
-		'articulationPointList'
+		'articulationPointList',
+		'islandNodeSets'
 	],
 	#category : 'Golap-Visualization-ArticulationPoint',
 	#package : 'Golap-Visualization',
@@ -20,6 +21,7 @@ GolapArticulationPointOverviewPresenter >> articulationPoint [
 { #category : 'updating' }
 GolapArticulationPointOverviewPresenter >> articulationPointChanged [
 
+	self updateIslandNodeSets.
 	golap ifNotNil: [
 		self articulationPoint ifNotNil: [ :node |
 			golap selections: { node }.
@@ -33,6 +35,39 @@ GolapArticulationPointOverviewPresenter >> availableEdges [
 	^ (self golapModelDo: [ :golapModel |
 		   golapModel friendsEdges: friendsRankField number ]) ifNil: [
 		  Array new ]
+]
+
+{ #category : 'accessing' }
+GolapArticulationPointOverviewPresenter >> colorForEdge: aGolapEdge [
+
+	(aGolapEdge hasNode: self articulationPoint) ifTrue: [ ^ Color black ].
+	islandNodeSets
+		ifNotEmpty: [
+			islandNodeSets withIndexDo: [ :set :index |
+				((set includes: aGolapEdge node1) or: [
+					 set includes: aGolapEdge node2 ]) ifTrue: [
+					^ Color
+						  h: index - 1 * 360 / islandNodeSets size asFloat
+						  s: 0.5
+						  l: 0.7 ] ].
+			^ nil ]
+		ifEmpty: [ ^ super colorForEdge: aGolapEdge ]
+]
+
+{ #category : 'accessing' }
+GolapArticulationPointOverviewPresenter >> colorForNode: aGolapNode [
+
+	aGolapNode = self articulationPoint ifTrue: [ ^ Color black ].
+	islandNodeSets
+		ifNotEmpty: [
+			islandNodeSets withIndexDo: [ :set :index |
+				(set includes: aGolapNode) ifTrue: [
+					^ Color
+						  h: index - 1 * 360 / islandNodeSets size asFloat
+						  s: 0.5
+						  l: 0.7 ] ].
+			^ nil ]
+		ifEmpty: [ ^ super colorForNode: aGolapNode ]
 ]
 
 { #category : 'layout' }
@@ -149,4 +184,43 @@ GolapArticulationPointOverviewPresenter >> updateGraph [
 
 	super updateGraph.
 	self updateArticulationPointList
+]
+
+{ #category : 'updating' }
+GolapArticulationPointOverviewPresenter >> updateIslandNodeSets [
+
+	islandNodeSets := self articulationPoint
+		                  ifNotNil: [ :articulationNode |
+			                  | edges nodeSets startNodes |
+			                  edges := self availableEdges asIdentitySet.
+			                  nodeSets := OrderedCollection new.
+			                  startNodes := OrderedCollection new.
+			                  articulationNode edgesAndNodeDo: [ :edge :peer |
+				                  (edges remove: edge ifAbsent: [ nil ])
+					                  ifNotNil: [ startNodes add: peer ] ].
+			                  startNodes do: [ :node |
+				                  (nodeSets anySatisfy: [ :set |
+					                   set includes: node ]) ifFalse: [
+					                  | nodeSet |
+					                  nodeSet := IdentitySet new.
+					                  nodeSets add: nodeSet.
+					                  self
+						                  withEdges: edges
+						                  search: node
+						                  nodeSet: nodeSet ] ].
+			                  nodeSets ]
+		                  ifNil: [ Array new ]
+]
+
+{ #category : 'private' }
+GolapArticulationPointOverviewPresenter >> withEdges: anIdentitySetOfGolapEdge search: aGolapNode nodeSet: anIdentitySetOfGolapNode [
+
+	anIdentitySetOfGolapNode add: aGolapNode.
+	aGolapNode edgesAndNodeDo: [ :edge :peer |
+		((anIdentitySetOfGolapEdge includes: edge) and: [
+			 (anIdentitySetOfGolapNode includes: peer) not ]) ifTrue: [
+			self
+				withEdges: anIdentitySetOfGolapEdge
+				search: peer
+				nodeSet: anIdentitySetOfGolapNode ] ]
 ]
