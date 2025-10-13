@@ -48,8 +48,8 @@ GolapArticulationPointOverviewPresenter >> colorForEdge: aGolapEdge [
 					 set includes: aGolapEdge node2 ]) ifTrue: [
 					^ Color
 						  h: index - 1 * 360 / islandNodeSets size asFloat
-						  s: 0.5
-						  l: 0.7 ] ].
+						  s: 0.8
+						  l: 0.3 ] ].
 			^ nil ]
 		ifEmpty: [ ^ super colorForEdge: aGolapEdge ]
 ]
@@ -64,8 +64,8 @@ GolapArticulationPointOverviewPresenter >> colorForNode: aGolapNode [
 				(set includes: aGolapNode) ifTrue: [
 					^ Color
 						  h: index - 1 * 360 / islandNodeSets size asFloat
-						  s: 0.5
-						  l: 0.7 ] ].
+						  s: 0.8
+						  l: 0.3 ] ].
 			^ nil ]
 		ifEmpty: [ ^ super colorForNode: aGolapNode ]
 ]
@@ -191,24 +191,24 @@ GolapArticulationPointOverviewPresenter >> updateIslandNodeSets [
 
 	islandNodeSets := self articulationPoint
 		                  ifNotNil: [ :articulationNode |
-			                  | edges nodeSets startNodes |
-			                  edges := self availableEdges asIdentitySet.
-			                  nodeSets := OrderedCollection new.
-			                  startNodes := OrderedCollection new.
-			                  articulationNode edgesAndNodeDo: [ :edge :peer |
-				                  (edges remove: edge ifAbsent: [ nil ])
-					                  ifNotNil: [ startNodes add: peer ] ].
-			                  startNodes do: [ :node |
-				                  (nodeSets anySatisfy: [ :set |
-					                   set includes: node ]) ifFalse: [
-					                  | nodeSet |
-					                  nodeSet := IdentitySet new.
-					                  nodeSets add: nodeSet.
-					                  self
-						                  withEdges: edges
-						                  search: node
-						                  nodeSet: nodeSet ] ].
-			                  nodeSets ]
+				                  | edges nodeSets startNodes |
+				                  edges := self availableEdges asIdentitySet.
+				                  nodeSets := OrderedCollection new.
+				                  startNodes := OrderedCollection new.
+				                  articulationNode edgesAndNodeDo: [ :edge :peer |
+						                  (edges remove: edge ifAbsent: [ nil ])
+							                  ifNotNil: [ startNodes add: peer ] ].
+				                  startNodes do: [ :node |
+						                  (nodeSets anySatisfy: [ :set |
+							                   set includes: node ]) ifFalse: [
+								                  | nodeSet |
+								                  nodeSet := IdentitySet new.
+								                  nodeSets add: nodeSet.
+								                  self
+									                  withEdges: edges
+									                  search: node
+									                  nodeSet: nodeSet ] ].
+				                  nodeSets asSortedCollection: #size descending ]
 		                  ifNil: [ Array new ]
 ]
 

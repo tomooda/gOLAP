@@ -30,7 +30,7 @@ GolapQueryLowerBoundsPresenter class >> defaultLayout [
 		  row: 5 withConstraints: [ :c | c beNotExpand ];
 		  add: '最小Support' atPoint: 1 @ 1;
 		  add: #minSupport atPoint: 2 @ 1;
-		  add: '最小Confidence' at: 1 @ 2;
+		  add: '最小Confidence' atPoint: 1 @ 2;
 		  add: #minConfidence at: 2 @ 2;
 		  add: '最小Lift' at: 1 @ 3;
 		  add: #minLift at: 2 @ 3;
