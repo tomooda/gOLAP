@@ -6,17 +6,16 @@ Class {
 		'scale',
 		'offset',
 		'golap',
-		'visibleEdgeMaxValue',
-		'visibleEdgeMinValue',
+		'nodePositions',
 		'reallyVisibleEdges',
 		'reallyVisibleNodes',
 		'freqScale',
 		'lineScale',
-		'nodes',
 		'referenceNodes',
 		'selectedReferenceNodes',
 		'activeReferenceNodes',
-		'lock'
+		'lock',
+		'nodeShapes'
 	],
 	#category : 'Golap-Visualization-Overview',
 	#package : 'Golap-Visualization',
@@ -27,6 +26,12 @@ Class {
 GolapOverviewPresenter class >> isAbstract [
 
 	^ self = GolapOverviewPresenter
+]
+
+{ #category : 'updating' }
+GolapOverviewPresenter >> activateOnNotebookPage [
+
+	nodePositions ifEmpty: [ self updateNodePositions ]
 ]
 
 { #category : 'accessing' }
@@ -84,10 +89,10 @@ GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
 
 	| v |
 	v := 0 @ 0.
-	aGolapNode asPoint ifNotNil: [ :p0 |
+	nodePositions at: aGolapNode ifPresent: [ :p0 |
 			aGolapNode edgesAndNodeDo: [ :edge :node |
 					(reallyVisibleEdges includes: edge) ifTrue: [
-							node asPoint ifNotNil: [ :p1 |
+							nodePositions at: node ifPresent: [ :p1 |
 									| v1 |
 									v1 := p1 - p0.
 									v1 isZero ifFalse: [ v := v + v1 normalized ] ] ] ] ].
@@ -96,10 +101,31 @@ GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
 		  ifFalse: [ v normalized ]
 ]
 
+{ #category : 'operations' }
+GolapOverviewPresenter >> forceZoomToFit [
+
+	| rect ext |
+	rect := (Array streamContents: [ :stream |
+			         reallyVisibleNodes do: [ :node |
+				         nodePositions
+					         at: node
+					         ifPresent: [ :point | stream nextPut: point ] ] ])
+		        ifEmpty: [ ^ self ]
+		        ifNotEmpty: [ :points | Rectangle encompassing: points ].
+	self offset: rect floatCenter negated.
+	roassal withAdapterDo: [ :a |
+			a widgetDo: [ :w |
+					ext := w extent.
+					self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
+	self updateNodeShapePositions.
+	self canvas signalUpdate
+]
+
 { #category : 'private' }
 GolapOverviewPresenter >> fourDirectionFrom: aPoint [
 
 	| norm x y |
+	aPoint isZero ifTrue: [ ^ 0 @ 1 ].
 	norm := aPoint normalized.
 	x := norm x.
 	y := norm y.
@@ -117,7 +143,7 @@ GolapOverviewPresenter >> golap: aGolap [
 { #category : 'updating' }
 GolapOverviewPresenter >> golapChanged [
 
-	
+	self updateNodePositions
 ]
 
 { #category : 'enumerating' }
@@ -136,9 +162,10 @@ GolapOverviewPresenter >> golapModelDo: aBlock [
 GolapOverviewPresenter >> initialize [
 
 	super initialize.
-	scale := 1.0.
+	scale := 100.0.
 	offset := 0.0 @ 0.0.
-	lock := Semaphore forMutualExclusion
+	lock := Semaphore forMutualExclusion.
+	nodePositions := IdentityDictionary new
 ]
 
 { #category : 'initialization' }
@@ -154,7 +181,7 @@ GolapOverviewPresenter >> initializePresenters [
 GolapOverviewPresenter >> move: aPoint [
 
 	self offset: aPoint / scale + offset.
-	self updateNodePositions.
+	self updateNodeShapePositions.
 	self canvas signalUpdate
 ]
 
@@ -344,8 +371,8 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 					 ifFalse: [ nil ] ]
 			 ifFalse: [ self colorForEdge: aGolapEdge ]) ifNotNil: [ :color |
 			| fromShape toShape v line |
-			fromShape := nodes at: aGolapEdge node1 ifAbsent: [ ^ nil ].
-			toShape := nodes at: aGolapEdge node2 ifAbsent: [ ^ nil ].
+			fromShape := nodeShapes at: aGolapEdge node1 ifAbsent: [ ^ nil ].
+			toShape := nodeShapes at: aGolapEdge node2 ifAbsent: [ ^ nil ].
 			v := golapModel valueAtEdge: aGolapEdge.
 			(v notNil and: [ v asFloat isFinite ]) ifFalse: [ ^ nil ].
 			line := RSLine new
@@ -388,7 +415,7 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 						         extent: r asPoint;
 						         color: color ].
 			self canvas addNode: shape.
-			nodes at: aGolapNode put: shape.
+			nodeShapes at: aGolapNode put: shape.
 			shapes add: shape.
 			markersAndNodes do: [ :colorAndVs |
 				(colorAndVs value includes: aGolapNode) ifTrue: [
@@ -472,9 +499,9 @@ GolapOverviewPresenter >> renderNodesIn: aRSCanvas [
 	interaction := GolapOverviewNodeInteraction new
 		               presenter: self;
 		               yourself.
-	nodes := IdentityDictionary new: reallyVisibleNodes size.
+	nodeShapes := IdentityDictionary new: reallyVisibleNodes size.
 	reallyVisibleNodes do: [ :node |
-			node asPoint ifNotNil: [ :p |
+			nodePositions at: node ifPresent: [ :p |
 					(self newShapeForNode: node) ifNotNil: [ :shape |
 							shape translateTo: p + offset * scale.
 							shape @ interaction.
@@ -507,18 +534,9 @@ GolapOverviewPresenter >> scale: aNumber at: aPoint [
 GolapOverviewPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
-			lock critical: [
-					self updateGraph.
-					self
-						updateFreqScale;
-						updateLineScale;
-						updateReferenceNodes.
-					self canvas shapes copy do: #remove.
-					self canvas color: Color white.
-					self
-						renderNodesIn: self canvas;
-						renderEdgesIn: self canvas.
-					self canvas signalUpdate ] ]
+			self
+				updateGraph;
+				updateNodeShapes ]
 ]
 
 { #category : 'updating' }
@@ -535,11 +553,9 @@ GolapOverviewPresenter >> updateGraph [
 
 	self golapModelDo: [ :model |
 			| visibleEdges connectedNodes |
-			visibleEdges := self availableEdges.
-			reallyVisibleEdges := visibleEdges select: [ :edge |
-					                      edge node1 asPoint notNil and: [
-						                      edge node2 asPoint notNil and: [
-							                      (model valueAtEdge: edge) notNil ] ] ].
+			visibleEdges := self availableEdges select: [ :edge |
+				                (model valueAtEdge: edge) notNil ].
+			reallyVisibleEdges := visibleEdges.
 			connectedNodes := IdentitySet new: reallyVisibleEdges size.
 			reallyVisibleEdges do: [ :edge |
 					connectedNodes
@@ -581,9 +597,41 @@ GolapOverviewPresenter >> updateLineScale [
 { #category : 'updating' }
 GolapOverviewPresenter >> updateNodePositions [
 
+	self updateGraph.
+	(reallyVisibleNodes notNil and: [ reallyVisibleEdges notNil ])
+		ifTrue: [
+				nodePositions := GolapOverviewGridLayouter
+					                 layoutNodes: reallyVisibleNodes
+					                 edges: reallyVisibleEdges
+					                 limit: 100.
+				self
+					updateNodeShapes;
+					forceZoomToFit ]
+]
+
+{ #category : 'updating' }
+GolapOverviewPresenter >> updateNodeShapePositions [
+
 	self canvas shapes do: [ :shape |
-			(shape model isKindOf: GolapNode) ifTrue: [
-				shape translateTo: shape model asPoint + offset * scale ] ]
+			nodePositions
+				at: shape model
+				ifPresent: [ :point | shape translateTo: point + offset * scale ] ]
+]
+
+{ #category : 'updating' }
+GolapOverviewPresenter >> updateNodeShapes [
+
+	lock critical: [
+			self
+				updateFreqScale;
+				updateLineScale;
+				updateReferenceNodes.
+			self canvas shapes copy do: #remove.
+			self canvas color: Color white.
+			self
+				renderNodesIn: self canvas;
+				renderEdgesIn: self canvas.
+			self canvas signalUpdate ]
 ]
 
 { #category : 'updating' }
@@ -604,17 +652,11 @@ GolapOverviewPresenter >> updateReferenceNodes [
 						                        golap includesSelection: peer ] ] ]"
 ]
 
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateTree [
-
-	self updateCanvas
-]
-
 { #category : 'operations' }
 GolapOverviewPresenter >> zoomInAt: aPoint [
 
 	self scale: self scale * 1.1 at: aPoint.
-	self updateNodePositions.
+	self updateNodeShapePositions.
 	self canvas signalUpdate
 ]
 
@@ -622,26 +664,12 @@ GolapOverviewPresenter >> zoomInAt: aPoint [
 GolapOverviewPresenter >> zoomOutAt: aPoint [
 
 	self scale: self scale / 1.1 at: aPoint.
-	self updateNodePositions.
+	self updateNodeShapePositions.
 	self canvas signalUpdate
 ]
 
 { #category : 'operations' }
 GolapOverviewPresenter >> zoomToFit [
 
-	self isDisplayed ifTrue: [
-			| rect ext |
-			rect := (Array streamContents: [ :stream |
-					         reallyVisibleNodes do: [ :node |
-						         node asPoint ifNotNil: [ :point |
-							         stream nextPut: point ] ] ])
-				        ifEmpty: [ ^ self ]
-				        ifNotEmpty: [ :points | Rectangle encompassing: points ].
-			roassal withAdapterDo: [ :a |
-					a widgetDo: [ :w |
-							ext := w extent.
-							self scale: (ext x / rect width min: ext y / rect height) * 0.9.
-							self offset: rect floatCenter negated.
-							self updateNodePositions ] ].
-			self canvas signalUpdate ]
+	self isDisplayed ifTrue: [ self forceZoomToFit ]
 ]

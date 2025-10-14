@@ -21,6 +21,10 @@ Class {
 	#tag : 'Elaboration'
 }
 
+{ #category : 'updating' }
+GolapElaborationPresenter >> activateOnNotebookPage [
+]
+
 { #category : 'accessing' }
 GolapElaborationPresenter >> camera [
 
@@ -125,7 +129,7 @@ GolapElaborationPresenter >> initializePresenters [
 GolapElaborationPresenter >> move: aPoint [
 
 	self offset: aPoint / scale + offset.
-	self updateNodePositions.
+	self updateNodeShapePositions.
 	self canvas signalUpdate
 ]
 
@@ -600,7 +604,7 @@ GolapElaborationPresenter >> updateGraph [
 ]
 
 { #category : 'updating' }
-GolapElaborationPresenter >> updateNodePositions [
+GolapElaborationPresenter >> updateNodeShapePositions [
 
 	self canvas shapes do: [ :shape |
 			(shape model isKindOf: GolapNode) ifTrue: [
@@ -619,7 +623,7 @@ GolapElaborationPresenter >> updateTree [
 GolapElaborationPresenter >> zoomInAt: aPoint [
 
 	self scale: self scale * (1.1 @ 1.0) at: aPoint.
-	self updateNodePositions.
+	self updateNodeShapePositions.
 	self canvas signalUpdate
 ]
 
@@ -627,7 +631,7 @@ GolapElaborationPresenter >> zoomInAt: aPoint [
 GolapElaborationPresenter >> zoomOutAt: aPoint [
 
 	self scale: self scale / (1.1 @ 1.0) at: aPoint.
-	self updateNodePositions.
+	self updateNodeShapePositions.
 	self canvas signalUpdate
 ]
 
@@ -641,6 +645,6 @@ GolapElaborationPresenter >> zoomToFit [
 				        ifNotEmpty: [ :points | Rectangle encompassing: points ].
 			self scale: 1.0 @ 1.0.
 			self offset: self extent * -0.5.
-			self updateNodePositions.
+			self updateNodeShapePositions.
 			self canvas signalUpdate ]
 ]

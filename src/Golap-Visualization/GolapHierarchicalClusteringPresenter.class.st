@@ -11,6 +11,10 @@ Class {
 	#tag : 'Clustering'
 }
 
+{ #category : 'updating' }
+GolapHierarchicalClusteringPresenter >> activateOnNotebookPage [
+]
+
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> canvas [
 

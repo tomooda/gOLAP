@@ -23,10 +23,10 @@ GolapArticulationPointOverviewPresenter >> articulationPointChanged [
 
 	self updateIslandNodeSets.
 	golap ifNotNil: [
-		self articulationPoint ifNotNil: [ :node |
-			golap selections: { node }.
-			offset := node asPoint negated.
-			self updateNodePositions ] ]
+			self articulationPoint ifNotNil: [ :node |
+					golap selections: { node }.
+					offset := (nodePositions at: node) negated.
+					self updateNodeShapePositions ] ]
 ]
 
 { #category : 'accessing' }
@@ -118,8 +118,8 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 					                updateGlobalImageAfter: [
 						                golap model friendsEdges:
 								                friendsRankField number ]
-					                layout: true.
-				                self zoomToFit ];
+					                layout: false.
+				                self updateNodePositions ];
 		                yourself.
 	articulationPointList := self newTable
 		                         hideColumnHeaders;

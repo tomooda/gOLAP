@@ -56,11 +56,6 @@ GolapItemsAppearance >> chooseFont [
 ]
 
 { #category : 'initialization' }
-GolapItemsAppearance >> initialExtent [
-	^ 500@200
-]
-
-{ #category : 'initialization' }
 GolapItemsAppearance >> initializePresenters [
 
 	showIsolatedNodesCheckBox := self newCheckBox

@@ -929,24 +929,24 @@ Golap >> initializePresenters [
 	resetZoomButton := self newButton.
 	frontList := self newDropList
 		             display: [ :string |
-			             string isSymbol
-				             ifTrue: [ self pseudoDimensionNameAt: string ]
-				             ifFalse: [ string asString ] ];
+				             string isSymbol
+					             ifTrue: [ self pseudoDimensionNameAt: string ]
+					             ifFalse: [ string asString ] ];
 		             displayIcon: [ :string |
-			             string isSymbol
-				             ifTrue: [ self pseudoDimensionIconAt: string ]
-				             ifFalse: [ nil ] ];
+				             string isSymbol
+					             ifTrue: [ self pseudoDimensionIconAt: string ]
+					             ifFalse: [ nil ] ];
 		             whenSelectedItemChangedDo: [ :front |
-			             front isSymbol
-				             ifTrue: [ self perform: front ]
-				             ifFalse: [
-					             baseList
-						             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [
-									              dimensions keys asArray collect: [ :back |
-											              front = back
-												              ifTrue: [ String new ]
-												              ifFalse: [ back ] ] ]);
-						             selectItem: String new ] ];
+				             front isSymbol
+					             ifTrue: [ self perform: front ]
+					             ifFalse: [
+							             baseList
+								             items: (dimensions ifNil: [ #(  ) ] ifNotNil: [
+												              dimensions keys asArray collect: [ :back |
+															              front = back
+																              ifTrue: [ String new ]
+																              ifFalse: [ back ] ] ]);
+								             selectItem: String new ] ];
 		             yourself.
 	baseList := self newDropList
 		            display: [ :string | string asString ];
@@ -992,11 +992,11 @@ Golap >> initializePresenters [
 					                  assoc key , ' : '
 					                  , (STONJSON toString: assoc value) ]);
 		                 children: [ :assoc |
-			                 assoc value isDictionary
-				                 ifTrue: [
-					                 assoc value keys asSortedCollection collect: [
-							                 :k | k -> (assoc value at: k) ] ]
-				                 ifFalse: [ Array new ] ];
+				                 assoc value isDictionary
+					                 ifTrue: [
+							                 assoc value keys asSortedCollection collect: [
+									                 :k | k -> (assoc value at: k) ] ]
+					                 ifFalse: [ Array new ] ];
 		                 contextMenu: [ self queryViewTreeMenu ];
 		                 yourself.
 	itemList := self newGolapItemList.
@@ -1048,16 +1048,18 @@ Golap >> initializePresenters [
 		                 addPageTitle: 'ヒートマップ'
 		                 provider: [ heatmapPresenter ];
 		                 whenSelectedPageChangedDo: [ :page |
-			                 page activePresenter ifNotNil: [ :p |
-					                 (p respondsTo: #updateTree) ifTrue: [
-							                 p updateTree ] ] ];
+				                 page activePresenter ifNotNil: [ :p |
+							                 (p respondsTo: #activateOnNotebookPage)
+								                 ifTrue: [ p activateOnNotebookPage ].
+							                 (p respondsTo: #updateTree) ifTrue: [
+									                 p updateTree ] ] ];
 		                 yourself.
 
 	self whenBuiltDo: [ :w |
-		| f |
-		f := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m |
-			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
+			| f |
+			f := TextStyle defaultFont.
+			w widget allMorphsDo: [ :m |
+				(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
 { #category : 'initialization' }

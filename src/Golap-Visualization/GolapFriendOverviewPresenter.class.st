@@ -57,10 +57,11 @@ GolapFriendOverviewPresenter >> initializePresenters [
 	layoutButton := self newButton
 		                label: ' 再配置 ';
 		                action: [
-			                golap
-				                updateGlobalImageAfter: [
-					                golap model friendsEdges: friendsRankField number ]
-				                layout: true.
-			                self zoomToFit ];
+				                golap
+					                updateGlobalImageAfter: [
+						                golap model friendsEdges:
+								                friendsRankField number ]
+					                layout: false.
+				                self updateNodePositions ];
 		                yourself
 ]

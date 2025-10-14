@@ -2,6 +2,8 @@ Class {
 	#name : 'GolapPolishOverviewPresenter',
 	#superclass : 'GolapOverviewPresenter',
 	#instVars : [
+		'visibleEdgeMaxValue',
+		'visibleEdgeMinValue',
 		'visibleEdgeMinPercentileSlider',
 		'visibleEdgeMaxPercentileSlider',
 		'resetVisibleEdgePercentileButton',
@@ -193,8 +195,8 @@ GolapPolishOverviewPresenter >> initializePresenters [
 				                golap
 					                updateGlobalImageAfter: [
 						                golap model friendsEdges: golap model nodes size ]
-					                layout: true.
-				                self zoomToFit ];
+					                layout: false.
+				                self updateNodePositions ];
 		                yourself
 ]
 
