@@ -13,12 +13,11 @@ Class {
 }
 
 { #category : 'operations' }
-GolapOverviewGridLayouter class >> layoutNodes: aCollectionOfGolapNode edges: aCollectionOfGolapEdge limit: anInteger [
+GolapOverviewGridLayouter class >> layoutNodes: aCollectionOfGolapNode edges: aCollectionOfGolapEdge [
 
 	^ self new
 		  layoutNodes: aCollectionOfGolapNode
 		  edges: aCollectionOfGolapEdge
-		  limit: anInteger
 ]
 
 { #category : 'accessing' }
@@ -54,7 +53,7 @@ GolapOverviewGridLayouter >> createMatrixFromNodes: aCollectionOfGolapNode [
 				          | nodes n squareN numDummies dummyStep |
 				          nodes := OrderedCollection withAll:
 					                   (aCollectionOfGolapNode sorted: #id ascending).
-				          n := nodes size sqrt ceiling + 1.
+				          n := (nodes size sqrt * 1.4) ceiling.
 				          squareN := n squared.
 				          numDummies := squareN - nodes size.
 				          dummyStep := nodes size asFloat
@@ -131,38 +130,30 @@ GolapOverviewGridLayouter >> improve: aGolapNode [
 ]
 
 { #category : 'operations' }
-GolapOverviewGridLayouter >> improveEvery [
+GolapOverviewGridLayouter >> improveEveryInterim: aBlock [
 
-	edges do: [ :edge |
+	| total mod |
+	total := edges size asFloat.
+	mod := edges size // 30.
+	edges withIndexDo: [ :edge :index |
 			(nodeX includesKey: edge node1) ifTrue: [ self improve: edge node1 ].
-			(nodeX includesKey: edge node2) ifTrue: [ self improve: edge node2 ] ]
+			(nodeX includesKey: edge node2) ifTrue: [ self improve: edge node2 ].
+			index \\ mod = 0 ifTrue: [ aBlock value: index asFloat / total ] ]
 ]
 
 { #category : 'operations' }
-GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollectionOfGolapEdge limit: anInteger [
+GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollectionOfGolapEdge [
 
-	| count positions |
+	| positions |
 	SpProgressDialog new
 		title: 'グラフ再配置中…';
 		informUserDuring: [ :progress |
-				count := 0.
 				self edges: aCollectionOfGolapEdge.
 				self createMatrixFromNodes: aCollectionOfGolapNode.
-				progress
-					progressPercent: 25.
-				self improveEvery.
-				progress
-					progressPercent: 50.
-				self improveEvery.
-				progress
-					progressPercent: 75.
-				[ self improve and: [ (count := count + 1) < anInteger ] ]
-					whileTrue: [
-							| percent |
-							percent := 75 + (count * 100.0 / anInteger asFloat).
-							progress
-								label: percent floor asString;
-								progressPercent: percent ].
+				self improveEveryInterim: [ :v |
+						progress progressPercent: v * 50.0 ].
+				self improveEveryInterim: [ :v |
+						progress progressPercent: v * 50.0 + 50.0 ].
 				progress
 					label: '完了';
 					progressPercent: 100.

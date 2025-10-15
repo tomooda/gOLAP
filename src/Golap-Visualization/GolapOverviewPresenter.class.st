@@ -467,15 +467,6 @@ GolapOverviewPresenter >> offset: aPoint [
 	offset := aPoint
 ]
 
-{ #category : 'enumerating' }
-GolapOverviewPresenter >> reallyVisibleNodesDo: aBlock [
-
-	golap ifNotNil: [
-			golap renderer ifNotNil: [ :renderer |
-					renderer updateVisibleEdgeThresholds.
-					renderer reallyVisibleNodes do: aBlock ] ]
-]
-
 { #category : 'rendering' }
 GolapOverviewPresenter >> renderEdgesIn: aRSCanvas [
 
@@ -602,8 +593,7 @@ GolapOverviewPresenter >> updateNodePositions [
 		ifTrue: [
 				nodePositions := GolapOverviewGridLayouter
 					                 layoutNodes: reallyVisibleNodes
-					                 edges: reallyVisibleEdges
-					                 limit: 100.
+					                 edges: reallyVisibleEdges.
 				self
 					updateNodeShapes;
 					forceZoomToFit ]
@@ -637,19 +627,18 @@ GolapOverviewPresenter >> updateNodeShapes [
 { #category : 'updating' }
 GolapOverviewPresenter >> updateReferenceNodes [
 
-	referenceNodes := golap overviewRenderer referenceNodes.
+	referenceNodes := golap referenceNodes.
 	selectedReferenceNodes := (referenceNodes
 		                           collect: [ :id | golap model nodeAt: id ]
 		                           thenSelect: [ :node |
 		                           golap includesSelection: node ])
 		                          asIdentitySet.
 	selectedReferenceNodes addAll: golap selections.
-	activeReferenceNodes := referenceNodes
-		                        collect: [ :id | golap model nodeAt: id ]
-		                      "  thenSelect: [ :node |
+	activeReferenceNodes := referenceNodes collect: [ :id | "  thenSelect: [ :node |
 				                        (golap includesSelection: node) or: [
 					                        node hasPeerSuchThat: [ :peer |
 						                        golap includesSelection: peer ] ] ]"
+		                        golap model nodeAt: id ]
 ]
 
 { #category : 'operations' }

@@ -280,14 +280,12 @@ GolapPolishOverviewPresenter >> updateGraph [
 			visibleEdgeMaxPercentileSlider label:
 				visibleEdgeMaxValue printString.
 			reallyVisibleEdges := visibleEdges select: [ :edge |
-					                      edge node1 asPoint notNil and: [
-							                      edge node2 asPoint notNil and: [
-									                      (model valueAtEdge: edge)
-										                      ifNil: [ false ]
-										                      ifNotNil: [ :v |
-										                      v
-											                      between: visibleEdgeMinValue
-											                      and: visibleEdgeMaxValue ] ] ] ].
+					                      (model valueAtEdge: edge)
+						                      ifNil: [ false ]
+						                      ifNotNil: [ :v |
+						                      v
+							                      between: visibleEdgeMinValue
+							                      and: visibleEdgeMaxValue ] ].
 			connectedNodes := IdentitySet new: reallyVisibleEdges size.
 			reallyVisibleEdges do: [ :edge |
 					connectedNodes

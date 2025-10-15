@@ -141,6 +141,25 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 		                         yourself
 ]
 
+{ #category : 'accessing' }
+GolapArticulationPointOverviewPresenter >> islandsDividedByArticulationPoint: aGolapNode [
+
+	| edges nodeSets startNodes |
+	edges := self availableEdges asIdentitySet.
+	nodeSets := OrderedCollection new.
+	startNodes := OrderedCollection new.
+	aGolapNode edgesAndNodeDo: [ :edge :peer |
+			(edges remove: edge ifAbsent: [ nil ]) ifNotNil: [
+				startNodes add: peer ] ].
+	startNodes do: [ :node |
+			(nodeSets anySatisfy: [ :set | set includes: node ]) ifFalse: [
+					| nodeSet |
+					nodeSet := IdentitySet new.
+					nodeSets add: nodeSet.
+					self withEdges: edges search: node nodeSet: nodeSet ] ].
+	^ nodeSets asSortedCollection: #size descending
+]
+
 { #category : 'instance creation' }
 GolapArticulationPointOverviewPresenter >> newShapeForEdge: aGolapEdge [
 
@@ -175,8 +194,13 @@ GolapArticulationPointOverviewPresenter >> updateArticulationPointList [
 	self golapModelDo: [ :golapModel |
 			articulationPointList items:
 				((((golapModel articulationNodesInEdges: reallyVisibleEdges)
-					   collect: [ :node | node -> (self sumNeighborsOrdersOf: node) ])
-					  asSortedCollection: #value descending) collect: #key) ]
+					   collect: [ :node |
+					   node -> (self islandsDividedByArticulationPoint: node) ])
+					  asSortedCollection: [ :more :less |
+							  less value size < more value size or: [
+									  less value size = more value size and: [
+										  (less value at: 2) size < (more value at: 2) size ] ] ])
+					 collect: #key) ]
 ]
 
 { #category : 'updating' }
@@ -191,25 +215,29 @@ GolapArticulationPointOverviewPresenter >> updateIslandNodeSets [
 
 	islandNodeSets := self articulationPoint
 		                  ifNotNil: [ :articulationNode |
-				                  | edges nodeSets startNodes |
-				                  edges := self availableEdges asIdentitySet.
+			                  self islandsDividedByArticulationPoint:
+				                  articulationNode ]
+		                  ifNil: [
+				                  | startNodes edges nodeSets |
+				                  startNodes := IdentitySet new.
+				                  edges := IdentitySet new.
+				                  self availableEdges do: [ :edge |
+						                  startNodes
+							                  add: edge node1;
+							                  add: edge node2.
+						                  edges add: edge ].
 				                  nodeSets := OrderedCollection new.
-				                  startNodes := OrderedCollection new.
-				                  articulationNode edgesAndNodeDo: [ :edge :peer |
-						                  (edges remove: edge ifAbsent: [ nil ])
-							                  ifNotNil: [ startNodes add: peer ] ].
-				                  startNodes do: [ :node |
-						                  (nodeSets anySatisfy: [ :set |
-							                   set includes: node ]) ifFalse: [
-								                  | nodeSet |
-								                  nodeSet := IdentitySet new.
-								                  nodeSets add: nodeSet.
-								                  self
-									                  withEdges: edges
-									                  search: node
-									                  nodeSet: nodeSet ] ].
+				                  [ startNodes notEmpty ] whileTrue: [
+						                  | node nodeSet |
+						                  node := startNodes anyOne.
+						                  nodeSet := IdentitySet new.
+						                  nodeSets add: nodeSet.
+						                  self
+							                  withEdges: edges
+							                  search: node
+							                  nodeSet: nodeSet.
+						                  startNodes removeAll: nodeSet ].
 				                  nodeSets asSortedCollection: #size descending ]
-		                  ifNil: [ Array new ]
 ]
 
 { #category : 'private' }

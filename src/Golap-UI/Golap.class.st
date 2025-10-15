@@ -6,61 +6,43 @@ Class {
 		'queryRecord',
 		'url',
 		'query',
-		'overviewRenderer',
-		'elaborationRenderer',
-		'viewsNotebook',
-		'globalImagePane',
 		'pins',
 		'selections',
-		'overridesYWithFrequencyCheckbox',
-		'overridesYWithFrequencyOrderCheckbox',
-		'layoutButton',
-		'layoutChooseButton',
-		'zoomInButton',
-		'zoomOutButton',
-		'resetZoomButton',
-		'globalMapPane',
 		'font',
 		'itemView',
 		'baseList',
 		'dimensions',
 		'merges',
 		'frontList',
-		'selectedEdges',
 		'queryViewTree',
 		'itemsAppearancePresenter',
 		'saveAsButton',
-		'elaborationRendererButton',
-		'overviewRendererButton',
-		'rendererSelector',
 		'authenticateBlock',
 		'edgesAppearancePresenter',
 		'colorsAppearancePresenter',
-		'lastSelectedMarkerItem',
 		'saveAsPngButton',
 		'itemList',
 		'itemNotebook',
 		'snapshotDirectory',
 		'snapshotEnabled',
-		'resentQueryButton',
-		'lastZoomTimestamp',
 		'saveAsSvgButton',
 		'saveSnapshotButton',
 		'photoImageRetrievingProcess',
-		'retrievalProcessCount',
-		'drawingSemaphore',
 		'commentText',
 		'dandelionPresenter',
 		'snapshotBaseName',
 		'hedgePresenter',
-		'dragNode',
 		'edgeList',
 		'heatmapPresenter',
 		'polishOverviewPresenter',
 		'friendOverviewPresenter',
 		'elaborationPresenter',
 		'articulationPointOverviewPresenter',
-		'itemInfoRetriever'
+		'itemInfoRetriever',
+		'referenceNodes',
+		'lockedNodes',
+		'resendQueryButton',
+		'visualizationNotebook'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -99,12 +81,12 @@ Golap class >> defaultLayout [
 		  width: 350;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.75;
-				   add: #viewsNotebook;
+				   add: #visualizationNotebook;
 				   add: (SpBoxLayout newVertical
 						    add: #saveSnapshotButton height: self buttonHeight;
 						    add: #saveAsSvgButton height: self buttonHeight;
 						    add: #saveAsPngButton height: self buttonHeight;
-						    add: #resentQueryButton height: self buttonHeight;
+						    add: #resendQueryButton height: self buttonHeight;
 						    add: #queryViewTree height: 200;
 						    add: #itemNotebook);
 				   yourself);
@@ -375,7 +357,7 @@ Golap >> addDimension: aGolapOverviewModel named: aString [
 { #category : 'menu' }
 Golap >> addReferenceNode: aGolapNode [
 
-	overviewRenderer addReferenceNode: aGolapNode.
+	referenceNodes addLast: aGolapNode id.
 	self updateGlobalImage
 ]
 
@@ -483,16 +465,6 @@ Golap >> authenticateBlock: aBlock [
 		itemInfoRetriever authenticateBlock: aBlock ]
 ]
 
-{ #category : 'accessing-renderer' }
-Golap >> basicLayout [
-
-	self renderer
-		overridesYWithFrequency: overridesYWithFrequencyCheckbox state;
-		overridesYWithFrequencyOrder:
-			overridesYWithFrequencyOrderCheckbox state;
-		layout
-]
-
 { #category : 'snapshot' }
 Golap >> basicSnapshotDirectory [
 
@@ -503,22 +475,6 @@ Golap >> basicSnapshotDirectory [
 Golap >> buttonHeight [
 
 	^ self class buttonHeight
-]
-
-{ #category : 'menu' }
-Golap >> chooseLayouterMenu [
-
-	^ self newMenu addGroup: [ :group |
-		  group
-			  addItem: [ :item |
-				  item
-					  name: 'ばね';
-					  action: [ self springLayout ] ];
-			  addItem: [ :item |
-				  item
-					  name: '円周（フレンドクラスタ）';
-					  action: [ self friendClusteredLayout ] ];
-			  yourself ]
 ]
 
 { #category : 'accessing-colors' }
@@ -679,12 +635,6 @@ Golap >> edgeScale: aNumber [
 	edgesAppearancePresenter edgeScale: aNumber
 ]
 
-{ #category : 'accessing-renderer' }
-Golap >> elaborationRenderer [
-	^ elaborationRenderer
-		ifNil: [ elaborationRenderer := GolapElaborationRenderer on: self ]
-]
-
 { #category : 'operations-photoimages' }
 Golap >> ensurePhotoimageRetrievingProcess [
 
@@ -706,13 +656,6 @@ Golap >> font: aFont [
 { #category : 'accessing-colors' }
 Golap >> freshColor [
 	^ colorsAppearancePresenter freshColor
-]
-
-{ #category : 'operations' }
-Golap >> friendClusteredLayout [
-
-	self overviewRenderer friendClusteredLayouter.
-	self updateGlobalImageAfter: [  ] layout: true
 ]
 
 { #category : 'accessing' }
@@ -769,46 +712,33 @@ Golap >> globalImageMenu: aGolapNode [
 									name: 'Unmark selections';
 									subMenu: itemList unmarkSelectionsMenu ] ] ].
 	aGolapNode ifNotNil: [
-			rendererSelector = #overviewRenderer ifTrue: [
-					menu addGroup: [ :group |
-							(self renderer isReferenceNode: aGolapNode)
-								ifTrue: [
-										group addItem: [ :item |
-												item
-													name: 'remove from reference';
-													action: [ self removeReferenceNode: aGolapNode ] ] ]
-								ifFalse: [
-										(self renderer isLockedNode: aGolapNode)
-											ifTrue: [
-													group
-														addItem: [ :item |
-																item
-																	name: 'move';
-																	action: [ self moveNode: aGolapNode ] ];
-														addItem: [ :item |
-																item
-																	name: 'be auto layouted';
-																	action: [ self unlockNode: aGolapNode ] ];
-														addItem: [ :item |
-																item
-																	name: 'add to reference';
-																	action: [
-																			self
-																				unlockNode: aGolapNode;
-																				addReferenceNode: aGolapNode ] ] ]
-											ifFalse: [
-													group
-														addItem: [ :item |
-																item
-																	name: 'add to reference';
-																	action: [ self addReferenceNode: aGolapNode ] ];
-														addItem: [ :item |
-																item
-																	name: 'be manual layouted';
-																	action: [
-																			self
-																				lockNode: aGolapNode;
-																				moveNode: aGolapNode ] ] ] ] ] ].
+			menu addGroup: [ :group |
+					(self isReferenceNode: aGolapNode)
+						ifTrue: [
+								group addItem: [ :item |
+										item
+											name: 'remove from reference';
+											action: [ self removeReferenceNode: aGolapNode ] ] ]
+						ifFalse: [
+								(self isLockedNode: aGolapNode)
+									ifTrue: [
+											group
+												addItem: [ :item |
+														item
+															name: 'be auto layouted';
+															action: [ self unlockNode: aGolapNode ] ];
+												addItem: [ :item |
+														item
+															name: 'add to reference';
+															action: [
+																	self
+																		unlockNode: aGolapNode;
+																		addReferenceNode: aGolapNode ] ] ]
+									ifFalse: [
+											group addItem: [ :item |
+													item
+														name: 'add to reference';
+														action: [ self addReferenceNode: aGolapNode ] ] ] ] ].
 			menu
 				addGroup: [ :group |
 						(self includesPin: aGolapNode)
@@ -843,16 +773,6 @@ Golap >> globalImageMenu: aGolapNode [
 						name: 'Inspect';
 						action: [ aGolapNode inspect ] ] ].
 	^ menu
-]
-
-{ #category : 'accessing-widgets' }
-Golap >> globalImagePane [
-	^ globalImagePane
-]
-
-{ #category : 'accessing-widgets' }
-Golap >> globalMapPane [
-	^ globalMapPane
 ]
 
 { #category : 'accessing-presets' }
@@ -910,23 +830,17 @@ Golap >> initialize [
 	super initialize.
 	pins := Set new.
 	selections := Set new.
+	referenceNodes := OrderedCollection new.
+	lockedNodes := Set new.
 	dimensions := OrderedDictionary new.
 	merges := OrderedCollection new.
-	rendererSelector := #overviewRenderer.
 	snapshotEnabled := true.
-	lastZoomTimestamp := DateAndTime now.
-	drawingSemaphore := Semaphore forMutualExclusion.
 	snapshotBaseName := ''
 ]
 
 { #category : 'initialization' }
 Golap >> initializePresenters [
 
-	globalImagePane := self newImage.
-	globalMapPane := self newImage.
-	zoomInButton := self newButton.
-	zoomOutButton := self newButton.
-	resetZoomButton := self newButton.
 	frontList := self newDropList
 		             display: [ :string |
 				             string isSymbol
@@ -955,16 +869,6 @@ Golap >> initializePresenters [
 	itemsAppearancePresenter := GolapItemsAppearance on: self.
 	edgesAppearancePresenter := GolapEdgesAppearance on: self.
 	colorsAppearancePresenter := GolapColorsAppearance on: self.
-	overviewRendererButton := self newButton.
-	elaborationRendererButton := self newButton.
-	layoutButton := self newButton.
-	layoutChooseButton := self newButton.
-	overridesYWithFrequencyCheckbox := self newCheckBox
-		                                   state: false;
-		                                   yourself.
-	overridesYWithFrequencyOrderCheckbox := self newCheckBox
-		                                        state: false;
-		                                        yourself.
 	commentText := self newText.
 	saveAsButton := self newButton
 		                label: 'save...';
@@ -978,7 +882,7 @@ Golap >> initializePresenters [
 		                   label: 'save as SVG...';
 		                   action: [ self saveAsSVG ];
 		                   yourself.
-	resentQueryButton := self newButton
+	resendQueryButton := self newButton
 		                     label: 'resend query';
 		                     action: [ self resendQuery ];
 		                     yourself.
@@ -1033,7 +937,7 @@ Golap >> initializePresenters [
 		                  (GolapHedgeChartPresenter new golap: self).
 	heatmapPresenter := self instantiate:
 		                    (GolapClusteredHeatmapPresenter new golap: self).
-	viewsNotebook := self newNotebook
+	visualizationNotebook := self newNotebook
 		                 addPageTitle: '俯瞰図'
 		                 provider: [ polishOverviewPresenter ];
 		                 addPageTitle: 'フレンド俯瞰図'
@@ -1069,6 +973,18 @@ Golap >> initializeWindow: aWindowPresenter [
 		title: self title;
 		initialExtent: World extent.
 	aWindowPresenter whenClosedDo: [ self saveQueryRecord ]
+]
+
+{ #category : 'accessing-reference and lock' }
+Golap >> isLockedNode: aGolapNode [
+
+	^ lockedNodes includes: aGolapNode id
+]
+
+{ #category : 'accessing-reference and lock' }
+Golap >> isReferenceNode: aGolapNode [
+
+	^ referenceNodes includes: aGolapNode id
 ]
 
 { #category : 'snapshot' }
@@ -1125,7 +1041,7 @@ Golap >> loadFromQueryRecord: aGolapQueryRecord [
 { #category : 'menu' }
 Golap >> lockNode: aGolapNode [
 
-	self renderer lockNode: aGolapNode
+	lockedNodes add: aGolapNode id
 ]
 
 { #category : 'accessing-markers' }
@@ -1244,7 +1160,6 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 		self
 			updateGlobalImageAfter: [
 				model flushFriendsEdges.
-				self overviewRenderer layouter model: model.
 				self unselectAll.
 				model ifNotNil: [
 					edgesAppearancePresenter updateModel: model.
@@ -1252,15 +1167,6 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 			layout: (aGolapModel nodes anySatisfy: [ :node |
 					 node x isNil or: [ node y isNil ] ]) ].
 	self announceGolapModelUpdated
-]
-
-{ #category : 'menu' }
-Golap >> moveNode: aGolapNode [
-
-	dragNode := aGolapNode.
-	self withAdapterDo: [ :a |
-		a widgetDo: [ :w |
-			w activeHand showTemporaryCursor: Cursor crossHair ] ]
 ]
 
 { #category : 'accessing-colors' }
@@ -1382,22 +1288,6 @@ Golap >> openPresetQueryDialog [
 				 do: [ :ex | ex return: nil ]) ifNotNil: [ :selection |
 					itemList queryField text: selection ] ];
 		openModal
-]
-
-{ #category : 'accessing-widgets' }
-Golap >> overridesYWithFrequencyCheckbox [
-	^ overridesYWithFrequencyCheckbox
-]
-
-{ #category : 'accessing-widgets' }
-Golap >> overridesYWithFrequencyOrderCheckbox [
-	^ overridesYWithFrequencyOrderCheckbox
-]
-
-{ #category : 'accessing-renderer' }
-Golap >> overviewRenderer [
-	^ overviewRenderer
-		ifNil: [ overviewRenderer := GolapOverviewRenderer on: self ]
 ]
 
 { #category : 'operations-photoimages' }
@@ -1621,6 +1511,12 @@ Golap >> readPresetQueries [
 		do: [ :ex | ^ Array new ]
 ]
 
+{ #category : 'accessing-reference and lock' }
+Golap >> referenceNodes [
+
+	^ referenceNodes
+]
+
 { #category : 'private' }
 Golap >> regexFor: aString [
 	| regex |
@@ -1639,16 +1535,8 @@ Golap >> release [
 	frontList := nil.
 	baseList := nil.
 	model := nil.
-	overviewRenderer := nil.
-	elaborationRenderer := nil.
-	globalImagePane := nil.
 	pins := nil.
 	selections := nil.
-	layoutButton := nil.
-	zoomInButton := nil.
-	zoomOutButton := nil.
-	resetZoomButton := nil.
-	globalMapPane := nil.
 	font := nil.
 	itemView := nil.
 	super release
@@ -1657,20 +1545,8 @@ Golap >> release [
 { #category : 'menu' }
 Golap >> removeReferenceNode: aGolapNode [
 
-	overviewRenderer removeReferenceNode: aGolapNode.
+	referenceNodes remove: aGolapNode id ifAbsent: [ ].
 	self updateGlobalImage
-]
-
-{ #category : 'accessing-renderer' }
-Golap >> renderer [
-
-	^ rendererSelector ifNotNil: [ self perform: rendererSelector ]
-]
-
-{ #category : 'accessing-renderer' }
-Golap >> rendererSelector [
-
-	^ rendererSelector
 ]
 
 { #category : 'operations' }
@@ -1693,12 +1569,6 @@ Golap >> resendQuery [
 	overview open title: overview snapshotDirectory basename.
 	overview snapshotData: client readStream do: [ :readStream |  ].
 	overview restoreSnapshot: overview snapshotDirectory
-]
-
-{ #category : 'operations' }
-Golap >> resetZoom [
-	self
-		updateGlobalImageAfter: [ self renderer resetZoom]
 ]
 
 { #category : 'snapshot' }
@@ -1737,11 +1607,7 @@ Golap >> restoreEdgesAppearance [
 { #category : 'snapshot' }
 Golap >> restoreElaborationRenderer [
 
-	| ref |
-	ref := self snapshotDirectory / 'renderer-elaboration.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			self elaborationRenderer restore: stream ] ]
+	
 ]
 
 { #category : 'snapshot' }
@@ -1786,11 +1652,7 @@ Golap >> restoreMerges [
 { #category : 'snapshot' }
 Golap >> restoreOverviewRenderer [
 
-	| ref |
-	ref := self snapshotDirectory / 'renderer-overview.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			self overviewRenderer restore: stream ] ]
+
 ]
 
 { #category : 'snapshot' }
@@ -1814,21 +1676,16 @@ Golap >> restoreSelections [
 
 	| ref |
 	ref := self snapshotDirectory / 'selections.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			(NeoJSONReader on: stream) next
-				at: 'renderer' ifPresent: [ :string | 
-					string = 'elaborationRenderer'
-						ifTrue: [ self setElaborationRenderer ]
-						ifFalse: [ self setOverviewRenderer ] ];
-				at: 'pins' ifPresent: [ :array | pins := array asSet ];
-				at: 'frontDimension'
-				ifPresent: [ :string | frontList selectItem: string ];
-				at: 'baseDimension'
-				ifPresent: [ :string | baseList selectItem: string ];
-				at: 'selections' ifPresent: [ :array | 
-					selections := array asSet.
-					selectedEdges := nil ] ] ]
+	ref isFile ifTrue: [
+			ref readStreamDo: [ :stream |
+					(NeoJSONReader on: stream) next
+						at: 'pins' ifPresent: [ :array | pins := array asSet ];
+						at: 'frontDimension'
+						ifPresent: [ :string | frontList selectItem: string ];
+						at: 'baseDimension'
+						ifPresent: [ :string | baseList selectItem: string ];
+						at: 'selections'
+						ifPresent: [ :array | selections := array asSet ] ] ]
 ]
 
 { #category : 'snapshot' }
@@ -1900,33 +1757,20 @@ Golap >> retrievePhotoimages [
 
 { #category : 'operations' }
 Golap >> saveAsSVG [
-	(UIManager default
-		chooseForSaveFileReference: 'Save as a SVG file'
-		extensions: #('svg')
-		path: self golapDirectory)
-		ifNotNil: [ :fileReference | 
-			fileReference
-				writeStreamDo: [ :stream | self renderer svg printWithPrologOn: stream ] ]
+
+	self notYetImplemented
 ]
 
 { #category : 'operations' }
 Golap >> saveFullImage [
 
-	(UIManager default
-		 chooseForSaveFileReference: 'Save as a PNG file'
-		 extensions: #( 'png' )
-		 path: self golapDirectory) ifNotNil: [ :fileReference | 
-		fileReference binaryWriteStreamDo: [ :stream | 
-			Cursor wait showWhile: [ 
-				PNGReadWriter putForm: self renderer fullImage onStream: stream ] ] ]
+	self notYetImplemented
 ]
 
 { #category : 'history' }
 Golap >> saveQueryRecord [
 
 	queryRecord ifNotNil: [
-		globalImagePane image ifNotNil: [ :image |
-			queryRecord thumbnail: (image scaledToSize: 256 @ 256) ].
 		queryRecord comment:
 			(commentText text asString trim ifEmpty: [ nil ]).
 		queryRecord graph: (dimensions associations collect: [ :assoc |
@@ -1942,35 +1786,32 @@ Golap >> saveSnapshot [
 		                    request: 'スナップショット名'
 		                    initialAnswer: (self isTemporarySnapshot
 				                     ifTrue: [ '' ]
-				                     ifFalse: [ self snapshotDirectory basename ])) 
+				                     ifFalse: [ self snapshotDirectory basename ]))
 		                   ifNil: [ ^ self ]).
-	newSnapshotRef ~= self snapshotDirectory ifTrue: [ 
-		newSnapshotRef exists ifTrue: [ 
-			(UIManager confirm: newSnapshotRef basename , 'は既に存在しています。上書きしますか？')
-				ifTrue: [ newSnapshotRef ensureDeleteAll ]
-				ifFalse: [ ^ self ] ].
-		self snapshotDirectory copyAllTo: newSnapshotRef.
-		(self isTemporarySnapshot or: [ 
-			 UIManager confirm: self snapshotDirectory basename , 'を削除しますか？' ]) 
-			ifTrue: [ self snapshotDirectory ensureDeleteAll ].
-		snapshotDirectory := newSnapshotRef ].
-	self snapshotGlobalImage.
+	newSnapshotRef ~= self snapshotDirectory ifTrue: [
+			newSnapshotRef exists ifTrue: [
+					(UIManager confirm:
+						 newSnapshotRef basename , 'は既に存在しています。上書きしますか？')
+						ifTrue: [ newSnapshotRef ensureDeleteAll ]
+						ifFalse: [ ^ self ] ].
+			self snapshotDirectory copyAllTo: newSnapshotRef.
+			(self isTemporarySnapshot or: [
+				 UIManager confirm: self snapshotDirectory basename , 'を削除しますか？' ])
+				ifTrue: [ self snapshotDirectory ensureDeleteAll ].
+			snapshotDirectory := newSnapshotRef ].
 	self snapshotMerges.
 	self snapshotSelections.
 	colorsAppearancePresenter snapshot.
 	edgesAppearancePresenter snapshot.
 	itemsAppearancePresenter snapshot.
 	itemList snapshot.
-	itemView snapshot.
-	elaborationRenderer ifNotNil: #snapshot.
-	overviewRenderer ifNotNil: #snapshot
+	itemView snapshot
 ]
 
 { #category : 'accessing-selection' }
 Golap >> select: aGolapNode [
 
 	aGolapNode idDo: [ :id | selections add: id ].
-	selectedEdges := nil.
 	self showItemView: aGolapNode.
 	self updateSelection
 ]
@@ -1980,7 +1821,6 @@ Golap >> selectAll: aCollectionOfGolapNode [
 
 	aCollectionOfGolapNode do: [ :node |
 		node idDo: [ :id | selections add: id ] ].
-	selectedEdges := nil.
 	self showItemView: aCollectionOfGolapNode anyOne.
 	self updateSelection
 ]
@@ -1988,15 +1828,6 @@ Golap >> selectAll: aCollectionOfGolapNode [
 { #category : 'accessing-dimensions' }
 Golap >> selectedBaseDimension [
 	^ dimensions at: baseList selectedItem ifAbsent: [ nil ]
-]
-
-{ #category : 'accessing' }
-Golap >> selectedEdges [
-	^ selectedEdges
-		ifNil: [ | edges |
-			edges := IdentitySet new: selections size.
-			self selections do: [ :v | v edgesDo: [ :e | edges add: e ] ].
-			selectedEdges := edges asArray ]
 ]
 
 { #category : 'accessing-dimensions' }
@@ -2047,7 +1878,6 @@ Golap >> selections: aCollectionOfGolapNode [
 		v idDo: [ :id | newSelections add: id ] ].
 	selections = newSelections ifFalse: [
 		selections := newSelections.
-		selectedEdges := nil.
 		self showItemView: aCollectionOfGolapNode last.
 		self updateSelection ]
 ]
@@ -2055,21 +1885,6 @@ Golap >> selections: aCollectionOfGolapNode [
 { #category : 'accessing-renderer' }
 Golap >> setElaborationRenderer [
 
-	self updateGlobalImageAfter: [ 
-		rendererSelector := #elaborationRenderer.
-		elaborationRendererButton state: true.
-		overviewRendererButton state: false ]
-]
-
-{ #category : 'accessing-renderer' }
-Golap >> setOverviewRenderer [
-
-	self
-		updateGlobalImageAfter: [ 
-			rendererSelector := #overviewRenderer.
-			elaborationRendererButton state: false.
-			overviewRendererButton state: true ]
-		layout: (self nodes anySatisfy: [ :v | v asPoint isNil ])
 ]
 
 { #category : 'accessing' }
@@ -2091,7 +1906,6 @@ Golap >> setSelections: aCollectionOfString [
 	newSelections := aCollectionOfString asSet.
 	selections = newSelections ifFalse: [
 		selections := newSelections.
-		selectedEdges := nil.
 		itemList selectedItem ifNotNil: [ :item |
 			self showItemView: (model nodeAt: item) ].
 		self updateSelection ]
@@ -2226,22 +2040,6 @@ Golap >> snapshotElaborationRenderer: aBlock [
 ]
 
 { #category : 'snapshot' }
-Golap >> snapshotGlobalImage [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			globalImagePane image ifNotNil: [ :image | 
-				[ 
-				(baseDir / 'globalImage.png.tmp') ensureDelete 
-					binaryWriteStreamDo: [ :stream | 
-					(PNGReadWriter on: stream) nextPutImage: image ].
-				(baseDir / 'globalImage.png') ensureDelete.
-				baseDir / 'globalImage.png.tmp' renameTo: 'globalImage.png' ]
-					on: FileException
-					do: [ :ex |  ] ] ] ]
-]
-
-{ #category : 'snapshot' }
 Golap >> snapshotItemList: aBlock [
 
 	self ifSnapshotEnabled: [ 
@@ -2312,18 +2110,10 @@ Golap >> snapshotSelections [
 			(baseDir / 'selections.json') ensureDelete writeStreamDo: [ 
 				:writeStream | 
 				(NeoJSONWriter on: writeStream) nextPut: { 
-						('renderer' -> rendererSelector) .
 						('selections' -> selections).
 						('pins' -> pins).
 						('frontDimension' -> frontList selectedItem).
 						('baseDimension' -> baseList selectedItem) } asOrderedDictionary ] ] ]
-]
-
-{ #category : 'operations' }
-Golap >> springLayout [
-
-	self overviewRenderer springLayouter.
-	self updateGlobalImageAfter: [  ] layout: true
 ]
 
 { #category : 'operations-photoimages' }
@@ -2372,7 +2162,7 @@ Golap >> toggleSelection: aGolapNode [
 { #category : 'menu' }
 Golap >> unlockNode: aGolapNode [
 
-	self overviewRenderer unlockNode: aGolapNode
+	lockedNodes remove: aGolapNode id ifAbsent: [  ]
 ]
 
 { #category : 'menu' }
@@ -2403,7 +2193,6 @@ Golap >> unmergeNode: aString [
 Golap >> unselect: aGolapNode [
 
 	aGolapNode idDo: [ :id | selections remove: id ifAbsent: [  ] ].
-	selectedEdges := nil.
 	self updateSelection
 ]
 
@@ -2411,7 +2200,6 @@ Golap >> unselect: aGolapNode [
 Golap >> unselectAll [
 
 	selections removeAll.
-	selectedEdges := nil.
 	self updateSelection
 ]
 
@@ -2420,7 +2208,6 @@ Golap >> unselectAll: aCollectionOfGolapNode [
 
 	aCollectionOfGolapNode do: [ :node |
 		node idDo: [ :id | selections remove: id ifAbsent: [  ] ] ].
-	selectedEdges := nil.
 	self updateSelection
 ]
 
@@ -2459,7 +2246,6 @@ Golap >> updateGlobalImageAfter: aBlock layout: aBoolean [
 							sender selector = #updateGlobalImageAfter:layout: ifTrue: [
 								^ self ].
 							sender := sender sender ].
-					aBoolean = true ifTrue: [ self basicLayout ].
 					self updateGlobalImage ] ]
 ]
 

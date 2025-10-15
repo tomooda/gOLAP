@@ -382,74 +382,73 @@ GolapItemList >> nodeListMenu [
 		                (nodeList selection selectedItem ifNil: [ ^ menu ])
 		                ifAbsent: [ ^ menu ].
 	menu addGroup: [ :group |
-		(self markMenu: selectedNode) ifNotNil: [ :submenu |
-			group addItem: [ :item |
-				item
-					name: 'mark';
-					subMenu: submenu ] ].
-		(self unmarkMenu: selectedNode) ifNotNil: [ :submenu |
-			group addItem: [ :item |
-				item
-					name: 'unmark';
-					subMenu: submenu ] ].
-		nodeList selectedItems ifNotEmpty: [
-			group
-				addItem: [ :item |
-					item
-						name: 'Mark selections';
-						subMenu: self markSelectionsMenu ];
-				addItem: [ :item |
-					item
-						name: 'Unmark selections';
-						subMenu: self unmarkSelectionsMenu ] ] ].
+			(self markMenu: selectedNode) ifNotNil: [ :submenu |
+					group addItem: [ :item |
+							item
+								name: 'mark';
+								subMenu: submenu ] ].
+			(self unmarkMenu: selectedNode) ifNotNil: [ :submenu |
+					group addItem: [ :item |
+							item
+								name: 'unmark';
+								subMenu: submenu ] ].
+			nodeList selectedItems ifNotEmpty: [
+					group
+						addItem: [ :item |
+								item
+									name: 'Mark selections';
+									subMenu: self markSelectionsMenu ];
+						addItem: [ :item |
+								item
+									name: 'Unmark selections';
+									subMenu: self unmarkSelectionsMenu ] ] ].
 
 	selectedNode ifNotNil: [
-		golap rendererSelector = #overviewRenderer ifTrue: [
 			menu addGroup: [ :group |
-				(golap renderer isReferenceNode: selectedNode)
-					ifTrue: [
-						group addItem: [ :item |
-							item
-								name: 'remove from reference';
-								action: [ golap removeReferenceNode: selectedNode ] ] ]
-					ifFalse: [
-						(golap renderer isLockedNode: selectedNode)
-							ifTrue: [
-								group
-									addItem: [ :item |
-										item
-											name: 'be auto layouted';
-											action: [ golap unlockNode: selectedNode ] ];
-									addItem: [ :item |
-										item
-											name: 'add to reference';
-											action: [
-												golap
-													unlockNode: selectedNode;
-													addReferenceNode: selectedNode ] ] ]
-							ifFalse: [
+					(golap isReferenceNode: selectedNode)
+						ifTrue: [
 								group addItem: [ :item |
-									item
-										name: 'add to reference';
-										action: [ golap addReferenceNode: selectedNode ] ] ] ] ] ] ].
+										item
+											name: 'remove from reference';
+											action: [ golap removeReferenceNode: selectedNode ] ] ]
+						ifFalse: [
+								(golap isLockedNode: selectedNode)
+									ifTrue: [
+											group
+												addItem: [ :item |
+														item
+															name: 'be auto layouted';
+															action: [ golap unlockNode: selectedNode ] ];
+												addItem: [ :item |
+														item
+															name: 'add to reference';
+															action: [
+																	golap
+																		unlockNode: selectedNode;
+																		addReferenceNode: selectedNode ] ] ]
+									ifFalse: [
+											group addItem: [ :item |
+													item
+														name: 'add to reference';
+														action: [ golap addReferenceNode: selectedNode ] ] ] ] ] ].
 
 	menu addGroup: [ :group |
-		(golap includesPin: selectedNode)
-			ifTrue: [
-				group addItem: [ :item |
-					item
-						name: 'Unpin';
-						action: [ golap togglePin: selectedNode ] ] ]
-			ifFalse: [
-				group addItem: [ :item |
-					item
-						name: 'Pin';
-						action: [ golap togglePin: selectedNode ] ] ] ].
+			(golap includesPin: selectedNode)
+				ifTrue: [
+						group addItem: [ :item |
+								item
+									name: 'Unpin';
+									action: [ golap togglePin: selectedNode ] ] ]
+				ifFalse: [
+						group addItem: [ :item |
+								item
+									name: 'Pin';
+									action: [ golap togglePin: selectedNode ] ] ] ].
 	menu addGroup: [ :group |
-		group addItem: [ :item |
-			item
-				name: 'Show info';
-				action: [ golap showItemView: selectedNode ] ] ].
+			group addItem: [ :item |
+					item
+						name: 'Show info';
+						action: [ golap showItemView: selectedNode ] ] ].
 	^ menu
 ]
 
