@@ -31,13 +31,13 @@ GolapQueryLowerBoundsPresenter class >> defaultLayout [
 		  add: '最小Support' atPoint: 1 @ 1;
 		  add: #minSupport atPoint: 2 @ 1;
 		  add: '最小Confidence' atPoint: 1 @ 2;
-		  add: #minConfidence at: 2 @ 2;
-		  add: '最小Lift' at: 1 @ 3;
-		  add: #minLift at: 2 @ 3;
-		  add: '最小Jaccard' at: 1 @ 4;
-		  add: #minJaccard at: 2 @ 4;
-		  add: '最小PMI' at: 1 @ 5;
-		  add: #minPMI at: 2 @ 5;
+		  add: #minConfidence atPoint: 2 @ 2;
+		  add: '最小Lift' atPoint: 1 @ 3;
+		  add: #minLift atPoint: 2 @ 3;
+		  add: '最小Jaccard' atPoint: 1 @ 4;
+		  add: #minJaccard atPoint: 2 @ 4;
+		  add: '最小PMI' atPoint: 1 @ 5;
+		  add: #minPMI atPoint: 2 @ 5;
 		  yourself
 ]
 

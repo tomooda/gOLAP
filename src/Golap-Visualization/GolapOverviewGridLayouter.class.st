@@ -135,10 +135,21 @@ GolapOverviewGridLayouter >> improveEveryInterim: aBlock [
 	| total mod |
 	total := edges size asFloat.
 	mod := edges size // 30.
-	edges withIndexDo: [ :edge :index |
-			(nodeX includesKey: edge node1) ifTrue: [ self improve: edge node1 ].
-			(nodeX includesKey: edge node2) ifTrue: [ self improve: edge node2 ].
-			index \\ mod = 0 ifTrue: [ aBlock value: index asFloat / total ] ]
+	mod >= 1
+		ifTrue: [
+				edges withIndexDo: [ :edge :index |
+						(nodeX includesKey: edge node1) ifTrue: [
+							self improve: edge node1 ].
+						(nodeX includesKey: edge node2) ifTrue: [
+							self improve: edge node2 ].
+						index \\ mod = 0 ifTrue: [ aBlock value: index asFloat / total ] ] ]
+		ifFalse: [
+				edges do: [ :edge |
+						(nodeX includesKey: edge node1) ifTrue: [
+							self improve: edge node1 ].
+						(nodeX includesKey: edge node2) ifTrue: [
+							self improve: edge node2 ] ].
+				aBlock value: 1.0 ]
 ]
 
 { #category : 'operations' }
