@@ -233,51 +233,49 @@ Golap class >> openClient [
 	overview open maximize.
 	GolapNetworkClientPresenter
 		openDialogIfAccepted: [ :client :queryRecord |
-			client
-				ifNotNil: [
-					[
-					overview
-						queryRecord: queryRecord;
-						itemInfoRetriever:
-							(GolapServerProductInfoRetriever fromApiClient: client);
-						authenticateBlock: client authenticateBlock;
-						query: (NeoJSONReader fromString: client query);
-						url: client url;
-						comment: client comment;
-						imageRepositoryUrl: client imageUrl;
-						itemFieldQuerySpec: client itemFieldQuerySpec;
-						itemViewUrl: client url ]
-						on: Error
-						do: [ :ex |
-							UIManager default alert:
-								'Can''t open the given URL: ' , client url asString ].
-					overview snapshotData: client readStream do: [ :readStream |
-						readStream ifNil: [ overview delete ] ifNotNil: [
-							readStream isString
-								ifTrue: [
-									UIManager default alert: readStream.
-									overview delete ]
-								ifFalse: [
-									Cursor wait showWhile: [
-										UIManager default informUserDuring: [ :bar |
-											bar
-												min: 0;
-												max: readStream size.
-											overview
-												updateGlobalImageAfter: [
-													[
-													bar value: readStream position.
-													readStream atEnd ] whileFalse: [
-														overview readDimensionFrom: readStream ].
-													bar label: 'updating dimensions'.
-													overview updateDimensions.
-													bar label: 'updating models'.
-													overview updateModel.
-													overview numFriends: 5.
-													bar label: 'updating graph' ]
-												layout: true.
-											overview updateGlobalImageAfter: [  ] layout: true ] ] ] ] ] ]
-				ifNil: [ overview loadFromQueryRecord: queryRecord ] ]
+				client
+					ifNotNil: [
+							[
+								overview
+									queryRecord: queryRecord;
+									itemInfoRetriever:
+										(GolapServerProductInfoRetriever fromApiClient: client);
+									authenticateBlock: client authenticateBlock;
+									query: (NeoJSONReader fromString: client query);
+									url: client url;
+									comment: client comment;
+									imageRepositoryUrl: client imageUrl;
+									itemFieldQuerySpec: client itemFieldQuerySpec;
+									itemViewUrl: client url ]
+								on: Error
+								do: [ :ex |
+										UIManager default alert:
+											'Can''t open the given URL: ' , client url asString ].
+							overview snapshotData: client readStream do: [ :readStream |
+									readStream ifNil: [ overview delete ] ifNotNil: [
+											readStream isString
+												ifTrue: [
+														UIManager default alert: readStream.
+														overview delete ]
+												ifFalse: [
+														Cursor wait showWhile: [
+																UIManager default informUserDuring: [ :bar |
+																		bar
+																			min: 0;
+																			max: readStream size.
+																		overview blockUpdateModelWhile: [
+																				[
+																					bar value: readStream position.
+																					readStream atEnd ] whileFalse: [
+																					overview readDimensionFrom: readStream ].
+																				bar label: 'updating dimensions'.
+																				overview updateDimensions.
+																				bar label: 'updating models'.
+
+																				bar label: 'updating graph' ].
+																		overview numFriends: 5.
+																		overview updateModel ] ] ] ] ] ]
+					ifNil: [ overview loadFromQueryRecord: queryRecord ] ]
 		ifCanceled: [ overview delete ]
 ]
 
@@ -291,34 +289,32 @@ Golap class >> openFile [
 	(UIManager default
 		 chooseExistingFileReference: 'Select a coocurrence file'
 		 extensions: #( 'csv' )
-		 path: GolapModel coocurrenceDataDirectory) in: [ :ref | 
-		(ref notNil and: [ ref isFile ])
-			ifTrue: [ 
-				overview snapshotData: ref readStream do: [ :readStream | 
-					readStream isString
-						ifTrue: [ 
-							UIManager default alert: readStream.
-							overview delete ]
-						ifFalse: [ 
-							Cursor wait showWhile: [ 
-								UIManager default informUserDuring: [ :bar | 
-									bar
-										min: 0;
-										max: readStream size.
-									overview
-										updateGlobalImageAfter: [ 
-											[ 
-											bar value: readStream position.
-											readStream atEnd ] whileFalse: [ 
-												overview readDimensionFrom: readStream ].
-											bar label: 'updating dimensions'.
-											overview updateDimensions.
-											bar label: 'updating models'.
-											overview updateModel.
-											overview numFriends: 5.
-											bar label: 'updating graph' ]
-										layout: true ] ] ] ] ]
-			ifFalse: [ overview delete ] ].
+		 path: GolapModel coocurrenceDataDirectory) in: [ :ref |
+			(ref notNil and: [ ref isFile ])
+				ifTrue: [
+						overview snapshotData: ref readStream do: [ :readStream |
+								readStream isString
+									ifTrue: [
+											UIManager default alert: readStream.
+											overview delete ]
+									ifFalse: [
+											Cursor wait showWhile: [
+													UIManager default informUserDuring: [ :bar |
+															bar
+																min: 0;
+																max: readStream size.
+															overview blockUpdateModelWhile: [
+																	[
+																		bar value: readStream position.
+																		readStream atEnd ] whileFalse: [
+																		overview readDimensionFrom: readStream ].
+																	bar label: 'updating dimensions'.
+																	overview updateDimensions.
+																	bar label: 'updating models'.
+																	bar label: 'updating graph' ].
+															overview numFriends: 5.
+															overview updateModel ] ] ] ] ]
+				ifFalse: [ overview delete ] ].
 	^ overview
 ]
 
@@ -338,6 +334,13 @@ Golap class >> showSettingBrowser [
 				(self packageOrganizer packageNamed: #'Network-Kernel').
 				(self packageOrganizer packageNamed: #'Golap-UI') };
 		open
+]
+
+{ #category : 'accessing' }
+Golap >> activeVisualizationDo: aBlock [
+
+	^ (visualizationNotebook selectedPage ifNotNil: #activePresenter)
+		  ifNotNil: aBlock
 ]
 
 { #category : 'accessing-dimensions' }
@@ -469,6 +472,12 @@ Golap >> authenticateBlock: aBlock [
 Golap >> basicSnapshotDirectory [
 
 	^ snapshotDirectory
+]
+
+{ #category : 'private' }
+Golap >> blockUpdateModelWhile: aBlock [
+
+	aBlock value
 ]
 
 { #category : 'layouts' }
@@ -993,6 +1002,19 @@ Golap >> isTemporarySnapshot [
 	^ self snapshotDirectory isNil or: [
 		  self snapshotDirectory parent basename
 		  = self temporaryDirectoryName ]
+]
+
+{ #category : 'private' }
+Golap >> isUpdateModelBlocked [
+
+	| current |
+	current := thisContext.
+	[
+		current := current sender.
+		current ifNil: [ ^ false ].
+		(current receiver == self and: [
+			 current selector = #blockUpdateModelWhile: ]) ifTrue: [ ^ true ] ]
+		repeat
 ]
 
 { #category : 'accessing' }
@@ -1723,36 +1745,41 @@ Golap >> retreatingColor [
 Golap >> retrievePhotoimages [
 
 	model ifNotNil: [
-		| agenda total tried done |
-		agenda := IdentitySet new.
-		model edgesDo: [ :edge |
-			edge node1 photoimage ifNil: [ agenda add: edge node1 ].
-			edge node2 photoimage ifNil: [ agenda add: edge node2 ] ].
-		agenda := agenda asArray.
-		total := agenda size.
-		done := 0.
-		tried := 0.
-		agenda := agenda reject: [ :node |
-			          tried := tried + 1.
-			          self photoimageRetrievalProgressBar
-				          value: tried asFloat / total asFloat
-				          message:
-					          '画像取得中 (' , done asString , ') ' , tried asString
-					          , ' / ' , total asString , ')'.
-			          self ifNotActive: [
-				          photoImageRetrievingProcess := nil.
-				          Processor activeProcess terminate ].
-			          (itemInfoRetriever photoimageFor: node)
-				          ifNotNil: [ :photoimage |
-					          node photoimage:
-						          (photoimage scaledToSize: self photoimageSize asPoint).
-					          done := done + 1.
-					          true ]
-				          ifNil: [ false ] ].
-		self photoimageRetrievalProgressBar
-			value: 1
-			message: '画像取得完了 (' , agenda size asString , '個取得不可)'.
-		self updateGlobalImage ]
+			| agenda total tried done |
+			agenda := IdentitySet new.
+			model edgesDo: [ :edge |
+					edge node1 photoimage ifNil: [ agenda add: edge node1 ].
+					edge node2 photoimage ifNil: [ agenda add: edge node2 ] ].
+			agenda := agenda asArray.
+			total := agenda size.
+			done := 0.
+			tried := 0.
+			agenda := agenda reject: [ :node |
+					          tried := tried + 1.
+					          self photoimageRetrievalProgressBar
+						          value: tried asFloat / total asFloat
+						          message:
+							          '画像取得中 (' , done asString , ') ' , tried asString
+							          , ' / ' , total asString , ')'.
+					          self ifNotActive: [
+							          photoImageRetrievingProcess := nil.
+							          Processor activeProcess terminate ].
+					          (itemInfoRetriever photoimageFor: node)
+						          ifNotNil: [ :photoimage |
+								          node photoimage:
+									          (photoimage scaledToSize:
+										           self photoimageSize asPoint).
+								          done := done + 1.
+								          done \\ 10 = 0 ifTrue: [
+										          self activeVisualizationDo: [ :presenter |
+												          (presenter respondsTo: #updateNodeShapes)
+													          ifTrue: [ presenter updateNodeShapes ] ] ].
+								          true ]
+						          ifNil: [ false ] ].
+			self photoimageRetrievalProgressBar
+				value: 1
+				message: '画像取得完了 (' , agenda size asString , '個取得不可)'.
+			self updateGlobalImage ]
 ]
 
 { #category : 'operations' }
@@ -1880,11 +1907,6 @@ Golap >> selections: aCollectionOfGolapNode [
 		selections := newSelections.
 		self showItemView: aCollectionOfGolapNode last.
 		self updateSelection ]
-]
-
-{ #category : 'accessing-renderer' }
-Golap >> setElaborationRenderer [
-
 ]
 
 { #category : 'accessing' }
@@ -2262,9 +2284,13 @@ Golap >> updateItemView [
 Golap >> updateModel [
 
 	self model: self selectedModel.
+	self isUpdateModelBlocked ifTrue: [ ^ self ].
 	itemList modelChanged.
 	edgeList modelChanged.
-	self ensurePhotoimageRetrievingProcess
+	self activeVisualizationDo: [ :presenter |
+			(presenter respondsTo: #ensureNodePositions) ifTrue: [
+				presenter ensureNodePositions ] ].
+	self startPhotoimageRetrievingProcess
 ]
 
 { #category : 'private' }

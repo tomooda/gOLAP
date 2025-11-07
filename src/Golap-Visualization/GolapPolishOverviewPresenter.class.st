@@ -253,54 +253,57 @@ GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 { #category : 'updating' }
 GolapPolishOverviewPresenter >> updateGraph [
 
-	self golapModelDo: [ :model |
-			| visibleEdges connectedNodes |
-			visibleEdges := self availableEdges.
-			(visibleEdges
-				 collect: [ :edge | model valueAtEdge: edge ]
-				 thenSelect: [ :value |
-				 value notNil and: [ value asFloat isFinite ] ])
-				asSortedCollection
-				ifNotEmpty: [ :d |
-						visibleEdgeMinValue := d at:
-							                       (d size - 1
-							                        * visibleEdgeMinPercentileSlider value
-							                        * 0.01) rounded + 1.
-						visibleEdgeMaxValue := d at:
-							                       (d size - 1
-							                        * visibleEdgeMaxPercentileSlider value
-							                        * 0.01) rounded + 1 ]
-				ifEmpty: [
-						visibleEdgeMaxValue := visibleEdgeMinValue := 0.0.
-						reallyVisibleEdges := Array new.
-						reallyVisibleNodes := Array new.
-						^ self ].
-			visibleEdgeMinPercentileSlider label:
-				visibleEdgeMinValue printString.
-			visibleEdgeMaxPercentileSlider label:
-				visibleEdgeMaxValue printString.
-			reallyVisibleEdges := visibleEdges select: [ :edge |
-					                      (model valueAtEdge: edge)
-						                      ifNil: [ false ]
-						                      ifNotNil: [ :v |
-						                      v
-							                      between: visibleEdgeMinValue
-							                      and: visibleEdgeMaxValue ] ].
-			connectedNodes := IdentitySet new: reallyVisibleEdges size.
-			reallyVisibleEdges do: [ :edge |
-					connectedNodes
-						add: edge node1;
-						add: edge node2 ].
-			reallyVisibleNodes := Array streamContents: [ :stream |
-					                      golap showsConnectedNodes ifTrue: [
-						                      stream nextPutAll: connectedNodes ].
-					                      golap nodesDo: [ :v |
-							                      (connectedNodes includes: v) ifFalse: [
-									                      v isIsolated
-										                      ifTrue: [
-										                      golap showsIsolatedNodes ifTrue: [
-											                      stream nextPut: v ] ]
-										                      ifFalse: [
-										                      golap showsHiddenConnectionNodes
-											                      ifTrue: [ stream nextPut: v ] ] ] ] ] ]
+	lock critical: [
+			self golapModelDo: [ :model |
+					| visibleEdges connectedNodes |
+					visibleEdges := self availableEdges.
+					(visibleEdges
+						 collect: [ :edge | model valueAtEdge: edge ]
+						 thenSelect: [ :value |
+						 value notNil and: [ value asFloat isFinite ] ])
+						asSortedCollection
+						ifNotEmpty: [ :d |
+								visibleEdgeMinValue := d at:
+									                       (d size - 1
+									                        *
+									                        visibleEdgeMinPercentileSlider value
+									                        * 0.01) rounded + 1.
+								visibleEdgeMaxValue := d at:
+									                       (d size - 1
+									                        *
+									                        visibleEdgeMaxPercentileSlider value
+									                        * 0.01) rounded + 1 ]
+						ifEmpty: [
+								visibleEdgeMaxValue := visibleEdgeMinValue := 0.0.
+								reallyVisibleEdges := Array new.
+								reallyVisibleNodes := Array new.
+								^ self ].
+					visibleEdgeMinPercentileSlider label:
+						visibleEdgeMinValue printString.
+					visibleEdgeMaxPercentileSlider label:
+						visibleEdgeMaxValue printString.
+					reallyVisibleEdges := visibleEdges select: [ :edge |
+							                      (model valueAtEdge: edge)
+								                      ifNil: [ false ]
+								                      ifNotNil: [ :v |
+								                      v
+									                      between: visibleEdgeMinValue
+									                      and: visibleEdgeMaxValue ] ].
+					connectedNodes := IdentitySet new: reallyVisibleEdges size.
+					reallyVisibleEdges do: [ :edge |
+							connectedNodes
+								add: edge node1;
+								add: edge node2 ].
+					reallyVisibleNodes := Array streamContents: [ :stream |
+							                      golap showsConnectedNodes ifTrue: [
+								                      stream nextPutAll: connectedNodes ].
+							                      golap nodesDo: [ :v |
+									                      (connectedNodes includes: v) ifFalse: [
+											                      v isIsolated
+												                      ifTrue: [
+												                      golap showsIsolatedNodes ifTrue: [
+													                      stream nextPut: v ] ]
+												                      ifFalse: [
+												                      golap showsHiddenConnectionNodes
+													                      ifTrue: [ stream nextPut: v ] ] ] ] ] ] ]
 ]

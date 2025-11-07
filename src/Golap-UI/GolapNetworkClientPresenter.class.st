@@ -156,27 +156,26 @@ GolapNetworkClientPresenter >> defaultUrl [
 GolapNetworkClientPresenter >> dumpToFile [
 
 	UIManager default informUserDuring: [ :progress |
-		| readStream |
-		readStream := (GolapApiClient
-			               url: self url
-			               query: self query
-			               comment: self comment
-			               serverConfig: self serverConfig
-			               itemFieldQuerySpec: self itemFieldQuerySpec
-			               authenticateBlock: self authenticateBlock)
-			              readStream.
-		readStream ifNil: [
-			^ UIManager default alert: 'Failed to get server response.' ].
-		(UIManager default
-			 chooseForSaveFileReference: 'Save gOLAP data'
-			 extensions: #( 'csv' )
-			 path: GolapModel coocurrenceDataDirectory absolutePath) ifNotNil: [
-			:ref |
-			ref writeStreamDo: [ :writeStream |
-				[ readStream atEnd ] whileFalse: [
-					writeStream
-						nextPutAll: (readStream upTo: Character lf);
-						nextPut: Character lf ] ] ] ]
+			| readStream |
+			readStream := (GolapApiClient
+				               url: self url
+				               query: self query
+				               comment: self comment
+				               serverConfig: self serverConfig
+				               itemFieldQuerySpec: self itemFieldQuerySpec
+				               authenticateBlock: self authenticateBlock)
+				              readStream.
+			readStream ifNil: [
+				^ UIManager default alert: 'Failed to get server response.' ].
+			(UIManager default
+				 chooseForSaveFileReference: 'Save gOLAP data'
+				 extensions: #( 'csv' )
+				 path: GolapModel coocurrenceDataDirectory) ifNotNil: [ :ref |
+					ref writeStreamDo: [ :writeStream |
+							[ readStream atEnd ] whileFalse: [
+									writeStream
+										nextPutAll: (readStream upTo: Character lf);
+										nextPut: Character lf ] ] ] ]
 ]
 
 { #category : 'accessing' }
