@@ -3,6 +3,7 @@ Class {
 	#superclass : 'GolapOverviewPresenter',
 	#instVars : [
 		'friendsRankField',
+		'minimumIslandSizeField',
 		'layoutButton',
 		'articulationPointList',
 		'islandNodeSets'
@@ -78,6 +79,8 @@ GolapArticulationPointOverviewPresenter >> defaultLayout [
 				   vAlignCenter;
 				   add: 'フレンドランク ' asPresenter expand: false;
 				   add: friendsRankField width: 50;
+				   add: '島の最小サイズ' asPresenter expand: false;
+				   add: minimumIslandSizeField width: 50;
 				   add: '    ' asPresenter expand: false;
 				   add: layoutButton expand: false;
 				   yourself)
@@ -109,17 +112,25 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 		                    minimum: 1;
 		                    number: 5;
 		                    autoAccept: true;
-		                    whenSubmitDo: [ :txt | self friendsRankChanged ];
+		                    whenNumberChangedDo: [ self friendsRankChanged ];
 		                    yourself.
+	minimumIslandSizeField := self newNumberInput
+		                          beInteger;
+		                          placeholder: '島の最小サイズ';
+		                          minimum: 1;
+		                          number: 2;
+		                          autoAccept: true;
+		                          whenNumberChangedDo: [
+			                          self minimumIslandSizeChanged ];
+		                          yourself.
 	layoutButton := self newButton
 		                label: ' 再配置 ';
 		                action: [
-				                golap
-					                updateGlobalImageAfter: [
-						                golap model friendsEdges:
-								                friendsRankField number ]
-					                layout: false.
-				                self updateNodePositions ];
+			                golap
+				                updateGlobalImageAfter: [
+					                golap model friendsEdges: friendsRankField number ]
+				                layout: false.
+			                self updateNodePositions ];
 		                yourself.
 	articulationPointList := self newTable
 		                         hideColumnHeaders;
@@ -133,11 +144,11 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 		                         whenSelectionChangedDo: [
 			                         self articulationPointChanged ];
 		                         whenBuiltDo: [
-				                         articulationPointList withAdapterDo: [ :a |
-							                         a widgetDo: [ :w |
-										                         w
-											                         rowHeight: self photoimageExtent y;
-											                         refresh ] ] ];
+			                         articulationPointList withAdapterDo: [ :a |
+					                         a widgetDo: [ :w |
+							                         w
+								                         rowHeight: self photoimageExtent y;
+								                         refresh ] ] ];
 		                         yourself
 ]
 
@@ -158,6 +169,18 @@ GolapArticulationPointOverviewPresenter >> islandsDividedByArticulationPoint: aG
 					nodeSets add: nodeSet.
 					self withEdges: edges search: node nodeSet: nodeSet ] ].
 	^ nodeSets asSortedCollection: #size descending
+]
+
+{ #category : 'accessing' }
+GolapArticulationPointOverviewPresenter >> minimumIslandSize [
+
+	^ minimumIslandSizeField number ifNil: [ 1 ]
+]
+
+{ #category : 'updating' }
+GolapArticulationPointOverviewPresenter >> minimumIslandSizeChanged [
+
+	self updateArticulationPointList
 ]
 
 { #category : 'instance creation' }
@@ -192,15 +215,20 @@ GolapArticulationPointOverviewPresenter >> sumNeighborsOrdersOf: aGolapNode [
 GolapArticulationPointOverviewPresenter >> updateArticulationPointList [
 
 	self golapModelDo: [ :golapModel |
-			articulationPointList items:
-				((((golapModel articulationNodesInEdges: reallyVisibleEdges)
-					   collect: [ :node |
-					   node -> (self islandsDividedByArticulationPoint: node) ])
-					  asSortedCollection: [ :more :less |
-							  less value size < more value size or: [
-									  less value size = more value size and: [
-										  (less value at: 2) size < (more value at: 2) size ] ] ])
-					 collect: #key) ]
+		| minimumIslandSize |
+		minimumIslandSize := self minimumIslandSize.
+		articulationPointList items:
+			((((golapModel articulationNodesInEdges: reallyVisibleEdges)
+				   collect: [ :node |
+				   node -> (self islandsDividedByArticulationPoint: node) ]
+				   thenSelect: [ :assoc |
+					   (assoc value select: [ :island |
+						    island size >= minimumIslandSize ]) size >= 2 ])
+				  asSortedCollection: [ :more :less |
+					  less value size < more value size or: [
+						  less value size = more value size and: [
+							  (less value at: 2) size < (more value at: 2) size ] ] ])
+				 collect: #key) ]
 ]
 
 { #category : 'updating' }
