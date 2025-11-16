@@ -124,19 +124,19 @@ GolapOverviewPresenter >> forceZoomToFit [
 
 	| rect ext |
 	rect := (Array streamContents: [ :stream |
-			         reallyVisibleNodes do: [ :node |
-				         nodePositions
-					         at: node
-					         ifPresent: [ :point | stream nextPut: point ] ] ])
+		         reallyVisibleNodes do: [ :node |
+			         nodePositions
+				         at: node
+				         ifPresent: [ :point | stream nextPut: point ] ] ])
 		        ifEmpty: [ ^ self ]
 		        ifNotEmpty: [ :points | Rectangle encompassing: points ].
 	self offset: rect floatCenter negated.
 	roassal withAdapterDo: [ :a |
-			a widgetDo: [ :w |
-					ext := w extent.
-					self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
+		a widgetDo: [ :w |
+			ext := w extent.
+			self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
 	self updateNodeShapePositions.
-	self canvas signalUpdate
+	lock critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'private' }
@@ -200,7 +200,7 @@ GolapOverviewPresenter >> move: aPoint [
 
 	self offset: aPoint / scale + offset.
 	self updateNodeShapePositions.
-	self canvas signalUpdate
+	lock critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'instance creation' }
@@ -613,15 +613,15 @@ GolapOverviewPresenter >> updateLineScale [
 GolapOverviewPresenter >> updateNodePositions [
 
 	self isDisplayed ifTrue: [
-			self updateGraph.
-			(reallyVisibleNodes notNil and: [ reallyVisibleEdges notNil ])
-				ifTrue: [
-						nodePositions := GolapOverviewGridLayouter
-							                 layoutNodes: reallyVisibleNodes
-							                 edges: reallyVisibleEdges.
-						self
-							updateNodeShapes;
-							forceZoomToFit ] ]
+		self updateGraph.
+		(reallyVisibleNodes notNil and: [ reallyVisibleEdges notNil ])
+			ifTrue: [
+				nodePositions := GolapOverviewGridLayouter
+					                 layoutNodes: reallyVisibleNodes
+					                 edges: reallyVisibleEdges.
+				self
+					updateNodeShapes;
+					forceZoomToFit ] ]
 ]
 
 { #category : 'updating' }
@@ -660,10 +660,7 @@ GolapOverviewPresenter >> updateReferenceNodes [
 		                           golap includesSelection: node ])
 		                          asIdentitySet.
 	selectedReferenceNodes addAll: golap selections.
-	activeReferenceNodes := referenceNodes collect: [ :id | "  thenSelect: [ :node |
-				                        (golap includesSelection: node) or: [
-					                        node hasPeerSuchThat: [ :peer |
-						                        golap includesSelection: peer ] ] ]"
+	activeReferenceNodes := referenceNodes collect: [ :id |
 		                        golap model nodeAt: id ]
 ]
 
@@ -672,7 +669,7 @@ GolapOverviewPresenter >> zoomInAt: aPoint [
 
 	self scale: self scale * 1.1 at: aPoint.
 	self updateNodeShapePositions.
-	self canvas signalUpdate
+	lock critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'operations' }
@@ -680,7 +677,7 @@ GolapOverviewPresenter >> zoomOutAt: aPoint [
 
 	self scale: self scale / 1.1 at: aPoint.
 	self updateNodeShapePositions.
-	self canvas signalUpdate
+	lock critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'operations' }
