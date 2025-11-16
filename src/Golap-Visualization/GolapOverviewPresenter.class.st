@@ -15,7 +15,8 @@ Class {
 		'selectedReferenceNodes',
 		'activeReferenceNodes',
 		'lock',
-		'nodeShapes'
+		'nodeShapes',
+		'nodeLabels'
 	],
 	#category : 'Golap-Visualization-Overview',
 	#package : 'Golap-Visualization',
@@ -462,19 +463,14 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 						shapes add: self newPinShape ] ].
 			shapes ifEmpty: [ ^ nil ].
 			shapes := shapes asShapeFor: aGolapNode.
-			(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
-					| labelOffset |
-					labelOffset := (self fourDirectionFrom:
-						                (self edgeVectorOf: aGolapNode)) negated
-					               * (shapes extent + label extent * 0.5 + 4).
-					shapes
-						when: RSPositionChangedEvent
-						do: [ label position: shapes position + labelOffset ]
-						for: label.
-					label position: shapes position + labelOffset.
-					self canvas add: label ].
 			^ shapes ].
 	^ nil
+]
+
+{ #category : 'accessing' }
+GolapOverviewPresenter >> numLabels [
+
+	^ 50
 ]
 
 { #category : 'accessing' }
@@ -609,6 +605,38 @@ GolapOverviewPresenter >> updateLineScale [
 ]
 
 { #category : 'updating' }
+GolapOverviewPresenter >> updateNodeLabels [
+
+	lock critical: [
+		self golapModelDo: [ :golapModel |
+			| numLabels visibleRect nodesToLabel |
+			numLabels := self numLabels.
+			visibleRect := Rectangle center: 0 @ 0 extent: self canvas extent.
+			nodesToLabel := SortedCollection sortBlock: #value descending.
+			reallyVisibleNodes do: [ :node |
+				nodeShapes at: node ifPresent: [ :nodeShape |
+					(visibleRect containsPoint:
+						 nodeShape globalEncompassingRectangle center) ifTrue: [
+						nodesToLabel add: node -> (golapModel valueAtNode: node) ].
+					nodesToLabel size > numLabels ifTrue: [ nodesToLabel removeLast ] ] ].
+			nodesToLabel := nodesToLabel collect: #key.
+			nodesToLabel addAll: golap selections.
+			nodeLabels ifNotNil: [ nodeLabels do: [ :label | label remove ] ].
+			nodeLabels := OrderedCollection new: numLabels.
+			nodesToLabel do: [ :node |
+				nodeShapes at: node ifPresent: [ :nodeShape |
+					(self newLabelForNode: node) ifNotNil: [ :label |
+						| labelOffset |
+						labelOffset := (self fourDirectionFrom:
+							                (self edgeVectorOf: node)) negated
+						               * (nodeShape extent + label extent * 0.5 + 4).
+						label translateTo:
+							nodeShape globalEncompassingRectangle center + labelOffset.
+						self canvas add: label.
+						nodeLabels add: label ] ] ] ] ]
+]
+
+{ #category : 'updating' }
 GolapOverviewPresenter >> updateNodePositions [
 
 	self isDisplayed ifTrue: [
@@ -627,26 +655,28 @@ GolapOverviewPresenter >> updateNodePositions [
 GolapOverviewPresenter >> updateNodeShapePositions [
 
 	lock critical: [
-			self canvas shapes do: [ :shape |
-					nodePositions
-						at: shape model
-						ifPresent: [ :point | shape translateTo: point + offset * scale ] ] ]
+		self canvas shapes do: [ :shape |
+			nodePositions
+				at: shape model
+				ifPresent: [ :point | shape translateTo: point + offset * scale ] ] ].
+	self updateNodeLabels
 ]
 
 { #category : 'updating' }
 GolapOverviewPresenter >> updateNodeShapes [
 
 	lock critical: [
-			self
-				updateFreqScale;
-				updateLineScale;
-				updateReferenceNodes.
-			self canvas shapes copy do: #remove.
-			self canvas color: Color white.
-			self
-				renderNodesIn: self canvas;
-				renderEdgesIn: self canvas.
-			self canvas signalUpdate ]
+		self
+			updateFreqScale;
+			updateLineScale;
+			updateReferenceNodes.
+		self canvas shapes copy do: #remove.
+		self canvas color: Color white.
+		self
+			renderNodesIn: self canvas;
+			renderEdgesIn: self canvas ].
+	self updateNodeLabels.
+	self canvas signalUpdate
 ]
 
 { #category : 'updating' }

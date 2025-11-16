@@ -565,13 +565,13 @@ GolapElaborationPresenter >> updateAssociateNodePositions [
 GolapElaborationPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
-			self updateGraph.
-			self canvas shapes copy do: #remove.
-			self canvas color: Color white.
-			self
-				renderNodesIn: self canvas;
-				renderEdgesIn: self canvas.
-			self canvas signalUpdate ]
+		self updateGraph.
+		self canvas shapes copy do: #remove.
+		self canvas color: Color white.
+		self
+			renderNodesIn: self canvas;
+			renderEdgesIn: self canvas.
+		self canvas signalUpdate ]
 ]
 
 { #category : 'updating' }
