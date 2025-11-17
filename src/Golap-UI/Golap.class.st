@@ -72,9 +72,9 @@ Golap class >> defaultLayout [
 						    add: #frontList width: 150;
 						    add: #baseList)
 				   height: self buttonHeight;
-				add: #edgesAppearancePresenter  height: 70;
-				add: #itemsAppearancePresenter height: 300;
-				add: #colorsAppearancePresenter height: 250;
+				   add: #edgesAppearancePresenter height: 70;
+				   add: #itemsAppearancePresenter height: 300;
+				   add: #colorsAppearancePresenter height: 250;
 				   add: 'コメント' expand: false;
 				   add: #commentText;
 				   yourself)
@@ -878,7 +878,15 @@ Golap >> initializePresenters [
 	itemsAppearancePresenter := GolapItemsAppearance on: self.
 	edgesAppearancePresenter := GolapEdgesAppearance on: self.
 	colorsAppearancePresenter := GolapColorsAppearance on: self.
-	commentText := self newText.
+	commentText := self newText
+		               whenTextChangedDo: [
+				               self window ifNotNil: [ :window |
+							               window title: 'gOLAP - '
+									               ,
+										               ((self comment lines collect: #trim)
+											                detect: #notEmpty
+											                ifNone: [ '' ]) ] ];
+		               yourself.
 	saveAsButton := self newButton
 		                label: 'save...';
 		                action: [ self dumpToFile ];
@@ -947,26 +955,28 @@ Golap >> initializePresenters [
 	heatmapPresenter := self instantiate:
 		                    (GolapClusteredHeatmapPresenter new golap: self).
 	visualizationNotebook := self newNotebook
-		                 addPageTitle: '俯瞰図'
-		                 provider: [ polishOverviewPresenter ];
-		                 addPageTitle: 'フレンド俯瞰図'
-		                 provider: [ friendOverviewPresenter ];
-		                 addPageTitle: '要衝点図'
-		                 provider: [ articulationPointOverviewPresenter ];
-		                 addPageTitle: '特化グラフ'
-		                 provider: [ elaborationPresenter ];
-		                 addPageTitle: 'たんぽぽ図'
-		                 provider: [ dandelionPresenter ];
-		                 addPageTitle: '生垣図' provider: [ hedgePresenter ];
-		                 addPageTitle: 'ヒートマップ'
-		                 provider: [ heatmapPresenter ];
-		                 whenSelectedPageChangedDo: [ :page |
-				                 page activePresenter ifNotNil: [ :p |
-							                 (p respondsTo: #activateOnNotebookPage)
-								                 ifTrue: [ p activateOnNotebookPage ].
-							                 (p respondsTo: #updateTree) ifTrue: [
-									                 p updateTree ] ] ];
-		                 yourself.
+		                         addPageTitle: '俯瞰図'
+		                         provider: [ polishOverviewPresenter ];
+		                         addPageTitle: 'フレンド俯瞰図'
+		                         provider: [ friendOverviewPresenter ];
+		                         addPageTitle: '要衝点図'
+		                         provider: [
+			                         articulationPointOverviewPresenter ];
+		                         addPageTitle: '特化グラフ'
+		                         provider: [ elaborationPresenter ];
+		                         addPageTitle: 'たんぽぽ図'
+		                         provider: [ dandelionPresenter ];
+		                         addPageTitle: '生垣図'
+		                         provider: [ hedgePresenter ];
+		                         addPageTitle: 'ヒートマップ'
+		                         provider: [ heatmapPresenter ];
+		                         whenSelectedPageChangedDo: [ :page |
+				                         page activePresenter ifNotNil: [ :p |
+							                         (p respondsTo: #activateOnNotebookPage)
+								                         ifTrue: [ p activateOnNotebookPage ].
+							                         (p respondsTo: #updateTree) ifTrue: [
+									                         p updateTree ] ] ];
+		                         yourself.
 
 	self whenBuiltDo: [ :w |
 			| f |

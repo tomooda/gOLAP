@@ -182,7 +182,7 @@ GolapOverviewPresenter >> initialize [
 	super initialize.
 	scale := 100.0.
 	offset := 0.0 @ 0.0.
-	lock := Semaphore forMutualExclusion.
+	lock := Mutex new.
 	nodePositions := IdentityDictionary new
 ]
 

@@ -24,10 +24,10 @@ GolapArticulationPointOverviewPresenter >> articulationPointChanged [
 
 	self updateIslandNodeSets.
 	golap ifNotNil: [
+			self updateCanvas.
 			self articulationPoint ifNotNil: [ :node |
-					golap selections: { node }.
-					offset := (nodePositions at: node) negated.
-					self updateNodeShapePositions ] ]
+				offset := (nodePositions at: node) negated ].
+			self updateNodeShapePositions ]
 ]
 
 { #category : 'accessing' }
@@ -126,11 +126,12 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 	layoutButton := self newButton
 		                label: ' 再配置 ';
 		                action: [
-			                golap
-				                updateGlobalImageAfter: [
-					                golap model friendsEdges: friendsRankField number ]
-				                layout: false.
-			                self updateNodePositions ];
+				                golap
+					                updateGlobalImageAfter: [
+						                golap model friendsEdges:
+								                friendsRankField number ]
+					                layout: false.
+				                self updateNodePositions ];
 		                yourself.
 	articulationPointList := self newTable
 		                         hideColumnHeaders;
@@ -141,14 +142,19 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 		                         addColumn:
 			                         (SpStringTableColumn evaluated: [ :node |
 					                          node name ]);
+		                         activateOnDoubleClick;
+		                         whenActivatedDo: [ :selection |
+				                         articulationPointList selectedItem
+				                         == selection selectedItem ifTrue: [
+						                         articulationPointList unselectAll ] ];
 		                         whenSelectionChangedDo: [
 			                         self articulationPointChanged ];
 		                         whenBuiltDo: [
-			                         articulationPointList withAdapterDo: [ :a |
-					                         a widgetDo: [ :w |
-							                         w
-								                         rowHeight: self photoimageExtent y;
-								                         refresh ] ] ];
+				                         articulationPointList withAdapterDo: [ :a |
+							                         a widgetDo: [ :w |
+										                         w
+											                         rowHeight: self photoimageExtent y;
+											                         refresh ] ] ];
 		                         yourself
 ]
 
@@ -286,21 +292,24 @@ GolapArticulationPointOverviewPresenter >> sumNeighborsOrdersOf: aGolapNode [
 GolapArticulationPointOverviewPresenter >> updateArticulationPointList [
 
 	lock critical: [
-		self golapModelDo: [ :golapModel |
-			| minimumIslandSize |
-			minimumIslandSize := self minimumIslandSize.
-			articulationPointList items:
-				((((golapModel articulationNodesInEdges: reallyVisibleEdges)
-					   collect: [ :node |
-					   node -> (self islandsDividedByArticulationPoint: node) ]
-					   thenSelect: [ :assoc |
-						   (assoc value select: [ :island |
-							    island size >= minimumIslandSize ]) size >= 2 ])
-					  asSortedCollection: [ :more :less |
-						  less value size < more value size or: [
-							  less value size = more value size and: [
-								  (less value at: 2) size < (more value at: 2) size ] ] ])
-					 collect: #key) ] ]
+			self golapModelDo: [ :golapModel |
+					| minimumIslandSize items |
+					minimumIslandSize := self minimumIslandSize.
+					items := (((golapModel articulationNodesInEdges:
+						            reallyVisibleEdges)
+						           collect: [ :node |
+						           node
+						           -> (self islandsDividedByArticulationPoint: node) ]
+						           thenSelect: [ :assoc |
+								           (assoc value select: [ :island |
+									            island size >= minimumIslandSize ]) size >= 2 ])
+						          asSortedCollection: [ :more :less |
+								          less value size < more value size or: [
+										          less value size = more value size and: [
+											          (less value at: 2) size < (more value at: 2) size ] ] ])
+						         collect: #key.
+					items ~= articulationPointList items ifTrue: [
+						articulationPointList items: items ] ] ]
 ]
 
 { #category : 'updating' }
