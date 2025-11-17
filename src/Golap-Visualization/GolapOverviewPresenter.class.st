@@ -462,7 +462,8 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 				shapes add: self newPinShape ] ].
 		shapes ifEmpty: [ ^ nil ].
 		shapes := shapes asShapeFor: aGolapNode.
-		aGolapNode photoimage ifNil: [
+		(aGolapNode photoimage isNil or: [
+			 golap includesSelection: aGolapNode ]) ifTrue: [
 			(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
 				| labelOffset |
 				labelOffset := (self fourDirectionFrom:
