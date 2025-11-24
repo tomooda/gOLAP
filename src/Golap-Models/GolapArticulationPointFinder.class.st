@@ -131,22 +131,24 @@ GolapArticulationPointFinder >> searchNode: aGolapNode parent: parentNode [
 	lows at: aGolapNode put: order.
 	numChildren := 0.
 	self from: aGolapNode peersDo: [ :peerNode |
-			orders
-				at: peerNode
-				ifPresent: [
-						peerNode ~~ parentNode ifTrue: [
+			peerNode ~~ parentNode ifTrue: [
+					orders
+						at: peerNode
+						ifPresent: [
 								lows
 									at: aGolapNode
-									put: ((lows at: aGolapNode) min: (orders at: peerNode)) ] ]
-				ifAbsent: [
-						numChildren := numChildren + 1.
-						self searchNode: peerNode parent: aGolapNode.
-						lows
-							at: aGolapNode
-							put: ((lows at: aGolapNode) min: (lows at: peerNode)).
-						(parentNode notNil and: [
-							 (lows at: peerNode) >= (orders at: peerNode) ]) ifTrue: [
-							articulationPointsAndOrders at: aGolapNode ifAbsentPut: [ orders ] ] ] ].
+									put: ((lows at: aGolapNode) min: (orders at: peerNode)) ]
+						ifAbsent: [
+								numChildren := numChildren + 1.
+								self searchNode: peerNode parent: aGolapNode.
+								lows
+									at: aGolapNode
+									put: ((lows at: aGolapNode) min: (lows at: peerNode)).
+								(parentNode notNil and: [
+									 (lows at: peerNode) >= (orders at: aGolapNode) ]) ifTrue: [
+									articulationPointsAndOrders
+										at: aGolapNode
+										ifAbsentPut: [ orders ] ] ] ] ].
 	(parentNode isNil and: [ numChildren > 1 ]) ifTrue: [
 		articulationPointsAndOrders at: aGolapNode ifAbsentPut: [ orders ] ]
 ]
