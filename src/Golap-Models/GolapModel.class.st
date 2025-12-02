@@ -407,6 +407,21 @@ GolapModel >> maxEdgeValue [
 	^ maxEdge ifNotNil: [ maxValue ] ifNil: [ 1.0 ]
 ]
 
+{ #category : 'accessing' }
+GolapModel >> maxNodeValue [
+
+	| maxValue maxNode |
+	maxValue := Float negativeInfinity.
+	maxNode := nil.
+	self nodesDo: [ :node |
+		| value |
+		value := self valueAtNode: node.
+		maxValue < value ifTrue: [
+			maxValue := value.
+			maxNode := node ] ].
+	^ maxNode ifNotNil: [ maxValue ] ifNil: [ 1.0 ]
+]
+
 { #category : 'accessing-node' }
 GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
@@ -466,6 +481,21 @@ GolapModel >> minEdgeValue [
 					minValue := value.
 					minEdge := edge ] ].
 	^ minEdge ifNotNil: [ minValue ] ifNil: [ 0.0 ]
+]
+
+{ #category : 'accessing' }
+GolapModel >> minNodeValue [
+
+	| minValue minNode |
+	minValue := Float infinity.
+	minNode := nil.
+	self nodesDo: [ :node |
+		| value |
+		value := self valueAtNode: node.
+		value < minValue ifTrue: [
+			minValue := value.
+			minNode := node ] ].
+	^ minNode ifNotNil: [ minValue ] ifNil: [ 0.0 ]
 ]
 
 { #category : 'polishing' }

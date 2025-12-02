@@ -104,6 +104,12 @@ GolapEdgesAppearance class >> on: aGolap [
 ]
 
 { #category : 'accessing' }
+GolapEdgesAppearance >> edgeEvaluator [
+
+	^ edgeEvaluatorList selectedItem
+]
+
+{ #category : 'accessing' }
 GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 
 	aGolapEdgeEvaluator ifNotNil: [
@@ -115,6 +121,12 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 							nodeEvaluatorList withAdapterDo: [ :a |
 								a widgetDo: [ :w | w updateContents ] ].
 							golap announceGolapModelUpdated ] ] ]
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> edgeEvaluators [
+
+	^ edgeEvaluatorList items
 ]
 
 { #category : 'accessing' }
@@ -313,6 +325,12 @@ GolapEdgesAppearance >> negativePolishFactor [
 ]
 
 { #category : 'accessing' }
+GolapEdgesAppearance >> nodeEvaluator [
+
+	^ nodeEvaluatorList selectedItem
+]
+
+{ #category : 'accessing' }
 GolapEdgesAppearance >> nodeEvaluator: aGolapNodeEvaluator [
 
 	aGolapNodeEvaluator ifNotNil: [
@@ -321,6 +339,12 @@ GolapEdgesAppearance >> nodeEvaluator: aGolapNodeEvaluator [
 				model nodeEvaluator: aGolapNodeEvaluator.
 				golap updateQuery.
 				golap announceGolapModelUpdated ] ] ]
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> nodeEvaluators [
+
+	^ nodeEvaluatorList items
 ]
 
 { #category : 'accessing' }
