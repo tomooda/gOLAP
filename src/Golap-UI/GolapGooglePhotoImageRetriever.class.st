@@ -152,7 +152,7 @@ GolapGooglePhotoImageRetriever >> retrieveImageNamed: aString [
 		queryAt: 'key' put: self apikey;
 		queryAt: 'searchType' put: 'image';
 		queryAt: 'num' put: numImages;
-		queryAt: 'q' put: aString.
+		queryAt: 'q' put: (aString copyReplaceAll: '_' with: '-').
 	(STONJSON fromString: url retrieveContents)
 		at: 'items'
 		ifPresent: [ :items |

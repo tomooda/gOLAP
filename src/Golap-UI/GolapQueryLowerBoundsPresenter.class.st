@@ -15,29 +15,30 @@ Class {
 
 { #category : 'layout' }
 GolapQueryLowerBoundsPresenter class >> defaultLayout [
+
 	<script: 'GolapQueryLowerBoundsPresenter new openWithSpec'>
 	<spec>
 	^ SpGridLayout new
-		beColumnHomogeneous;
-		borderWidth: 0;
-		column: 1 withConstraints: [ :c | c beNotExpand ];
-		column: 1 withConstraints: [ :c | c beExpand ];
-		row: 1 withConstraints: [ :c | c beNotExpand ];
-		row: 2 withConstraints: [ :c | c beNotExpand ];
-		row: 3 withConstraints: [ :c | c beNotExpand ];
-		row: 4 withConstraints: [ :c | c beNotExpand ];
-		row: 5 withConstraints: [ :c | c beNotExpand ];
-		add: '最小Support' at: 1 @ 1;
-		add: #minSupport at: 2 @ 1;
-		add: '最小Confidence' at: 1 @ 2;
-		add: #minConfidence at: 2 @ 2;
-		add: '最小Lift' at: 1 @ 3;
-		add: #minLift at: 2 @ 3;
-		add: '最小Jaccard' at: 1 @ 4;
-		add: #minJaccard at: 2 @ 4;
-		add: '最小PMI' at: 1 @ 5;
-		add: #minPMI at: 2 @ 5;
-		yourself
+		  beColumnHomogeneous;
+		  borderWidth: 0;
+		  column: 1 withConstraints: [ :c | c beNotExpand ];
+		  column: 1 withConstraints: [ :c | c beExpand ];
+		  row: 1 withConstraints: [ :c | c beNotExpand ];
+		  row: 2 withConstraints: [ :c | c beNotExpand ];
+		  row: 3 withConstraints: [ :c | c beNotExpand ];
+		  row: 4 withConstraints: [ :c | c beNotExpand ];
+		  row: 5 withConstraints: [ :c | c beNotExpand ];
+		  add: '最小Support' atPoint: 1 @ 1;
+		  add: #minSupport atPoint: 2 @ 1;
+		  add: '最小Confidence' atPoint: 1 @ 2;
+		  add: #minConfidence atPoint: 2 @ 2;
+		  add: '最小Lift' atPoint: 1 @ 3;
+		  add: #minLift atPoint: 2 @ 3;
+		  add: '最小Jaccard' atPoint: 1 @ 4;
+		  add: #minJaccard atPoint: 2 @ 4;
+		  add: '最小PMI' atPoint: 1 @ 5;
+		  add: #minPMI atPoint: 2 @ 5;
+		  yourself
 ]
 
 { #category : 'instance creation' }

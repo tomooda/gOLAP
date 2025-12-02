@@ -1,9 +1,9 @@
 Class {
 	#name : 'GolapNodeInteraction',
 	#superclass : 'GolapChartInteraction',
-	#category : 'Golap-Clustering-Core',
-	#package : 'Golap-Clustering',
-	#tag : 'Core'
+	#category : 'Golap-Visualization-Clustering',
+	#package : 'Golap-Visualization',
+	#tag : 'Clustering'
 }
 
 { #category : 'hooks' }

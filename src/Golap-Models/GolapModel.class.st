@@ -87,6 +87,25 @@ GolapModel >> addPositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges add: aGolapEdge
 ]
 
+{ #category : 'algorithms-articulation points' }
+GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge [
+
+	^ Array streamContents: [ :stream |
+		  self
+			  articulationNodesInEdges: aCollectionOfGolapEdge
+			  do: [ :node | stream nextPut: node ] ]
+]
+
+{ #category : 'algorithms-articulation points' }
+GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
+
+	| finder |
+	finder := GolapArticulationPointFinder new
+		          edges: aCollectionOfGolapEdge;
+		          yourself.
+	finder articulationPoints do: aBlock
+]
+
 { #category : 'snapshot' }
 GolapModel >> asJSON [
 
@@ -548,7 +567,8 @@ GolapModel >> nodes [
 	^ nodes ifNil: [
 		  nodes := Dictionary new.
 		  friendsEdges := nil.
-		  self flushEdgeRanks ]
+		  self flushEdgeRanks.
+		  nodes ]
 ]
 
 { #category : 'enumerating' }
@@ -661,7 +681,6 @@ GolapModel >> postCopy [
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
 	friendsEdges := nil.
-	friendsRank := nil.
 	self flushEdgeRanks
 ]
 

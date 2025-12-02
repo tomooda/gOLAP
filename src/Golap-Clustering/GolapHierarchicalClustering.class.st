@@ -91,12 +91,6 @@ GolapHierarchicalClustering >> initializeWith: aGolapModel [
 			         score: (golapModel valueAtNode: node) ]
 ]
 
-{ #category : 'visualization' }
-GolapHierarchicalClustering >> openSunburst [
-
-	(GolapHierarchicalClusteringNode withAll: trees) openSunburst
-]
-
 { #category : 'accessing' }
 GolapHierarchicalClustering >> rank [
 

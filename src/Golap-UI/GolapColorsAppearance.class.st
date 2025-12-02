@@ -166,10 +166,11 @@ GolapColorsAppearance >> initialExtent [
 
 { #category : 'initialization' }
 GolapColorsAppearance >> initialize [
+
 	super initialize.
 	normalColor := Color gray.
 	selectionColor := Color black.
-	positivePolishColor := Color cyan muchDarker.
+	positivePolishColor := Color cyan.
 	negativePolishColor := Color cyan.
 	nodeColors := OrderedCollection new.
 	freshColor := Color blue.

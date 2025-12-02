@@ -8,7 +8,8 @@ Class {
 		'removeRetrieverButton',
 		'editRetrieverButton',
 		'moveUpRetrieverButton',
-		'moveDownRetrieverButton'
+		'moveDownRetrieverButton',
+		'golap'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -77,7 +78,20 @@ GolapPhotoImageRetrieversPresenter >> editRetriever [
 		copy configPresenter ifNotNil: [ :presenter |
 			presenter openDialog okAction: [
 				retriever commit: copy.
-				retrieverList refresh ] ] ]
+				retrieverList refresh.
+				golap ifNotNil: #ensurePhotoimageRetrievingProcess ] ] ]
+]
+
+{ #category : 'accessing' }
+GolapPhotoImageRetrieversPresenter >> golap [
+
+	^ golap
+]
+
+{ #category : 'accessing' }
+GolapPhotoImageRetrieversPresenter >> golap: aGolap [
+
+	golap := aGolap
 ]
 
 { #category : 'initialization' }

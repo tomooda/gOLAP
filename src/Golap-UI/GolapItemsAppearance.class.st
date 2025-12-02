@@ -2,15 +2,14 @@ Class {
 	#name : 'GolapItemsAppearance',
 	#superclass : 'SpPresenter',
 	#instVars : [
-		'minFreqSlider',
-		'minFreqField',
-		'numLabelsSlider',
 		'fontButton',
 		'golap',
 		'showConnectedNodesCheckBox',
 		'showHiddenConnectionNodesCheckBox',
 		'showIsolatedNodesCheckBox',
-		'photoimageRetrievers'
+		'photoimageRetrievers',
+		'photoimageRetrievalProgressBar',
+		'startPhotoimageRetrievalButton'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -25,12 +24,6 @@ GolapItemsAppearance class >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   add: #minFreqSlider;
-				   add: '  ' expand: false;
-				   add: #minFreqField width: 50)
-		  height: self inputTextHeight;
-		  add: #numLabelsSlider height: self inputTextHeight;
 		  add: #fontButton height: self buttonHeight;
 		  add: (SpBoxLayout newHorizontal
 				   add: #showConnectedNodesCheckBox;
@@ -38,6 +31,10 @@ GolapItemsAppearance class >> defaultLayout [
 				   add: #showIsolatedNodesCheckBox)
 		  height: self inputTextHeight;
 		  add: #photoimageRetrievers;
+		  add: (SpBoxLayout newHorizontal
+				   add: #photoimageRetrievalProgressBar;
+				   add: #startPhotoimageRetrievalButton width: self buttonHeight)
+		  expand: false;
 		  yourself
 ]
 
@@ -50,39 +47,16 @@ GolapItemsAppearance class >> on: aGolap [
 
 { #category : 'private' }
 GolapItemsAppearance >> chooseFont [
-	golap
-		ifNotNil: [ StandardFonts
-				chooseFontWithTitle: 'Font for gOLAP'
-				for: golap
-				setSelector: #font:
-				getSelector: #font ]
-]
 
-{ #category : 'initialization' }
-GolapItemsAppearance >> initialExtent [
-	^ 500@200
+	golap ifNotNil: [
+			FontChooser
+				openModalWithTitle: 'Font for Golap'
+				initialFont: Golap defaultFont
+				onAcceptDo: [ :font | Golap defaultFont: font ] ]
 ]
 
 { #category : 'initialization' }
 GolapItemsAppearance >> initializePresenters [
-
-	minFreqSlider := self newSlider
-		                 label: '最小頻度';
-		                 min: 0;
-		                 max: 100;
-		                 quantum: 1;
-		                 value: 0;
-		                 whenValueChangedDo: [ :value |
-			                 self minFrequency: value rounded ];
-		                 yourself.
-	minFreqField := self newNumberInput
-		                beInteger;
-		                minimum: 0;
-		                maximum: 100;
-		                number: 0;
-		                whenNumberChangedDo: [ :value |
-			                self minFrequency: value ];
-		                yourself.
 
 	showIsolatedNodesCheckBox := self newCheckBox
 		                             label: '孤立アイテム';
@@ -103,23 +77,21 @@ GolapItemsAppearance >> initializePresenters [
 		                              whenChangedDo: [ :value |
 			                              golap updateGlobalImageAfter: [  ] ];
 		                              yourself.
-	numLabelsSlider := self newSlider
-		                   label: 'ラベル表示数';
-		                   min: 0.0;
-		                   max: 2.0;
-		                   quantum: 0.1;
-		                   value: 1.0;
-		                   whenValueChangedDo: [ :value |
-			                   golap updateGlobalImageAfter: [
-					                   numLabelsSlider label:
-							                   (50.0 ** value) truncated printString , ' 個' ] ];
-		                   yourself.
 	fontButton := self newButton
 		              label: 'フォント';
 		              action: [ self chooseFont ];
 		              yourself.
 	photoimageRetrievers := self instantiate:
-		                        GolapPhotoImageRetrieversPresenter
+		                        GolapPhotoImageRetrieversPresenter.
+	photoimageRetrievalProgressBar := self newProgressBar
+		                                  color: Color red;
+		                                  value: 0 message: ''.
+	startPhotoimageRetrievalButton := self newButton
+		                                  icon: (self iconNamed: #restart);
+		                                  action: [
+			                                  golap ifNotNil:
+					                                  #startPhotoimageRetrievingProcess ];
+		                                  yourself
 ]
 
 { #category : 'initialization' }
@@ -129,56 +101,23 @@ GolapItemsAppearance >> initializeWindow: aWindowPresenter [
 ]
 
 { #category : 'accessing' }
-GolapItemsAppearance >> maxFrequency: anInteger [
+GolapItemsAppearance >> photoimageRetrievalProgressBar [
 
-	minFreqSlider max: anInteger.
-	minFreqField maximum: anInteger
-]
-
-{ #category : 'accessing' }
-GolapItemsAppearance >> minFrequency [
-
-	^ minFreqField number
-]
-
-{ #category : 'accessing' }
-GolapItemsAppearance >> minFrequency: anInteger [
-
-	minFreqSlider value rounded = anInteger ifFalse: [
-		minFreqSlider value: anInteger ].
-	minFreqField number = anInteger ifFalse: [
-		minFreqField number: anInteger ].
-	golap updateGlobalImageAfter: [  ]
-]
-
-{ #category : 'accessing' }
-GolapItemsAppearance >> numLabels [
-	^ numLabelsSlider value
+	^ photoimageRetrievalProgressBar
 ]
 
 { #category : 'snapshot' }
 GolapItemsAppearance >> restore: aStream [
 
-	(NeoJSONReader on: aStream) next
-		at: 'minimum-frequency'
-		ifPresent: [ :int | minFreqField number: int ];
-		at: 'show-isolatex-nodes'
-		ifPresent: [ :bool | showIsolatedNodesCheckBox state: bool ];
-		at: 'show-hidden-connection-nodes'
-		ifPresent: [ :bool | showHiddenConnectionNodesCheckBox state: bool ];
-		at: 'show-connected-nodes'
-		ifPresent: [ :bool | showConnectedNodesCheckBox state: bool ];
-		at: 'max-display-labels'
-		ifPresent: [ :float | numLabelsSlider value: float ]
+
 ]
 
 { #category : 'private' }
 GolapItemsAppearance >> setGolap: aGolap [
 
 	golap := aGolap.
-	self
-		updateMinMaxFrequency;
-		updatePhotoimageRetrievers
+	photoimageRetrievers golap: aGolap.
+	self updatePhotoimageRetrievers
 ]
 
 { #category : 'accessing' }
@@ -205,31 +144,11 @@ GolapItemsAppearance >> snapshot [
 { #category : 'snapshot' }
 GolapItemsAppearance >> snapshotInto: aStream [
 
-	(NeoJSONWriter on: aStream) nextPut: {
-			('minimum-frequency' -> minFreqField number).
-			('show-isolatex-nodes' -> showIsolatedNodesCheckBox state).
-			('show-hidden-connection-nodes'
-			 -> showHiddenConnectionNodesCheckBox state).
-			('show-connected-nodes' -> showConnectedNodesCheckBox state).
-			('max-display-labels' -> numLabelsSlider value) }
-			asOrderedDictionary
-]
 
-{ #category : 'updating' }
-GolapItemsAppearance >> updateMinMaxFrequency [
-
-	golap ifNotNil: [
-		golap model ifNotNil: [ :model |
-			(golap nodes collect: golap model nodeEvaluator)
-				ifEmpty: [
-					self
-						minFrequency: 0;
-						maxFrequency: 1 ]
-				ifNotEmpty: [ :freqs | self maxFrequency: freqs max ] ] ]
 ]
 
 { #category : 'updating' }
 GolapItemsAppearance >> updatePhotoimageRetrievers [
 
-	photoimageRetrievers itemInfoRetriever: golap productInfoRetriever
+	photoimageRetrievers itemInfoRetriever: golap itemInfoRetriever
 ]

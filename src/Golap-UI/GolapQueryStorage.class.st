@@ -34,6 +34,19 @@ GolapQueryStorage >> chronicleMetadataDo: aBlock [
 				aBlock value: metadata ] ] ]
 ]
 
+{ #category : 'operations-chronicle' }
+GolapQueryStorage >> loadChronicle [
+
+	chronicle removeAll.
+	self chronicleMetadataDo: [ :metadata |
+			[
+				chronicle
+					at: metadata identity
+					ifAbsentPut: [ self createPayloadFor: metadata ] ]
+				on: Error
+				do: [ :ex |  ] ]
+]
+
 { #category : 'class access' }
 GolapQueryStorage >> payloadClassFor: aHiDeMetadata [
 
