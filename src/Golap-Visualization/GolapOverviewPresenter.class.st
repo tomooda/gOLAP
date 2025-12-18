@@ -84,6 +84,15 @@ GolapOverviewPresenter >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'operations' }
+GolapOverviewPresenter >> drag: aGolapNode by: aPoint [
+
+	nodePositions at: aGolapNode ifPresent: [ :point |
+		nodePositions at: aGolapNode put: aPoint / self scale + point ].
+	self updateNodeShapePositions.
+	lock critical: [ self canvas signalUpdate ]
+]
+
 { #category : 'private' }
 GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
 

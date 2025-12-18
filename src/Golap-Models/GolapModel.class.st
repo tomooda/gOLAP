@@ -612,52 +612,52 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 	hop2peers := IdentityDictionary new.
 	edges := IdentitySet new.
 	self nodesDo: [ :v1 |
-		| peers |
-		peers := hop2peers at: v1 put: IdentityDictionary new.
-		v1 edgesAndNodeDo: [ :e1 :v2 |
-			edges add: e1.
-			v2 edgesAndNodeDo: [ :e2 :v3 |
-				v1 id < v3 id ifTrue: [
-					peers at: v3 put: (peers at: v3 ifAbsent: [ 0 ]) + 1 ] ] ] ].
+			| peers |
+			peers := hop2peers at: v1 put: IdentityDictionary new.
+			v1 edgesAndNodeDo: [ :e1 :v2 |
+					edges add: e1.
+					v2 edgesAndNodeDo: [ :e2 :v3 |
+							v1 id < v3 id ifTrue: [
+								peers at: v3 put: (peers at: v3 ifAbsent: [ 0 ]) + 1 ] ] ] ].
 	hop2peers keysAndValuesDo: [ :v1 :peersAndDups |
-		peersAndDups keysAndValuesDo: [ :v2 :dups |
-			(v1 hasPeerNode: v2) ifFalse: [
-				| denominator |
-				denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
-				denominator > anInteger ifTrue: [
-					dups asFloat
-					/ (v1 numberOfEdges + v2 numberOfEdges - dups) asFloat > aNumber1
-						ifTrue: [
-							changed := true.
-							(self removeNegativePolishEdgeBetween: v1 and: v2) ifNil: [
-								| newEdge |
-								newEdge := GolapEdge on: nil between: v1 and: v2.
-								v1 addPositivePolishEdge: newEdge.
-								v2 addPositivePolishEdge: newEdge.
-								self addPositivePolishEdge: newEdge ] ] ] ] ] ].
+			peersAndDups keysAndValuesDo: [ :v2 :dups |
+					(v1 hasPeerNode: v2) ifFalse: [
+							| denominator |
+							denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
+							denominator > anInteger ifTrue: [
+									dups asFloat
+									/ (v1 numberOfEdges + v2 numberOfEdges - dups) asFloat
+									> aNumber1 ifTrue: [
+											changed := true.
+											(self removeNegativePolishEdgeBetween: v1 and: v2) ifNil: [
+													| newEdge |
+													newEdge := GolapEdge on: nil between: v1 and: v2.
+													v1 addPositivePolishEdge: newEdge.
+													v2 addPositivePolishEdge: newEdge.
+													self addPositivePolishEdge: newEdge ] ] ] ] ] ].
 	edges do: [ :edge |
-		| v1 v2 peersAndDups |
-		edge node1 id <= edge node2 id
-			ifTrue: [
-				v1 := edge node1.
-				v2 := edge node2 ]
-			ifFalse: [
-				v1 := edge node2.
-				v2 := edge node1 ].
-		peersAndDups := hop2peers at: v1.
-		((peersAndDups includesKey: v2) not or: [
-			 | dups denominator |
-			 dups := peersAndDups at: v2.
-			 denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
-			 denominator > anInteger and: [
-				 dups asFloat
-				 / (v1 numberOfEdges + v2 numberOfEdges - dups) asFloat < aNumber2 ] ])
-			ifTrue: [
-				changed := true.
-				(self removePositivePolishEdgeBetween: v1 and: v2) ifNil: [
-					v1 addNegativePolishEdge: edge.
-					v2 addNegativePolishEdge: edge.
-					self addNegativePolishEdge: edge ] ] ].
+			| v1 v2 peersAndDups |
+			edge node1 id <= edge node2 id
+				ifTrue: [
+						v1 := edge node1.
+						v2 := edge node2 ]
+				ifFalse: [
+						v1 := edge node2.
+						v2 := edge node1 ].
+			peersAndDups := hop2peers at: v1.
+			((peersAndDups includesKey: v2) and: [
+					 | dups denominator |
+					 dups := peersAndDups at: v2.
+					 denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
+					 denominator > anInteger and: [
+							 dups asFloat
+							 / (v1 numberOfEdges + v2 numberOfEdges - dups) asFloat
+							 < aNumber2 ] ]) ifTrue: [
+					changed := true.
+					(self removePositivePolishEdgeBetween: v1 and: v2) ifNil: [
+							v1 addNegativePolishEdge: edge.
+							v2 addNegativePolishEdge: edge.
+							self addNegativePolishEdge: edge ] ] ].
 	friendsEdges := nil.
 	self flushEdgeRanks.
 	^ changed

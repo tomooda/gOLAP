@@ -323,31 +323,35 @@ GolapArticulationPointOverviewPresenter >> updateGraph [
 { #category : 'updating' }
 GolapArticulationPointOverviewPresenter >> updateIslandNodeSets [
 
+	| minimumIslandSize |
+	minimumIslandSize := self minimumIslandSize.
 	islandNodeSets := self articulationPoint
 		                  ifNotNil: [ :articulationNode |
 			                  self islandsDividedByArticulationPoint:
 				                  articulationNode ]
 		                  ifNil: [
-			                  | startNodes edges nodeSets |
-			                  startNodes := IdentitySet new.
-			                  edges := IdentitySet new.
-			                  self availableEdges do: [ :edge |
-				                  startNodes
-					                  add: edge node1;
-					                  add: edge node2.
-				                  edges add: edge ].
-			                  nodeSets := OrderedCollection new.
-			                  [ startNodes notEmpty ] whileTrue: [
-				                  | node nodeSet |
-				                  node := startNodes anyOne.
-				                  nodeSet := IdentitySet new.
-				                  nodeSets add: nodeSet.
-				                  self
-					                  withEdges: edges
-					                  search: node
-					                  nodeSet: nodeSet.
-				                  startNodes removeAll: nodeSet ].
-			                  nodeSets asSortedCollection: #size descending ]
+				                  | startNodes edges nodeSets |
+				                  startNodes := IdentitySet new.
+				                  edges := IdentitySet new.
+				                  self availableEdges do: [ :edge |
+						                  startNodes
+							                  add: edge node1;
+							                  add: edge node2.
+						                  edges add: edge ].
+				                  nodeSets := OrderedCollection new.
+				                  [ startNodes notEmpty ] whileTrue: [
+						                  | node nodeSet |
+						                  node := startNodes anyOne.
+						                  nodeSet := IdentitySet new.
+						                  nodeSets add: nodeSet.
+						                  self
+							                  withEdges: edges
+							                  search: node
+							                  nodeSet: nodeSet.
+						                  startNodes removeAll: nodeSet ].
+				                  (nodeSets select: [ :set |
+					                   set size >= minimumIslandSize ])
+					                  asSortedCollection: #size descending ]
 ]
 
 { #category : 'private' }

@@ -546,6 +546,23 @@ Golap >> comment: aString [
 	commentText text: aString
 ]
 
+{ #category : 'ui requests' }
+Golap >> confirm: queryString label: titleString [
+
+	^ self application newConfirm
+		  title: titleString;
+		  label: queryString;
+		  openModal
+]
+
+{ #category : 'ui requests' }
+Golap >> confirmClose [
+
+	^ self
+		  confirm: self window title , 'を閉じますか？'
+		  label: '確認'
+]
+
 { #category : 'operations' }
 Golap >> copyAllFromQueryViewTree [
 	Clipboard
@@ -999,10 +1016,15 @@ Golap >> initializePresenters [
 
 { #category : 'initialization' }
 Golap >> initializeWindow: aWindowPresenter [
+
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter
 		title: self title;
 		initialExtent: World extent.
+	aWindowPresenter whenWillCloseDo: [ :announcement |
+			self confirmClose
+				ifTrue: [ announcement allowClose ]
+				ifFalse: [ announcement denyClose ] ].
 	aWindowPresenter whenClosedDo: [ self saveQueryRecord ]
 ]
 

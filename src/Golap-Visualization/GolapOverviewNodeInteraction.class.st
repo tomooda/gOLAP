@@ -34,8 +34,8 @@ GolapOverviewNodeInteraction >> presenter: aGolapOverviewPresenter [
 GolapOverviewNodeInteraction >> processMouseDragging: evt [
 
 	evt shiftKeyPressed ifTrue: [
-		evt shape translateBy: evt step.
-		evt canvas signalUpdate ]
+			presenter drag: evt shape model by: evt step.
+			evt canvas signalUpdate ]
 ]
 
 { #category : 'event processing' }

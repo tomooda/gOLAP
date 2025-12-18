@@ -152,7 +152,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                       minimum: 0.8;
 		                       maximum: 1.0;
 		                       number: 1.0;
-		                       whenSubmitDo: [ :txt |
+		                       whenNumberChangedDo: [
 				                       positivePolishSlider value:
 						                       positivePolishField number.
 				                       self polish ].
@@ -174,7 +174,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                       minimum: 0.0;
 		                       maximum: 0.2;
 		                       number: 0.0;
-		                       whenSubmitDo: [ :txt |
+		                       whenNumberChangedDo: [
 				                       negativePolishSlider value:
 						                       negativePolishField number.
 				                       self polish ].
@@ -183,7 +183,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                             placeholder: '最小関連数';
 		                             minimum: 1;
 		                             number: 3;
-		                             whenSubmitDo: [ :txt | self polish ].
+		                             whenNumberChangedDo: [ self polish ].
 	showsPolishEdgesCheckbox := self newCheckBox
 		                            label: '表示';
 		                            state: false;
@@ -230,7 +230,7 @@ GolapPolishOverviewPresenter >> polish [
 						 ifFalse: [ 1 ])
 				polishAddAbove: self positivePolishFactor
 				removeBelow: self negativePolishFactor
-				minDenominator: polishMinDenominatorField text asString asInteger.
+				minDenominator: polishMinDenominatorField number.
 			golap announceGolapModelUpdated ]
 ]
 

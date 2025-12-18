@@ -52,7 +52,7 @@ GolapFriendOverviewPresenter >> initializePresenters [
 		                    minimum: 1;
 		                    number: 5;
 		                    autoAccept: true;
-		                    whenSubmitDo: [ :txt | self friendsRankChanged ];
+		                    whenNumberChangedDo: [ self friendsRankChanged ];
 		                    yourself.
 	layoutButton := self newButton
 		                label: ' 再配置 ';
