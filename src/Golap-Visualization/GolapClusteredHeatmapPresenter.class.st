@@ -11,8 +11,8 @@ Class {
 		'showsClusterBoundariesCheckBox',
 		'evaluatorDropList'
 	],
-	#category : 'Golap-Clustering-Heatmap',
-	#package : 'Golap-Clustering',
+	#category : 'Golap-Visualization-Heatmap',
+	#package : 'Golap-Visualization',
 	#tag : 'Heatmap'
 }
 
