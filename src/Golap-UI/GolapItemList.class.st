@@ -206,77 +206,94 @@ GolapItemList >> initializePresenters [
 				                  (#addMarkerColor -> '') };
 		                  display: [ :assoc | '' ];
 		                  displayIcon: [ :assoc |
-			                  assoc key
-				                  ifNotNil: [ :c |
-					                  c isSymbol
-						                  ifTrue: [ self iconForSelector: c ]
-						                  ifFalse: [ self iconForCircleColor: c ] ]
-				                  ifNil: [ nil ] ];
+				                  assoc key
+					                  ifNotNil: [ :c |
+							                  c isSymbol
+								                  ifTrue: [ self iconForSelector: c ]
+								                  ifFalse: [ self iconForCircleColor: c ] ]
+					                  ifNil: [ nil ] ];
 		                  whenSelectedItemChangedDo: [
-			                  markerDropList selectedItem ifNotNil: [
-					                  :selectedItem |
-					                  selectedItem key isSymbol
-						                  ifTrue: [ self perform: selectedItem key ]
-						                  ifFalse: [
-							                  lastSelectedMarkerIndex := markerDropList
-								                                             selectedIndex.
-							                  queryField text: selectedItem value asText.
-							                  self updateNodeList.
-							                  self updateGlobalImage ] ] ];
+				                  markerDropList selectedItem ifNotNil: [
+							                  :selectedItem |
+							                  selectedItem key isSymbol
+								                  ifTrue: [ self perform: selectedItem key ]
+								                  ifFalse: [
+										                  lastSelectedMarkerIndex := markerDropList
+											                                             selectedIndex.
+										                  queryField text: selectedItem value asText.
+										                  self updateNodeList.
+										                  self updateGlobalImage ] ] ];
 		                  yourself.
 	lastSelectedMarkerIndex := 0.
 	queryField := self newTextInput whenSubmitDo: [ :txt |
-		              | text |
-		              text := queryField text asString trim.
-		              self updateGlobalImageAfter: [
-			              | selectedMarker |
-			              selectedMarker := markerDropList selectedItem.
-			              selectedMarker value: text.
-			              text
-				              ifEmpty: [
-				              markers removeKey: selectedMarker key ifAbsent: [  ] ]
-				              ifNotEmpty: [ :q |
-					              | regexs nodes |
-					              regexs := (q substrings: ',') collect: [ :pattern |
-						                        self regexFor: pattern trim ].
-					              nodes := self nodes select: [ :v |
-						                       regexs anySatisfy: [ :regex |
-							                       regex matches: v name ] ].
-					              markers
-						              at: selectedMarker key
-						              put: (nodes collect: #id) asSet.
-					              self nodes do: [ :node |
-						              node removeMarker: selectedMarker key ].
-					              nodes do: [ :node |
-						              node addMarker: selectedMarker key ] ] ].
-		              self updateNodeList ].
+			              | text |
+			              text := queryField text asString trim.
+			              self updateGlobalImageAfter: [
+					              | selectedMarker |
+					              selectedMarker := markerDropList selectedItem.
+					              selectedMarker value: text.
+					              text
+						              ifEmpty: [
+						              markers
+							              removeKey: selectedMarker key
+							              ifAbsent: [ ] ]
+						              ifNotEmpty: [ :q |
+								              | regexs nodes |
+								              regexs := (q substrings: ',') collect: [
+									                        :pattern |
+									                        self regexFor: pattern trim ].
+								              nodes := self nodes select: [ :v |
+									                       regexs anySatisfy: [ :regex |
+										                       regex matches: v name ] ].
+								              markers
+									              at: selectedMarker key
+									              put: (nodes collect: #id) asSet.
+								              self nodes do: [ :node |
+									              node removeMarker: selectedMarker key ].
+								              nodes do: [ :node |
+									              node addMarker: selectedMarker key ] ] ].
+			              self updateNodeList ].
 	presetQueryButton := self newButton
 		                     icon: (Smalltalk ui icons iconNamed: #back);
 		                     action: [ golap openPresetQueryDialog ];
 		                     yourself.
 	nodeList := self newTable
-		              beMultipleSelection;
-		              disableSearch;
-		              addColumn: (SpStringTableColumn new
-				               width: 80;
-				               evaluated: [ :id |
-					               self simpleStringFor:
-							               (self model valueAtNode: (self model nodeAt: id)) ]);
-		              addColumn:
-			              (SpStringTableColumn new evaluated: [ :id |
-				               (self model nodeAt: id) name ]);
-		              contextMenu: [ self nodeListMenu ];
-		              whenSelectionChangedDo: [
-			              self updateGlobalImageAfter: [
-				              golap setSelections: nodeList selectedItems.
-				              golap updateItemView ] ];
-		              yourself.
+		            beMultipleSelection;
+		            disableSearch;
+		            addColumn: (SpStringTableColumn new
+				             width: 80;
+				             displayColor: [ :id |
+						             (self model nodeAt: id)
+							             ifNotNil: [ :node |
+									             node isIsolated
+										             ifTrue: [ Color gray ]
+										             ifFalse: [ Color black ] ]
+							             ifNil: [ Color black ] ];
+				             evaluated: [ :id |
+						             self simpleStringFor:
+								             (self model valueAtNode: (self model nodeAt: id)) ]);
+		            addColumn: (SpStringTableColumn new
+				             displayColor: [ :id |
+						             (self model nodeAt: id)
+							             ifNotNil: [ :node |
+									             node isIsolated
+										             ifTrue: [ Color gray ]
+										             ifFalse: [ Color black ] ]
+							             ifNil: [ Color black ] ];
+				             evaluated: [ :id | (self model nodeAt: id) name ]);
+		            contextMenu: [ self nodeListMenu ];
+		            whenSelectionChangedDo: [
+				            self updateGlobalImageAfter: [
+						            golap setSelections: nodeList selectedItems.
+						            golap updateItemView ] ];
+		            yourself.
 	nodeList whenBuiltDo: [
-		nodeList withAdapterDo: [ :a |
-			a widgetDo: [ :w |
-				w
-					secondarySelectionColor: w selectionColor lighter lighter lighter;
-					allowsDeselection: true ] ] ]
+			nodeList withAdapterDo: [ :a |
+					a widgetDo: [ :w |
+							w
+								secondarySelectionColor:
+									w selectionColor lighter lighter lighter;
+								allowsDeselection: true ] ] ]
 ]
 
 { #category : 'menu' }

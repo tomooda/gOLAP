@@ -105,6 +105,13 @@ GolapHierarchicalClusteringPresenter >> markerWidth [
 	^ 10
 ]
 
+{ #category : 'testing' }
+GolapHierarchicalClusteringPresenter >> showsNode: aGolapNode [
+
+	tree graphNodesDo: [ :node | node == aGolapNode ifTrue: [ ^ true ] ].
+	^ false
+]
+
 { #category : 'operations' }
 GolapHierarchicalClusteringPresenter >> toggleSelection: aGolapNode [
 

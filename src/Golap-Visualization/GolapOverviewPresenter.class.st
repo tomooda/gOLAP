@@ -554,6 +554,12 @@ GolapOverviewPresenter >> scale: aNumber at: aPoint [
 	self offset: offset - oldFocus + newFocus
 ]
 
+{ #category : 'testing' }
+GolapOverviewPresenter >> showsNode: aGolapNode [
+
+	^ reallyVisibleNodes includes: aGolapNode
+]
+
 { #category : 'updating' }
 GolapOverviewPresenter >> updateCanvas [
 
@@ -586,18 +592,7 @@ GolapOverviewPresenter >> updateGraph [
 							connectedNodes
 								add: edge node1;
 								add: edge node2 ].
-					reallyVisibleNodes := Array streamContents: [ :stream |
-							                      golap showsConnectedNodes ifTrue: [
-								                      stream nextPutAll: connectedNodes ].
-							                      self nodesDo: [ :v |
-									                      (connectedNodes includes: v) ifFalse: [
-											                      v isIsolated
-												                      ifTrue: [
-												                      golap showsIsolatedNodes ifTrue: [
-													                      stream nextPut: v ] ]
-												                      ifFalse: [
-												                      golap showsHiddenConnectionNodes
-													                      ifTrue: [ stream nextPut: v ] ] ] ] ] ] ]
+					reallyVisibleNodes := connectedNodes asArray ] ]
 ]
 
 { #category : 'updating' }

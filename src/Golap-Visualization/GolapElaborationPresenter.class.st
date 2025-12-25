@@ -546,6 +546,13 @@ GolapElaborationPresenter >> scale: aNumber at: aPoint [
 	self offset: offset - oldFocus + newFocus
 ]
 
+{ #category : 'testing' }
+GolapElaborationPresenter >> showsNode: aGolapNode [
+
+	^ (rootNodes includes: aGolapNode) or: [
+		  associateNodes includes: aGolapNode ]
+]
+
 { #category : 'updating' }
 GolapElaborationPresenter >> updateAssociateNodePositions [
 
