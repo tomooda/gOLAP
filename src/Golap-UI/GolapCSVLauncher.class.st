@@ -190,9 +190,12 @@ GolapCSVLauncher >> launch [
 		snapshotBaseName: pairPresenter basepathReference basename;
 		snapshotData.
 	golap updateDimensions.
-	golap open maximize.
-	golap updateModel.
-	golap updateGlobalImageAfter: [ ] layout: true.
+	[
+		golap confirmOpen.
+		golap open maximize.
+		golap updateModel ]
+		on: GolapAborted
+		do: [ :ex |  ].
 	self window ifNotNil: #close
 ]
 

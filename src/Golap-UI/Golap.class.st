@@ -233,51 +233,56 @@ Golap class >> openClient [
 	overview open maximize.
 	GolapNetworkClientPresenter
 		openDialogIfAccepted: [ :client :queryRecord |
-				client
-					ifNotNil: [
-							[
-								overview
-									queryRecord: queryRecord;
-									itemInfoRetriever:
-										(GolapServerProductInfoRetriever fromApiClient: client);
-									authenticateBlock: client authenticateBlock;
-									query: (NeoJSONReader fromString: client query);
-									url: client url;
-									comment: client comment;
-									imageRepositoryUrl: client imageUrl;
-									itemFieldQuerySpec: client itemFieldQuerySpec;
-									itemViewUrl: client url ]
-								on: Error
-								do: [ :ex |
-										UIManager default alert:
-											'Can''t open the given URL: ' , client url asString ].
-							overview snapshotData: client readStream do: [ :readStream |
-									readStream ifNil: [ overview delete ] ifNotNil: [
-											readStream isString
-												ifTrue: [
-														UIManager default alert: readStream.
-														overview delete ]
-												ifFalse: [
-														Cursor wait showWhile: [
-																UIManager default informUserDuring: [ :bar |
-																		bar
-																			min: 0;
-																			max: readStream size.
-																		overview blockUpdateModelWhile: [
-																				[
-																					bar value: readStream position.
-																					readStream atEnd ] whileFalse: [
-																					overview readDimensionFrom: readStream ].
-																				bar label: 'updating dimensions'.
-																				overview updateDimensions.
-																				bar label: 'updating models'.
+				[
+					client
+						ifNotNil: [
+								[
+									overview
+										queryRecord: queryRecord;
+										itemInfoRetriever:
+											(GolapServerProductInfoRetriever fromApiClient: client);
+										authenticateBlock: client authenticateBlock;
+										query: (NeoJSONReader fromString: client query);
+										url: client url;
+										comment: client comment;
+										imageRepositoryUrl: client imageUrl;
+										itemFieldQuerySpec: client itemFieldQuerySpec;
+										itemViewUrl: client url ]
+									on: Error
+									do: [ :ex |
+											UIManager default alert:
+												'Can''t open the given URL: ' , client url asString ].
+								overview snapshotData: client readStream do: [ :readStream |
+										readStream ifNil: [ overview delete ] ifNotNil: [
+												readStream isString
+													ifTrue: [
+															UIManager default alert: readStream.
+															overview delete ]
+													ifFalse: [
+															Cursor wait showWhile: [
+																	UIManager default informUserDuring: [ :bar |
+																			bar
+																				min: 0;
+																				max: readStream size.
+																			overview blockUpdateModelWhile: [
+																					[
+																						bar value: readStream position.
+																						readStream atEnd ] whileFalse: [
+																						overview readDimensionFrom: readStream ].
+																					bar label: 'updating dimensions'.
+																					overview updateDimensions.
+																					bar label: 'updating models'.
 
-																				bar label: 'updating graph' ].
-																		overview updateModel ] ] ] ] ] ]
-					ifNil: [
-							overview blockUpdateModelWhile: [
-								overview loadFromQueryRecord: queryRecord ].
-							overview updateModel ] ]
+																					bar label: 'updating graph' ].
+																			overview confirmOpen.
+																			overview updateModel ] ] ] ] ] ]
+						ifNil: [
+								overview blockUpdateModelWhile: [
+									overview loadFromQueryRecord: queryRecord ].
+								overview confirmOpen.
+								overview updateModel ] ]
+					on: GolapAborted
+					do: [ :ex | overview delete ] ]
 		ifCanceled: [ overview delete ]
 ]
 
@@ -562,6 +567,26 @@ Golap >> confirmClose [
 	^ self
 		  confirm: self window title , 'を閉じますか？'
 		  label: '確認'
+]
+
+{ #category : 'ui requests' }
+Golap >> confirmOpen [
+
+	model ifNotNil: [
+			| numNodes numConnected numEdges |
+			numNodes := 0.
+			numConnected := 0.
+			numEdges := 0.
+			model nodesDo: [ :node |
+					numNodes := numNodes + 1.
+					node isIsolated ifFalse: [ numConnected := numConnected + 1 ] ].
+			model edgesDo: [ :edge | numEdges := numEdges + 1 ].
+			(self
+				 confirm:
+					 '開きますか？' , String cr , '総商品数:' , numNodes printString
+					 , ' 関連付き商品数:' , numConnected printString , ' 関連数:'
+					 , numEdges printString
+				 label: '確認') = true ifFalse: [ GolapAborted signal ] ]
 ]
 
 { #category : 'operations' }
