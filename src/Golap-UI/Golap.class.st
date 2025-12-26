@@ -273,9 +273,11 @@ Golap class >> openClient [
 																				bar label: 'updating models'.
 
 																				bar label: 'updating graph' ].
-																		overview numFriends: 5.
 																		overview updateModel ] ] ] ] ] ]
-					ifNil: [ overview loadFromQueryRecord: queryRecord ] ]
+					ifNil: [
+							overview blockUpdateModelWhile: [
+								overview loadFromQueryRecord: queryRecord ].
+							overview updateModel ] ]
 		ifCanceled: [ overview delete ]
 ]
 
@@ -312,7 +314,6 @@ Golap class >> openFile [
 																	overview updateDimensions.
 																	bar label: 'updating models'.
 																	bar label: 'updating graph' ].
-															overview numFriends: 5.
 															overview updateModel ] ] ] ] ]
 				ifFalse: [ overview delete ] ].
 	^ overview
@@ -663,16 +664,6 @@ Golap >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 		aCollectionOfGolapEdgeEvaluator
 ]
 
-{ #category : 'accessing' }
-Golap >> edgeScale [
-	^ edgesAppearancePresenter edgeScale
-]
-
-{ #category : 'accessing' }
-Golap >> edgeScale: aNumber [
-	edgesAppearancePresenter edgeScale: aNumber
-]
-
 { #category : 'operations-photoimages' }
 Golap >> ensurePhotoimageRetrievingProcess [
 
@@ -694,14 +685,6 @@ Golap >> font: aFont [
 { #category : 'accessing-colors' }
 Golap >> freshColor [
 	^ colorsAppearancePresenter freshColor
-]
-
-{ #category : 'accessing' }
-Golap >> friendsEdges [
-	| num |
-	model ifNil: [ ^ Array new ].
-	num := edgesAppearancePresenter numFriends.
-	^ model friendsEdges: num
 ]
 
 { #category : 'menu' }
@@ -1096,12 +1079,10 @@ Golap >> loadFromQueryRecord: aGolapQueryRecord [
 
 	queryRecord := aGolapQueryRecord.
 	aGolapQueryRecord graph ifNotNil: [ :graph |
-		dimensions removeAll.
-		graph keysAndValuesDo: [ :name :json |
-			dimensions at: name put: (GolapModel fromJSON: json) ].
-		self updateDimensions.
-		self disableSnapshotWhile: [
-			self updateGlobalImageAfter: [ self friendsEdges ] layout: true ] ]
+			dimensions removeAll.
+			graph keysAndValuesDo: [ :name :json |
+				dimensions at: name put: (GolapModel fromJSON: json) ].
+			self updateDimensions ]
 ]
 
 { #category : 'menu' }
@@ -1307,16 +1288,6 @@ Golap >> normalColor [
 { #category : 'accessing-colors' }
 Golap >> normalColorFor: aGolapNode [
 	^ colorsAppearancePresenter normalColorFor: aGolapNode
-]
-
-{ #category : 'accessing' }
-Golap >> numFriends [
-	edgesAppearancePresenter numFriends
-]
-
-{ #category : 'accessing' }
-Golap >> numFriends: anInteger [
-	edgesAppearancePresenter numFriends: anInteger
 ]
 
 { #category : 'accessing' }
@@ -1772,24 +1743,22 @@ Golap >> restoreSnapshot: aFileReference [
 	self window ifNotNil: [ :w | w title: aFileReference basename ].
 	snapshotDirectory := aFileReference.
 	self disableSnapshotWhile: [
-		self
-			updateGlobalImageAfter: [
-				self
-					restoreQuery;
-					restoreItemList;
-					restoreItemView;
-					restoreElaborationRenderer;
-					restoreOverviewRenderer;
-					restoreMerges;
-					restoreData;
-					restoreSelections;
-					restoreColorsAppearance;
-					restoreEdgesAppearance;
-					restoreItemsAppearance;
-					yourself.
-				self friendsEdges ]
-			layout: true ].
-	self updateGlobalImageAfter: [  ] layout: true
+			self
+				updateGlobalImageAfter: [
+						self
+							restoreQuery;
+							restoreItemList;
+							restoreItemView;
+							restoreElaborationRenderer;
+							restoreOverviewRenderer;
+							restoreMerges;
+							restoreData;
+							restoreSelections;
+							restoreColorsAppearance;
+							restoreEdgesAppearance;
+							restoreItemsAppearance ]
+				layout: true ].
+	self updateGlobalImageAfter: [ ] layout: true
 ]
 
 { #category : 'accessing-colors' }
@@ -2372,16 +2341,6 @@ Golap >> url: aZnUrl [
 
 	url := aZnUrl asUrl.
 	snapshotBaseName := url host asString
-]
-
-{ #category : 'accessing-widgets' }
-Golap >> visibleEdgeMaxPercentile [
-	^ edgesAppearancePresenter ifNotNil: #visibleEdgeMaxPercentile
-]
-
-{ #category : 'accessing-widgets' }
-Golap >> visibleEdgeMinPercentile [
-	^ edgesAppearancePresenter ifNotNil: #visibleEdgeMinPercentile
 ]
 
 { #category : 'accessing' }

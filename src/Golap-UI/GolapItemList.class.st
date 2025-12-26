@@ -718,8 +718,10 @@ GolapItemList >> updateItemsList [
 					nodes := nodes select: [ :id |
 						         markedIds anySatisfy: [ :m |
 							         (model nodeAt: id) includesId: m ] ] ].
-			nodeList items: (nodes asSortedCollection: [ :id |
-						 [ model valueAtNode: (model nodeAt: id) ]
-							 on: Error
-							 do: [ :ex | 0 ] ] descending) ]
+			nodeList
+				items: (nodes asSortedCollection: [ :id |
+							 [ model valueAtNode: (model nodeAt: id) ]
+								 on: Error
+								 do: [ :ex | 0 ] ] descending)
+				selectItems: nodeList selectedItems ]
 ]

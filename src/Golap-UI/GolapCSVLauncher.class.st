@@ -189,12 +189,10 @@ GolapCSVLauncher >> launch [
 	golap
 		snapshotBaseName: pairPresenter basepathReference basename;
 		snapshotData.
-	golap
-		updateDimensions;
-		updateModel;
-		numFriends: 5.
+	golap updateDimensions.
 	golap open maximize.
-	golap updateGlobalImageAfter: [  ] layout: true.
+	golap updateModel.
+	golap updateGlobalImageAfter: [ ] layout: true.
 	self window ifNotNil: #close
 ]
 

@@ -600,9 +600,7 @@ GolapOverviewPresenter >> updateGraph [
 { #category : 'updating' }
 GolapOverviewPresenter >> updateLineScale [
 
-	| edgeScale maxValue |
-	edgeScale := golap edgeScale.
-	edgeScale < 1.0e-6 ifTrue: [ ^ self ].
+	| maxValue |
 	reallyVisibleEdges ifEmpty: [ ^ self ].
 	maxValue := (reallyVisibleEdges
 		             collect: [ :e |
@@ -612,8 +610,8 @@ GolapOverviewPresenter >> updateLineScale [
 		            ifEmpty: [ 0 ]
 		            ifNotEmpty: #max.
 	lineScale := maxValue >= 1.0e-8
-		             ifTrue: [ 5.0 / maxValue * edgeScale ]
-		             ifFalse: [ 2.0 ].
+		             ifTrue: [ 5.0 / maxValue ]
+		             ifFalse: [ 2.0 ]
 ]
 
 { #category : 'updating' }

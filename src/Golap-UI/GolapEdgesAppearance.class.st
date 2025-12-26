@@ -2,18 +2,7 @@ Class {
 	#name : 'GolapEdgesAppearance',
 	#superclass : 'SpPresenter',
 	#instVars : [
-		'edgeWidthSlider',
-		'edgeScale',
-		'visibleEdgeMinPercentile',
-		'visibleEdgeMaxPercentile',
 		'golap',
-		'friendsField',
-		'positivePolishField',
-		'positivePolishSlider',
-		'negativePolishField',
-		'negativePolishSlider',
-		'polishMinDenominatorField',
-		'polishIterationCheckbox',
 		'edgeEvaluatorList',
 		'nodeEvaluatorList'
 	],
@@ -57,50 +46,33 @@ GolapEdgesAppearance class >> colorNames [
 	^ self colorMap keys
 ]
 
-{ #category : 'layout' }
-GolapEdgesAppearance class >> defaultLayout [
-
-	<spec>
-	^ SpBoxLayout newVertical
-"		  add: #edgeWidthSlider height: self buttonHeight;
-		  add: #visibleEdgeMinPercentile height: self buttonHeight * 3 // 4;
-		  add: #visibleEdgeMaxPercentile height: self buttonHeight * 3 // 4;
-		  add: (SpBoxLayout newHorizontal
-				   add: #polishIterationCheckbox;
-				   add: #polishMinDenominatorField)
-		  height: self buttonHeight;
-		  add: (SpBoxLayout newHorizontal
-				   add: (SpBoxLayout newVertical
-						    add: #negativePolishSlider
-						    height: self buttonHeight * 3 // 4);
-				   add: #negativePolishField width: 50)
-		  height: self buttonHeight;
-		  add: (SpBoxLayout newHorizontal
-				   add: (SpBoxLayout newVertical
-						    add: #positivePolishSlider
-						    height: self buttonHeight * 3 // 4);
-				   add: #positivePolishField width: 50)
-		  height: self buttonHeight;
-		  add: (SpBoxLayout newHorizontal
-				   add: 'フレンドランク' asPresenter expand: true;
-				   add: #friendsField width: 150)
-		  expand: false;
-"		  add: (SpBoxLayout newHorizontal
-				   add: '関連指標' asPresenter expand: true;
-				   add: #edgeEvaluatorList width: 150)
-		  height: self buttonHeight;
-		  add: (SpBoxLayout newHorizontal
-				   add: 'アイテム指標' asPresenter expand: true;
-				   add: #nodeEvaluatorList width: 150)
-		  height: self buttonHeight;
-		  yourself
-]
-
 { #category : 'instance creation' }
 GolapEdgesAppearance class >> on: aGolap [
 	^ self new
 		setGolap: aGolap;
 		yourself
+]
+
+{ #category : 'layout' }
+GolapEdgesAppearance >> buttonHeight [
+
+	^ self class buttonHeight
+]
+
+{ #category : 'layout' }
+GolapEdgesAppearance >> defaultLayout [
+
+	<spec>
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: '関連指標' asPresenter expand: true;
+				   add: edgeEvaluatorList width: 150)
+		  height: self buttonHeight;
+		  add: (SpBoxLayout newHorizontal
+				   add: 'アイテム指標' asPresenter expand: true;
+				   add: nodeEvaluatorList width: 150)
+		  height: self buttonHeight;
+		  yourself
 ]
 
 { #category : 'accessing' }
@@ -133,24 +105,6 @@ GolapEdgesAppearance >> edgeEvaluators [
 GolapEdgesAppearance >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 
 	edgeEvaluatorList items: aCollectionOfGolapEdgeEvaluator
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> edgeScale [
-	^ edgeScale ifNil: [ edgeScale := 1.0 ]
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> edgeScale: aNumber [
-
-	self updateGlobalImageAfter: [ edgeScale := aNumber ]
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> friendsEdges [
-	^ golap model
-		ifNotNil: [ :model | model friendsEdges": self numFriends" ]
-		ifNil: [ Array new ]
 ]
 
 { #category : 'operations' }
@@ -192,97 +146,6 @@ GolapEdgesAppearance >> initialExtent [
 { #category : 'initialization' }
 GolapEdgesAppearance >> initializePresenters [
 
-	edgeWidthSlider := self newSlider
-		                   label: 'edge width';
-		                   quantum: 0.1;
-		                   min: 0.0;
-		                   max: 2.0;
-		                   value: 1.0;
-		                   whenValueChangedDo: [ :value |
-			                   self edgeScale: 2.0 ** value - 1.0 * 3.0 ];
-		                   yourself.
-	visibleEdgeMinPercentile := self newSlider
-		                            label: 'min';
-		                            min: 0.0;
-		                            max: 1.0;
-		                            value: 0.0;
-		                            quantum: 0.05;
-		                            whenValueChangedDo: [
-			                            self updateGlobalImageAfter: [  ] ];
-		                            borderWidth: 0;
-		                            yourself.
-	visibleEdgeMaxPercentile := self newSlider
-		                            label: 'max';
-		                            min: 0.0;
-		                            max: 1.0;
-		                            value: 1.0;
-		                            quantum: 0.05;
-		                            whenValueChangedDo: [
-			                            self updateGlobalImageAfter: [  ] ];
-		                            borderWidth: 0;
-		                            yourself.
-	polishIterationCheckbox := self newCheckBox
-		                           label: '繰り返し';
-		                           state: false;
-		                           whenChangedDo: [ self polish ];
-		                           yourself.
-	positivePolishSlider := self newSlider
-		                        label: '+研磨';
-		                        min: 0.0;
-		                        max: 1.0;
-		                        value: 1.0;
-		                        quantum: 0.01;
-		                        whenValueChangedDo: [
-			                        positivePolishField number:
-					                        positivePolishSlider value.
-			                        self polish ];
-		                        borderWidth: 0;
-		                        yourself.
-	positivePolishField := self newNumberInput
-		                       beFloat;
-		                       placeholder: '+研磨';
-		                       minimum: 0.8;
-		                       maximum: 1.0;
-		                       number: 1.0;
-		                       whenSubmitDo: [ :txt |
-			                       positivePolishSlider value:
-					                       positivePolishField number.
-			                       self polish ].
-	negativePolishSlider := self newSlider
-		                        label: '-研磨';
-		                        min: 0.0;
-		                        max: 0.2;
-		                        value: 0.0;
-		                        quantum: 0.01;
-		                        whenValueChangedDo: [
-			                        negativePolishField number:
-					                        negativePolishSlider value.
-			                        self polish ];
-		                        borderWidth: 0;
-		                        yourself.
-	negativePolishField := self newNumberInput
-		                       beFloat;
-		                       placeholder: '-研磨';
-		                       minimum: 0.0;
-		                       maximum: 0.2;
-		                       number: 0.0;
-		                       whenSubmitDo: [ :txt |
-			                       negativePolishSlider value:
-					                       negativePolishField number.
-			                       self polish ].
-	polishMinDenominatorField := self newNumberInput
-		                             beInteger;
-		                             placeholder: 'min edges';
-		                             minimum: 1;
-		                             number: 3;
-		                             whenSubmitDo: [ :txt | self polish ].
-	friendsField := self newNumberInput
-		                beInteger;
-		                placeholder: 'friend rank';
-		                minimum: 1;
-		                number: 5;
-		                autoAccept: true;
-		                whenSubmitDo: [ :txt | self numFriendsChanged ].
 	edgeEvaluatorList := self newDropList
 		                     items:
 			                     (#( 'frequency' 'jaccard' 'lift' 'PMI' )
@@ -294,34 +157,28 @@ GolapEdgesAppearance >> initializePresenters [
 			                     self edgeEvaluator: edgeEvaluator ];
 		                     yourself.
 	nodeEvaluatorList := self newDropList
-		                       items: {
-				                       (GolapNodeColumnEvaluator column:
-						                        'frequency').
-				                       GolapNodeMaxEvaluator new.
-				                       GolapNodeSumEvaluator new.
-				                       GolapNodeAverageEvaluator new.
-				                       GolapNodeNumEdgesEvaluator new };
-		                       display: [ :item | item name ];
-		                       startWithSelection;
-		                       whenSelectedItemChangedDo: [ :nodeEvaluator |
-			                       self nodeEvaluator: nodeEvaluator ];
-		                       yourself.
+		                     items: {
+				                     (GolapNodeColumnEvaluator column: 'frequency').
+				                     GolapNodeMaxEvaluator new.
+				                     GolapNodeSumEvaluator new.
+				                     GolapNodeAverageEvaluator new.
+				                     GolapNodeNumEdgesEvaluator new };
+		                     display: [ :item | item name ];
+		                     startWithSelection;
+		                     whenSelectedItemChangedDo: [ :nodeEvaluator |
+			                     self nodeEvaluator: nodeEvaluator ];
+		                     yourself.
 	self whenBuiltDo: [ :w |
-		| f |
-		f := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m |
-			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
+			| f |
+			f := TextStyle defaultFont.
+			w widget allMorphsDo: [ :m |
+				(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
 { #category : 'initialization' }
 GolapEdgesAppearance >> initializeWindow: aWindowPresenter [
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter title: 'Edges'
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> negativePolishFactor [
-	^ negativePolishField text asString asNumber ifNil: [ 0.0 ]
 ]
 
 { #category : 'accessing' }
@@ -353,85 +210,17 @@ GolapEdgesAppearance >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 	nodeEvaluatorList items: aCollectionOfGolapNodeEvaluator
 ]
 
-{ #category : 'accessing' }
-GolapEdgesAppearance >> numFriends [
-
-	^ friendsField number
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> numFriends: anInteger [
-
-	friendsField number: anInteger
-]
-
-{ #category : 'updating' }
-GolapEdgesAppearance >> numFriendsChanged [
-
-	golap model ifNotNil: [ :model |
-		model friendsEdges: friendsField number.
-		self friendsGraph ]
-]
-
-{ #category : 'operations' }
-GolapEdgesAppearance >> polish [
-
-	self updateGlobalImageAfter: [
-		golap model
-			repeat: (polishIterationCheckbox state
-					 ifTrue: [ 100 ]
-					 ifFalse: [ 1 ])
-			polishAddAbove: self positivePolishFactor
-			removeBelow: self negativePolishFactor
-			minDenominator: polishMinDenominatorField text asString asInteger.
-		golap announceGolapModelUpdated ]
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> positivePolishFactor [
-	^ positivePolishField text asString asNumber ifNil: [ 1.0 ]
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> positivePolishFactor: aNumber [
-	positivePolishField text: aNumber asString
-]
-
-{ #category : 'private' }
-GolapEdgesAppearance >> resetVisibleEdgeThresholds [
-	visibleEdgeMinPercentile value: 0.0.
-	visibleEdgeMaxPercentile value: 1.0
-]
-
 { #category : 'snapshot' }
 GolapEdgesAppearance >> restore: aStream [
 
 	(NeoJSONReader on: aStream) next ifNotNil: [ :json |
-		json
-			at: 'edge-width'
-			ifPresent: [ :float | edgeWidthSlider value: float ];
-			at: 'visible-edge-min'
-			ifPresent: [ :float | visibleEdgeMinPercentile value: float ];
-			at: 'visible-edige-max'
-			ifPresent: [ :float | visibleEdgeMaxPercentile value: float ];
-			at: 'polish-iteration'
-			ifPresent: [ :bool | polishIterationCheckbox state: bool ];
-			at: 'polish-positive'
-			ifPresent: [ :float | positivePolishField number: float ];
-			at: 'polish-negative'
-			ifPresent: [ :float | negativePolishField number: float ];
-			at: 'polish-min-edges'
-			ifPresent: [ :int | polishMinDenominatorField number: int ];
-			at: 'rank' ifPresent: [ :number |
-				number isNumber ifTrue: [
-						friendsField number: number.
-						self friendsGraph ] ];
-			at: 'edge-evaluator'
-			ifPresent: [ :dict |
-				self edgeEvaluator: (GolapEdgeEvaluator fromJSON: dict) ];
-			at: 'node-evaluator'
-			ifPresent: [ :dict |
-				self nodeEvaluator: (GolapNodeEvaluator fromJSON: dict) ] ]
+			json
+				at: 'edge-evaluator'
+				ifPresent: [ :dict |
+					self edgeEvaluator: (GolapEdgeEvaluator fromJSON: dict) ];
+				at: 'node-evaluator'
+				ifPresent: [ :dict |
+					self nodeEvaluator: (GolapNodeEvaluator fromJSON: dict) ] ]
 ]
 
 { #category : 'accessing' }
@@ -522,15 +311,6 @@ GolapEdgesAppearance >> snapshotInto: aStream [
 
 	| json |
 	json := OrderedDictionary new.
-	json
-		at: 'edge-width' put: edgeWidthSlider value;
-		at: 'visible-edge-min' put: visibleEdgeMinPercentile value;
-		at: 'visible-edge-max' put: visibleEdgeMaxPercentile value;
-		at: 'polish-iteration' put: polishIterationCheckbox state;
-		at: 'polish-positive' put: positivePolishField number;
-		at: 'polish-negative' put: negativePolishField number;
-		at: 'polish-min-edges' put: polishMinDenominatorField number;
-		at: 'rank' put: friendsField number.
 	edgeEvaluatorList selectedItem ifNotNil: [ :edgeEvaluator |
 		json at: 'edge-evaluator' put: edgeEvaluator asJSON ].
 	nodeEvaluatorList selectedItem ifNotNil: [ :nodeEvaluator |
@@ -552,20 +332,4 @@ GolapEdgesAppearance >> updateGlobalImageAfter: aBlock layout: aBoolean [
 GolapEdgesAppearance >> updateModel: aGolapModel [
 
 	
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> visibleEdgeMaxPercentile [
-	^ visibleEdgeMaxPercentile
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> visibleEdgeMinPercentile [
-	^ visibleEdgeMinPercentile
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> visibleEdges [
-
-	^ self friendsEdges
 ]
