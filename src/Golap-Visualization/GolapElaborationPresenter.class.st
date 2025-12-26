@@ -106,7 +106,9 @@ GolapElaborationPresenter >> initialize [
 		                   yourself.
 	edgeInteraction := GolapElaborationEdgeInteraction new
 		                   presenter: self;
-		                   yourself
+		                   yourself.
+	rootNodes := Array new.
+	associateNodes := Array new
 ]
 
 { #category : 'initialization' }
@@ -607,7 +609,8 @@ GolapElaborationPresenter >> updateGraph [
 			barScale := associateNodes
 				            ifNotEmpty: [
 				            500.0 / associateScores values max asFloat ]
-				            ifEmpty: [ 1.0 ] ]
+				            ifEmpty: [ 1.0 ] ].
+	golap updateItemsList
 ]
 
 { #category : 'updating' }

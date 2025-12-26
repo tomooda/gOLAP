@@ -4,9 +4,6 @@ Class {
 	#instVars : [
 		'fontButton',
 		'golap',
-		'showConnectedNodesCheckBox',
-		'showHiddenConnectionNodesCheckBox',
-		'showIsolatedNodesCheckBox',
 		'photoimageRetrievers',
 		'photoimageRetrievalProgressBar',
 		'startPhotoimageRetrievalButton'
@@ -45,6 +42,12 @@ GolapItemsAppearance class >> on: aGolap [
 		yourself
 ]
 
+{ #category : 'layout' }
+GolapItemsAppearance >> buttonHeight [
+
+	^ self class buttonHeight
+]
+
 { #category : 'private' }
 GolapItemsAppearance >> chooseFont [
 
@@ -55,28 +58,23 @@ GolapItemsAppearance >> chooseFont [
 				onAcceptDo: [ :font | Golap defaultFont: font ] ]
 ]
 
+{ #category : 'layout' }
+GolapItemsAppearance >> defaultLayout [
+
+	<spec>
+	^ SpBoxLayout newVertical
+		  add: fontButton height: self buttonHeight;
+		  add: photoimageRetrievers;
+		  add: (SpBoxLayout newHorizontal
+				   add: photoimageRetrievalProgressBar;
+				   add: startPhotoimageRetrievalButton width: self buttonHeight)
+		  expand: false;
+		  yourself
+]
+
 { #category : 'initialization' }
 GolapItemsAppearance >> initializePresenters [
 
-	showIsolatedNodesCheckBox := self newCheckBox
-		                             label: '孤立アイテム';
-		                             state: false;
-		                             whenChangedDo: [ :value |
-			                             golap updateGlobalImageAfter: [  ] ];
-		                             yourself.
-	showHiddenConnectionNodesCheckBox := self newCheckBox
-		                                     label: '隠れアイテム';
-		                                     state: false;
-		                                     whenChangedDo: [ :value |
-			                                     golap updateGlobalImageAfter: [
-					                                      ] ];
-		                                     yourself.
-	showConnectedNodesCheckBox := self newCheckBox
-		                              label: '接続アイテム';
-		                              state: true;
-		                              whenChangedDo: [ :value |
-			                              golap updateGlobalImageAfter: [  ] ];
-		                              yourself.
 	fontButton := self newButton
 		              label: 'フォント';
 		              action: [ self chooseFont ];
@@ -118,21 +116,6 @@ GolapItemsAppearance >> setGolap: aGolap [
 	golap := aGolap.
 	photoimageRetrievers golap: aGolap.
 	self updatePhotoimageRetrievers
-]
-
-{ #category : 'accessing' }
-GolapItemsAppearance >> showsConnectedNodes [
-	^ showConnectedNodesCheckBox state
-]
-
-{ #category : 'accessing' }
-GolapItemsAppearance >> showsHiddenConnectionNodes [
-	^ showHiddenConnectionNodesCheckBox state
-]
-
-{ #category : 'accessing' }
-GolapItemsAppearance >> showsIsolatedNodes [
-	^ showIsolatedNodesCheckBox state
 ]
 
 { #category : 'snapshot' }

@@ -557,7 +557,8 @@ GolapOverviewPresenter >> scale: aNumber at: aPoint [
 { #category : 'testing' }
 GolapOverviewPresenter >> showsNode: aGolapNode [
 
-	^ reallyVisibleNodes includes: aGolapNode
+	^ reallyVisibleNodes notNil and: [
+		  reallyVisibleNodes includes: aGolapNode ]
 ]
 
 { #category : 'updating' }
@@ -592,7 +593,8 @@ GolapOverviewPresenter >> updateGraph [
 							connectedNodes
 								add: edge node1;
 								add: edge node2 ].
-					reallyVisibleNodes := connectedNodes asArray ] ]
+					reallyVisibleNodes := connectedNodes asArray.
+					golap updateItemsList ] ]
 ]
 
 { #category : 'updating' }

@@ -1148,7 +1148,7 @@ Golap >> mergeMenu [
 											item key = color ifTrue: [ item value: item value, ',',newId ] ].
 									(itemList markers at: color) add: newId.
 									itemList currentMarker: color.
-									itemList updateNodeList ] ] ] ] ] ].
+									itemList updateItemsList ] ] ] ] ] ].
 	^ menu
 ]
 
@@ -1168,7 +1168,7 @@ Golap >> mergeNodes: aCollectionOfIds [
 				  ifFalse: [ 
 					  merges add: nodeName -> aCollectionOfIds copy.
 					  self updateModel.
-					  itemList updateNodeList.
+					  itemList updateItemsList.
 					  nodeName ] ] ]
 ]
 
@@ -1229,7 +1229,7 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 				self unselectAll.
 				model ifNotNil: [
 					edgesAppearancePresenter updateModel: model.
-					itemList updateNodeList ] ]
+					itemList updateItemsList ] ]
 			layout: (aGolapModel nodes anySatisfy: [ :node |
 					 node x isNil or: [ node y isNil ] ]) ].
 	self announceGolapModelUpdated
@@ -1994,19 +1994,12 @@ Golap >> showItemView: aGolapNode [
 	aGolapNode ifNotNil: [ itemView node: aGolapNode ]
 ]
 
-{ #category : 'accessing' }
-Golap >> showsConnectedNodes [
-	^ itemsAppearancePresenter showsConnectedNodes
-]
+{ #category : 'testing' }
+Golap >> showsNode: aGolapNode [
 
-{ #category : 'accessing' }
-Golap >> showsHiddenConnectionNodes [
-	^ itemsAppearancePresenter showsHiddenConnectionNodes
-]
-
-{ #category : 'accessing' }
-Golap >> showsIsolatedNodes [
-	^ itemsAppearancePresenter showsIsolatedNodes
+	self activeVisualizationDo: [ :visualizationPresenter |
+		^ visualizationPresenter showsNode: aGolapNode ].
+	^ false
 ]
 
 { #category : 'accessing-dimensions' }
@@ -2264,7 +2257,7 @@ Golap >> unmergeNode: aString [
 
 	merges removeAllSuchThat: [ :assoc | assoc key = aString ].
 	self updateModel.
-	itemList updateNodeList
+	itemList updateItemsList
 ]
 
 { #category : 'accessing-selection' }
@@ -2337,6 +2330,12 @@ Golap >> updateItemView [
 ]
 
 { #category : 'operations' }
+Golap >> updateItemsList [
+
+	itemList updateItemsList
+]
+
+{ #category : 'operations' }
 Golap >> updateModel [
 
 	self model: self selectedModel.
@@ -2351,7 +2350,7 @@ Golap >> updateModel [
 
 { #category : 'private' }
 Golap >> updateQuery [
-	itemList updateNodeList
+	itemList updateItemsList
 ]
 
 { #category : 'accessing-selection' }

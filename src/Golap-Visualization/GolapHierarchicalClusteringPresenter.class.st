@@ -108,7 +108,8 @@ GolapHierarchicalClusteringPresenter >> markerWidth [
 { #category : 'testing' }
 GolapHierarchicalClusteringPresenter >> showsNode: aGolapNode [
 
-	tree graphNodesDo: [ :node | node == aGolapNode ifTrue: [ ^ true ] ].
+	tree ifNotNil: [
+		tree graphNodesDo: [ :node | node == aGolapNode ifTrue: [ ^ true ] ] ].
 	^ false
 ]
 
@@ -145,7 +146,8 @@ GolapHierarchicalClusteringPresenter >> tree: aGolapHierarchicalClusteringTree [
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> treeChanged [
 
-	self updateCanvas
+	self updateCanvas.
+	golap updateItemsList
 ]
 
 { #category : 'updating' }

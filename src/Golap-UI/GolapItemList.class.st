@@ -8,6 +8,7 @@ Class {
 		'queryField',
 		'markers',
 		'presetQueryButton',
+		'showsAllItemsCheckBox',
 		'nodeList'
 	],
 	#classVars : [
@@ -18,19 +19,6 @@ Class {
 	#package : 'Golap-UI',
 	#tag : 'Graph'
 }
-
-{ #category : 'layout' }
-GolapItemList class >> defaultLayout [
-
-	<spec>
-	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   add: #markerDropList width: 50;
-				   add: #queryField;
-				   add: #presetQueryButton width: 20)
-		  height: self buttonHeight;
-		  add: #nodeList
-]
 
 { #category : 'adding' }
 GolapItemList >> add: aGolapNode toMarker: aColor [
@@ -51,7 +39,7 @@ GolapItemList >> add: aGolapNode toMarker: aColor [
 					ifFalse: [ patterns := patterns copyWith: aGolapNode name ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateNodeList ]
+		self updateItemsList ]
 ]
 
 { #category : 'adding' }
@@ -75,7 +63,7 @@ GolapItemList >> addAll: aCollectionOfGolapNode toMarker: aColor [
 						ifFalse: [ patterns := patterns copyWith: node name ] ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateNodeList ]
+		self updateItemsList ]
 ]
 
 { #category : 'accessing-markers' }
@@ -125,6 +113,21 @@ GolapItemList >> allMarkerColors [
 	^ markerDropList items collect: #key thenSelect: #notNil
 ]
 
+{ #category : 'layout' }
+GolapItemList >> buttonHeight [
+
+	^ self class buttonHeight
+]
+
+{ #category : 'accessing' }
+GolapItemList >> colorFor: aGolapNode [
+
+	^ (aGolapNode notNil and: [
+		   self showsAllItems and: [ (golap showsNode: aGolapNode) not ] ])
+		  ifTrue: [ Color lightGray ]
+		  ifFalse: [ Color black ]
+]
+
 { #category : 'accessing-markers' }
 GolapItemList >> currentMarker [
 	^ markerDropList selectedItem ifNotNil: #key
@@ -140,6 +143,20 @@ GolapItemList >> currentMarker: aColor [
 				ifNotNil: [ assoc model key = aColor ] ]
 		ifNone: [ ^ nil ].
 	markerDropList selectItem: item model
+]
+
+{ #category : 'layout' }
+GolapItemList >> defaultLayout [
+
+	<spec>
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: markerDropList width: 50;
+				   add: queryField;
+				   add: presetQueryButton width: 20)
+		  height: self buttonHeight;
+		  add: showsAllItemsCheckBox height: self buttonHeight;
+		  add: nodeList
 ]
 
 { #category : 'accessing' }
@@ -221,7 +238,7 @@ GolapItemList >> initializePresenters [
 										                  lastSelectedMarkerIndex := markerDropList
 											                                             selectedIndex.
 										                  queryField text: selectedItem value asText.
-										                  self updateNodeList.
+										                  self updateItemsList.
 										                  self updateGlobalImage ] ] ];
 		                  yourself.
 	lastSelectedMarkerIndex := 0.
@@ -252,34 +269,29 @@ GolapItemList >> initializePresenters [
 									              node removeMarker: selectedMarker key ].
 								              nodes do: [ :node |
 									              node addMarker: selectedMarker key ] ] ].
-			              self updateNodeList ].
+			              self updateItemsList ].
 	presetQueryButton := self newButton
 		                     icon: (Smalltalk ui icons iconNamed: #back);
 		                     action: [ golap openPresetQueryDialog ];
 		                     yourself.
+	showsAllItemsCheckBox := self newCheckBox
+		                         label: '全商品を表示する';
+		                         state: false;
+		                         whenChangedDo: [ self updateItemsList ];
+		                         yourself.
 	nodeList := self newTable
 		            beMultipleSelection;
 		            disableSearch;
 		            addColumn: (SpStringTableColumn new
 				             width: 80;
 				             displayColor: [ :id |
-						             (self model nodeAt: id)
-							             ifNotNil: [ :node |
-									             node isIsolated
-										             ifTrue: [ Color gray ]
-										             ifFalse: [ Color black ] ]
-							             ifNil: [ Color black ] ];
+					             self colorFor: (self model nodeAt: id) ];
 				             evaluated: [ :id |
 						             self simpleStringFor:
 								             (self model valueAtNode: (self model nodeAt: id)) ]);
 		            addColumn: (SpStringTableColumn new
 				             displayColor: [ :id |
-						             (self model nodeAt: id)
-							             ifNotNil: [ :node |
-									             node isIsolated
-										             ifTrue: [ Color gray ]
-										             ifFalse: [ Color black ] ]
-							             ifNil: [ Color black ] ];
+					             self colorFor: (self model nodeAt: id) ];
 				             evaluated: [ :id | (self model nodeAt: id) name ]);
 		            contextMenu: [ self nodeListMenu ];
 		            whenSelectionChangedDo: [
@@ -511,7 +523,7 @@ GolapItemList >> remove: aGolapNode fromMarker: aColor [
 				patterns := patterns copyWithout: aGolapNode name.
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateNodeList ]
+		self updateItemsList ]
 ]
 
 { #category : 'removing' }
@@ -538,7 +550,7 @@ GolapItemList >> removeAll: aCollectionOfGolapNode fromMarker: aColor [
 						            node name = pattern ] ].
 				assoc value: (',' join: patterns) ] ].
 		self currentMarker: aColor.
-		self updateNodeList ]
+		self updateItemsList ]
 ]
 
 { #category : 'removing' }
@@ -573,7 +585,7 @@ GolapItemList >> restore: aStream [
 									             at: colorString
 									             ifAbsentPut: [ Color fromHexString: colorString ] ])
 						            -> (dict at: colorString) asSet ]) asDictionary ].
-		self updateNodeList ]
+		self updateItemsList ]
 ]
 
 { #category : 'accessing' }
@@ -586,6 +598,18 @@ GolapItemList >> selectedItem [
 GolapItemList >> selectedItems: aCollectionOfString [
 
 	nodeList selectItems: aCollectionOfString
+]
+
+{ #category : 'testing' }
+GolapItemList >> showsAllItems [
+
+	^ showsAllItemsCheckBox state = true
+]
+
+{ #category : 'testing' }
+GolapItemList >> showsNode: aGolapNode [
+
+	^ self showsAllItems or: [ golap showsNode: aGolapNode ]
 ]
 
 { #category : 'private' }
@@ -682,18 +706,20 @@ GolapItemList >> updateGlobalImageAfter: aBlock layout: aBoolean [
 ]
 
 { #category : 'updating' }
-GolapItemList >> updateNodeList [
+GolapItemList >> updateItemsList [
 
 	| nodes selectedMarker |
 	self modelDo: [ :model |
-		nodes := model nodes keys asArray.
-		selectedMarker := markerDropList selectedItem ifNil: [ nil -> '' ].
-		markers at: selectedMarker key ifPresent: [ :markedIds |
-			nodes := nodes select: [ :id |
-				         markedIds anySatisfy: [ :m |
-					         (model nodeAt: id) includesId: m ] ] ].
-		nodeList items: (nodes asSortedCollection: [ :id |
-				 [ model valueAtNode: (model nodeAt: id) ]
-					 on: Error
-					 do: [ :ex | 0 ] ] descending) ]
+			nodes := model nodes asArray
+				         select: [ :node | self showsNode: node ]
+				         thenCollect: #id.
+			selectedMarker := markerDropList selectedItem ifNil: [ nil -> '' ].
+			markers at: selectedMarker key ifPresent: [ :markedIds |
+					nodes := nodes select: [ :id |
+						         markedIds anySatisfy: [ :m |
+							         (model nodeAt: id) includesId: m ] ] ].
+			nodeList items: (nodes asSortedCollection: [ :id |
+						 [ model valueAtNode: (model nodeAt: id) ]
+							 on: Error
+							 do: [ :ex | 0 ] ] descending) ]
 ]
