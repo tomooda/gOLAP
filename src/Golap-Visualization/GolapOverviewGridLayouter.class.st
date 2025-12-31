@@ -24,25 +24,26 @@ GolapOverviewGridLayouter class >> layoutNodes: aCollectionOfGolapNode edges: aC
 GolapOverviewGridLayouter >> bestNodeToSwapWith: aGolapNode withIndexDo: aBlock [
 
 	| bestGain x y bestX bestY |
-	bestGain := -1.
+	bestGain := 0.
 	x := nodeX at: aGolapNode.
 	y := nodeY at: aGolapNode.
 	self matrixWithIndexDo: [ :nodeOrNil :x1 :y1 |
-			| gain |
-			gain := self
-				        gainBySwappingX: x
-				        y: y
-				        andX: x1
-				        y: y1.
-			bestGain < gain ifTrue: [
-					bestGain := gain.
-					bestX := x1.
-					bestY := y1 ] ].
-	(bestX notNil and: [ bestY notNil ]) ifTrue: [
-		aBlock
-			value: ((matrix at: bestX) at: bestY)
-			value: bestX
-			value: bestY ]
+			aGolapNode ~~ nodeOrNil ifTrue: [
+					| gain |
+					gain := self
+						        gainBySwappingX: x
+						        y: y
+						        andX: x1
+						        y: y1.
+					bestGain < gain ifTrue: [
+							bestGain := gain.
+							bestX := x1.
+							bestY := y1 ] ].
+			(bestX notNil and: [ bestY notNil ]) ifTrue: [
+				aBlock
+					value: ((matrix at: bestX) at: bestY)
+					value: bestX
+					value: bestY ] ]
 ]
 
 { #category : 'operations' }
@@ -108,19 +109,6 @@ GolapOverviewGridLayouter >> gainBySwappingX: x1 y: y1 andX: x2 y: y2 [
 ]
 
 { #category : 'operations' }
-GolapOverviewGridLayouter >> improve [
-
-	| done worstNode |
-	done := IdentitySet new.
-	[
-		worstNode := self worstNodeExcept: done.
-		worstNode notNil ] whileTrue: [
-			(self improve: worstNode) ifTrue: [ ^ true ].
-			done add: worstNode ].
-	^ false
-]
-
-{ #category : 'operations' }
 GolapOverviewGridLayouter >> improve: aGolapNode [
 
 	self bestNodeToSwapWith: aGolapNode withIndexDo: [ :bestNode :x :y |
@@ -130,41 +118,34 @@ GolapOverviewGridLayouter >> improve: aGolapNode [
 ]
 
 { #category : 'operations' }
-GolapOverviewGridLayouter >> improveEveryInterim: aBlock [
+GolapOverviewGridLayouter >> improveEveryNodeFrom: aCollectionOfGolapNode interim: aBlock [
 
-	| total mod |
-	total := edges size asFloat.
-	mod := edges size // 30.
-	mod >= 1
-		ifTrue: [
-				edges withIndexDo: [ :edge :index |
-						(nodeX includesKey: edge node1) ifTrue: [
-							self improve: edge node1 ].
-						(nodeX includesKey: edge node2) ifTrue: [
-							self improve: edge node2 ].
-						index \\ mod = 0 ifTrue: [ aBlock value: index asFloat / total ] ] ]
-		ifFalse: [
-				edges do: [ :edge |
-						(nodeX includesKey: edge node1) ifTrue: [
-							self improve: edge node1 ].
-						(nodeX includesKey: edge node2) ifTrue: [
-							self improve: edge node2 ] ].
-				aBlock value: 1.0 ]
+	| mod |
+	mod := aCollectionOfGolapNode size // 20.
+	aCollectionOfGolapNode withIndexDo: [ :node :index |
+			self improve: node.
+			index \\ mod = 0 ifTrue: [
+				aBlock value: index asFloat / aCollectionOfGolapNode size asFloat ] ]
 ]
 
 { #category : 'operations' }
 GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollectionOfGolapEdge [
 
-	| positions |
+	| positions reps |
 	SpProgressDialog new
 		title: 'グラフ再配置中…';
 		informUserDuring: [ :progress |
+				| mod |
+				mod := aCollectionOfGolapNode size // 20.
+				reps := 10.
 				self edges: aCollectionOfGolapEdge.
 				self createMatrixFromNodes: aCollectionOfGolapNode.
-				self improveEveryInterim: [ :v |
-						progress progressPercent: v * 50.0 ].
-				self improveEveryInterim: [ :v |
-						progress progressPercent: v * 50.0 + 50.0 ].
+				0 to: reps - 1 do: [ :rep |
+							self
+								improveEveryNodeFrom: aCollectionOfGolapNode
+								interim: [ :v |
+										progress progressPercent:
+												v / reps asFloat + (rep asFloat / reps asFloat) * 100.0 ] ].
 				progress
 					label: '完了';
 					progressPercent: 100.
@@ -191,26 +172,6 @@ GolapOverviewGridLayouter >> matrixWithIndexDo: aBlock [
 ]
 
 { #category : 'accessing' }
-GolapOverviewGridLayouter >> penaltyAtX: x y: y [
-
-	| penalty |
-	penalty := 0.
-	((matrix at: x) at: y) ifNotNil: [ :node |
-			| numEdges |
-			numEdges := 0.
-			node edgesAndNodeDo: [ :edge :peer |
-					(edges includes: edge) ifTrue: [
-							numEdges := numEdges + 1.
-							nodeX at: peer ifPresent: [ :peerX |
-									nodeY at: peer ifPresent: [ :peerY |
-										penalty := penalty + (x - peerX) squared
-										           + (y - peerY) squared ] ] ] ].
-			numEdges > 0 ifTrue: [
-				penalty := penalty asFloat / numEdges asFloat ] ].
-	^ penalty
-]
-
-{ #category : 'accessing' }
 GolapOverviewGridLayouter >> swapNode: node1 withX: x2 y: y2 [
 
 	| node2 x1 y1 |
@@ -223,19 +184,4 @@ GolapOverviewGridLayouter >> swapNode: node1 withX: x2 y: y2 [
 	(matrix at: x1) at: y1 put: node2.
 	nodeX at: node2 put: x1.
 	nodeY at: node2 put: y1
-]
-
-{ #category : 'accessing' }
-GolapOverviewGridLayouter >> worstNodeExcept: anIdentitySetOfGolapNode [
-
-	| worstPenalty worstNode |
-	worstPenalty := -1.
-	self matrixWithIndexDo: [ :nodeOrNil :x :y |
-			(anIdentitySetOfGolapNode includes: nodeOrNil) ifFalse: [
-					| penalty |
-					penalty := self penaltyAtX: x y: y.
-					worstPenalty < penalty ifTrue: [
-							worstPenalty := penalty.
-							worstNode := nodeOrNil ] ] ].
-	^ worstNode
 ]
