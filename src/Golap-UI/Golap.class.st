@@ -838,6 +838,12 @@ Golap >> iconForCircleColor: aColor [
 	^ itemList iconForCircleColor: aColor
 ]
 
+{ #category : 'accessing' }
+Golap >> ids [
+
+	^ model ifNil: [ #(  ) ] ifNotNil: [ model nodes keys ]
+]
+
 { #category : 'private' }
 Golap >> ifNotActive: aBlock [
 

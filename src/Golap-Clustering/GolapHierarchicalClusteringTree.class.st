@@ -17,10 +17,11 @@ GolapHierarchicalClusteringTree >> allLeaves [
 		  self leavesDo: [ :leaf | stream nextPut: leaf ] ]
 ]
 
-{ #category : 'converting' }
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> asArray [
 
-	^ self graphNodes
+	^ Array streamContents: [ :stream |
+		  self idsDo: [ :id | stream nextPut: id ] ]
 ]
 
 { #category : 'enumerating' }
@@ -47,29 +48,29 @@ GolapHierarchicalClusteringTree >> depth [
 	^ depth
 ]
 
-{ #category : 'accessing' }
-GolapHierarchicalClusteringTree >> graphNodeId [
-
-	^ self oneGraphNode id
-]
-
-{ #category : 'accessing' }
-GolapHierarchicalClusteringTree >> graphNodes [
-
-	^ Array streamContents: [ :stream |
-		  self graphNodesDo: [ :node | stream nextPut: node ] ]
-]
-
-{ #category : 'enumerating' }
-GolapHierarchicalClusteringTree >> graphNodesDo: aBlock [
-
-	self leavesDo: [ :leaf | leaf graphNode ifNotNil: aBlock ]
-]
-
 { #category : 'testing' }
 GolapHierarchicalClusteringTree >> hasChild: aTree [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringTree >> id [
+
+	^ self oneLeaf id
+]
+
+{ #category : 'enumerating' }
+GolapHierarchicalClusteringTree >> idsCollect: aBlock [
+
+	^ Array streamContents: [ :stream |
+		  self idsDo: [ :id | stream nextPut: (aBlock value: id) ] ]
+]
+
+{ #category : 'enumerating' }
+GolapHierarchicalClusteringTree >> idsDo: aBlock [
+
+	self leavesDo: [ :leaf | aBlock value: leaf id ]
 ]
 
 { #category : 'testing' }
@@ -144,12 +145,6 @@ GolapHierarchicalClusteringTree >> nodesDo: aBlock [
 ]
 
 { #category : 'accessing' }
-GolapHierarchicalClusteringTree >> oneGraphNode [
-
-	^ self oneLeaf ifNotNil: #graphNode
-]
-
-{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> oneLeaf [
 
 	^ self subclassResponsibility
@@ -188,7 +183,7 @@ GolapHierarchicalClusteringTree >> rank: anInteger [
 ]
 
 { #category : 'private' }
-GolapHierarchicalClusteringTree >> removeAllBut: aCollectionOfGolapNode [
+GolapHierarchicalClusteringTree >> removeAllBut: aCollection [
 
 	^ self subclassResponsibility
 ]

@@ -127,8 +127,8 @@ GolapHierarchicalClusteringNode >> postCopy [
 { #category : 'printing' }
 GolapHierarchicalClusteringNode >> printOn: aStream [
 
-	self graphNodes
-		do: [ :node | aStream nextPutAll: node name ]
+	self asArray
+		do: [ :id | aStream nextPutAll: id asString ]
 		separatedBy: [ aStream cr ]
 ]
 
@@ -145,15 +145,14 @@ GolapHierarchicalClusteringNode >> rank: anInteger [
 ]
 
 { #category : 'private' }
-GolapHierarchicalClusteringNode >> removeAllBut: aCollectionOfGolapNode [
+GolapHierarchicalClusteringNode >> removeAllBut: aCollection [
 
 	trees := trees reject: [ :tree |
 		         tree isLeaf
-			         ifTrue: [
-			         (aCollectionOfGolapNode includes: tree graphNode) not ]
+			         ifTrue: [ (aCollection includes: tree id) not ]
 			         ifFalse: [
 				         tree
-					         removeAllBut: aCollectionOfGolapNode;
+					         removeAllBut: aCollection;
 					         isEmpty ] ].
 	score := trees
 		         inject: 0
@@ -184,7 +183,7 @@ GolapHierarchicalClusteringNode >> sort [
 		         asSortedCollection: [ :more :less |
 			         more score > less score or: [
 					         more score = less score and: [
-							         more graphNodeId >= less graphNodeId ] ] ]
+							         more id >= less id ] ] ]
 ]
 
 { #category : 'accessing' }

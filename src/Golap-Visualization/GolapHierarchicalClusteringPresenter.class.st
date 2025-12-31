@@ -109,7 +109,7 @@ GolapHierarchicalClusteringPresenter >> markerWidth [
 GolapHierarchicalClusteringPresenter >> showsNode: aGolapNode [
 
 	tree ifNotNil: [
-		tree graphNodesDo: [ :node | node == aGolapNode ifTrue: [ ^ true ] ] ].
+		tree idsDo: [ :id | id = aGolapNode id ifTrue: [ ^ true ] ] ].
 	^ false
 ]
 
@@ -160,43 +160,44 @@ GolapHierarchicalClusteringPresenter >> updateCanvas [
 GolapHierarchicalClusteringPresenter >> updateNode [
 
 	self isDisplayed ifTrue: [
-			self canvas shapes do: [ :shape |
-					(shape model respondsTo: #graphNode) ifTrue: [
-						shape color: (self colorForNode: shape model graphNode) ].
-					(shape model isArray and: [ shape model first = #marker ])
-						ifTrue: [
-								| v c |
-								v := shape model second.
-								c := shape model third.
-								shape color: ((v hasMarker: c)
-										 ifTrue: [ c ]
-										 ifFalse: [ Color transparent ]) ] ].
-			self canvas signalUpdate ]
+		self canvas shapes do: [ :shape |
+			(shape model respondsTo: #id) ifTrue: [
+				shape color:
+					(self colorForNode: (golap model nodeAt: shape model id)) ].
+			(shape model isArray and: [ shape model first = #marker ]) ifTrue: [
+				| v c |
+				v := shape model second.
+				c := shape model third.
+				shape color: ((v hasMarker: c)
+						 ifTrue: [ c ]
+						 ifFalse: [ Color transparent ]) ] ].
+		self canvas signalUpdate ]
 ]
 
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updateNode: aGolapNode [
 
 	self isDisplayed ifTrue: [
-			self canvas shapes do: [ :shape |
-					((shape model respondsTo: #graphNode) and: [
-						 shape model graphNode == aGolapNode ]) ifTrue: [
-						shape color: (self colorForNode: aGolapNode) ].
-					(shape model isArray and: [
-						 shape model first = #marker and: [
-							 shape model second == aGolapNode ] ]) ifTrue: [
-							| c |
-							c := shape model third.
-							shape color: ((aGolapNode hasMarker: c)
-									 ifTrue: [ c ]
-									 ifFalse: [ Color transparent ]) ] ].
-			self canvas signalUpdate ]
+		self canvas shapes do: [ :shape |
+			((shape model respondsTo: #id) and: [
+				 shape model id = aGolapNode id ]) ifTrue: [
+				shape color: (self colorForNode: aGolapNode) ].
+			(shape model isArray and: [
+				 shape model first = #marker and: [
+					 shape model second == aGolapNode ] ]) ifTrue: [
+				| c |
+				c := shape model third.
+				shape color: ((aGolapNode hasMarker: c)
+						 ifTrue: [ c ]
+						 ifFalse: [ Color transparent ]) ] ].
+		self canvas signalUpdate ]
 ]
 
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updatePhotoimage: shape [
 
-	shape model graphNode photoimage ifNotNil: [ :photoimage |
+	(golap model nodeAt: shape model id) photoimage ifNotNil: [
+		:photoimage |
 		(shape schildren contains: [ :child | child model = #photoimage ])
 			ifFalse: [
 				shape canvas addShape: ((RSBitmap newFrom: photoimage)
@@ -214,19 +215,19 @@ GolapHierarchicalClusteringPresenter >> updatePhotoimage: shape [
 GolapHierarchicalClusteringPresenter >> updateTree [
 
 	self isDisplayed ifTrue: [
-			self withAdapterDo: [ :a |
-					a widgetDo: [ :w |
-							w world ifNotNil: [
-									self tree: (((GolapHierarchicalClustering on: golap model)
-											  rank: 2;
-											  rank: 4;
-											  rank: 8;
-											  rank: 16;
-											  rank: 32;
-											  rank: 64;
-											  rank: 128;
-											  rank: 256;
-											  tree) removeAllBut: golap nodes asSet) ] ] ] ]
+		self withAdapterDo: [ :a |
+			a widgetDo: [ :w |
+				w world ifNotNil: [
+					self tree: (((GolapHierarchicalClustering on: golap model)
+							  rank: 2;
+							  rank: 4;
+							  rank: 8;
+							  rank: 16;
+							  rank: 32;
+							  rank: 64;
+							  rank: 128;
+							  rank: 256;
+							  tree) removeAllBut: golap ids asSet) ] ] ] ]
 ]
 
 { #category : 'accessing' }

@@ -2,7 +2,7 @@ Class {
 	#name : 'GolapHierarchicalClusteringLeaf',
 	#superclass : 'GolapHierarchicalClusteringTree',
 	#instVars : [
-		'graphNode'
+		'id'
 	],
 	#category : 'Golap-Clustering-Core',
 	#package : 'Golap-Clustering',
@@ -10,10 +10,10 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapHierarchicalClusteringLeaf class >> node: aGolapNode score: aNumber [
+GolapHierarchicalClusteringLeaf class >> id: anObject score: aNumber [
 
 	^ self new
-		  setGraphNode: aGolapNode score: aNumber;
+		  setId: anObject score: aNumber;
 		  yourself
 ]
 
@@ -29,16 +29,16 @@ GolapHierarchicalClusteringLeaf >> childrenDo: aBlock [
 	
 ]
 
-{ #category : 'accessing' }
-GolapHierarchicalClusteringLeaf >> graphNode [
-
-	^ graphNode
-]
-
 { #category : 'testing' }
 GolapHierarchicalClusteringLeaf >> hasChild: aTree [
 
 	^ false
+]
+
+{ #category : 'accessing' }
+GolapHierarchicalClusteringLeaf >> id [
+
+	^ id
 ]
 
 { #category : 'testing' }
@@ -73,7 +73,7 @@ GolapHierarchicalClusteringLeaf >> oneLeaf [
 
 { #category : 'printing' }
 GolapHierarchicalClusteringLeaf >> printOn: aStream [
-	aStream nextPutAll: graphNode name
+	aStream nextPutAll: id
 ]
 
 { #category : 'accessing' }
@@ -87,15 +87,15 @@ GolapHierarchicalClusteringLeaf >> rank: anInteger [
 ]
 
 { #category : 'private' }
-GolapHierarchicalClusteringLeaf >> removeAllBut: aCollectionOfGolapNode [
+GolapHierarchicalClusteringLeaf >> removeAllBut: aCollection [
 
 	
 ]
 
 { #category : 'private' }
-GolapHierarchicalClusteringLeaf >> setGraphNode: aGolapNode score: aNumber [
+GolapHierarchicalClusteringLeaf >> setId: anObject score: aNumber [
 
-	graphNode := aGolapNode.
+	id := anObject.
 	score := aNumber
 ]
 

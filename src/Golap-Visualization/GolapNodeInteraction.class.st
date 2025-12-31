@@ -22,11 +22,13 @@ GolapNodeInteraction >> clicked: event [
 { #category : 'hooks' }
 GolapNodeInteraction >> createPopupFor: aShape event: event [
 
-	^ aShape model graphNode photoimage
+	^ (presenter golap model nodeAt: aShape model id) photoimage
 		  ifNotNil: [ :photoimage |
 			  | imageShape labelShape popupShape |
 			  imageShape := RSBitmap newFrom: photoimage.
-			  labelShape := shapeBuilder shapeFor: aShape model graphNode name.
+			  labelShape := shapeBuilder shapeFor:
+				                (presenter golap model nodeAt: aShape model id)
+					                name.
 			  imageShape translateBottomLeftTo: 0 @ 0.
 			  labelShape translateTopLeftTo: 0 @ 0.
 			  popupShape := RSComposite new
@@ -37,14 +39,22 @@ GolapNodeInteraction >> createPopupFor: aShape event: event [
 			  popupShape isFixed: true.
 			  event canvas addShape: popupShape.
 			  popupShape ]
-		  ifNil: [ super createPopupFor: aShape event: event ]
+		  ifNil: [
+			  | popupShape |
+			  popupShape := shapeBuilder shapeFor:
+				                (presenter golap model nodeAt: aShape model id)
+					                name.
+			  popupShape isFixed: true.
+			  event canvas addShape: popupShape.
+			  popupShape ]
 ]
 
 { #category : 'hooks' }
 GolapNodeInteraction >> rightClicked: event [
 
-	(event shape model respondsTo: #graphNode) ifTrue: [
-		(presenter golap globalImageMenu: event shape model graphNode)
+	(event shape model respondsTo: #id) ifTrue: [
+		(presenter golap globalImageMenu:
+			 (presenter golap model nodeAt: event shape model id))
 			openWithSpecAt: (presenter withAdapterDo: [ :a |
 					 a widgetDo: [ :w | w activeHand position ] ]) ]
 ]

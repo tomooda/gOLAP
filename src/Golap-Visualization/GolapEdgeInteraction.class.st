@@ -17,7 +17,10 @@ GolapEdgeInteraction >> clicked: evt [
 GolapEdgeInteraction >> createPopupFor: aShape event: event [
 
 	| popupShape |
-	popupShape := shapeBuilder shapeFor: aShape model value.
+	popupShape := shapeBuilder shapeFor:
+		              (String cr join:
+			               (aShape model value idsCollect: [ :id |
+				                (presenter golap model nodeAt: id) name ])).
 	popupShape isFixed: true.
 	event canvas addShape: popupShape.
 	^ popupShape
