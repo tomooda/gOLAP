@@ -8,8 +8,7 @@ Class {
 		'node'
 	],
 	#classVars : [
-		'EmptyImage',
-		'ImageRepositoryUrl'
+		'EmptyImage'
 	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',

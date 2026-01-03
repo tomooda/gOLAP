@@ -10,10 +10,6 @@ Class {
 		'showsAllItemsCheckBox',
 		'nodeList'
 	],
-	#classVars : [
-		'EmptyImage',
-		'ImageRepositoryUrl'
-	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',
 	#tag : 'Graph'
