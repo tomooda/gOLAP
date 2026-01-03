@@ -470,6 +470,7 @@ Golap >> asJSON [
 		  ('itemsAppearance' -> itemsAppearancePresenter asJSON).
 		  ('edgesAppearance' -> edgesAppearancePresenter asJSON).
 		  ('colorsAppearance' -> colorsAppearancePresenter asJSON).
+		  ('itemInfoRetriever' -> itemInfoRetriever asJSON).
 		  ('itemView' -> itemView asJSON).
 		  ('itemList' -> itemList asJSON).
 		  ('edgeList' -> edgeList asJSON).

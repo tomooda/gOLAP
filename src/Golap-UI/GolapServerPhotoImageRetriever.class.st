@@ -24,6 +24,15 @@ GolapServerPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 		  do: [ :ex | ex return: nil ]
 ]
 
+{ #category : 'snapshot' }
+GolapServerPhotoImageRetriever >> asJSON [
+
+	^ super asJSON
+		  at: 'golapServerUrl' put: (golapServerUrl ifNotNil: #asString);
+		  at: 'imageServerUrl' put: (imageServerUrl ifNotNil: #asString);
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapServerPhotoImageRetriever >> authenticateBlock [
 

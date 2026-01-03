@@ -23,6 +23,21 @@ GolapAttributePhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 ]
 
 { #category : 'accessing' }
+GolapAttributePhotoImageRetriever class >> tag [
+
+	^ 'attribute'
+]
+
+{ #category : 'snapshot' }
+GolapAttributePhotoImageRetriever >> asJSON [
+
+	^ super asJSON
+		  at: 'photoColumn' put: photoColumn;
+		  at: 'availableColumns' -> availableColumns;
+		  yourself
+]
+
+{ #category : 'accessing' }
 GolapAttributePhotoImageRetriever >> availableColumns [
 
 	^ availableColumns

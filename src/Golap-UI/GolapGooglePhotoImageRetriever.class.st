@@ -30,6 +30,15 @@ GolapGooglePhotoImageRetriever >> apikey: aString [
 	apikey := aString
 ]
 
+{ #category : 'snapshot' }
+GolapGooglePhotoImageRetriever >> asJSON [
+
+	^ super asJSON
+		  at: 'numImages' put: numImages;
+		  at: 'enabled' put: enabled;
+		  yourself
+]
+
 { #category : 'private' }
 GolapGooglePhotoImageRetriever >> commit: copy [
 

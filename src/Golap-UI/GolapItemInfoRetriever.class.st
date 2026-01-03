@@ -51,7 +51,11 @@ GolapItemInfoRetriever >> allAvailablePhotoimageRetrievers [
 { #category : 'converting' }
 GolapItemInfoRetriever >> asJSON [
 
-	^ self subclassResponsibility
+	^ {
+		  ('tag' -> self class tag).
+		  ('photoImageRetrievers'
+		   -> (photoimageRetrievers asArray collect: #asJSON)) }
+		  asDictionary
 ]
 
 { #category : 'accessing' }

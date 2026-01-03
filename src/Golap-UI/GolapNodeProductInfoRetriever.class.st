@@ -22,13 +22,15 @@ GolapNodeProductInfoRetriever class >> photoUrlColumn: aString availableColumns:
 { #category : 'accessing' }
 GolapNodeProductInfoRetriever class >> tag [
 
-	^ 'csv'
+	^ 'node'
 ]
 
 { #category : 'converting' }
 GolapNodeProductInfoRetriever >> asJSON [
 
-	^ { ('photo-url-column' -> photoUrlColumn) } asOrderedDictionary
+	^ super asJSON
+		  at: 'photo-url-column' put: photoUrlColumn;
+		  yourself
 ]
 
 { #category : 'accessing' }

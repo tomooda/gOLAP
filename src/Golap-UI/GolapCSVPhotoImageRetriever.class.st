@@ -23,6 +23,27 @@ GolapCSVPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 		  yourself
 ]
 
+{ #category : 'accessing' }
+GolapCSVPhotoImageRetriever class >> tag [
+
+	^ 'csv'
+]
+
+{ #category : 'snapshot' }
+GolapCSVPhotoImageRetriever >> asJSON [
+
+	^ super asJSON
+		  at: 'csvRef' put: csvRef fullName;
+		  at: 'dataframe' put: {
+				  ('columnNames' -> dataframe columnNames).
+				  ('data' -> dataframe asArray) } asDictionary;
+		  at: 'idColumn' put: idColumn;
+		  at: 'photoColumn' put: photoColumn;
+		  at: 'urlPostfix' put: urlPostfix;
+		  at: 'urlPrefix' put: urlPrefix;
+		  yourself
+]
+
 { #category : 'private' }
 GolapCSVPhotoImageRetriever >> commit: aGolapCSVPhotoImageRetriever [
 

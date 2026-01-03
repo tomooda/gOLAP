@@ -33,13 +33,12 @@ GolapServerProductInfoRetriever class >> tag [
 { #category : 'converting' }
 GolapServerProductInfoRetriever >> asJSON [
 
-	^ OrderedDictionary new
-		  at: self class tag put: {
-				  ('server-url' -> golapServerUrl asString).
-				  ('server-config' -> serverConfig).
-				  ('image-url' -> imageRepositoryUrl asString).
-				  ('item-query' -> itemFieldQuerySpec).
-				  ('query' -> query) } asOrderedDictionary;
+	^ super asJSON
+		  at: 'server-url' put: golapServerUrl asString;
+		  at: 'server-config' put: serverConfig;
+		  at: 'image-url' put: imageRepositoryUrl asString;
+		  at: 'item-query' put: itemFieldQuerySpec;
+		  at: 'query' put: query;
 		  yourself
 ]
 

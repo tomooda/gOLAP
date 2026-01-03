@@ -18,6 +18,18 @@ GolapPhotoImageRetriever class >> isAbstract [
 	^ self = GolapPhotoImageRetriever
 ]
 
+{ #category : 'accessing' }
+GolapPhotoImageRetriever class >> tag [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'snapshot' }
+GolapPhotoImageRetriever >> asJSON [
+
+	^ { ('tag' -> self class tag) } asDictionary
+]
+
 { #category : 'accessing-cache' }
 GolapPhotoImageRetriever >> cacheAt: aString ifAbsentPut: errorBlock [
 
