@@ -53,6 +53,18 @@ GolapEdgesAppearance class >> on: aGolap [
 		yourself
 ]
 
+{ #category : 'snapshot' }
+GolapEdgesAppearance >> asJSON [
+
+	| json |
+	json := Dictionary new.
+	edgeEvaluatorList selectedItem ifNotNil: [ :edgeEvaluator |
+		json at: 'edge-evaluator' put: edgeEvaluator asJSON ].
+	nodeEvaluatorList selectedItem ifNotNil: [ :nodeEvaluator |
+		json at: 'node-evaluator' put: nodeEvaluator asJSON ].
+	^ json
+]
+
 { #category : 'layout' }
 GolapEdgesAppearance >> buttonHeight [
 

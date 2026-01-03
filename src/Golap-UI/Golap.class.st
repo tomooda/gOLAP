@@ -373,7 +373,7 @@ Golap >> addReferenceNode: aGolapNode [
 { #category : 'accessing-markers' }
 Golap >> allMarkerColors [
 
-	^ itemList allMarkerColors
+	^ model markers
 ]
 
 { #category : 'accessing-dimensions' }
@@ -443,6 +443,45 @@ Golap >> applyMergesToModel: aGolapModel [
 					 ifEmpty: [ nil ]
 					 ifNotEmpty: #average) ].
 	^ aGolapModel
+]
+
+{ #category : 'snapshot' }
+Golap >> asJSON [
+
+	^ {
+		  ('url' -> url asString).
+		  ('query' -> (query ifNil: [ Dictionary new ])).
+		  ('model' -> model asJSON).
+		  ('merges' -> merges collect: [ :assoc |
+				   {
+					   assoc key.
+					   assoc value } ]).
+		  ('pins' -> pins asArray).
+		  ('selections' -> selections asArray).
+		  ('referenceNodes' -> referenceNodes asArray).
+		  ('font' -> {
+			   ('familyName' -> font familyName).
+			   ('pointSize' -> font pointSize).
+			   ('stretchValue' -> font stretchValue).
+			   ('weightValue' -> font weightValue).
+			   ('slantValue' -> font slantValue) } asDictionary).
+		  ('baseList' -> baseList selectedItem).
+		  ('frontList' -> frontList selectedItem).
+		  ('itemsAppearance' -> itemsAppearancePresenter asJSON).
+		  ('edgesAppearance' -> edgesAppearancePresenter asJSON).
+		  ('colorsAppearance' -> colorsAppearancePresenter asJSON).
+		  ('itemView' -> itemView asJSON).
+		  ('itemList' -> itemList asJSON).
+		  ('edgeList' -> edgeList asJSON).
+		  ('comment' -> commentText text).
+		  ('polishOverview' -> polishOverviewPresenter asJSON).
+		  ('friendOverview' -> friendOverviewPresenter asJSON).
+		  ('articulationPointOverview'
+		   -> articulationPointOverviewPresenter asJSON).
+		  ('elaboration' -> elaborationPresenter asJSON).
+		  ('dandelion' -> dandelionPresenter asJSON).
+		  ('hedge' -> hedgePresenter asJSON).
+		  ('heatmap' -> heatmapPresenter asJSON) } asDictionary
 ]
 
 { #category : 'accessing' }
@@ -1131,7 +1170,7 @@ Golap >> markedNodes [
 { #category : 'accessing-markers' }
 Golap >> markersAndNodesDo: aBlock [
 
-	itemList markersAndNodesDo: aBlock
+	model markersAndNodesDo: aBlock
 ]
 
 { #category : 'menu' }
@@ -1139,28 +1178,30 @@ Golap >> mergeMenu [
 
 	| menu |
 	menu := self newMenu.
-	menu addGroup: [ :group | 
-		selections size > 1 ifTrue: [ 
-			group addItem: [ :item | 
-				item
-					name: 'selections';
-					action: [ self mergeSelectedNodes ] ] ].
-		itemList markerDropList listItems do: [ :listItem | 
-			| color ids |
-			color := listItem key.
-			ids := itemList markers at: color ifAbsent: [ #(  ) ].
-			ids size > 1 ifTrue: [ 
-				group addItem: [ :menuItem | 
-					menuItem
-						name: '';
-						icon: (self iconForCircleColor: color);
-						action: [ 
-							(self mergeNodes: ids copy) ifNotNil: [ :newId | 
-									itemList markerDropList items do: [ :item | 
-											item key = color ifTrue: [ item value: item value, ',',newId ] ].
-									(itemList markers at: color) add: newId.
-									itemList currentMarker: color.
-									itemList updateItemsList ] ] ] ] ] ].
+	menu addGroup: [ :group |
+			selections size > 1 ifTrue: [
+					group addItem: [ :item |
+							item
+								name: 'selections';
+								action: [ self mergeSelectedNodes ] ] ].
+			itemList markerDropList listItems do: [ :listItem |
+					| color ids |
+					color := listItem key.
+					ids := model nodes
+						       select: [ :node | node hasMarker: color ]
+						       thenCollect: #id.
+					ids size > 1 ifTrue: [
+							group addItem: [ :menuItem |
+									menuItem
+										name: '';
+										icon: (self iconForCircleColor: color);
+										action: [
+												(self mergeNodes: ids copy) ifNotNil: [ :newId |
+															itemList markerDropList items do: [ :item |
+																	item key = color ifTrue: [
+																			item value: item value , ',' , newId ] ].
+															itemList currentMarker: color.
+															itemList updateItemsList ] ] ] ] ] ].
 	^ menu
 ]
 

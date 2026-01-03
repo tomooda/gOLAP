@@ -12,7 +12,8 @@ Class {
 		'nodeAggregators',
 		'nodeEvaluator',
 		'nodes',
-		'edgeRanks'
+		'edgeRanks',
+		'markers'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -77,6 +78,13 @@ GolapModel >> - aGolapModel [
 	^ self copy diff: aGolapModel
 ]
 
+{ #category : 'accessing-markers' }
+GolapModel >> addMarker: aColor [
+
+	(markers includes: aColor) ifFalse: [ markers addLast: aColor ].
+	^ aColor
+]
+
 { #category : 'polishing' }
 GolapModel >> addNegativePolishEdge: aGolapEdge [
 	^ negativePolishEdges add: aGolapEdge
@@ -117,19 +125,22 @@ GolapModel >> asJSON [
 	^ OrderedDictionary new
 		  at: 'nodes'
 		  put: (originalNodes values asArray collect: [ :node |
-					   {
-						   ('id' -> node id).
-						   ('name' -> node name).
-						   ('data' -> node data) } asOrderedDictionary ]);
+						   {
+							   ('id' -> node id).
+							   ('name' -> node name).
+							   ('data' -> node data).
+							   ('markers' -> (node markers collect: #asHexString)) }
+							   asOrderedDictionary ]);
 		  at: 'nodeEvaluator' put: nodeEvaluator asJSON;
 		  at: 'nodeAggregators' put: (nodeAggregators collect: #asJSON);
 		  at: 'edges' put: (originalEdges asArray collect: [ :edge |
-					   {
-						   ('node1' -> edge node1 id).
-						   ('node2' -> edge node2 id).
-						   ('data' -> edge data) } asOrderedDictionary ]);
+						   {
+							   ('node1' -> edge node1 id).
+							   ('node2' -> edge node2 id).
+							   ('data' -> edge data) } asOrderedDictionary ]);
 		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
 		  at: 'edgeAggregators' put: (edgeAggregators collect: #asJSON);
+		  at: 'markers' put: (markers collect: #asHexString);
 		  yourself
 ]
 
@@ -265,6 +276,13 @@ GolapModel >> edgesDo: aBlock [
 							aBlock value: edge ] ] ]
 ]
 
+{ #category : 'accessing-markers' }
+GolapModel >> ensureMarker: aColor [
+
+	(markers includes: aColor) ifFalse: [ markers addLast: aColor ].
+	^ aColor
+]
+
 { #category : 'private' }
 GolapModel >> flushEdgeRanks [
 
@@ -385,11 +403,49 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 GolapModel >> initialize [
 
 	super initialize.
+	markers := {
+		           Color red.
+		           Color yellow darker.
+		           Color green.
+		           Color blue }.
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
 	edgeRanks := IdentityDictionary new
+]
+
+{ #category : 'accessing-markers' }
+GolapModel >> markers [
+
+	^ markers asArray
+]
+
+{ #category : 'accessing-markers' }
+GolapModel >> markersAndNodes [
+
+	| markersAndNodes |
+	markersAndNodes := (markers collect: [ :marker |
+		                    marker -> OrderedCollection new ])
+		                   asOrderedDictionary.
+	self nodesDo: [ :node |
+			node markersDo: [ :marker |
+					markersAndNodes
+						at: marker
+						ifPresent: [ :markedNodes | markedNodes add: node ] ] ].
+	^ markersAndNodes
+]
+
+{ #category : 'enumerating' }
+GolapModel >> markersAndNodesDo: aBlock [
+
+	self markersAndNodes keysAndValuesDo: aBlock
+]
+
+{ #category : 'accessing-markers' }
+GolapModel >> markersDo: aBlock [
+
+	markers do: aBlock
 ]
 
 { #category : 'accessing' }
@@ -576,6 +632,13 @@ GolapModel >> nodesDo: aBlock [
 
 	self nodes keys do: [ :id |
 		aBlock cull: (nodes at: id) cull: id ]
+]
+
+{ #category : 'enumerating' }
+GolapModel >> nodesWithMarker: aColor do: aBlock [
+
+	self nodesDo: [ :node |
+		(node hasMarker: aColor) ifTrue: [ aBlock value: node ] ]
 ]
 
 { #category : 'private' }
@@ -775,6 +838,12 @@ GolapModel >> readServerDataframe: aDataFrame [
 	nodes := newNodes.
 	friendsEdges := nil.
 	self flushEdgeRanks
+]
+
+{ #category : 'accessing-markers' }
+GolapModel >> removeMarker: aColor [
+
+	^ markers remove: aColor ifAbsent: [ ]
 ]
 
 { #category : 'polishing' }

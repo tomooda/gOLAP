@@ -318,7 +318,7 @@ GolapNode >> label: aForm [
 { #category : 'accessing' }
 GolapNode >> markers [
 
-	^ markers
+	^ markers asArray
 ]
 
 { #category : 'enumerating' }

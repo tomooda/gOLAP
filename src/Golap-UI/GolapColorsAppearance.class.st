@@ -70,6 +70,19 @@ GolapColorsAppearance class >> on: aGolap [
 		yourself
 ]
 
+{ #category : 'snapshot' }
+GolapColorsAppearance >> asJSON [
+
+	^ (self colorSelectors collect: [ :selector |
+			   selector
+			   -> ((self perform: selector asSymbol) ifNotNil: #asHexString) ])
+		  asOrderedDictionary
+		  at: 'name-selection' put: nameList selectedItem;
+		  at: 'color-selection'
+		  put: (colorList selectedItem ifNotNil: #asHexString);
+		  yourself
+]
+
 { #category : 'accessing-widgets' }
 GolapColorsAppearance >> colorList [
 	^ colorList
