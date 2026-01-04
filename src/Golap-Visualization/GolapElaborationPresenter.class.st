@@ -25,6 +25,19 @@ Class {
 GolapElaborationPresenter >> activateOnNotebookPage [
 ]
 
+{ #category : 'snapshot' }
+GolapElaborationPresenter >> asJSON [
+
+	^ {
+		  ('gap' -> gapSlider value).
+		  ('scale' -> {
+			   scale x.
+			   scale y }).
+		  ('offset' -> {
+			   offset x.
+			   offset y }) } asDictionary
+]
+
 { #category : 'accessing' }
 GolapElaborationPresenter >> camera [
 

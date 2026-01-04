@@ -39,7 +39,9 @@ GolapOverviewPresenter >> asJSON [
 
 	^ {
 		  ('scale' -> scale).
-		  ('offset' -> offset).
+		  ('offset' -> {
+			   offset x.
+			   offset y }).
 		  ('nodePositions'
 		   -> (nodePositions associations collect: [ :assoc |
 					    assoc key -> {

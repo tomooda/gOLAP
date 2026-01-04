@@ -15,6 +15,12 @@ Class {
 GolapHierarchicalClusteringPresenter >> activateOnNotebookPage [
 ]
 
+{ #category : 'snapshot' }
+GolapHierarchicalClusteringPresenter >> asJSON [
+
+	^ {  } asDictionary
+]
+
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> canvas [
 
