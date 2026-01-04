@@ -87,8 +87,8 @@ GolapOverviewPresenter >> defaultLayout [
 { #category : 'operations' }
 GolapOverviewPresenter >> drag: aGolapNode by: aPoint [
 
-	nodePositions at: aGolapNode ifPresent: [ :point |
-		nodePositions at: aGolapNode put: aPoint / self scale + point ].
+	nodePositions at: aGolapNode id ifPresent: [ :point |
+		nodePositions at: aGolapNode id put: aPoint / self scale + point ].
 	self updateNodeShapePositions.
 	lock critical: [ self canvas signalUpdate ]
 ]
@@ -98,10 +98,10 @@ GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
 
 	| v |
 	v := 0 @ 0.
-	nodePositions at: aGolapNode ifPresent: [ :p0 |
+	nodePositions at: aGolapNode id ifPresent: [ :p0 |
 			aGolapNode edgesAndNodeDo: [ :edge :node |
 					(reallyVisibleEdges includes: edge) ifTrue: [
-							nodePositions at: node ifPresent: [ :p1 |
+							nodePositions at: node id ifPresent: [ :p1 |
 									| v1 |
 									v1 := p1 - p0.
 									v1 isZero ifFalse: [ v := v + v1 normalized ] ] ] ] ].
@@ -117,15 +117,9 @@ GolapOverviewPresenter >> ensureNodePositions [
 			self golapModelDo: [ :golapModel |
 					self availableEdges do: [ :edge |
 							((golapModel valueAtEdge: edge) notNil and: [
-									 (nodePositions includesKey: edge node1) not or: [
-										 (nodePositions includesKey: edge node2) not ] ]) ifTrue: [
-									nodePositions := GolapOverviewGridLayouter
-										                 layoutNodes: reallyVisibleNodes
-										                 edges: reallyVisibleEdges.
-									self
-										updateNodeShapes;
-										forceZoomToFit.
-									^ self ] ] ] ]
+									 (nodePositions includesKey: edge node1 id) not or: [
+										 (nodePositions includesKey: edge node2 id) not ] ])
+								ifTrue: [ ^ self updateNodePositions ] ] ] ]
 ]
 
 { #category : 'operations' }
@@ -133,17 +127,17 @@ GolapOverviewPresenter >> forceZoomToFit [
 
 	| rect ext |
 	rect := (Array streamContents: [ :stream |
-		         reallyVisibleNodes do: [ :node |
-			         nodePositions
-				         at: node
-				         ifPresent: [ :point | stream nextPut: point ] ] ])
+			         reallyVisibleNodes do: [ :node |
+					         nodePositions
+						         at: node id
+						         ifPresent: [ :point | stream nextPut: point ] ] ])
 		        ifEmpty: [ ^ self ]
 		        ifNotEmpty: [ :points | Rectangle encompassing: points ].
 	self offset: rect floatCenter negated.
 	roassal withAdapterDo: [ :a |
-		a widgetDo: [ :w |
-			ext := w extent.
-			self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
+			a widgetDo: [ :w |
+					ext := w extent.
+					self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
 	self updateNodeShapePositions.
 	lock critical: [ self canvas signalUpdate ]
 ]
@@ -192,7 +186,7 @@ GolapOverviewPresenter >> initialize [
 	scale := 100.0.
 	offset := 0.0 @ 0.0.
 	lock := Mutex new.
-	nodePositions := IdentityDictionary new
+	nodePositions := Dictionary new
 ]
 
 { #category : 'initialization' }
@@ -525,7 +519,7 @@ GolapOverviewPresenter >> renderNodesIn: aRSCanvas [
 		               yourself.
 	nodeShapes := IdentityDictionary new: reallyVisibleNodes size.
 	reallyVisibleNodes do: [ :node |
-			nodePositions at: node ifPresent: [ :p |
+			nodePositions at: node id ifPresent: [ :p |
 					(self newShapeForNode: node) ifNotNil: [ :shape |
 							shape translateTo: p + offset * scale.
 							shape @ interaction.
@@ -633,10 +627,12 @@ GolapOverviewPresenter >> updateNodePositions [
 GolapOverviewPresenter >> updateNodeShapePositions [
 
 	lock critical: [
-		self canvas shapes do: [ :shape |
-			nodePositions
-				at: shape model
-				ifPresent: [ :point | shape translateTo: point + offset * scale ] ] ]
+			self canvas shapes do: [ :shape |
+					(shape model isKindOf: GolapNode) ifTrue: [
+							nodePositions
+								at: shape model id
+								ifPresent: [ :point |
+								shape translateTo: point + offset * scale ] ] ] ]
 ]
 
 { #category : 'updating' }

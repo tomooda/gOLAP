@@ -26,7 +26,7 @@ GolapArticulationPointOverviewPresenter >> articulationPointChanged [
 	golap ifNotNil: [
 			self updateCanvas.
 			self articulationPoint ifNotNil: [ :node |
-				offset := (nodePositions at: node) negated ].
+				offset := (nodePositions at: node id) negated ].
 			self updateNodeShapePositions ]
 ]
 

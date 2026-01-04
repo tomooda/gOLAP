@@ -149,7 +149,7 @@ GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollect
 				progress
 					label: '完了';
 					progressPercent: 100.
-				positions := IdentityDictionary new: aCollectionOfGolapNode size.
+				positions := Dictionary new: aCollectionOfGolapNode size.
 				aCollectionOfGolapNode do: [ :node |
 						nodeX at: node ifPresent: [ :x |
 								| yOffset |
@@ -157,7 +157,7 @@ GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollect
 									           ifTrue: [ 0.1 ]
 									           ifFalse: [ -0.1 ].
 								nodeY at: node ifPresent: [ :y |
-										positions at: node put: x asFloat + (y odd
+										positions at: node id put: x asFloat + (y odd
 												 ifTrue: [ 0.1 ]
 												 ifFalse: [ -0.1 ]) @ (y asFloat + yOffset) ] ] ] ].
 	^ positions
