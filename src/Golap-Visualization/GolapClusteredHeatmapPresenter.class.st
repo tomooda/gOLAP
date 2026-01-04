@@ -21,12 +21,13 @@ GolapClusteredHeatmapPresenter >> asJSON [
 
 	^ super asJSON
 		  at: 'rank' put: rankSlider value;
+		  at: 'evaluatorDropList'
+		  put: evaluatorDropList selectedItem value asJSON;
 		  at: 'showsClusterMeans' put: showsClusterMeansCheckBox state;
 		  at: 'showsSingletonClusters'
 		  put: showsSingletonClustersCheckBox state;
 		  at: 'showsClusterBoundaries'
 		  put: showsClusterBoundariesCheckBox state;
-		  at: 'evaluatorDropList' put: evaluatorDropList selectedItem;
 		  yourself
 ]
 

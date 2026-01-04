@@ -36,7 +36,8 @@ GolapArticulationPointOverviewPresenter >> asJSON [
 	^ super asJSON
 		  at: 'friendsRank' put: friendsRankField number;
 		  at: 'minimumIslandSize' put: minimumIslandSizeField number;
-		  at: 'articulationPoint' put: articulationPointList selectedItem;
+		  at: 'articulationPoint'
+		  put: (articulationPointList selectedItem ifNotNil: #id);
 		  yourself
 ]
 

@@ -19,6 +19,12 @@ GolapGooglePhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 ]
 
 { #category : 'accessing' }
+GolapGooglePhotoImageRetriever class >> tag [
+
+	^ 'google'
+]
+
+{ #category : 'accessing' }
 GolapGooglePhotoImageRetriever >> apikey [
 
 	^ apikey

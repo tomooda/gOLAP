@@ -29,10 +29,10 @@ GolapEdgeList >> asJSON [
 
 	^ {
 		  ('node-selection' -> nodeDropList selectedItem).
-		  ('edge-selection' -> peerNodeList selectedItem ifNotNil: [ :edge |
-				   {
-					   edge node1.
-					   edge node2 } ]) } asDictionary
+		  ('edge-selection' -> (peerNodeList selectedItem ifNotNil: [ :edge |
+		{
+			edge node1.
+			edge node2 } ])) } asDictionary
 ]
 
 { #category : 'accessing' }

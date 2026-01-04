@@ -24,6 +24,12 @@ GolapServerPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 		  do: [ :ex | ex return: nil ]
 ]
 
+{ #category : 'accessing' }
+GolapServerPhotoImageRetriever class >> tag [
+
+	^ 'server'
+]
+
 { #category : 'snapshot' }
 GolapServerPhotoImageRetriever >> asJSON [
 

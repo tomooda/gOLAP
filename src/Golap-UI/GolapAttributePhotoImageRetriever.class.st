@@ -33,7 +33,7 @@ GolapAttributePhotoImageRetriever >> asJSON [
 
 	^ super asJSON
 		  at: 'photoColumn' put: photoColumn;
-		  at: 'availableColumns' -> availableColumns;
+		  at: 'availableColumns' put: availableColumns;
 		  yourself
 ]
 

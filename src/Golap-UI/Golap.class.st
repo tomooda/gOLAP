@@ -452,26 +452,25 @@ Golap >> asJSON [
 		  ('url' -> url asString).
 		  ('query' -> (query ifNil: [ Dictionary new ])).
 		  ('model' -> model asJSON).
-		  ('merges' -> merges collect: [ :assoc |
-				   {
-					   assoc key.
-					   assoc value } ]).
+		  ('merges' -> (merges collect: [ :assoc |
+				    {
+					    assoc key.
+					    assoc value } ])).
 		  ('pins' -> pins asArray).
 		  ('selections' -> selections asArray).
 		  ('referenceNodes' -> referenceNodes asArray).
-		  ('font' -> {
-			   ('familyName' -> font familyName).
-			   ('pointSize' -> font pointSize).
-			   ('stretchValue' -> font stretchValue).
-			   ('weightValue' -> font weightValue).
-			   ('slantValue' -> font slantValue) } asDictionary).
+		  ('font' -> (font ifNotNil: [
+				    {
+					    ('familyName' -> font familyName).
+					    ('pointSize' -> font pointSize).
+					    ('stretchValue' -> font stretchValue).
+					    ('weightValue' -> font weightValue).
+					    ('slantValue' -> font slantValue) } asDictionary ])).
 		  ('baseList' -> baseList selectedItem).
 		  ('frontList' -> frontList selectedItem).
-		  ('itemsAppearance' -> itemsAppearancePresenter asJSON).
 		  ('edgesAppearance' -> edgesAppearancePresenter asJSON).
 		  ('colorsAppearance' -> colorsAppearancePresenter asJSON).
 		  ('itemInfoRetriever' -> itemInfoRetriever asJSON).
-		  ('itemView' -> itemView asJSON).
 		  ('itemList' -> itemList asJSON).
 		  ('edgeList' -> edgeList asJSON).
 		  ('comment' -> commentText text).

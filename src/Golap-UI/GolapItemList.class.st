@@ -107,7 +107,8 @@ GolapItemList >> asJSON [
 		  ('markerFilters'
 		   -> (markerDropList items collect: [ :colorAndPatternString |
 					    (self snapshotColor: colorAndPatternString key)
-					    -> colorAndPatternString value ]) asArray) }
+					    -> colorAndPatternString value ]) asDictionary) }
+		  asDictionary
 ]
 
 { #category : 'layout' }

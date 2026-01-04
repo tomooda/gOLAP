@@ -33,10 +33,11 @@ GolapCSVPhotoImageRetriever class >> tag [
 GolapCSVPhotoImageRetriever >> asJSON [
 
 	^ super asJSON
-		  at: 'csvRef' put: csvRef fullName;
-		  at: 'dataframe' put: {
-				  ('columnNames' -> dataframe columnNames).
-				  ('data' -> dataframe asArray) } asDictionary;
+		  at: 'csvRef' put: (csvRef ifNotNil: #fullName);
+		  at: 'dataframe' put: (dataframe ifNotNil: [
+						   {
+							   ('columnNames' -> dataframe columnNames).
+							   ('data' -> dataframe asArray) } asDictionary ]);
 		  at: 'idColumn' put: idColumn;
 		  at: 'photoColumn' put: photoColumn;
 		  at: 'urlPostfix' put: urlPostfix;
