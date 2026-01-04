@@ -10,6 +10,14 @@ Class {
 	#tag : 'Friend'
 }
 
+{ #category : 'snapshot' }
+GolapFriendOverviewPresenter >> asJSON [
+
+	^ super asJSON
+		  at: 'friendsRank' put: friendsRankField number;
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapFriendOverviewPresenter >> availableEdges [
 

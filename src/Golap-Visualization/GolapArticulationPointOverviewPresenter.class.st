@@ -30,6 +30,16 @@ GolapArticulationPointOverviewPresenter >> articulationPointChanged [
 			self updateNodeShapePositions ]
 ]
 
+{ #category : 'snapshot' }
+GolapArticulationPointOverviewPresenter >> asJSON [
+
+	^ super asJSON
+		  at: 'friendsRank' put: friendsRankField number;
+		  at: 'minimumIslandSize' put: minimumIslandSizeField number;
+		  at: 'articulationPoint' put: articulationPointList selectedItem;
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapArticulationPointOverviewPresenter >> availableEdges [
 

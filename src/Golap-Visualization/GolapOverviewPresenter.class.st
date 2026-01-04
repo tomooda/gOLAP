@@ -34,6 +34,19 @@ GolapOverviewPresenter >> activateOnNotebookPage [
 	nodePositions ifEmpty: [ self updateNodePositions ]
 ]
 
+{ #category : 'snapshot' }
+GolapOverviewPresenter >> asJSON [
+
+	^ {
+		  ('scale' -> scale).
+		  ('offset' -> offset).
+		  ('nodePositions'
+		   -> (nodePositions associations collect: [ :assoc |
+					    assoc key -> {
+						    assoc value x.
+						    assoc value y } ]) asDictionary) } asDictionary
+]
+
 { #category : 'accessing' }
 GolapOverviewPresenter >> availableEdges [
 
@@ -119,7 +132,14 @@ GolapOverviewPresenter >> ensureNodePositions [
 							((golapModel valueAtEdge: edge) notNil and: [
 									 (nodePositions includesKey: edge node1 id) not or: [
 										 (nodePositions includesKey: edge node2 id) not ] ])
-								ifTrue: [ ^ self updateNodePositions ] ] ] ]
+								ifTrue: [
+										nodePositions := GolapOverviewGridLayouter
+											                 layoutNodes: reallyVisibleNodes
+											                 edges: reallyVisibleEdges.
+										self
+											updateNodeShapes;
+											forceZoomToFit.
+										^ self ] ] ] ]
 ]
 
 { #category : 'operations' }

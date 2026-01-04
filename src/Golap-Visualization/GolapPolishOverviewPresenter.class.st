@@ -21,6 +21,22 @@ Class {
 	#tag : 'Polish'
 }
 
+{ #category : 'snapshot' }
+GolapPolishOverviewPresenter >> asJSON [
+
+	^ super asJSON
+		  at: 'visibleEdgeMinPercentile'
+		  put: visibleEdgeMinPercentileSlider value;
+		  at: 'visibleEdgeMaxPercentile'
+		  put: visibleEdgeMaxPercentileSlider value;
+		  at: 'polishIteration' put: polishIterationCheckbox state;
+		  at: 'positivePolish' put: positivePolishField number;
+		  at: 'negativePolish' put: negativePolishField number;
+		  at: 'polishMinDenominator' put: polishMinDenominatorField number;
+		  at: 'showsPolishEdges' put: showsPolishEdgesCheckbox state;
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapPolishOverviewPresenter >> availableEdges [
 
