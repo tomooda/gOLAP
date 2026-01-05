@@ -106,9 +106,10 @@ GolapItemList >> asJSON [
 		  ('marker' -> (self currentMarker ifNotNil: #asHexString)).
 		  ('markerFilters'
 		   -> (markerDropList items collect: [ :colorAndPatternString |
-					    (self snapshotColor: colorAndPatternString key)
-					    -> colorAndPatternString value ]) asDictionary) }
-		  asDictionary
+					    (colorAndPatternString key
+						     ifNotNil: #asHexString
+						     ifNil: [ '' ]) -> colorAndPatternString value ])
+				   asDictionary) } asDictionary
 ]
 
 { #category : 'layout' }
@@ -155,6 +156,19 @@ GolapItemList >> defaultLayout [
 		  height: self buttonHeight;
 		  add: showsAllItemsCheckBox height: self buttonHeight;
 		  add: nodeList
+]
+
+{ #category : 'testing' }
+GolapItemList >> filter: aCollectionOfGolapNode [
+
+	^ queryField text asString trim
+		  ifNotEmpty: [ :q |
+				  | regexs |
+				  regexs := (q substrings: ',') collect: [ :pattern |
+					            self regexFor: pattern trim ].
+				  aCollectionOfGolapNode select: [ :v |
+					  regexs anySatisfy: [ :regex | regex matches: v name ] ] ]
+		  ifEmpty: [ aCollectionOfGolapNode ]
 ]
 
 { #category : 'accessing' }
@@ -237,17 +251,18 @@ GolapItemList >> initializePresenters [
 			              | text |
 			              text := queryField text asString trim.
 			              self updateGlobalImageAfter: [
-					              | selectedMarker |
+					              | selectedMarker nodes |
 					              selectedMarker := markerDropList selectedItem.
 					              selectedMarker value: text.
+					              nodes := OrderedCollection new.
 					              text ifNotEmpty: [ :q |
-							              | regexs nodes |
+							              | regexs |
 							              regexs := (q substrings: ',') collect: [ :pattern |
 								                        self regexFor: pattern trim ].
 							              nodes := self nodes select: [ :v |
 								                       regexs anySatisfy: [ :regex |
-									                       regex matches: v name ] ].
-
+									                       regex matches: v name ] ] ].
+					              selectedMarker key ifNotNil: [ :marker |
 							              self nodes do: [ :node |
 								              node removeMarker: selectedMarker key ].
 							              golap model ensureMarker: selectedMarker key.
@@ -651,8 +666,10 @@ GolapItemList >> updateItemsList [
 	self modelDo: [ :model |
 			nodes := model nodes asArray select: [ :node |
 				         self showsNode: node ].
-			self currentMarker ifNotNil: [ :marker |
-				nodes := nodes select: [ :node | node hasMarker: marker ] ].
+			self currentMarker
+				ifNotNil: [ :marker |
+				nodes := nodes select: [ :node | node hasMarker: marker ] ]
+				ifNil: [ nodes := self filter: nodes ].
 			nodeList
 				items: ((nodes asSortedCollection:
 						  [ :node | model valueAtNode: node ] descending) collect: #id)

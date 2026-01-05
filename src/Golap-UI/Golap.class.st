@@ -1088,6 +1088,13 @@ Golap >> isLockedNode: aGolapNode [
 ]
 
 { #category : 'accessing-reference and lock' }
+Golap >> isReferenceEdge: aGolapEdge [
+
+	^ (referenceNodes includes: aGolapEdge node1 id) or: [
+		  referenceNodes includes: aGolapEdge node2 id ]
+]
+
+{ #category : 'accessing-reference and lock' }
 Golap >> isReferenceNode: aGolapNode [
 
 	^ referenceNodes includes: aGolapNode id

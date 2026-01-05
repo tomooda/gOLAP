@@ -140,7 +140,7 @@ GolapModel >> asJSON [
 							   ('data' -> edge data) } asOrderedDictionary ]);
 		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
 		  at: 'edgeAggregators' put: (edgeAggregators collect: #asJSON);
-		  at: 'markers' put: (markers collect: #asHexString);
+		  at: 'markers' put: (markers collect: #asHexString) asArray;
 		  yourself
 ]
 
@@ -407,7 +407,7 @@ GolapModel >> initialize [
 		           Color red.
 		           Color yellow darker.
 		           Color green.
-		           Color blue }.
+		           Color blue } asOrderedCollection.
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
