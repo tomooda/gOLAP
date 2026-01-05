@@ -121,7 +121,7 @@ GolapOverviewGridLayouter >> improve: aGolapNode [
 GolapOverviewGridLayouter >> improveEveryNodeFrom: aCollectionOfGolapNode interim: aBlock [
 
 	| mod |
-	mod := aCollectionOfGolapNode size // 20.
+	mod := aCollectionOfGolapNode size // 20 + 1.
 	aCollectionOfGolapNode withIndexDo: [ :node :index |
 			self improve: node.
 			index \\ mod = 0 ifTrue: [
@@ -135,8 +135,6 @@ GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollect
 	SpProgressDialog new
 		title: 'グラフ再配置中…';
 		informUserDuring: [ :progress |
-				| mod |
-				mod := aCollectionOfGolapNode size // 20.
 				reps := 10.
 				self edges: aCollectionOfGolapEdge.
 				self createMatrixFromNodes: aCollectionOfGolapNode.
