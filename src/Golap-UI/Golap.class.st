@@ -228,12 +228,12 @@ Golap class >> openAboutDialog [
 Golap class >> openClient [
 
 	<script: 'GolapOverview openClient'>
-	| overview |
-	overview := self new.
-	overview open maximize.
 	GolapNetworkClientPresenter
 		openDialogIfAccepted: [ :client :queryRecord |
+				| overview |
 				[
+					overview := self new.
+					overview open maximize.
 					client
 						ifNotNil: [
 								[
@@ -283,7 +283,7 @@ Golap class >> openClient [
 								overview updateModel ] ]
 					on: GolapAborted
 					do: [ :ex | overview delete ] ]
-		ifCanceled: [ overview delete ]
+		ifCanceled: [ ]
 ]
 
 { #category : 'examples' }
