@@ -136,10 +136,9 @@ GolapOverviewPresenter >> ensureNodePositions [
 										nodePositions := GolapOverviewGridLayouter
 											                 layoutNodes:
 												                 (reallyVisibleNodes select: [ :node |
-													                  (golap isReferenceNode: node) not ])
-											                 edges:
-											                 (reallyVisibleEdges select: [ :e |
-												                  (golap isReferenceEdge: e) not ]).
+													                  (golapModel isReferenceNode: node) not ])
+											                 edges: (reallyVisibleEdges select: [ :e |
+													                  (golapModel isReferenceEdge: e) not ]).
 										self
 											updateNodeShapes;
 											forceZoomToFit.
@@ -394,21 +393,22 @@ GolapOverviewPresenter >> newPinShape [
 GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 
 	self golapModelDo: [ :golapModel |
-			((golap isReferenceEdge: aGolapEdge)
+			((golapModel isReferenceEdge: aGolapEdge)
 				 ifTrue: [
 						 ((golap includesSelection: aGolapEdge node1) or: [
 							  golap includesSelection: aGolapEdge node2 ])
 							 ifTrue: [
 									 | refIndex |
-									 refIndex := (activeReferenceNodes indexOf: aGolapEdge node1)
-										             max:
-										             (activeReferenceNodes indexOf: aGolapEdge node2).
+									 refIndex := (golapModel indexAtReferenceNode:
+										              aGolapEdge node1) max:
+										             (golapModel indexAtReferenceNode:
+											              aGolapEdge node2).
 									 refIndex > 0
 										 ifTrue: [
 												 Color
 													 h:
 													 (refIndex - 1) asFloat * 360.0
-													 / activeReferenceNodes size asFloat
+													 / golapModel referenceNodesSize asFloat
 													 s: 1.0
 													 v: 1.0 ]
 										 ifFalse: [ nil ] ]
@@ -638,12 +638,14 @@ GolapOverviewPresenter >> updateNodePositions [
 			self updateGraph.
 			(reallyVisibleNodes notNil and: [ reallyVisibleEdges notNil ])
 				ifTrue: [
-						nodePositions := GolapOverviewGridLayouter
-							                 layoutNodes:
-								                 (reallyVisibleNodes select: [ :node |
-									                  (golap isReferenceNode: node) not ])
-							                 edges: (reallyVisibleEdges select: [ :edge |
-									                  (golap isReferenceEdge: edge) not ]).
+						self golapModelDo: [ :golapModel |
+								nodePositions := GolapOverviewGridLayouter
+									                 layoutNodes:
+										                 (reallyVisibleNodes select: [ :node |
+											                  (golapModel isReferenceNode: node) not ])
+									                 edges:
+										                 (reallyVisibleEdges select: [ :edge |
+											                  (golapModel isReferenceEdge: edge) not ]) ].
 						self
 							updateNodeShapes;
 							forceZoomToFit ] ]
@@ -653,28 +655,29 @@ GolapOverviewPresenter >> updateNodePositions [
 GolapOverviewPresenter >> updateNodeShapePositions [
 
 	lock critical: [
-			self canvas shapes do: [ :shape |
-					(shape model isKindOf: GolapNode) ifTrue: [
-							| node |
-							node := shape model.
-							(golap isReferenceNode: node)
-								ifTrue: [
-										| index |
-										index := activeReferenceNodes indexOf: node.
-										index > 0 ifTrue: [
-												| t |
-												t := activeReferenceNodes size > 1
-													     ifTrue: [
-													     (index - 1) asFloat
-													     / (activeReferenceNodes size - 1) asFloat ]
-													     ifFalse: [ 0.5 ].
-												shape translateTo:
-													self canvas extent * (t - 0.5 * 0.9 @ 0.45) ] ]
-								ifFalse: [
-										nodePositions
-											at: shape model id
-											ifPresent: [ :point |
-											shape translateTo: point + offset * scale ] ] ] ] ]
+			self golapModelDo: [ :golapModel |
+					self canvas shapes do: [ :shape |
+							(shape model isKindOf: GolapNode) ifTrue: [
+									| node |
+									node := shape model.
+									(golap model isReferenceNode: node)
+										ifTrue: [
+												| index |
+												index := golapModel indexAtReferenceNode: node.
+												index > 0 ifTrue: [
+														| t |
+														t := golapModel referenceNodesSize > 1
+															     ifTrue: [
+															     (index - 1) asFloat
+															     / (golapModel referenceNodesSize - 1) asFloat ]
+															     ifFalse: [ 0.5 ].
+														shape translateTo:
+															self canvas extent * (t - 0.5 * 0.9 @ 0.45) ] ]
+										ifFalse: [
+												nodePositions
+													at: shape model id
+													ifPresent: [ :point |
+													shape translateTo: point + offset * scale ] ] ] ] ] ]
 ]
 
 { #category : 'updating' }
@@ -683,8 +686,7 @@ GolapOverviewPresenter >> updateNodeShapes [
 	lock critical: [
 			self
 				updateFreqScale;
-				updateLineScale;
-				updateReferenceNodes.
+				updateLineScale.
 			self canvas shapes copy do: #remove.
 			self canvas color: Color white.
 			self
@@ -692,13 +694,6 @@ GolapOverviewPresenter >> updateNodeShapes [
 				renderEdgesIn: self canvas.
 			self updateNodeShapePositions.
 			self canvas signalUpdate ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateReferenceNodes [
-
-	activeReferenceNodes := golap referenceNodes collect: [ :id |
-		                        golap model nodeAt: id ]
 ]
 
 { #category : 'operations' }

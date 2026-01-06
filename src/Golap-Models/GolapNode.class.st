@@ -14,7 +14,8 @@ Class {
 		'label',
 		'rectangles',
 		'photoimage',
-		'markers'
+		'markers',
+		'isReferenceNode'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',

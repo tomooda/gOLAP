@@ -292,14 +292,15 @@ GolapArticulationPointOverviewPresenter >> sumNeighborsOrdersOf: aGolapNode [
 
 	| sum |
 	sum := 0.
-	aGolapNode edgesAndNodeDo: [ :edge :peer |
-			((reallyVisibleEdges includes: edge) and: [
-				 (golap isReferenceEdge: edge) not ]) ifTrue: [
-					peer edgesAndNodeDo: [ :e :p |
-							(aGolapNode ~~ p and: [
-									 (reallyVisibleEdges includes: e) and: [
-										 (golap isReferenceNode: p) not ] ]) ifTrue: [
-								sum := sum + 1 ] ] ] ].
+	self golapModelDo: [ :golapModel |
+			aGolapNode edgesAndNodeDo: [ :edge :peer |
+					((reallyVisibleEdges includes: edge) and: [
+						 (golapModel isReferenceEdge: edge) not ]) ifTrue: [
+							peer edgesAndNodeDo: [ :e :p |
+									(aGolapNode ~~ p and: [
+											 (reallyVisibleEdges includes: e) and: [
+												 (golapModel isReferenceNode: p) not ] ]) ifTrue: [
+										sum := sum + 1 ] ] ] ] ].
 	^ sum
 ]
 
@@ -312,7 +313,7 @@ GolapArticulationPointOverviewPresenter >> updateArticulationPointList [
 					minimumIslandSize := self minimumIslandSize.
 					items := (((golapModel articulationNodesInEdges:
 						            (reallyVisibleEdges select: [ :edge |
-							             (golap isReferenceEdge: edge) not ]))
+							             (golapModel isReferenceEdge: edge) not ]))
 						           collect: [ :node |
 						           node
 						           -> (self islandsDividedByArticulationPoint: node) ]

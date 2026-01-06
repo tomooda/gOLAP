@@ -13,7 +13,7 @@ Class {
 		'nodeEvaluator',
 		'nodes',
 		'edgeRanks',
-		'markers'
+		'referenceNodes'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -78,13 +78,6 @@ GolapModel >> - aGolapModel [
 	^ self copy diff: aGolapModel
 ]
 
-{ #category : 'accessing-markers' }
-GolapModel >> addMarker: aColor [
-
-	(markers includes: aColor) ifFalse: [ markers addLast: aColor ].
-	^ aColor
-]
-
 { #category : 'polishing' }
 GolapModel >> addNegativePolishEdge: aGolapEdge [
 	^ negativePolishEdges add: aGolapEdge
@@ -93,6 +86,12 @@ GolapModel >> addNegativePolishEdge: aGolapEdge [
 { #category : 'polishing' }
 GolapModel >> addPositivePolishEdge: aGolapEdge [
 	^ positivePolishEdges add: aGolapEdge
+]
+
+{ #category : 'accessing-reference nodes' }
+GolapModel >> addReferenceNode: aGolapNode [
+
+	referenceNodes addLast: aGolapNode id
 ]
 
 { #category : 'algorithms-articulation points' }
@@ -140,7 +139,7 @@ GolapModel >> asJSON [
 							   ('data' -> edge data) } asOrderedDictionary ]);
 		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
 		  at: 'edgeAggregators' put: (edgeAggregators collect: #asJSON);
-		  at: 'markers' put: (markers collect: #asHexString) asArray;
+		  at: 'referenceNodes' put: referenceNodes asArray;
 		  yourself
 ]
 
@@ -276,13 +275,6 @@ GolapModel >> edgesDo: aBlock [
 							aBlock value: edge ] ] ]
 ]
 
-{ #category : 'accessing-markers' }
-GolapModel >> ensureMarker: aColor [
-
-	(markers includes: aColor) ifFalse: [ markers addLast: aColor ].
-	^ aColor
-]
-
 { #category : 'private' }
 GolapModel >> flushEdgeRanks [
 
@@ -399,40 +391,47 @@ GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: er
 	^ aBlock value: edge
 ]
 
+{ #category : 'accessing-reference nodes' }
+GolapModel >> indexAtReferenceNode: aGolapNode [
+
+	^ referenceNodes indexOf: aGolapNode id
+]
+
 { #category : 'initialization' }
 GolapModel >> initialize [
 
 	super initialize.
-	markers := {
-		           Color red.
-		           Color yellow darker.
-		           Color green.
-		           Color blue } asOrderedCollection.
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
-	edgeRanks := IdentityDictionary new
+	edgeRanks := IdentityDictionary new.
+	referenceNodes := OrderedCollection new
 ]
 
-{ #category : 'accessing-markers' }
-GolapModel >> markers [
+{ #category : 'accessing-reference nodes' }
+GolapModel >> isReferenceEdge: aGolapEdge [
 
-	^ markers asArray
+	^ (referenceNodes includes: aGolapEdge node1 id) or: [
+		  referenceNodes includes: aGolapEdge node2 id ]
+]
+
+{ #category : 'accessing-reference nodes' }
+GolapModel >> isReferenceNode: aGolapNode [
+
+	^ referenceNodes includes: aGolapNode id
 ]
 
 { #category : 'accessing-markers' }
 GolapModel >> markersAndNodes [
 
 	| markersAndNodes |
-	markersAndNodes := (markers collect: [ :marker |
-		                    marker -> OrderedCollection new ])
-		                   asOrderedDictionary.
+	markersAndNodes := Dictionary new.
 	self nodesDo: [ :node |
 			node markersDo: [ :marker |
-					markersAndNodes
-						at: marker
-						ifPresent: [ :markedNodes | markedNodes add: node ] ] ].
+					(markersAndNodes
+						 at: marker
+						 ifAbsentPut: [ OrderedCollection new ]) add: node ] ].
 	^ markersAndNodes
 ]
 
@@ -440,12 +439,6 @@ GolapModel >> markersAndNodes [
 GolapModel >> markersAndNodesDo: aBlock [
 
 	self markersAndNodes keysAndValuesDo: aBlock
-]
-
-{ #category : 'accessing-markers' }
-GolapModel >> markersDo: aBlock [
-
-	markers do: aBlock
 ]
 
 { #category : 'accessing' }
@@ -840,10 +833,16 @@ GolapModel >> readServerDataframe: aDataFrame [
 	self flushEdgeRanks
 ]
 
-{ #category : 'accessing-markers' }
-GolapModel >> removeMarker: aColor [
+{ #category : 'accessing-reference nodes' }
+GolapModel >> referenceNodes [
 
-	^ markers remove: aColor ifAbsent: [ ]
+	^ referenceNodes
+]
+
+{ #category : 'accessing-reference nodes' }
+GolapModel >> referenceNodesSize [
+
+	^ referenceNodes size
 ]
 
 { #category : 'polishing' }
@@ -878,6 +877,12 @@ GolapModel >> removePositivePolishEdgeBetween: aGolapNode1 and: aGolapNode2 [
 				self removePositivePolishEdge: edge.
 				^ edge ] ].
 	^ nil
+]
+
+{ #category : 'accessing-reference nodes' }
+GolapModel >> removeReferenceNode: aGolapNode [
+
+	referenceNodes remove: aGolapNode id ifAbsent: [ ]
 ]
 
 { #category : 'polishing' }

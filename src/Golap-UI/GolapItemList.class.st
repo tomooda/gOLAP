@@ -19,7 +19,6 @@ Class {
 GolapItemList >> add: aGolapNode toMarker: aColor [
 
 	self updateGlobalImageAfter: [
-			golap model ensureMarker: aColor.
 			aGolapNode addMarker: aColor.
 			markerDropList items do: [ :assoc |
 					assoc key = aColor ifTrue: [
@@ -40,7 +39,6 @@ GolapItemList >> add: aGolapNode toMarker: aColor [
 GolapItemList >> addAll: aCollectionOfGolapNode toMarker: aColor [
 
 	self updateGlobalImageAfter: [
-			golap model ensureMarker: aColor.
 			aCollectionOfGolapNode do: [ :node | node addMarker: aColor ].
 			markerDropList items do: [ :assoc |
 					assoc key = aColor ifTrue: [
@@ -80,7 +78,6 @@ GolapItemList >> addMarkerColor [
 GolapItemList >> addMarkerColor: aColor [
 
 	| items |
-	golap model ensureMarker: aColor.
 	markerDropList listItems do: [ :assoc |
 			assoc key = aColor ifTrue: [
 					markerDropList selectItem: assoc.
@@ -97,6 +94,14 @@ GolapItemList >> addMarkerColor: aColor [
 GolapItemList >> addSelectionsToMarker: aColor [
 
 	self golapDo: [ :g | self addAll: g selections toMarker: aColor ]
+]
+
+{ #category : 'accessing-markers' }
+GolapItemList >> allMarkerColors [
+
+	^ markerDropList items
+		  collect: #key
+		  thenSelect: [ :marker | marker isColor ]
 ]
 
 { #category : 'snapshot' }
@@ -265,7 +270,6 @@ GolapItemList >> initializePresenters [
 					              selectedMarker key ifNotNil: [ :marker |
 							              self nodes do: [ :node |
 								              node removeMarker: selectedMarker key ].
-							              golap model ensureMarker: selectedMarker key.
 							              nodes do: [ :node |
 								              node addMarker: selectedMarker key ] ] ].
 			              self updateItemsList ].
@@ -315,7 +319,7 @@ GolapItemList >> markMenu: aGolapNode [
 	markerDropList listItems do: [ :listItem |
 			| color |
 			color := listItem key.
-			color isSymbol ifFalse: [
+			color isColor ifTrue: [
 					(aGolapNode hasMarker: color) ifFalse: [
 							markMenu addItem: [ :menuItem |
 									menuItem
@@ -330,15 +334,15 @@ GolapItemList >> markSelectionsMenu [
 
 	| markMenu |
 	markMenu := self newMenu.
-	markerDropList listItems do: [ :listItem | 
-		| color |
-		color := listItem key.
-		color isSymbol ifFalse: [ 
-			markMenu addItem: [ :menuItem | 
-				menuItem
-					name: '';
-					icon: (self iconForCircleColor: color);
-					action: [ self addSelectionsToMarker: color ] ] ] ].
+	markerDropList listItems do: [ :listItem |
+			| color |
+			color := listItem key.
+			color isColor ifTrue: [
+					markMenu addItem: [ :menuItem |
+							menuItem
+								name: '';
+								icon: (self iconForCircleColor: color);
+								action: [ self addSelectionsToMarker: color ] ] ] ].
 	^ markMenu
 ]
 
@@ -413,32 +417,17 @@ GolapItemList >> nodeListMenu [
 
 	selectedNode ifNotNil: [
 			menu addGroup: [ :group |
-					(golap isReferenceNode: selectedNode)
+					(golap model isReferenceNode: selectedNode)
 						ifTrue: [
 								group addItem: [ :item |
 										item
 											name: 'remove from reference';
 											action: [ golap removeReferenceNode: selectedNode ] ] ]
 						ifFalse: [
-								(golap isLockedNode: selectedNode)
-									ifTrue: [
-											group
-												addItem: [ :item |
-														item
-															name: 'be auto layouted';
-															action: [ golap unlockNode: selectedNode ] ];
-												addItem: [ :item |
-														item
-															name: 'add to reference';
-															action: [
-																	golap
-																		unlockNode: selectedNode;
-																		addReferenceNode: selectedNode ] ] ]
-									ifFalse: [
-											group addItem: [ :item |
-													item
-														name: 'add to reference';
-														action: [ golap addReferenceNode: selectedNode ] ] ] ] ] ].
+								group addItem: [ :item |
+										item
+											name: 'add to reference';
+											action: [ golap addReferenceNode: selectedNode ] ] ] ] ].
 
 	menu addGroup: [ :group |
 			(golap includesPin: selectedNode)
@@ -624,15 +613,14 @@ GolapItemList >> unmarkMenu: aGolapNode [
 
 { #category : 'menu' }
 GolapItemList >> unmarkSelectionsMenu [
+
 	| markMenu |
 	markMenu := self newMenu.
-	markerDropList listItems
-		do: [ :listItem | 
+	markerDropList listItems do: [ :listItem |
 			| color |
 			color := listItem key.
-			color isSymbol
-				ifFalse: [ markMenu
-						addItem: [ :item | 
+			color isColor ifTrue: [
+					markMenu addItem: [ :item |
 							item
 								name: '';
 								icon: (self iconForCircleColor: color);

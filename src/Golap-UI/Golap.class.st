@@ -39,8 +39,6 @@ Class {
 		'elaborationPresenter',
 		'articulationPointOverviewPresenter',
 		'itemInfoRetriever',
-		'referenceNodes',
-		'lockedNodes',
 		'resendQueryButton',
 		'visualizationNotebook'
 	],
@@ -271,17 +269,17 @@ Golap >> addDimension: aGolapOverviewModel named: aString [
 	^ aGolapOverviewModel
 ]
 
-{ #category : 'menu' }
+{ #category : 'accessing-reference nodes' }
 Golap >> addReferenceNode: aGolapNode [
 
-	referenceNodes addLast: aGolapNode id.
+	model addReferenceNode: aGolapNode.
 	self updateGlobalImage
 ]
 
 { #category : 'accessing-markers' }
 Golap >> allMarkerColors [
 
-	^ model markers
+	^ itemList allMarkerColors
 ]
 
 { #category : 'accessing-dimensions' }
@@ -366,7 +364,6 @@ Golap >> asJSON [
 					    assoc value } ])).
 		  ('pins' -> pins asArray).
 		  ('selections' -> selections asArray).
-		  ('referenceNodes' -> referenceNodes asArray).
 		  ('font' -> (font ifNotNil: [
 				    {
 					    ('familyName' -> font familyName).
@@ -706,32 +703,17 @@ Golap >> globalImageMenu: aGolapNode [
 									subMenu: itemList unmarkSelectionsMenu ] ] ].
 	aGolapNode ifNotNil: [
 			menu addGroup: [ :group |
-					(self isReferenceNode: aGolapNode)
+					(model isReferenceNode: aGolapNode)
 						ifTrue: [
 								group addItem: [ :item |
 										item
 											name: 'remove from reference';
 											action: [ self removeReferenceNode: aGolapNode ] ] ]
 						ifFalse: [
-								(self isLockedNode: aGolapNode)
-									ifTrue: [
-											group
-												addItem: [ :item |
-														item
-															name: 'be auto layouted';
-															action: [ self unlockNode: aGolapNode ] ];
-												addItem: [ :item |
-														item
-															name: 'add to reference';
-															action: [
-																	self
-																		unlockNode: aGolapNode;
-																		addReferenceNode: aGolapNode ] ] ]
-									ifFalse: [
-											group addItem: [ :item |
-													item
-														name: 'add to reference';
-														action: [ self addReferenceNode: aGolapNode ] ] ] ] ].
+								group addItem: [ :item |
+										item
+											name: 'add to reference';
+											action: [ self addReferenceNode: aGolapNode ] ] ] ].
 			menu
 				addGroup: [ :group |
 						(self includesPin: aGolapNode)
@@ -829,8 +811,6 @@ Golap >> initialize [
 	super initialize.
 	pins := Set new.
 	selections := Set new.
-	referenceNodes := OrderedCollection new.
-	lockedNodes := Set new.
 	dimensions := OrderedDictionary new.
 	merges := OrderedCollection new.
 	snapshotEnabled := true.
@@ -989,25 +969,6 @@ Golap >> initializeWindow: aWindowPresenter [
 	aWindowPresenter whenClosedDo: [ self saveQueryRecord ]
 ]
 
-{ #category : 'accessing-reference and lock' }
-Golap >> isLockedNode: aGolapNode [
-
-	^ lockedNodes includes: aGolapNode id
-]
-
-{ #category : 'accessing-reference and lock' }
-Golap >> isReferenceEdge: aGolapEdge [
-
-	^ (referenceNodes includes: aGolapEdge node1 id) or: [
-		  referenceNodes includes: aGolapEdge node2 id ]
-]
-
-{ #category : 'accessing-reference and lock' }
-Golap >> isReferenceNode: aGolapNode [
-
-	^ referenceNodes includes: aGolapNode id
-]
-
 { #category : 'snapshot' }
 Golap >> isTemporarySnapshot [
 
@@ -1070,12 +1031,6 @@ Golap >> loadFromQueryRecord: aGolapQueryRecord [
 			self updateDimensions ]
 ]
 
-{ #category : 'menu' }
-Golap >> lockNode: aGolapNode [
-
-	lockedNodes add: aGolapNode id
-]
-
 { #category : 'accessing-markers' }
 Golap >> markedNodes [
 
@@ -1085,7 +1040,12 @@ Golap >> markedNodes [
 { #category : 'accessing-markers' }
 Golap >> markersAndNodesDo: aBlock [
 
-	model markersAndNodesDo: aBlock
+	| markersAndNodes |
+	markersAndNodes := model markersAndNodes.
+	itemList allMarkerColors do: [ :marker |
+			markersAndNodes
+				at: marker
+				ifPresent: [ :nodes | aBlock value: marker value: nodes ] ]
 ]
 
 { #category : 'menu' }
@@ -1547,12 +1507,6 @@ Golap >> readPresetQueries [
 		do: [ :ex | ^ Array new ]
 ]
 
-{ #category : 'accessing-reference and lock' }
-Golap >> referenceNodes [
-
-	^ referenceNodes
-]
-
 { #category : 'private' }
 Golap >> regexFor: aString [
 	| regex |
@@ -1578,10 +1532,10 @@ Golap >> release [
 	super release
 ]
 
-{ #category : 'menu' }
+{ #category : 'accessing-reference nodes' }
 Golap >> removeReferenceNode: aGolapNode [
 
-	referenceNodes remove: aGolapNode id ifAbsent: [ ].
+	model removeReferenceNode: aGolapNode.
 	self updateGlobalImage
 ]
 
@@ -2184,12 +2138,6 @@ Golap >> toggleSelection: aGolapNode [
 		updateGlobalImageAfter: [ (self includesSelection: aGolapNode)
 				ifTrue: [ self unselect: aGolapNode ]
 				ifFalse: [ self select: aGolapNode ] ]
-]
-
-{ #category : 'menu' }
-Golap >> unlockNode: aGolapNode [
-
-	lockedNodes remove: aGolapNode id ifAbsent: [  ]
 ]
 
 { #category : 'menu' }
