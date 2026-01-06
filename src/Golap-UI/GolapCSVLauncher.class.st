@@ -50,13 +50,12 @@ GolapCSVLauncher class >> defaultLayout [
 GolapCSVLauncher class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
-	(aBuilder item: #'Open pair-CSV')
+	(aBuilder item: #'表(CSV)ファイルを開く...')
 		parent: 'Golap';
-		order: 1;
+		order: 3;
 		target: GolapCSVLauncher;
 		selector: #open;
-		help: 'Open a pair CSV launcher';
-		withSeparatorAfter
+		help: '商品CSVファイルと関連CSVファイルを選択してグラフを開きます'
 ]
 
 { #category : 'instance creation' }

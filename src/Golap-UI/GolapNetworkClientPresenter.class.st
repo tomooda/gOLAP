@@ -11,67 +11,38 @@ Class {
 		'fieldsAndValuesCache',
 		'queryPresenter',
 		'queryText',
-		'okButton',
 		'usesRawQuery',
 		'queryNotebook',
 		'usesRawQueryText',
 		'commentText',
 		'queryHistoryPresenter',
 		'usesQueryHistory',
-		'queryPalettePresenter'
-	],
-	#classInstVars : [
-		'current'
+		'queryPalettePresenter',
+		'resetButton',
+		'saveButton',
+		'openButton'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
 	#tag : 'Query'
 }
 
-{ #category : 'sole instance' }
-GolapNetworkClientPresenter class >> current [
-	^ current ifNil: [ current := self new ]
+{ #category : 'menus' }
+GolapNetworkClientPresenter class >> golapMenuOn: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #'サーバクエリウィンドウを開く...')
+		parent: 'Golap';
+		order: 2;
+		target: self;
+		selector: #open;
+		help: 'サーバクエリを編集して送信するウィンドウを開きます'
 ]
 
-{ #category : 'layout' }
-GolapNetworkClientPresenter class >> defaultLayout [
+{ #category : 'menus' }
+GolapNetworkClientPresenter class >> open [
 
-	<script: 'self new open'>
-	<spec>
-	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   add: #urlInput;
-				   add: #presetUrlButton width: 20)
-		  height: self inputTextHeight;
-		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.8;
-				   add: #queryNotebook;
-				   add: (SpBoxLayout newVertical
-						    add: 'サーバパラメータ' expand: false;
-						    add: #serverConfigTree;
-						    add: 'コメント' expand: false;
-						    add: #commentText height: self inputTextHeight * 4;
-						    yourself))
-]
-
-{ #category : 'sole instance' }
-GolapNetworkClientPresenter class >> flushCurrent [
-	<script: 'GolapNetworkClientPresenter flushCurrent'>
-	current := nil
-]
-
-{ #category : 'utilities' }
-GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock [
-	<script: 'GolapNetworkClientPresenter openDialogIfAccepted: []'>
-	^ self openDialogIfAccepted: aBlock ifCanceled: [  ]
-]
-
-{ #category : 'utilities' }
-GolapNetworkClientPresenter class >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
-
-	^ self current
-		  layout: self defaultLayout;
-		  openDialogIfAccepted: aBlock ifCanceled: anotherBlock
+	^ self new open
 ]
 
 { #category : 'private' }
@@ -120,6 +91,52 @@ GolapNetworkClientPresenter >> comment [
 GolapNetworkClientPresenter >> comment: aString [
 
 	commentText text: aString
+]
+
+{ #category : 'ui requests' }
+GolapNetworkClientPresenter >> confirm: queryString label: titleString [
+
+	^ self application newConfirm
+		  title: titleString;
+		  label: queryString;
+		  openModal
+]
+
+{ #category : 'ui requests' }
+GolapNetworkClientPresenter >> confirmClose [
+
+	^ self
+		  confirm: self window title , 'を閉じますか？'
+		  label: '確認'
+]
+
+{ #category : 'layout' }
+GolapNetworkClientPresenter >> defaultLayout [
+
+	<script: 'self new open'>
+	<spec>
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: urlInput;
+				   add: presetUrlButton width: 20)
+		  height: self class inputTextHeight;
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.8;
+				   add: queryNotebook;
+				   add: (SpBoxLayout newVertical
+						    add: 'サーバパラメータ' expand: false;
+						    add: serverConfigTree;
+						    add: 'コメント' expand: false;
+						    add: commentText height: self class inputTextHeight * 4;
+						    yourself));
+		  add: (SpBoxLayout newHorizontal
+				   hAlignEnd;
+				   add: resetButton expand: false;
+				   add: saveButton expand: false;
+				   add: openButton expand: false;
+				   yourself)
+		  expand: false;
+		  yourself
 ]
 
 { #category : 'defaults' }
@@ -232,12 +249,12 @@ GolapNetworkClientPresenter >> initializePresenters [
 		            whenTextChangedDo: [ :old :new |
 			            old ~= new ifTrue: [ self flushAuth ] ];
 		            whenSubmitDo: [ :text |
-			            self updateServerConfig.
-			            queryPresenter
-				            resetItemFilterSpec;
-				            resetTransactionFilterSpec.
-			            queryPalettePresenter url: text trim.
-			            queryHistoryPresenter url: text trim ];
+				            self updateServerConfig.
+				            queryPresenter
+					            resetItemFilterSpec;
+					            resetTransactionFilterSpec.
+				            queryPalettePresenter url: text trim.
+				            queryHistoryPresenter url: text trim ];
 		            yourself.
 	presetUrlButton := self newButton
 		                   icon: (Smalltalk ui icons iconNamed: #back);
@@ -253,8 +270,8 @@ GolapNetworkClientPresenter >> initializePresenters [
 				                  title: '高度な条件';
 				                  presenterProvider: [ queryPalettePresenter ];
 				                  whenRetrievedDo: [
-					                  self updateQueryHistoryPresenter.
-					                  self generateQueryText ];
+						                  self updateQueryHistoryPresenter.
+						                  self generateQueryText ];
 				                  yourself);
 		                 addPage: (self newNotebookPage
 				                  title: '履歴';
@@ -263,12 +280,12 @@ GolapNetworkClientPresenter >> initializePresenters [
 					                  queryHistoryPresenter updateQueryHistoryList ];
 				                  yourself);
 		                 whenSelectedPageChangedDo: [
-			                 usesRawQuery := queryNotebook selectedPageIndex
-			                                 = 2.
-			                 usesQueryHistory := queryNotebook
-				                                     selectedPageIndex = 3.
-			                 usesQueryHistory ifTrue: [
-				                 okButton ifNotNil: #enable ] ];
+				                 usesRawQuery := queryNotebook selectedPageIndex
+				                                 = 2.
+				                 usesQueryHistory := queryNotebook
+					                                     selectedPageIndex = 3.
+				                 usesQueryHistory ifTrue: [
+					                 openButton ifNotNil: #enable ] ];
 		                 yourself.
 	usesRawQueryText := false.
 	queryPalettePresenter := (self instantiate:
@@ -283,47 +300,52 @@ GolapNetworkClientPresenter >> initializePresenters [
 					                     assoc key , ' : '
 					                     , (STONJSON toString: assoc value) ]);
 		                    children: [ :assoc |
-			                    assoc value isDictionary
-				                    ifTrue: [
-					                    assoc value keys asSortedCollection collect: [
-							                    :k | k -> (assoc value at: k) ] ]
-				                    ifFalse: [ Array new ] ];
+				                    assoc value isDictionary
+					                    ifTrue: [
+							                    assoc value keys asSortedCollection
+								                    collect: [ :k | k -> (assoc value at: k) ] ]
+					                    ifFalse: [ Array new ] ];
 		                    roots:
 			                    (serverConfig ifNil: [ #(  ) ] ifNotNil: [
-					                     serverConfig keys asSortedCollection
-						                     collect: [ :key |
-							                     key -> (serverConfig at: key) ] ]);
+						                     serverConfig keys asSortedCollection
+							                     collect: [ :key |
+								                     key -> (serverConfig at: key) ] ]);
 		                    yourself.
 	commentText := self newText.
-	self whenBuiltDo: [
-		self window isDialog ifTrue: [
-			okButton := self window buttons detect: [ :button |
-				            button label = 'Ok' ].
-			okButton enabled: false.
-			self window buttons
-				addFirst: (self newButton
-						 label: 'Save';
-						 action: [ self dumpToFile ];
-						 yourself);
-				addFirst: (self newButton
-						 label: 'Reset';
-						 action: [ self resetQuery ]) ].
-		self updateServerConfig ].
+	resetButton := self newButton
+		               label: 'Reset';
+		               action: [ self resetQuery ];
+		               yourself.
+	saveButton := self newButton
+		              label: 'Save';
+		              action: [ self dumpToFile ];
+		              yourself.
+	openButton := self newButton
+		              label: 'Ok';
+		              disable;
+		              action: [ self openGolap ];
+		              yourself.
 	self focusOrder
 		add: urlInput;
 		add: serverConfigTree.
 	self whenBuiltDo: [ :w |
-		| font |
-		font := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m |
-			(m respondsTo: #font:) ifTrue: [ m font: font ] ] ]
+			| font |
+			font := TextStyle defaultFont.
+			w widget allMorphsDo: [ :m |
+				(m respondsTo: #font:) ifTrue: [ m font: font ] ].
+			self updateServerConfig ]
 ]
 
 { #category : 'initialization' }
 GolapNetworkClientPresenter >> initializeWindow: aWindowPresenter [
+
 	aWindowPresenter
-		title: 'Connect to gOLAP server';
-		initialExtent: self initialExtent
+		title: 'サーバクエリ';
+		initialExtent: self initialExtent.
+	aWindowPresenter whenWillCloseDo: [ :announcement |
+			self confirmClose
+				ifTrue: [ announcement allowClose ]
+				ifFalse: [ announcement denyClose ] ]
 ]
 
 { #category : 'accessing' }
@@ -388,6 +410,72 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 								 authenticateBlock: self authenticateBlock)
 						cull: queryRecord ] forkAt: Processor userBackgroundPriority ] ];
 		cancelAction: anotherBlock
+]
+
+{ #category : 'operations' }
+GolapNetworkClientPresenter >> openGolap [
+
+	self clearPreviewFilterField.
+	usesQueryHistory
+		ifTrue: [
+				queryHistoryPresenter historyRecord ifNotNil: [ :record |
+						| golap |
+						golap := Golap new.
+						golap blockUpdateModelWhile: [
+							golap loadFromQueryRecord: record hideDuplicate ].
+						golap confirmOpen.
+						golap open maximize.
+						golap updateModel ] ]
+		ifFalse: [
+				| queryRecord api golap |
+				queryRecord := self recordHiDeHo.
+				api := GolapApiClient
+					       url: self url
+					       query: self query
+					       comment: self comment
+					       serverConfig: self serverConfig
+					       itemFieldQuerySpec: self itemFieldQuerySpec
+					       authenticateBlock: self authenticateBlock.
+				golap := Golap new.
+				[
+					golap
+						queryRecord: queryRecord;
+						itemInfoRetriever:
+							(GolapServerProductInfoRetriever fromApiClient: api);
+						authenticateBlock: api authenticateBlock;
+						query: (NeoJSONReader fromString: api query);
+						url: api url;
+						comment: api comment;
+						imageRepositoryUrl: api imageUrl;
+						itemFieldQuerySpec: api itemFieldQuerySpec;
+						itemViewUrl: api url ]
+					on: Error
+					do: [ :ex |
+							UIManager default alert:
+								'Can''t open the given URL: ' , api url asString ].
+				golap snapshotData: api readStream do: [ :readStream |
+						readStream ifNil: [ golap delete ] ifNotNil: [
+								readStream isString
+									ifTrue: [ UIManager default alert: readStream ]
+									ifFalse: [
+											Cursor wait showWhile: [
+													UIManager default informUserDuring: [ :bar |
+															bar
+																min: 0;
+																max: readStream size.
+															golap blockUpdateModelWhile: [
+																	[
+																		bar value: readStream position.
+																		readStream atEnd ] whileFalse: [
+																		golap readDimensionFrom: readStream ].
+																	bar label: 'updating dimensions'.
+																	golap updateDimensions.
+																	bar label: 'updating models'.
+
+																	bar label: 'updating graph' ].
+															golap confirmOpen.
+															golap open maximize.
+															golap updateModel ] ] ] ] ] ]
 ]
 
 { #category : 'operations' }
@@ -489,31 +577,32 @@ GolapNetworkClientPresenter >> retrieveConfig: aString field: anotherString ifEr
 
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> serverConfig [
-	^ serverConfig
-		ifNil: [ okButton ifNotNil: #disable.
-			self url asUrl authority
-				ifNotNil: [ [ serverConfig := (GolapHttpClient
-						post: self url
-						data: (ZnEntity json: '{"control":"config"}')
-						timeout: self timeout
-						authenticateBlock: self authenticateBlock)
-						in: [ :response | 
-							response code = 200
-								ifFalse: [ ^ nil ].
-							response entity readStream
-								in: [ :stream | 
-									| status |
-									status := (stream upTo: Character lf) substrings: ':'.
-									status size = 2
-										ifFalse: [ ^ nil ].
-									status second trim = '0'
-										ifFalse: [ ^ nil ].
-									okButton ifNotNil: #enable.
-									(NeoJSONReader on: stream)
-										mapClass: OrderedDictionary;
-										next ] ] ]
-						on: NetworkError, ZnParseError
-						do: [ :ex | ^ nil ] ] ]
+
+	^ serverConfig ifNil: [
+			  openButton ifNotNil: #disable.
+			  self url asUrl authority ifNotNil: [
+					  [
+						  serverConfig := (GolapHttpClient
+							                   post: self url
+							                   data:
+							                   (ZnEntity json: '{"control":"config"}')
+							                   timeout: self timeout
+							                   authenticateBlock: self authenticateBlock)
+							                  in: [ :response |
+									                  response code = 200 ifFalse: [ ^ nil ].
+									                  response entity readStream in: [ :stream |
+											                  | status |
+											                  status := (stream upTo: Character lf)
+												                            substrings: ':'.
+											                  status size = 2 ifFalse: [ ^ nil ].
+											                  status second trim = '0' ifFalse: [
+												                  ^ nil ].
+											                  openButton ifNotNil: #enable.
+											                  (NeoJSONReader on: stream)
+												                  mapClass: OrderedDictionary;
+												                  next ] ] ]
+						  on: NetworkError , ZnParseError
+						  do: [ :ex | ^ nil ] ] ]
 ]
 
 { #category : 'accessing' }

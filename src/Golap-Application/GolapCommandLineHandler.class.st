@@ -84,26 +84,26 @@ GolapCommandLineHandler >> installMenu [
 
 	OSWindowDriver current startUp: true.
 	OSPlatform current isMacOSX ifTrue: [
-		| main |
-		main := CocoaMenu new.
-		main
-			title: 'MainMenu';
-			addSubmenu: 'File' with: [ :m |
-				m
-					addItemWithTitle: 'Settings...'
-					action: [ Golap showSettingBrowser ];
-					addItemWithTitle: 'Open Server...' action: [ Golap openClient ];
-					addItemWithTitle: 'Open CSV files...'
-					action: [ GolapCSVLauncher open ];
-					addItemWithTitle: 'Quit'
-					action: [ Smalltalk snapshot: false andQuit: true ]
-					shortcut: 'q' ];
-			addSubmenu: 'Help' with: [ :m |
-			m
-				addItemWithTitle: 'Show Help'
-				action: [ self inform: 'Help' ]
-				shortcut: '' ].
-		main setAsMainMenu ]
+			| main |
+			main := CocoaMenu new.
+			main
+				title: 'MainMenu';
+				addSubmenu: 'ファイル' with: [ :m |
+						m
+							addItemWithTitle: '設定...' action: [ Golap showSettingBrowser ];
+							addItemWithTitle: 'サーバクエリ...'
+							action: [ GolapNetworkClientPresenter open ];
+							addItemWithTitle: 'CSVファイルを開く...'
+							action: [ GolapCSVLauncher open ];
+							addItemWithTitle: '終了'
+							action: [ Smalltalk snapshot: false andQuit: true ]
+							shortcut: 'q' ];
+				addSubmenu: 'ヘルプ' with: [ :m |
+					m
+						addItemWithTitle: 'ヘルプを表示'
+						action: [ self inform: 'Help' ]
+						shortcut: '' ].
+			main setAsMainMenu ]
 ]
 
 { #category : 'installing' }

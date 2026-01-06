@@ -97,7 +97,6 @@ Golap class >> defaultLayout [
 Golap class >> deploy [
 
 	<script>
-	GolapNetworkClientPresenter flushCurrent.
 	MCRepositoryGroup allSubInstancesDo: [ :group |
 		group repositories do: [ :repo | group removeRepository: repo ] ].
 	IceRepository registry removeAll.
@@ -148,49 +147,27 @@ Golap class >> golapMenuOn: aBuilder [
 		label: 'gOLAP';
 		order: 1;
 		with: [
-			(aBuilder item: #'Snapshot Browser')
-				parent: 'Golap';
-				order: 2;
-				target: GolapSnapshotBrowser;
-				selector: #open;
-				help: 'Open a snapshot launcher';
-				withSeparatorAfter.
-			(aBuilder item: #'Open File...')
-				parent: 'Golap';
-				order: 3;
-				target: self;
-				selector: #openFile;
-				help: 'Open a CSV file with dimensions';
-				withSeparatorAfter.
-			(aBuilder item: #'Open URL...')
-				parent: 'Golap';
-				order: 4;
-				target: self;
-				selector: #openNewClient;
-				help:
-					'Open a CSV file with dimensions from a server with a blank query'.
-			(aBuilder item: #'Open URL again...')
-				parent: 'Golap';
-				order: 5;
-				target: self;
-				selector: #openClient;
-				help:
-					'Open a CSV file with dimensions from a server with the previous query';
-				withSeparatorAfter.
-			(aBuilder item: #'Settings...')
-				parent: 'Golap';
-				order: 6;
-				target: self;
-				selector: #showSettingBrowser;
-				help: 'Open a settings dialog for gOLAP';
-				withSeparatorAfter.
-			(aBuilder item: #'About...')
-				parent: 'Golap';
-				order: 7;
-				target: self;
-				selector: #openAboutDialog;
-				help: 'Open a logo image and version of this application';
-				withSeparatorAfter ]
+				(aBuilder item: #'サーバファイルを開く...')
+					parent: 'Golap';
+					order: 5;
+					target: self;
+					selector: #openFile;
+					help: 'サーバからのグラフデータを保存したファイルを選択して開きます';
+					withSeparatorAfter.
+				(aBuilder item: #'設定...')
+					parent: 'Golap';
+					order: 6;
+					target: self;
+					selector: #showSettingBrowser;
+					help: '設定ウィンドウを開きます';
+					withSeparatorAfter.
+				(aBuilder item: #'About...')
+					parent: 'Golap';
+					order: 7;
+					target: self;
+					selector: #openAboutDialog;
+					help: 'gOLAPのロゴとバージョンを表示します';
+					withSeparatorAfter ]
 ]
 
 { #category : 'accessing' }
@@ -222,68 +199,6 @@ Golap class >> openAboutDialog [
 	BaselineOfGolap logoImageWithCodename asPresenter open
 		title: 'about gOLAP ' , BaselineOfGolap codename;
 		beNotResizable
-]
-
-{ #category : 'examples' }
-Golap class >> openClient [
-
-	<script: 'GolapOverview openClient'>
-	GolapNetworkClientPresenter
-		openDialogIfAccepted: [ :client :queryRecord |
-				| overview |
-				[
-					overview := self new.
-					overview open maximize.
-					client
-						ifNotNil: [
-								[
-									overview
-										queryRecord: queryRecord;
-										itemInfoRetriever:
-											(GolapServerProductInfoRetriever fromApiClient: client);
-										authenticateBlock: client authenticateBlock;
-										query: (NeoJSONReader fromString: client query);
-										url: client url;
-										comment: client comment;
-										imageRepositoryUrl: client imageUrl;
-										itemFieldQuerySpec: client itemFieldQuerySpec;
-										itemViewUrl: client url ]
-									on: Error
-									do: [ :ex |
-											UIManager default alert:
-												'Can''t open the given URL: ' , client url asString ].
-								overview snapshotData: client readStream do: [ :readStream |
-										readStream ifNil: [ overview delete ] ifNotNil: [
-												readStream isString
-													ifTrue: [
-															UIManager default alert: readStream.
-															overview delete ]
-													ifFalse: [
-															Cursor wait showWhile: [
-																	UIManager default informUserDuring: [ :bar |
-																			bar
-																				min: 0;
-																				max: readStream size.
-																			overview blockUpdateModelWhile: [
-																					[
-																						bar value: readStream position.
-																						readStream atEnd ] whileFalse: [
-																						overview readDimensionFrom: readStream ].
-																					bar label: 'updating dimensions'.
-																					overview updateDimensions.
-																					bar label: 'updating models'.
-
-																					bar label: 'updating graph' ].
-																			overview confirmOpen.
-																			overview updateModel ] ] ] ] ] ]
-						ifNil: [
-								overview blockUpdateModelWhile: [
-									overview loadFromQueryRecord: queryRecord ].
-								overview confirmOpen.
-								overview updateModel ] ]
-					on: GolapAborted
-					do: [ :ex | overview delete ] ]
-		ifCanceled: [ ]
 ]
 
 { #category : 'examples' }
@@ -322,13 +237,6 @@ Golap class >> openFile [
 															overview updateModel ] ] ] ] ]
 				ifFalse: [ overview delete ] ].
 	^ overview
-]
-
-{ #category : 'examples' }
-Golap class >> openNewClient [
-	<script: 'GolapDimensionsOverview openNewClient'>
-	GolapNetworkClientPresenter flushCurrent.
-	^ self openClient
 ]
 
 { #category : 'menus' }
