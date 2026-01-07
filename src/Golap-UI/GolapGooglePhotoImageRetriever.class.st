@@ -39,10 +39,11 @@ GolapGooglePhotoImageRetriever >> apikey: aString [
 { #category : 'snapshot' }
 GolapGooglePhotoImageRetriever >> asJSON [
 
-	^ super asJSON
-		  at: 'numImages' put: numImages;
-		  at: 'enabled' put: enabled;
-		  yourself
+	| json |
+	json := super asJSON.
+	numImages ifNotNil: [ json at: 'numImages' put: numImages ].
+	enabled ifNotNil: [ json at: 'enabled' put: enabled ].
+	^ json
 ]
 
 { #category : 'private' }

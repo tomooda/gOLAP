@@ -31,10 +31,12 @@ GolapAttributePhotoImageRetriever class >> tag [
 { #category : 'snapshot' }
 GolapAttributePhotoImageRetriever >> asJSON [
 
-	^ super asJSON
-		  at: 'photoColumn' put: photoColumn;
-		  at: 'availableColumns' put: availableColumns;
-		  yourself
+	| json |
+	json := super asJSON.
+	photoColumn ifNotNil: [ json at: 'photoColumn' put: photoColumn ].
+	availableColumns ifNotNil: [
+		json at: 'availableColumns' put: availableColumns ].
+	^ json
 ]
 
 { #category : 'accessing' }
@@ -62,6 +64,16 @@ GolapAttributePhotoImageRetriever >> commit: copy [
 GolapAttributePhotoImageRetriever >> configPresenter [
 
 	^ GolapAttributePhotoImageRetrieverPresenter on: self
+]
+
+{ #category : 'snapshot' }
+GolapAttributePhotoImageRetriever >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	aDictionary
+		at: 'photoColumn' ifPresent: [ :string | photoColumn := string ];
+		at: 'availableColumns'
+		ifPresent: [ :array | availableColumns := array ]
 ]
 
 { #category : 'testing' }

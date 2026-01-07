@@ -135,6 +135,22 @@ GolapColorsAppearance >> freshColor: aColor [
 	self updateGlobalImageAfter: [ freshColor := aColor ]
 ]
 
+{ #category : 'snapshot' }
+GolapColorsAppearance >> fromJSON: aDictionary [
+
+	self colorSelectors do: [ :selector |
+			aDictionary at: selector ifPresent: [ :hexString |
+					self
+						perform: (selector , ':') asSymbol
+						with: (Color fromHexString: hexString) ] ].
+	aDictionary
+		at: 'name-selection'
+		ifPresent: [ :string | nameList selectItem: string ];
+		at: 'color-selection' ifPresent: [ :hexString |
+				colorList selectItem:
+						(hexString ifNotNil: [ Color fromHexString: hexString ]) ]
+]
+
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> growingColor [
 	^ growingColor

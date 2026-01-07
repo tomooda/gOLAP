@@ -122,14 +122,7 @@ GolapModel >> asJSON [
 	(originalNodes := self originalNodes) do: [ :node |
 		originalEdges addAll: node edges ].
 	^ OrderedDictionary new
-		  at: 'nodes'
-		  put: (originalNodes values asArray collect: [ :node |
-						   {
-							   ('id' -> node id).
-							   ('name' -> node name).
-							   ('data' -> node data).
-							   ('markers' -> (node markers collect: #asHexString)) }
-							   asOrderedDictionary ]);
+		  at: 'nodes' put: (originalNodes values asArray collect: #asJSON);
 		  at: 'nodeEvaluator' put: nodeEvaluator asJSON;
 		  at: 'nodeAggregators' put: (nodeAggregators collect: #asJSON);
 		  at: 'edges' put: (originalEdges asArray collect: [ :edge |
@@ -321,40 +314,32 @@ GolapModel >> friendsRank [
 GolapModel >> fromJSON: aDictionary [
 
 	aDictionary
-		at: 'nodes' ifPresent: [ :nodesJson |
-			nodes := (nodesJson collect: [ :nodeJson |
-					          | data id name |
-					          data := nodeJson at: 'data'.
-					          id := nodeJson at: 'id'.
-					          name := nodeJson at: 'name'.
-					          id -> (GolapNode
-							           on:
-								           (DataSeries
-									            withKeys: data keys
-									            values: data values
-									            name: id)
-							           name: name) ]) asDictionary ];
+		at: 'nodes' ifPresent: [ :array |
+				nodes := (array collect: [ :json |
+							          | node |
+							          node := GolapNode fromJSON: json.
+							          node id -> node ]) asDictionary ];
 		at: 'nodeEvaluator'
 		ifPresent: [ :json |
 			nodeEvaluator := GolapNodeEvaluator fromJSON: json ];
-		at: 'nodeAggregators' ifPresent: [ :jsonArray |
-			nodeAggregators := jsonArray collect: [ :json |
-					                   GolapDataAggregator fromJSON: json ] ];
-		at: 'edges' ifPresent: [ :edgesJson |
-			edgesJson do: [ :edgeJson |
-					| node1 node2 data |
-					node1 := edgeJson at: 'node1'.
-					node2 := edgeJson at: 'node2'.
-					data := edgeJson at: 'data'.
-					(nodes at: node1)
-						createEdgeTo: (nodes at: node2)
-						data: (DataSeries withKeys: data keys values: data values) ] ];
+		at: 'nodeAggregators' ifPresent: [ :array |
+				nodeAggregators := array collect: [ :json |
+						                   GolapDataAggregator fromJSON: json ] ];
+		at: 'edges' ifPresent: [ :dict |
+				dict do: [ :edgeJson |
+							| node1 node2 data |
+							node1 := edgeJson at: 'node1'.
+							node2 := edgeJson at: 'node2'.
+							data := edgeJson at: 'data'.
+							(nodes at: node1)
+								createEdgeTo: (nodes at: node2)
+								data: (DataSeries withKeys: data keys values: data values) ] ];
 		at: 'edgeEvaluator'
 		ifPresent: [ :json |
 			edgeEvaluator := GolapEdgeEvaluator fromJSON: json ];
-		at: 'edgeAggregators' ifPresent: [ :jsonArray |
-			edgeAggregators := jsonArray collect: [ :json |
-					                   GolapDataAggregator fromJSON: json ] ].
+		at: 'edgeAggregators' ifPresent: [ :array |
+				edgeAggregators := array collect: [ :json |
+						                   GolapDataAggregator fromJSON: json ] ].
 	friendsRank := 5.
 	friendsEdges := nil.
 	positivePolishEdges := IdentitySet new.

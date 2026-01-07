@@ -33,10 +33,13 @@ GolapServerPhotoImageRetriever class >> tag [
 { #category : 'snapshot' }
 GolapServerPhotoImageRetriever >> asJSON [
 
-	^ super asJSON
-		  at: 'golapServerUrl' put: (golapServerUrl ifNotNil: #asString);
-		  at: 'imageServerUrl' put: (imageServerUrl ifNotNil: #asString);
-		  yourself
+	| json |
+	json := super asJSON.
+	golapServerUrl ifNotNil: [
+		json at: 'golapServerUrl' put: golapServerUrl asString ].
+	imageServerUrl ifNotNil: [
+		json at: 'imageServerUrl' put: imageServerUrl asString ].
+	^ json
 ]
 
 { #category : 'accessing' }

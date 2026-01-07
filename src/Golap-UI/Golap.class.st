@@ -356,7 +356,7 @@ Golap >> asJSON [
 
 	^ {
 		  ('url' -> url asString).
-		  ('query' -> (query ifNil: [ Dictionary new ])).
+		  ('query' -> query).
 		  ('model' -> model asJSON).
 		  ('merges' -> (merges collect: [ :assoc |
 				    {
@@ -364,13 +364,6 @@ Golap >> asJSON [
 					    assoc value } ])).
 		  ('pins' -> pins asArray).
 		  ('selections' -> selections asArray).
-		  ('font' -> (font ifNotNil: [
-				    {
-					    ('familyName' -> font familyName).
-					    ('pointSize' -> font pointSize).
-					    ('stretchValue' -> font stretchValue).
-					    ('weightValue' -> font weightValue).
-					    ('slantValue' -> font slantValue) } asDictionary ])).
 		  ('baseList' -> baseList selectedItem).
 		  ('frontList' -> frontList selectedItem).
 		  ('edgesAppearance' -> edgesAppearancePresenter asJSON).
@@ -654,6 +647,50 @@ Golap >> font: aFont [
 { #category : 'accessing-colors' }
 Golap >> freshColor [
 	^ colorsAppearancePresenter freshColor
+]
+
+{ #category : 'snapshot' }
+Golap >> fromJSON: aDictionary [
+
+	self blockUpdateModelWhile: [
+			aDictionary
+				at: 'url' ifPresent: [ :string | url := string asZnUrl ];
+				at: 'query' ifPresent: [ :dict | query := dict ];
+				at: 'model' ifPresent: [ :json | model fromJSON: json ];
+				at: 'merges' ifPresent: [ :array |
+						merges := (array collect: [ :pair | pair first -> pair second ])
+							          asOrderedCollection ];
+				at: 'pins'
+				ifPresent: [ :array | pins := array asOrderedCollection ];
+				at: 'selections'
+				ifPresent: [ :array | selections := array asSet ];
+				at: 'baseList'
+				ifPresent: [ :string | baseList selectItem: string ];
+				at: 'frontList'
+				ifPresent: [ :string | frontList selectItem: string ];
+				at: 'edgesAppearance'
+				ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];
+				at: 'colorsAppearance'
+				ifPresent: [ :json | colorsAppearancePresenter fromJSON: json ];
+				at: 'itemInfoRetriever'
+				ifPresent: [ :json |
+					itemInfoRetriever := GolapItemInfoRetriever fromJSON: json ];
+				at: 'itemList' ifPresent: [ :json | itemList fromJSON: json ];
+				at: 'edgeList' ifPresent: [ :json | edgeList fromJSON: json ];
+				at: 'comment' ifPresent: [ :text | commentText text: text ];
+				at: 'polishOverview'
+				ifPresent: [ :json | polishOverviewPresenter fromJSON: json ];
+				at: 'friendOverview'
+				ifPresent: [ :json | friendOverviewPresenter fromJSON: json ];
+				at: 'articulationPointOverview'
+				ifPresent: [ :json |
+					articulationPointOverviewPresenter fromJSON: json ];
+				at: 'elaboration'
+				ifPresent: [ :json | elaborationPresenter fromJSON: json ];
+				at: 'dandelion'
+				ifPresent: [ :json | dandelionPresenter fromJSON: json ];
+				at: 'hedge' ifPresent: [ :json | hedgePresenter fromJSON: json ];
+				at: 'heatmap' ifPresent: [ :json | heatmapPresenter asJSON ] ]
 ]
 
 { #category : 'menu' }

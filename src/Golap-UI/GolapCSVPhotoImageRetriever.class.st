@@ -32,17 +32,19 @@ GolapCSVPhotoImageRetriever class >> tag [
 { #category : 'snapshot' }
 GolapCSVPhotoImageRetriever >> asJSON [
 
-	^ super asJSON
-		  at: 'csvRef' put: (csvRef ifNotNil: #fullName);
-		  at: 'dataframe' put: (dataframe ifNotNil: [
-						   {
-							   ('columnNames' -> dataframe columnNames).
-							   ('data' -> dataframe asArray) } asDictionary ]);
-		  at: 'idColumn' put: idColumn;
-		  at: 'photoColumn' put: photoColumn;
-		  at: 'urlPostfix' put: urlPostfix;
-		  at: 'urlPrefix' put: urlPrefix;
-		  yourself
+	| json |
+	json := super asJSON.
+	csvRef ifNotNil: [ json at: 'csvRef' put: csvRef fullName ].
+	dataframe ifNotNil: [
+			json at: 'dataframe' put: (dataframe ifNotNil: [
+						 {
+							 ('columnNames' -> dataframe columnNames).
+							 ('data' -> dataframe asArray) } asDictionary ]) ].
+	idColumn ifNotNil: [ json at: 'idColumn' put: idColumn ].
+	photoColumn ifNotNil: [ json at: 'photoColumn' put: photoColumn ].
+	urlPrefix ifNotNil: [ json at: 'urlPrefix' put: urlPrefix ].
+	urlPostfix ifNotNil: [ json at: 'urlPostfix' put: urlPostfix ].
+	^ json
 ]
 
 { #category : 'private' }
@@ -106,6 +108,24 @@ GolapCSVPhotoImageRetriever >> dataframeChanged [
 GolapCSVPhotoImageRetriever >> flushUrlCache [
 
 	urlCache removeAll
+]
+
+{ #category : 'snapshot' }
+GolapCSVPhotoImageRetriever >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	aDictionary
+		at: 'csvRef'
+		ifPresent: [ :string | csvRef := string ifNotNil: #asFileReference ];
+		at: 'dataframe' ifPresent: [ :dict |
+				dataframe := DataFrame
+					             withRows: (dict at: 'data' ifAbsent: [ Array new ])
+					             columnNames:
+						             (dict at: 'columnNames' ifAbsent: [ Array new ]) ];
+		at: 'idColumn' ifPresent: [ :string | idColumn := string ];
+		at: 'photoColumn' ifPresent: [ :string | photoColumn := string ];
+		at: 'urlPostfix' ifPresent: [ :string | urlPostfix := string ];
+		at: 'urlPrefix' ifPresent: [ :string | urlPrefix := string ]
 ]
 
 { #category : 'testing' }

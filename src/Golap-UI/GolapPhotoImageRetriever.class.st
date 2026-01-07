@@ -6,6 +6,17 @@ Class {
 	#tag : 'Retriever'
 }
 
+{ #category : 'accessing' }
+GolapPhotoImageRetriever class >> classForJSON: aDictionary [
+
+	| tag |
+	tag := aDictionary at: 'tag' ifAbsent: [ ^ nil ].
+	self allSubclassesDo: [ :subclass |
+			(subclass isAbstract not and: [ subclass tag = tag ]) ifTrue: [
+				^ subclass ] ].
+	^ nil
+]
+
 { #category : 'instance creation' }
 GolapPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 
@@ -72,6 +83,12 @@ GolapPhotoImageRetriever >> commit: copy [
 GolapPhotoImageRetriever >> configPresenter [
 
 	^ nil
+]
+
+{ #category : 'snapshot' }
+GolapPhotoImageRetriever >> fromJSON: aDictionary [
+
+	
 ]
 
 { #category : 'accessing' }

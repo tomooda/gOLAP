@@ -25,12 +25,16 @@ GolapNodeProductInfoRetriever class >> tag [
 	^ 'node'
 ]
 
-{ #category : 'converting' }
+{ #category : 'snapshot' }
 GolapNodeProductInfoRetriever >> asJSON [
 
-	^ super asJSON
-		  at: 'photo-url-column' put: photoUrlColumn;
-		  yourself
+	| json |
+	json := super asJSON.
+	availableColumns ifNotNil: [
+		json at: 'avaiableColumns' put: availableColumns ].
+	photoUrlColumn ifNotNil: [
+		json at: 'photoUrlColumn' put: photoUrlColumn ].
+	^ json
 ]
 
 { #category : 'accessing' }
@@ -43,6 +47,17 @@ GolapNodeProductInfoRetriever >> availableColumns [
 GolapNodeProductInfoRetriever >> availableColumns: anArrayOfString [
 
 	availableColumns := anArrayOfString
+]
+
+{ #category : 'snapshot' }
+GolapNodeProductInfoRetriever >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'avaiableColumns'
+		ifPresent: [ :array | availableColumns := array ];
+		at: 'photoUrlColumn'
+		ifPresent: [ :string | photoUrlColumn := string ].
+	super fromJSON: aDictionary
 ]
 
 { #category : 'accessing' }
@@ -61,12 +76,4 @@ GolapNodeProductInfoRetriever >> photoUrlColumn: aString [
 GolapNodeProductInfoRetriever >> productDataFor: aGolapNode [
 
 	^ aGolapNode data associations
-]
-
-{ #category : 'private' }
-GolapNodeProductInfoRetriever >> setFromJSON: aDictionary [
-
-	aDictionary
-		at: 'photo-url-column'
-		ifPresent: [ :string | photoUrlColumn := string ]
 ]

@@ -10,16 +10,13 @@ Class {
 }
 
 { #category : 'accessing' }
-GolapItemInfoRetriever class >> acceptsJSON: aDictionary [
-
-	^ self isAbstract not and: [ aDictionary includesKey: self tag ]
-]
-
-{ #category : 'accessing' }
 GolapItemInfoRetriever class >> classForJSON: aDictionary [
 
+	| tag |
+	tag := aDictionary at: 'tag' ifAbsent: [ ^ nil ].
 	self allSubclassesDo: [ :subclass |
-		(subclass acceptsJSON: aDictionary) ifTrue: [ ^ subclass ] ].
+			(subclass isAbstract not and: [ subclass tag = tag ]) ifTrue: [
+				^ subclass ] ].
 	^ nil
 ]
 
@@ -27,7 +24,7 @@ GolapItemInfoRetriever class >> classForJSON: aDictionary [
 GolapItemInfoRetriever class >> fromJSON: aDictionary [
 
 	^ (self classForJSON: aDictionary) ifNotNil: [ :subclass |
-		  subclass new setFromJSON: aDictionary ]
+		  subclass new fromJSON: aDictionary ]
 ]
 
 { #category : 'testing' }
@@ -42,13 +39,7 @@ GolapItemInfoRetriever class >> tag [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'accessing' }
-GolapItemInfoRetriever >> allAvailablePhotoimageRetrievers [
-
-	^ self availablePhotoimageRetrievers
-]
-
-{ #category : 'converting' }
+{ #category : 'snapshot' }
 GolapItemInfoRetriever >> asJSON [
 
 	^ {
@@ -73,6 +64,15 @@ GolapItemInfoRetriever >> availablePhotoimageRetrievers [
 GolapItemInfoRetriever >> defaultPhotoimageRetrievers [
 
 	^ self availablePhotoimageRetrievers
+]
+
+{ #category : 'snapshot' }
+GolapItemInfoRetriever >> fromJSON: aDictionary [
+
+	aDictionary at: 'photoImageRetrievers' ifPresent: [ :array |
+			photoimageRetrievers := array collect: [ :json |
+					                        ((GolapPhotoImageRetriever classForJSON:
+						                          json) for: self) fromJSON: json ] ]
 ]
 
 { #category : 'testing' }
@@ -110,12 +110,6 @@ GolapItemInfoRetriever >> photoimageRetrieversConfigPresenter [
 
 { #category : 'accessing' }
 GolapItemInfoRetriever >> productDataFor: aGolapNode [
-
-	^ self subclassResponsibility
-]
-
-{ #category : 'private' }
-GolapItemInfoRetriever >> setFromJSON: aDictionary [
 
 	^ self subclassResponsibility
 ]

@@ -125,6 +125,18 @@ GolapEdgesAppearance >> friendsGraph [
 	self updateGlobalImageAfter: [ golap announceGolapModelUpdated ]
 ]
 
+{ #category : 'snapshot' }
+GolapEdgesAppearance >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'edge-evaluator'
+		ifPresent: [ :dict |
+			self edgeEvaluator: (GolapEdgeEvaluator fromJSON: dict) ];
+		at: 'node-evaluator'
+		ifPresent: [ :dict |
+			self nodeEvaluator: (GolapNodeEvaluator fromJSON: dict) ]
+]
+
 { #category : 'accessing' }
 GolapEdgesAppearance >> iconExtent [
 	^ 30 @ 14

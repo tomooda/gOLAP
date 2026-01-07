@@ -44,11 +44,11 @@ GolapPhotoImageRetrieversPresenter class >> on: aGolapItemInfoRetriever [
 GolapPhotoImageRetrieversPresenter >> addRetriever [
 
 	(self newMenu addGroup: [ :group |
-		 itemInfoRetriever allAvailablePhotoimageRetrievers do: [ :retriever |
-			 group addItem: [ :item |
-				 item
-					 name: retriever shortDescription;
-					 action: [ self addRetriever: retriever ] ] ] ])
+			 itemInfoRetriever availablePhotoimageRetrievers do: [ :retriever |
+					 group addItem: [ :item |
+							 item
+								 name: retriever shortDescription;
+								 action: [ self addRetriever: retriever ] ] ] ])
 		openWithSpecAtPointer
 ]
 
