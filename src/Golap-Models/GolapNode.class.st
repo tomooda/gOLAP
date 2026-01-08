@@ -137,6 +137,15 @@ GolapNode >> basicRemoveEdge: aGolapEdge [
 	negativePolishEdges remove: aGolapEdge ifAbsent: [  ]
 ]
 
+{ #category : 'polishing' }
+GolapNode >> canHavePositivePolishEdge: aGolapNode [
+
+	^ self ~~ aGolapNode and: [
+			  (edges contains: [ :edge |
+					   (edge node1 == self and: [ edge node2 == aGolapNode ]) or: [
+						   edge node1 == aGolapNode and: [ edge node2 == self ] ] ]) not ]
+]
+
 { #category : 'adding-removing' }
 GolapNode >> createEdgeTo: aGolapNode data: aDataSeries [
 	| edge |

@@ -661,7 +661,7 @@ GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anI
 								peers at: v3 put: (peers at: v3 ifAbsent: [ 0 ]) + 1 ] ] ] ].
 	hop2peers keysAndValuesDo: [ :v1 :peersAndDups |
 			peersAndDups keysAndValuesDo: [ :v2 :dups |
-					(v1 hasPeerNode: v2) ifFalse: [
+					(v1 canHavePositivePolishEdge: v2) ifFalse: [
 							| denominator |
 							denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
 							denominator > anInteger ifTrue: [
