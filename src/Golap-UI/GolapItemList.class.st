@@ -109,12 +109,14 @@ GolapItemList >> asJSON [
 
 	^ {
 		  ('marker' -> (self currentMarker ifNotNil: #asHexString)).
-		  ('markerFilters'
-		   -> (markerDropList items collect: [ :colorAndPatternString |
+		  ('markerFilters' -> (markerDropList items
+			    select: [ :colorAndPatternString |
+			    colorAndPatternString key isSymbol not ]
+			    thenCollect: [ :colorAndPatternString |
 					    (colorAndPatternString key
 						     ifNotNil: #asHexString
 						     ifNil: [ '' ]) -> colorAndPatternString value ])
-				   asDictionary) } asDictionary
+			   asOrderedDictionary) } asDictionary
 ]
 
 { #category : 'layout' }
@@ -174,6 +176,22 @@ GolapItemList >> filter: aCollectionOfGolapNode [
 				  aCollectionOfGolapNode select: [ :v |
 					  regexs anySatisfy: [ :regex | regex matches: v name ] ] ]
 		  ifEmpty: [ aCollectionOfGolapNode ]
+]
+
+{ #category : 'snapshot' }
+GolapItemList >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'markerFilters' ifPresent: [ :dict |
+				markerDropList items: (dict associations collect: [ :assoc |
+									 (assoc key isEmpty
+										  ifTrue: [ nil ]
+										  ifFalse: [ Color fromHexString: assoc key ])
+									 -> assoc value ])
+						, (markerDropList items select: [ :assoc | assoc key isSymbol ]) ];
+		at: 'marker' ifPresent: [ :hexString |
+				hexString ifNotNil: [
+						self currentMarker: (Color fromHexString: hexString) ] ]
 ]
 
 { #category : 'accessing' }

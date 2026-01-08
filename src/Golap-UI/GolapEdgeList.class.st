@@ -35,6 +35,26 @@ GolapEdgeList >> asJSON [
 			edge node2 } ])) } asDictionary
 ]
 
+{ #category : 'snapshotting' }
+GolapEdgeList >> fromJSON: aDictionary [
+
+	self updateNodeDropList.
+	aDictionary
+		at: 'node-selection'
+		ifPresent: [ :object | nodeDropList selectItem: object ];
+		at: 'edge-selection' ifPresent: [ :arrayOrNil |
+				arrayOrNil ifNotNil: [
+							| id1 id2 |
+							id1 := arrayOrNil first.
+							id2 := arrayOrNil second.
+							(peerNodeList items
+								 detect: [ :edge |
+										 (edge node1 = id1 and: [ edge node2 = id2 ]) or: [
+												 edge node1 = id1 and: [ edge node2 = id2 ] ] ]
+								 ifNone: [ nil ]) ifNotNil: [ :edge |
+									peerNodeList selectItem: edge ] ] ]
+]
+
 { #category : 'accessing' }
 GolapEdgeList >> golap [
 
@@ -45,6 +65,12 @@ GolapEdgeList >> golap [
 GolapEdgeList >> golap: aGolap [
 
 	golap := aGolap
+]
+
+{ #category : 'accessing' }
+GolapEdgeList >> golapModelDo: aBlock [
+
+	^ (golap ifNotNil: #model) ifNotNil: aBlock
 ]
 
 { #category : 'initialization' }

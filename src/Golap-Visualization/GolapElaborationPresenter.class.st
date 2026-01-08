@@ -76,6 +76,17 @@ GolapElaborationPresenter >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'snapshot' }
+GolapElaborationPresenter >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'gap' ifPresent: [ :num | gapSlider value: num ];
+		at: 'scale'
+		ifPresent: [ :array | scale := array first @ array second ];
+		at: 'offset'
+		ifPresent: [ :array | offset := array first @ array second ]
+]
+
 { #category : 'updating' }
 GolapElaborationPresenter >> gapSliderChanged [
 

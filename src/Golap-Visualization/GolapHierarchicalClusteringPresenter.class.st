@@ -60,6 +60,12 @@ GolapHierarchicalClusteringPresenter >> edgeWidthForScore: aNumber [
 		  ifFalse: [ 1.0 ]
 ]
 
+{ #category : 'snapshot' }
+GolapHierarchicalClusteringPresenter >> fromJSON: aDictionary [
+
+	
+]
+
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> golap [
 

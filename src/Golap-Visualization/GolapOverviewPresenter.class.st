@@ -178,6 +178,20 @@ GolapOverviewPresenter >> fourDirectionFrom: aPoint [
 		  ifFalse: [ x sign @ 0 ]
 ]
 
+{ #category : 'snapshot' }
+GolapOverviewPresenter >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'scale' ifPresent: [ :num | scale := num ];
+		at: 'offset'
+		ifPresent: [ :array | offset := array first @ array second ];
+		at: 'nodePositions' ifPresent: [ :dict |
+				nodePositions := (dict associations collect: [ :assoc |
+						                  assoc key
+						                  -> (assoc value first @ assoc value second) ])
+					                 asDictionary ]
+]
+
 { #category : 'accessing' }
 GolapOverviewPresenter >> golap: aGolap [
 	golap := aGolap.

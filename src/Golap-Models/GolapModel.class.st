@@ -116,9 +116,8 @@ GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
 { #category : 'snapshot' }
 GolapModel >> asJSON [
 
-	| originalNodes originalEdges nodeJsons |
+	| originalNodes originalEdges |
 	originalEdges := IdentitySet new: nodes size.
-	nodeJsons := OrderedCollection new: nodes size.
 	(originalNodes := self originalNodes) do: [ :node |
 		originalEdges addAll: node edges ].
 	^ OrderedDictionary new

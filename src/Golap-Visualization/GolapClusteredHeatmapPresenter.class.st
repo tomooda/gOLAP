@@ -19,16 +19,18 @@ Class {
 { #category : 'snapshot' }
 GolapClusteredHeatmapPresenter >> asJSON [
 
-	^ super asJSON
-		  at: 'rank' put: rankSlider value;
-		  at: 'evaluatorDropList'
-		  put: evaluatorDropList selectedItem value asJSON;
-		  at: 'showsClusterMeans' put: showsClusterMeansCheckBox state;
-		  at: 'showsSingletonClusters'
-		  put: showsSingletonClustersCheckBox state;
-		  at: 'showsClusterBoundaries'
-		  put: showsClusterBoundariesCheckBox state;
-		  yourself
+	| json |
+	json := super asJSON.
+	json
+		at: 'rank' put: rankSlider value;
+		at: 'showsClusterMeans' put: showsClusterMeansCheckBox state;
+		at: 'showsSingletonClusters'
+		put: showsSingletonClustersCheckBox state;
+		at: 'showsClusterBoundaries'
+		put: showsClusterBoundariesCheckBox state.
+	evaluatorDropList selectedItem ifNotNil: [ :assoc |
+		json at: 'evaluatorDropList' put: assoc value asJSON ].
+	^ json
 ]
 
 { #category : 'accessing' }
@@ -498,7 +500,7 @@ GolapClusteredHeatmapPresenter >> valueAtRowNode: aGolapNode1 columnNode: aGolap
 GolapClusteredHeatmapPresenter >> visibleLeaves [
 
 	^ showsSingletonClustersCheckBox state = true
-		  ifTrue: [ currentTree leaves ]
+		  ifTrue: [ currentTree ifNotNil: #leaves ifNil: [ Array new ] ]
 		  ifFalse: [
 				  Array streamContents: [ :stream |
 						  currentTree atRank: self rank do: [ :treeNode |

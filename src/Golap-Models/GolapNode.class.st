@@ -224,8 +224,8 @@ GolapNode >> fromJSON: aDictionary [
 			data := DataSeries withKeys: dict keys values: dict values ];
 		at: 'name' ifPresent: [ :json | self name: json ];
 		at: 'id' ifPresent: [ :json | self id: json ];
-		at: 'markers' ifPresent: [ :json |
-				markers := (json collect: [ :hexString |
+		at: 'markers' ifPresent: [ :array |
+				markers := (array collect: [ :hexString |
 						            Color fromHexString: hexString ])
 					           asOrderedCollection ]
 ]

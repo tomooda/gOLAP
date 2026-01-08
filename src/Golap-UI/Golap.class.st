@@ -357,7 +357,10 @@ Golap >> asJSON [
 	^ {
 		  ('url' -> url asString).
 		  ('query' -> query).
-		  ('model' -> model asJSON).
+		  ('dimensions' -> (dimensions associations collect: [ :assoc |
+				    {
+					    assoc key.
+					    assoc value asJSON } ])).
 		  ('merges' -> (merges collect: [ :assoc |
 				    {
 					    assoc key.
@@ -656,25 +659,33 @@ Golap >> fromJSON: aDictionary [
 			aDictionary
 				at: 'url' ifPresent: [ :string | url := string asZnUrl ];
 				at: 'query' ifPresent: [ :dict | query := dict ];
-				at: 'model' ifPresent: [ :json | model fromJSON: json ];
+				at: 'dimensions' ifPresent: [ :array |
+						array do: [ :pair |
+									self
+										addDimension: (GolapModel new
+												 fromJSON: pair second;
+												 yourself)
+										named: pair first ] ];
+				at: 'baseList'
+				ifPresent: [ :string |
+				string ifNotNil: [ baseList selectItem: string ] ];
+				at: 'frontList'
+				ifPresent: [ :string |
+				string ifNotNil: [ frontList selectItem: string ] ];
 				at: 'merges' ifPresent: [ :array |
-						merges := (array collect: [ :pair | pair first -> pair second ])
-							          asOrderedCollection ];
+					merges := (array collect: [ :pair | pair first -> pair second ])
+						          asOrderedCollection ];
 				at: 'pins'
 				ifPresent: [ :array | pins := array asOrderedCollection ];
 				at: 'selections'
 				ifPresent: [ :array | selections := array asSet ];
-				at: 'baseList'
-				ifPresent: [ :string | baseList selectItem: string ];
-				at: 'frontList'
-				ifPresent: [ :string | frontList selectItem: string ];
 				at: 'edgesAppearance'
 				ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];
 				at: 'colorsAppearance'
 				ifPresent: [ :json | colorsAppearancePresenter fromJSON: json ];
 				at: 'itemInfoRetriever'
 				ifPresent: [ :json |
-					itemInfoRetriever := GolapItemInfoRetriever fromJSON: json ];
+				itemInfoRetriever := GolapItemInfoRetriever fromJSON: json ];
 				at: 'itemList' ifPresent: [ :json | itemList fromJSON: json ];
 				at: 'edgeList' ifPresent: [ :json | edgeList fromJSON: json ];
 				at: 'comment' ifPresent: [ :text | commentText text: text ];
@@ -684,7 +695,7 @@ Golap >> fromJSON: aDictionary [
 				ifPresent: [ :json | friendOverviewPresenter fromJSON: json ];
 				at: 'articulationPointOverview'
 				ifPresent: [ :json |
-					articulationPointOverviewPresenter fromJSON: json ];
+				articulationPointOverviewPresenter fromJSON: json ];
 				at: 'elaboration'
 				ifPresent: [ :json | elaborationPresenter fromJSON: json ];
 				at: 'dandelion'
