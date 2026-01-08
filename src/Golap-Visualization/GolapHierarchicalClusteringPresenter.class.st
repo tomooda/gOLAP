@@ -122,8 +122,7 @@ GolapHierarchicalClusteringPresenter >> showsNode: aGolapNode [
 { #category : 'operations' }
 GolapHierarchicalClusteringPresenter >> toggleSelection: aGolapNode [
 
-	golap toggleSelection: aGolapNode.
-	self updateNode: aGolapNode
+	golap toggleSelection: aGolapNode
 ]
 
 { #category : 'operations' }
@@ -132,8 +131,7 @@ GolapHierarchicalClusteringPresenter >> toggleSelectionsAll: aCollectionOfGolapN
 	(aCollectionOfGolapNode anySatisfy: [ :node |
 		 (golap includesSelection: node) not ])
 		ifTrue: [ golap selectAll: aCollectionOfGolapNode ]
-		ifFalse: [ golap unselectAll: aCollectionOfGolapNode ].
-	self updateNode
+		ifFalse: [ golap unselectAll: aCollectionOfGolapNode ]
 ]
 
 { #category : 'accessing' }
@@ -166,37 +164,39 @@ GolapHierarchicalClusteringPresenter >> updateCanvas [
 GolapHierarchicalClusteringPresenter >> updateNode [
 
 	self isDisplayed ifTrue: [
-		self canvas shapes do: [ :shape |
-			(shape model respondsTo: #id) ifTrue: [
-				shape color:
-					(self colorForNode: (golap model nodeAt: shape model id)) ].
-			(shape model isArray and: [ shape model first = #marker ]) ifTrue: [
-				| v c |
-				v := shape model second.
-				c := shape model third.
-				shape color: ((v hasMarker: c)
-						 ifTrue: [ c ]
-						 ifFalse: [ Color transparent ]) ] ].
-		self canvas signalUpdate ]
+			self canvas shapes do: [ :shape |
+					(shape model isKindOf: GolapHierarchicalClusteringLeaf) ifTrue: [
+						shape color:
+							(self colorForNode: (golap model nodeAt: shape model id)) ].
+					(shape model isArray and: [ shape model first = #marker ])
+						ifTrue: [
+								| v c |
+								v := shape model second.
+								c := shape model third.
+								shape color: ((v hasMarker: c)
+										 ifTrue: [ c ]
+										 ifFalse: [ Color transparent ]) ] ].
+			self canvas signalUpdate ]
 ]
 
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updateNode: aGolapNode [
 
 	self isDisplayed ifTrue: [
-		self canvas shapes do: [ :shape |
-			((shape model respondsTo: #id) and: [
-				 shape model id = aGolapNode id ]) ifTrue: [
-				shape color: (self colorForNode: aGolapNode) ].
-			(shape model isArray and: [
-				 shape model first = #marker and: [
-					 shape model second == aGolapNode ] ]) ifTrue: [
-				| c |
-				c := shape model third.
-				shape color: ((aGolapNode hasMarker: c)
-						 ifTrue: [ c ]
-						 ifFalse: [ Color transparent ]) ] ].
-		self canvas signalUpdate ]
+			self canvas shapes do: [ :shape |
+					((shape model isKindOf: GolapHierarchicalClusteringLeaf) and: [
+						 shape model id = aGolapNode id ]) ifTrue: [
+						shape color:
+							(self colorForNode: (golap model nodeAt: shape model id)) ].
+					(shape model isArray and: [ shape model first = #marker ])
+						ifTrue: [
+								| v c |
+								v := shape model second.
+								c := shape model third.
+								shape color: ((v hasMarker: c)
+										 ifTrue: [ c ]
+										 ifFalse: [ Color transparent ]) ] ].
+			self canvas signalUpdate ]
 ]
 
 { #category : 'updating' }

@@ -10,7 +10,9 @@ Class {
 GolapEdgeInteraction >> clicked: evt [
 	"evt shape model value ifNode: [ :node | node openSunburst ]."
 
-	presenter toggleSelectionsAll: evt shape model value graphNodes
+	presenter toggleSelectionsAll:
+		(evt shape model value asArray collect: [ :id |
+			 presenter golap model nodeAt: id ])
 ]
 
 { #category : 'hooks' }

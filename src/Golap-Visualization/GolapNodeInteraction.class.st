@@ -15,8 +15,9 @@ GolapNodeInteraction >> activePopupWith: event [
 { #category : 'hooks' }
 GolapNodeInteraction >> clicked: event [
 
-	(event shape model respondsTo: #graphNode) ifTrue: [
-		presenter toggleSelection: event shape model graphNode ]
+	(event shape model respondsTo: #id) ifTrue: [
+			presenter toggleSelection:
+				(presenter golap model nodeAt: event shape model id) ]
 ]
 
 { #category : 'hooks' }
