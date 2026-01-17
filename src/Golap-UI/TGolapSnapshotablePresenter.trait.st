@@ -5,6 +5,12 @@ Trait {
 	#tag : 'Snapshot'
 }
 
+{ #category : 'instance creation' }
+TGolapSnapshotablePresenter classSide >> fromJSON: aDictionary [
+
+	^ self new fromJSON: aDictionary
+]
+
 { #category : 'snapshot' }
 TGolapSnapshotablePresenter >> asJSON [
 
@@ -59,9 +65,13 @@ TGolapSnapshotablePresenter >> fromWindowJSON: aString bounds: aRectangle [
 
 	aString = 'open' ifTrue: [ ^ self openBounds: aRectangle ].
 	aString = 'minimized' ifTrue: [
-		^ (self openBounds: aRectangle) minimized ].
+			^ (self openBounds: aRectangle)
+				  minimize;
+				  open ].
 	aString = 'maximized' ifTrue: [
-		^ (self openBounds: aRectangle) maximized ].
+			^ (self openBounds: aRectangle)
+				  maximize;
+				  open ].
 	aRectangle ifNotNil: [
 			^ self asWindow
 				  initialPosition: aRectangle origin;

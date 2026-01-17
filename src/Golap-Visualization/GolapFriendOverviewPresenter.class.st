@@ -50,6 +50,15 @@ GolapFriendOverviewPresenter >> friendsRankChanged [
 	self updateCanvas
 ]
 
+{ #category : 'snapshot' }
+GolapFriendOverviewPresenter >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	aDictionary
+		at: 'friendsRank'
+		ifPresent: [ :integer | friendsRankField number: integer ]
+]
+
 { #category : 'initialization' }
 GolapFriendOverviewPresenter >> initializePresenters [
 

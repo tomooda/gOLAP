@@ -246,8 +246,9 @@ GolapItemList >> initializePresenters [
 		                  display: [ :marker | '' ];
 		                  displayIcon: [ :marker | marker icon ];
 		                  whenSelectedItemChangedDo: [ :marker |
-				                  marker activatedIn: self.
-				                  self updateGlobalImage ];
+				                  marker ifNotNil: [
+							                  marker activatedIn: self.
+							                  self updateGlobalImage ] ];
 		                  yourself.
 	lastSelectedMarkerIndex := 0.
 	queryField := self newTextInput

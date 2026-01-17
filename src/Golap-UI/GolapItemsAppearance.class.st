@@ -63,7 +63,8 @@ GolapItemsAppearance >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newVertical
-		  add: fontButton height: self buttonHeight;
+		  add: fontButton expand: false;
+		  add: '商品画像取得' expand: false;
 		  add: photoimageRetrievers;
 		  add: (SpBoxLayout newHorizontal
 				   add: photoimageRetrievalProgressBar;

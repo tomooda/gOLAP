@@ -117,6 +117,27 @@ GolapPolishOverviewPresenter >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'snapshot' }
+GolapPolishOverviewPresenter >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	aDictionary
+		at: 'visibleEdgeMinPercentile'
+		ifPresent: [ :number | visibleEdgeMinPercentileSlider value: number ];
+		at: 'visibleEdgeMaxPercentile'
+		ifPresent: [ :number | visibleEdgeMaxPercentileSlider value: number ];
+		at: 'polishIteration'
+		ifPresent: [ :bool | polishIterationCheckbox state: bool ];
+		at: 'positivePolish'
+		ifPresent: [ :number | positivePolishField number: number ];
+		at: 'negativePolish'
+		ifPresent: [ :number | negativePolishField number: number ];
+		at: 'polishMinDenominator'
+		ifPresent: [ :integer | polishMinDenominatorField number: integer ];
+		at: 'showsPolishEdges'
+		ifPresent: [ :bool | showsPolishEdgesCheckbox state: bool ]
+]
+
 { #category : 'initialization' }
 GolapPolishOverviewPresenter >> initializePresenters [
 
@@ -208,10 +229,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 	layoutButton := self newButton
 		                label: ' 再配置 ';
 		                action: [
-				                golap
-					                updateGlobalImageAfter: [
-						                golap model friendsEdges: golap model nodes size ]
-					                layout: false.
+				                golap model friendsEdges: golap model nodes size.
 				                self updateNodePositions ];
 		                yourself
 ]
@@ -262,8 +280,9 @@ GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 	super renderEdgesIn: aRSCanvas.
 	showsPolishEdgesCheckbox state ifTrue: [
 			aRSCanvas lines do: [ :line |
-					line model ifNotNil: [ :edge |
-						edge isPositivePolishEdge ifTrue: [ line pushFront ] ] ] ]
+					line parent ifNotNil: [
+							line model ifNotNil: [ :edge |
+								edge isPositivePolishEdge ifTrue: [ line pushFront ] ] ] ] ]
 ]
 
 { #category : 'updating' }

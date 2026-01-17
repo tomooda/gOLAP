@@ -55,14 +55,6 @@ GolapColorsAppearance class >> colorNames [
 	^ self colorMap keys
 ]
 
-{ #category : 'layout' }
-GolapColorsAppearance class >> defaultLayout [
-	<spec>
-	^ SpBoxLayout newHorizontal
-		add: #nameList width: 140;
-		add: #colorList width: 140
-]
-
 { #category : 'instance creation' }
 GolapColorsAppearance class >> on: aGolap [
 	^ self new
@@ -123,6 +115,19 @@ GolapColorsAppearance >> decliningColor [
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> decliningColor: aColor [
 	self updateGlobalImageAfter: [ decliningColor := aColor ]
+]
+
+{ #category : 'layout' }
+GolapColorsAppearance >> defaultLayout [
+
+	<spec>
+	^ SpBoxLayout newVertical
+		  add: '商品の色' expand: false;
+		  add: (SpBoxLayout newHorizontal
+				   add: nameList;
+				   add: colorList;
+				   yourself);
+		  yourself
 ]
 
 { #category : 'accessing-colors' }

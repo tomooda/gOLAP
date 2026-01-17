@@ -29,7 +29,7 @@ GolapClusteredHeatmapPresenter >> asJSON [
 		at: 'showsClusterBoundaries'
 		put: showsClusterBoundariesCheckBox state.
 	evaluatorDropList selectedItem ifNotNil: [ :assoc |
-		json at: 'evaluatorDropList' put: assoc value asJSON ].
+		json at: 'evaluatorDropList' put: assoc key ].
 	^ json
 ]
 
@@ -126,6 +126,24 @@ GolapClusteredHeatmapPresenter >> evaluator [
 GolapClusteredHeatmapPresenter >> evaluatorChanged [
 
 	self updateCanvas
+]
+
+{ #category : 'snapshot' }
+GolapClusteredHeatmapPresenter >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	aDictionary
+		at: 'rank' ifPresent: [ :number | rankSlider value: number ];
+		at: 'showsClusterMeans'
+		ifPresent: [ :bool | showsClusterMeansCheckBox state: bool ];
+		at: 'showsSingletonClusters'
+		ifPresent: [ :bool | showsSingletonClustersCheckBox state: bool ];
+		at: 'showsClusterBoundaries'
+		ifPresent: [ :bool | showsClusterBoundariesCheckBox state: bool ];
+		at: 'evaluatorDropList' ifPresent: [ :string |
+				evaluatorDropList selectItem: (evaluatorDropList items
+							 detect: [ :assoc | assoc key = string ]
+							 ifNone: [ nil ]) ]
 ]
 
 { #category : 'accessing' }

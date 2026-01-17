@@ -294,11 +294,17 @@ GolapNetworkClientPresenter >> initializePresenters [
 		                         yourself.
 	usesQueryHistory := false.
 	queryHistoryPresenter := self instantiate: GolapQueryHistoryPresenter.
-	serverConfigTree := self newTreeTable
+	serverConfigTree := (self instantiate: GolapTreeTablePresenter)
 		                    addColumn:
 			                    (SpStringTableColumn evaluated: [ :assoc |
-					                     assoc key , ' : '
-					                     , (STONJSON toString: assoc value) ]);
+						                     | string |
+						                     string := assoc key , ' : '
+						                               ,
+							                               (STONJSON toString: assoc value).
+						                     serverConfigTree contentWidth:
+								                     (TextStyle defaultFont widthOfString:
+										                      string).
+						                     string ]);
 		                    children: [ :assoc |
 				                    assoc value isDictionary
 					                    ifTrue: [

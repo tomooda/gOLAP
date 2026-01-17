@@ -79,7 +79,7 @@ GolapColorMarker >> colorHexString: aString [
 GolapColorMarker >> fromJSON: aDictionary [
 
 	aDictionary
-		at: 'color' ifPresent: [ :string | colorHexString := string ];
+		at: 'color' ifPresent: [ :string | self colorHexString: string ];
 		at: 'query' ifPresent: [ :string | queryString := string ]
 ]
 

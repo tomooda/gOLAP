@@ -92,14 +92,14 @@ GolapOverviewGridLayouter >> gainBySwappingX: x1 y: y1 andX: x2 y: y2 [
 	| gain |
 	gain := 0.
 	((matrix at: x1) at: y1) ifNotNil: [ :node1 |
-			node1 edgesAndNodeDo: [ :edge :peer |
+			node1 allEdgesAndNodeDo: [ :edge :peer |
 					(edges includes: edge) ifTrue: [
 							nodeX at: peer ifPresent: [ :peerX |
 									nodeY at: peer ifPresent: [ :peerY |
 											gain := gain + (x1 - peerX) squared + (y1 - peerY) squared
 											        - (x2 - peerX) squared - (y2 - peerY) squared ] ] ] ] ].
 	((matrix at: x2) at: y2) ifNotNil: [ :node2 |
-			node2 edgesAndNodeDo: [ :edge :peer |
+			node2 allEdgesAndNodeDo: [ :edge :peer |
 					(edges includes: edge) ifTrue: [
 							nodeX at: peer ifPresent: [ :peerX |
 									nodeY at: peer ifPresent: [ :peerY |

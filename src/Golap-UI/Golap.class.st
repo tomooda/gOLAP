@@ -62,37 +62,6 @@ Golap class >> defaultFont: aFont [
 	^ StandardFonts defaultFont: aFont
 ]
 
-{ #category : 'layout' }
-Golap class >> defaultLayout [
-
-	<spec>
-	^ SpBoxLayout newHorizontal
-		  add: (SpBoxLayout newVertical
-				   add: (SpBoxLayout newHorizontal
-						    add: #frontList width: 150;
-						    add: #baseList)
-				   height: self buttonHeight;
-				   add: #edgesAppearancePresenter height: 70;
-				   add: #itemsAppearancePresenter height: 300;
-				   add: #colorsAppearancePresenter height: 250;
-				   add: 'コメント' expand: false;
-				   add: #commentText;
-				   yourself)
-		  width: 350;
-		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.75;
-				   add: #visualizationNotebook;
-				   add: (SpBoxLayout newVertical
-						    add: #saveSnapshotButton height: self buttonHeight;
-						    add: #saveAsSvgButton height: self buttonHeight;
-						    add: #saveAsPngButton height: self buttonHeight;
-						    add: #resendQueryButton height: self buttonHeight;
-						    add: #queryViewTree height: 200;
-						    add: #itemNotebook);
-				   yourself);
-		  yourself
-]
-
 { #category : 'utilities' }
 Golap class >> deploy [
 
@@ -587,6 +556,37 @@ Golap >> decliningColor [
 	^ colorsAppearancePresenter decliningColor
 ]
 
+{ #category : 'layout' }
+Golap >> defaultLayout [
+
+	<spec>
+	^ SpPanedLayout newHorizontal
+		  positionOfSlider: 0.2;
+		  add: (SpBoxLayout newVertical
+				   add: (SpBoxLayout newHorizontal
+						    add: frontList;
+						    add: baseList)
+				   height: self buttonHeight;
+				   add: edgesAppearancePresenter height: 70;
+				   add: itemsAppearancePresenter height: 300;
+				   add: colorsAppearancePresenter height: 250;
+				   add: 'コメント' expand: false;
+				   add: commentText;
+				   yourself);
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.70;
+				   add: visualizationNotebook;
+				   add: (SpBoxLayout newVertical
+						    add: saveSnapshotButton height: self buttonHeight;
+						    add: saveAsSvgButton height: self buttonHeight;
+						    add: saveAsPngButton height: self buttonHeight;
+						    add: resendQueryButton height: self buttonHeight;
+						    add: queryViewTree height: 200;
+						    add: itemNotebook);
+				   yourself);
+		  yourself
+]
+
 { #category : 'accessing-dimensions' }
 Golap >> dimensionAt: aString [
 	^ dimensions at: aString ifAbsent: [ nil ]
@@ -947,11 +947,15 @@ Golap >> initializePresenters [
 		                      label: 'save snapshot...';
 		                      action: [ self saveSnapshot ];
 		                      yourself.
-	queryViewTree := self newTreeTable
+	queryViewTree := (self instantiate: GolapTreeTablePresenter)
 		                 addColumn:
 			                 (SpStringTableColumn evaluated: [ :assoc |
-					                  assoc key , ' : '
-					                  , (STONJSON toString: assoc value) ]);
+						                  | string |
+						                  string := assoc key , ' : '
+						                            , (STONJSON toString: assoc value).
+						                  queryViewTree contentWidth:
+								                  (TextStyle defaultFont widthOfString: string).
+						                  string ]);
 		                 children: [ :assoc |
 				                 assoc value isDictionary
 					                 ifTrue: [
@@ -1606,6 +1610,7 @@ Golap >> removeReferenceNode: aGolapNode [
 Golap >> resendQuery [
 
 	| client overview |
+	(self url isNil or: [ self query isNil ]) ifTrue: [ ^ self ].
 	client := GolapApiClient
 		          url: self url
 		          query: (NeoJSONWriter toString: self query)
@@ -1615,10 +1620,11 @@ Golap >> resendQuery [
 		            yourself.
 	self snapshotDirectory copyAllTo:
 		overview snapshotDirectory ensureDeleteAll.
-	overview snapshotDirectory / 'createdTime' writeStreamDo: [ :stream | 
-		| now |
-		now := DateAndTime now.
-		stream nextPutAll: now asDate printString , ' ' , now asTime print24 ].
+	overview snapshotDirectory / 'createdTime' writeStreamDo: [ :stream |
+			| now |
+			now := DateAndTime now.
+			stream nextPutAll:
+				now asDate printString , ' ' , now asTime print24 ].
 	overview open title: overview snapshotDirectory basename.
 	overview snapshotData: client readStream do: [ :readStream |  ].
 	overview restoreSnapshot: overview snapshotDirectory
@@ -1942,12 +1948,10 @@ Golap >> selections: aCollectionOfGolapNode [
 Golap >> setQuery: aDictionary [
 
 	query := aDictionary.
-
 	queryViewTree roots:
 		(query keys asSortedCollection collect: [ :key |
 			 key -> (query at: key) ]).
-	itemInfoRetriever ifNotNil: [
-		itemInfoRetriever query: aDictionary ]
+	itemInfoRetriever ifNotNil: [ itemInfoRetriever query: aDictionary ]
 ]
 
 { #category : 'accessing-selection' }
