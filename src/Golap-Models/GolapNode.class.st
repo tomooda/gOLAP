@@ -14,7 +14,6 @@ Class {
 		'label',
 		'rectangles',
 		'photoimage',
-		'markers',
 		'isReferenceNode'
 	],
 	#category : 'Golap-Models-Graph',
@@ -44,12 +43,6 @@ GolapNode >> addEdge: aGolapEdge [
 { #category : 'adding-removing' }
 GolapNode >> addHiddenEdge: aGolapEdge [
 	^ hiddenEdges add: aGolapEdge
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> addMarker: aColor [
-
-	^ markers add: aColor
 ]
 
 { #category : 'polishing' }
@@ -93,9 +86,7 @@ GolapNode >> asJSON [
 	^ {
 		  ('id' -> self id).
 		  ('name' -> self name).
-		  ('data' -> self data).
-		  ('markers' -> (markers collect: #asHexString) asArray) }
-		  asOrderedDictionary
+		  ('data' -> self data) } asOrderedDictionary
 ]
 
 { #category : 'converting' }
@@ -232,11 +223,7 @@ GolapNode >> fromJSON: aDictionary [
 		ifPresent: [ :dict |
 			data := DataSeries withKeys: dict keys values: dict values ];
 		at: 'name' ifPresent: [ :json | self name: json ];
-		at: 'id' ifPresent: [ :json | self id: json ];
-		at: 'markers' ifPresent: [ :array |
-				markers := (array collect: [ :hexString |
-						            Color fromHexString: hexString ])
-					           asOrderedCollection ]
+		at: 'id' ifPresent: [ :json | self id: json ]
 ]
 
 { #category : 'enumerating' }
@@ -251,12 +238,6 @@ GolapNode >> hasEdgeSuchThat: aBlock [
 			(aBlock value: edge)
 				ifTrue: [ ^ true ] ].
 	^ false
-]
-
-{ #category : 'testing' }
-GolapNode >> hasMarker: aColor [
-
-	^ markers includes: aColor
 ]
 
 { #category : 'polishing' }
@@ -339,8 +320,7 @@ GolapNode >> initialize [
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	scores := Dictionary new.
-	rectangles := Dictionary new.
-	markers := OrderedCollection new
+	rectangles := Dictionary new
 ]
 
 { #category : 'testing' }
@@ -361,18 +341,6 @@ GolapNode >> label [
 { #category : 'accessing' }
 GolapNode >> label: aForm [
 	label := aForm
-]
-
-{ #category : 'accessing' }
-GolapNode >> markers [
-
-	^ markers asArray
-]
-
-{ #category : 'enumerating' }
-GolapNode >> markersDo: aBlock [
-
-	markers do: aBlock
 ]
 
 { #category : 'accessing' }
@@ -469,9 +437,7 @@ GolapNode >> postCopy [
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	scores := Dictionary new.
-	rectangles := Dictionary new.
-	markers := OrderedCollection new.
-	markers := markers copy
+	rectangles := Dictionary new
 ]
 
 { #category : 'printing' }
@@ -514,22 +480,10 @@ GolapNode >> rectanglesAndNodesAndScoresAt: aPoint do: aBlock [
 ]
 
 { #category : 'adding-removing' }
-GolapNode >> removeAllMarkers [
-
-	markers removeAll
-]
-
-{ #category : 'adding-removing' }
 GolapNode >> removeEdge: aGolapEdge [
 	^ aGolapEdge
 		remove;
 		yourself
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> removeMarker: aColor [
-
-	^ markers remove: aColor ifAbsent: [  ]
 ]
 
 { #category : 'polishing' }

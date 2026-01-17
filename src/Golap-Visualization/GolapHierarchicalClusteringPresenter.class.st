@@ -103,12 +103,12 @@ GolapHierarchicalClusteringPresenter >> initializePresenters [
 ]
 
 { #category : 'private' }
-GolapHierarchicalClusteringPresenter >> markerModelForNode: aGolapNode color: aColor [
+GolapHierarchicalClusteringPresenter >> markerModelForNode: aGolapNode marker: aGolapColorMarker [
 
 	^ {
 		  #marker.
 		  aGolapNode.
-		  aColor }
+		  aGolapColorMarker }
 ]
 
 { #category : 'private' }
@@ -176,11 +176,11 @@ GolapHierarchicalClusteringPresenter >> updateNode [
 							(self colorForNode: (golap model nodeAt: shape model id)) ].
 					(shape model isArray and: [ shape model first = #marker ])
 						ifTrue: [
-								| v c |
-								v := shape model second.
-								c := shape model third.
-								shape color: ((v hasMarker: c)
-										 ifTrue: [ c ]
+								| node marker |
+								node := shape model second.
+								marker := shape model third.
+								shape color: ((marker includesNode: node)
+										 ifTrue: [ marker color ]
 										 ifFalse: [ Color transparent ]) ] ].
 			self canvas signalUpdate ]
 ]
@@ -196,11 +196,11 @@ GolapHierarchicalClusteringPresenter >> updateNode: aGolapNode [
 							(self colorForNode: (golap model nodeAt: shape model id)) ].
 					(shape model isArray and: [ shape model first = #marker ])
 						ifTrue: [
-								| v c |
-								v := shape model second.
-								c := shape model third.
-								shape color: ((v hasMarker: c)
-										 ifTrue: [ c ]
+								| node marker |
+								node := shape model second.
+								marker := shape model third.
+								shape color: ((marker includesNode: node)
+										 ifTrue: [ marker color ]
 										 ifFalse: [ Color transparent ]) ] ].
 			self canvas signalUpdate ]
 ]

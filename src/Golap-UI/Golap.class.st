@@ -1,6 +1,8 @@
 Class {
 	#name : 'Golap',
 	#superclass : 'SpPresenter',
+	#traits : 'TGolapSnapshotablePresenter',
+	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'model',
 		'queryRecord',
@@ -354,35 +356,39 @@ Golap >> applyMergesToModel: aGolapModel [
 { #category : 'snapshot' }
 Golap >> asJSON [
 
-	^ {
-		  ('url' -> url asString).
-		  ('query' -> query).
-		  ('dimensions' -> (dimensions associations collect: [ :assoc |
-				    {
-					    assoc key.
-					    assoc value asJSON } ])).
-		  ('merges' -> (merges collect: [ :assoc |
-				    {
-					    assoc key.
-					    assoc value } ])).
-		  ('pins' -> pins asArray).
-		  ('selections' -> selections asArray).
-		  ('baseList' -> baseList selectedItem).
-		  ('frontList' -> frontList selectedItem).
-		  ('edgesAppearance' -> edgesAppearancePresenter asJSON).
-		  ('colorsAppearance' -> colorsAppearancePresenter asJSON).
-		  ('itemInfoRetriever' -> itemInfoRetriever asJSON).
-		  ('itemList' -> itemList asJSON).
-		  ('edgeList' -> edgeList asJSON).
-		  ('comment' -> commentText text).
-		  ('polishOverview' -> polishOverviewPresenter asJSON).
-		  ('friendOverview' -> friendOverviewPresenter asJSON).
-		  ('articulationPointOverview'
-		   -> articulationPointOverviewPresenter asJSON).
-		  ('elaboration' -> elaborationPresenter asJSON).
-		  ('dandelion' -> dandelionPresenter asJSON).
-		  ('hedge' -> hedgePresenter asJSON).
-		  ('heatmap' -> heatmapPresenter asJSON) } asDictionary
+	^ self basicAsJSON
+		  at: 'url' put: url asString;
+		  at: 'query' put: query;
+		  at: 'dimensions'
+		  put: (dimensions associations collect: [ :assoc |
+						   {
+							   assoc key.
+							   assoc value asJSON } ]);
+		  at: 'merges' put: (merges collect: [ :assoc |
+						   {
+							   assoc key.
+							   assoc value } ]);
+		  at: 'pins' put: pins asArray;
+		  at: 'selections' put: selections asArray;
+		  at: 'baseList' put: baseList selectedItem;
+		  at: 'frontList' put: frontList selectedItem;
+		  at: 'edgesAppearance' put: edgesAppearancePresenter asJSON;
+		  at: 'colorsAppearance' put: colorsAppearancePresenter asJSON;
+		  at: 'itemInfoRetriever' put: itemInfoRetriever asJSON;
+		  at: 'itemList' put: itemList asJSON;
+		  at: 'edgeList' put: edgeList asJSON;
+		  at: 'comment' put: commentText text;
+		  at: 'polishOverview' put: polishOverviewPresenter asJSON;
+		  at: 'friendOverview' put: friendOverviewPresenter asJSON;
+		  at: 'articulationPointOverview'
+		  put: articulationPointOverviewPresenter asJSON;
+		  at: 'elaboration' put: elaborationPresenter asJSON;
+		  at: 'dandelion' put: dandelionPresenter asJSON;
+		  at: 'hedge' put: hedgePresenter asJSON;
+		  at: 'heatmap' put: heatmapPresenter asJSON;
+		  at: 'visualizationNotebook-selectedPageIndex'
+		  put: visualizationNotebook selectedPageIndex;
+		  yourself
 ]
 
 { #category : 'accessing' }
@@ -478,6 +484,18 @@ Golap >> colorForNode: aGolapNode [
 		(model valueAtNode: aGolapNode) > 0 ifTrue: [
 			^ self growingColor ] ].
 	^ self normalColorFor: aGolapNode
+]
+
+{ #category : 'accessing-markers' }
+Golap >> colorMarkers [
+
+	^ itemList colorMarkers
+]
+
+{ #category : 'accessing-markers' }
+Golap >> colorMarkersAndNodesDo: aBlock [
+
+	itemList colorMarkersAndNodesDo: aBlock
 ]
 
 { #category : 'accessing' }
@@ -656,6 +674,7 @@ Golap >> freshColor [
 Golap >> fromJSON: aDictionary [
 
 	self blockUpdateModelWhile: [
+			self basicFromJSON: aDictionary.
 			aDictionary
 				at: 'url' ifPresent: [ :string | url := string asZnUrl ];
 				at: 'query' ifPresent: [ :dict | query := dict ];
@@ -701,7 +720,10 @@ Golap >> fromJSON: aDictionary [
 				at: 'dandelion'
 				ifPresent: [ :json | dandelionPresenter fromJSON: json ];
 				at: 'hedge' ifPresent: [ :json | hedgePresenter fromJSON: json ];
-				at: 'heatmap' ifPresent: [ :json | heatmapPresenter asJSON ] ]
+				at: 'heatmap' ifPresent: [ :json | heatmapPresenter asJSON ];
+				at: 'visualizationNotebook-selectedPageIndex'
+				ifPresent: [ :integer |
+				visualizationNotebook selectPageIndex: integer ] ]
 ]
 
 { #category : 'menu' }
@@ -1086,14 +1108,9 @@ Golap >> markedNodes [
 ]
 
 { #category : 'accessing-markers' }
-Golap >> markersAndNodesDo: aBlock [
+Golap >> markersAtNode: aGolapNode do: aBlock [
 
-	| markersAndNodes |
-	markersAndNodes := model markersAndNodes.
-	itemList allMarkerColors do: [ :marker |
-			markersAndNodes
-				at: marker
-				ifPresent: [ :nodes | aBlock value: marker value: nodes ] ]
+	itemList markersAtNode: aGolapNode do: aBlock
 ]
 
 { #category : 'menu' }
@@ -1107,24 +1124,22 @@ Golap >> mergeMenu [
 							item
 								name: 'selections';
 								action: [ self mergeSelectedNodes ] ] ].
-			itemList markerDropList listItems do: [ :listItem |
-					| color ids |
-					color := listItem key.
-					ids := model nodes
-						       select: [ :node | node hasMarker: color ]
-						       thenCollect: #id.
-					ids size > 1 ifTrue: [
-							group addItem: [ :menuItem |
-									menuItem
-										name: '';
-										icon: (self iconForCircleColor: color);
-										action: [
-												(self mergeNodes: ids copy) ifNotNil: [ :newId |
-															itemList markerDropList items do: [ :item |
-																	item key = color ifTrue: [
-																			item value: item value , ',' , newId ] ].
-															itemList currentMarker: color.
-															itemList updateItemsList ] ] ] ] ] ].
+			itemList markerDropList items
+				select: #isColorMarker
+				thenDo: [ :marker |
+						| ids |
+						ids := model nodes
+							       select: [ :node | marker includesNode: node ]
+							       thenCollect: #id.
+						ids size > 1 ifTrue: [
+								group addItem: [ :menuItem |
+										menuItem
+											name: '';
+											icon: marker icon;
+											action: [
+													(self mergeNodes: ids copy) ifNotNil: [ :newId |
+																itemList add: (model nodeAt: newId) toMarker: marker.
+																itemList currentMarker: marker ] ] ] ] ] ].
 	^ menu
 ]
 

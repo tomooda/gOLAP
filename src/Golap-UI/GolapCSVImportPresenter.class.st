@@ -24,6 +24,15 @@ GolapCSVImportPresenter >> aggregatorAt: aString put: aGolapDataAggregator [
 	aggregators at: aString put: aGolapDataAggregator
 ]
 
+{ #category : 'snapshot' }
+GolapCSVImportPresenter >> asJSON [
+
+	^ {
+		  ('columnsTable-selectionIndex' -> columnsTable selectedIndex).
+		  ('evaluatorDropList-selectionIndex'
+		   -> evaluatorDropList selectedIndex) } asOrderedDictionary
+]
+
 { #category : 'accessing' }
 GolapCSVImportPresenter >> availableAggregatorsFor: aString [
 
@@ -107,6 +116,16 @@ GolapCSVImportPresenter >> evaluator [
 GolapCSVImportPresenter >> evaluatorChanged [
 
 	
+]
+
+{ #category : 'snapshot' }
+GolapCSVImportPresenter >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'columnsTable-selectionIndex'
+		ifPresent: [ :integer | columnsTable selectIndex: integer ];
+		at: 'evaluatorDropList-selectionIndex'
+		ifPresent: [ :integer | evaluatorDropList selectIndex: integer ]
 ]
 
 { #category : 'initialization' }

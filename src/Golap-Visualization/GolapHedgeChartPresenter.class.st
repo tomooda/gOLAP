@@ -30,79 +30,82 @@ GolapHedgeChartPresenter >> friendScoreBetween: aGolapNode1 and: aGolapNode2 [
 GolapHedgeChartPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
-		| canvas markers terminals y ystep |
-		canvas := self canvas.
-		self canvas shapes copy do: #remove.
-		markers := golap allMarkerColors.
-		terminals := OrderedCollection new: golap model nodes size.
-		tree allLeaves doWithIndex: [ :leaf :index |
-			| graphNode box |
-			graphNode := golap model nodeAt: leaf id.
-			box := RSBox new
-				       position: index * 100 @ 0;
-				       extent: 90 @ 90;
-				       color: (self colorForNode: graphNode);
-				       model: leaf;
-				       yourself.
-			box @ (GolapNodeInteraction on: self).
-			terminals add: leaf -> box position.
-			canvas addShape: box ].
-		canvas shapes do: [ :box |
-			box model isLeaf ifTrue: [
-				| position |
-				position := box position + (0 @ 50).
-				markers do: [ :c |
-					canvas addShape: (RSBox new
-							 extent: 90 @ 30;
-							 position: position;
-							 color: (((golap model nodeAt: box model id) hasMarker: c)
-									  ifTrue: [ c ]
-									  ifFalse: [ Color transparent ]);
-							 model:
-								 (self
-									  markerModelForNode: (golap model nodeAt: box model id)
-									  color: c)).
-					position := position + (0 @ 30) ] ] ].
+			| canvas colorMarkers terminals y ystep |
+			canvas := self canvas.
+			self canvas shapes copy do: #remove.
+			colorMarkers := golap colorMarkers.
+			terminals := OrderedCollection new: golap model nodes size.
+			tree allLeaves doWithIndex: [ :leaf :index |
+					| graphNode box |
+					graphNode := golap model nodeAt: leaf id.
+					box := RSBox new
+						       position: index * 100 @ 0;
+						       extent: 90 @ 90;
+						       color: (self colorForNode: graphNode);
+						       model: leaf;
+						       yourself.
+					box @ (GolapNodeInteraction on: self).
+					terminals add: leaf -> box position.
+					canvas addShape: box ].
+			canvas shapes do: [ :box |
+					box model isLeaf ifTrue: [
+							| position |
+							position := box position + (0 @ 50).
+							colorMarkers do: [ :marker |
+									| c |
+									c := marker color.
+									canvas addShape: (RSBox new
+											 extent: 90 @ 30;
+											 position: position;
+											 color: ((marker includesNodeId: box model id)
+													  ifTrue: [ c ]
+													  ifFalse: [ Color transparent ]);
+											 model: (self
+													  markerModelForNode: (golap model nodeAt: box model id)
+													  marker: marker)).
+									position := position + (0 @ 30) ] ] ].
 
-		y := 0.
-		ystep := terminals size * 100 * 0.4 / (tree maxDepth + 1).
-		[ terminals notEmpty ] whileTrue: [
-			| nextTerminals |
-			y := y - ystep.
-			nextTerminals := OrderedCollection new: terminals size.
-			terminals do: [ :assoc |
-				| node position |
-				node := assoc key.
-				position := assoc value.
-				node parent ifNotNil: [ :parent |
-					(nextTerminals notEmpty and: [ nextTerminals last key == parent ])
-						ifFalse: [ nextTerminals add: parent -> OrderedCollection new ].
-					nextTerminals last value add: node -> position ] ].
-			terminals := OrderedCollection new: nextTerminals size.
-			nextTerminals do: [ :assoc |
-				| parent assocs parentPosition |
-				parent := assoc key.
-				assocs := assoc value value.
-				parentPosition := ((assocs collect: #value) collect: #x) average
-				                  @ y.
-				assocs do: [ :a |
-					| node position bezier |
-					node := a key.
-					position := a value.
-					bezier := (RSBezier newFrom: position to: parentPosition)
-						          model: node;
-						          controlPoints: {
-								          position.
-								          (position x @ parentPosition y).
-								          parentPosition };
-						          capRound;
-						          width: (self edgeWidthForScore: node score) ceiling;
-						          color: Color gray;
-						          yourself.
-					bezier @ (GolapEdgeInteraction on: self).
-					canvas addShape: bezier ].
-				terminals add: parent -> parentPosition ] ].
-		self zoomToFit ]
+			y := 0.
+			ystep := terminals size * 100 * 0.4 / (tree maxDepth + 1).
+			[ terminals notEmpty ] whileTrue: [
+					| nextTerminals |
+					y := y - ystep.
+					nextTerminals := OrderedCollection new: terminals size.
+					terminals do: [ :assoc |
+							| node position |
+							node := assoc key.
+							position := assoc value.
+							node parent ifNotNil: [ :parent |
+									(nextTerminals notEmpty and: [
+										 nextTerminals last key == parent ]) ifFalse: [
+										nextTerminals add: parent -> OrderedCollection new ].
+									nextTerminals last value add: node -> position ] ].
+					terminals := OrderedCollection new: nextTerminals size.
+					nextTerminals do: [ :assoc |
+							| parent assocs parentPosition |
+							parent := assoc key.
+							assocs := assoc value value.
+							parentPosition := ((assocs collect: #value) collect: #x)
+								                  average @ y.
+							assocs do: [ :a |
+									| node position bezier |
+									node := a key.
+									position := a value.
+									bezier := (RSBezier newFrom: position to: parentPosition)
+										          model: node;
+										          controlPoints: {
+												          position.
+												          (position x @ parentPosition y).
+												          parentPosition };
+										          capRound;
+										          width:
+											          (self edgeWidthForScore: node score) ceiling;
+										          color: Color gray;
+										          yourself.
+									bezier @ (GolapEdgeInteraction on: self).
+									canvas addShape: bezier ].
+							terminals add: parent -> parentPosition ] ].
+			self zoomToFit ]
 ]
 
 { #category : 'accessing' }

@@ -406,25 +406,6 @@ GolapModel >> isReferenceNode: aGolapNode [
 	^ referenceNodes includes: aGolapNode id
 ]
 
-{ #category : 'accessing-markers' }
-GolapModel >> markersAndNodes [
-
-	| markersAndNodes |
-	markersAndNodes := Dictionary new.
-	self nodesDo: [ :node |
-			node markersDo: [ :marker |
-					(markersAndNodes
-						 at: marker
-						 ifAbsentPut: [ OrderedCollection new ]) add: node ] ].
-	^ markersAndNodes
-]
-
-{ #category : 'enumerating' }
-GolapModel >> markersAndNodesDo: aBlock [
-
-	self markersAndNodes keysAndValuesDo: aBlock
-]
-
 { #category : 'accessing' }
 GolapModel >> maxEdgeValue [
 
@@ -609,13 +590,6 @@ GolapModel >> nodesDo: aBlock [
 
 	self nodes keys do: [ :id |
 		aBlock cull: (nodes at: id) cull: id ]
-]
-
-{ #category : 'enumerating' }
-GolapModel >> nodesWithMarker: aColor do: aBlock [
-
-	self nodesDo: [ :node |
-		(node hasMarker: aColor) ifTrue: [ aBlock value: node ] ]
 ]
 
 { #category : 'private' }

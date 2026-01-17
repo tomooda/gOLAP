@@ -16,44 +16,17 @@ Class {
 }
 
 { #category : 'adding' }
-GolapItemList >> add: aGolapNode toMarker: aColor [
+GolapItemList >> add: aGolapNode toMarker: aGolapMarker [
 
-	self updateGlobalImageAfter: [
-			aGolapNode addMarker: aColor.
-			markerDropList items do: [ :assoc |
-					assoc key = aColor ifTrue: [
-							| patterns regexs |
-							patterns := (assoc value substrings: ',')
-								            collect: #trim
-								            thenSelect: #notEmpty.
-							regexs := patterns collect: [ :pattern |
-								          self regexFor: pattern ].
-							(regexs anySatisfy: [ :regex | regex matches: aGolapNode name ])
-								ifFalse: [ patterns := patterns copyWith: aGolapNode name ].
-							assoc value: (',' join: patterns) ] ].
-			self currentMarker: aColor.
-			self updateItemsList ]
+	aGolapMarker addNode: aGolapNode.
+	self currentMarker: aGolapMarker
 ]
 
 { #category : 'adding' }
-GolapItemList >> addAll: aCollectionOfGolapNode toMarker: aColor [
+GolapItemList >> addAll: aCollectionOfGolapNode toMarker: aGolapMarker [
 
-	self updateGlobalImageAfter: [
-			aCollectionOfGolapNode do: [ :node | node addMarker: aColor ].
-			markerDropList items do: [ :assoc |
-					assoc key = aColor ifTrue: [
-							| patterns regexs |
-							patterns := (assoc value substrings: ',')
-								            collect: #trim
-								            thenSelect: #notEmpty.
-							regexs := patterns collect: [ :pattern |
-								          self regexFor: pattern ].
-							aCollectionOfGolapNode do: [ :node |
-									(regexs anySatisfy: [ :regex | regex matches: node name ])
-										ifFalse: [ patterns := patterns copyWith: node name ] ].
-							assoc value: (',' join: patterns) ] ].
-			self currentMarker: aColor.
-			self updateItemsList ]
+	aCollectionOfGolapNode do: [ :node | aGolapMarker addNode: node ].
+	self currentMarker: aGolapMarker
 ]
 
 { #category : 'accessing-markers' }
@@ -77,17 +50,18 @@ GolapItemList >> addMarkerColor [
 { #category : 'accessing-markers' }
 GolapItemList >> addMarkerColor: aColor [
 
-	| items |
-	markerDropList listItems do: [ :assoc |
-			assoc key = aColor ifTrue: [
-					markerDropList selectItem: assoc.
-					^ self ] ].
+	| colorHexString items newMarker |
+	colorHexString := aColor asHexString.
+	markerDropList listItems do: [ :marker |
+			marker colorHexString = colorHexString ifTrue: [
+				^ self currentMarker: marker ] ].
 	items := markerDropList listItems.
+	newMarker := GolapColorMarker colorHexString: colorHexString.
 	markerDropList
 		items: (items copyFrom: 1 to: items size - 1) , {
-					(aColor -> '').
+					newMarker.
 					items last };
-		selectItem: aColor -> ''
+		selectItem: newMarker
 ]
 
 { #category : 'adding' }
@@ -100,23 +74,17 @@ GolapItemList >> addSelectionsToMarker: aColor [
 GolapItemList >> allMarkerColors [
 
 	^ markerDropList items
-		  collect: #key
-		  thenSelect: [ :marker | marker isColor ]
+		  collect: #color
+		  thenSelect: [ :marker | marker notNil ]
 ]
 
 { #category : 'snapshot' }
 GolapItemList >> asJSON [
 
 	^ {
-		  ('marker' -> (self currentMarker ifNotNil: #asHexString)).
-		  ('markerFilters' -> (markerDropList items
-			    select: [ :colorAndPatternString |
-			    colorAndPatternString key isSymbol not ]
-			    thenCollect: [ :colorAndPatternString |
-					    (colorAndPatternString key
-						     ifNotNil: #asHexString
-						     ifNil: [ '' ]) -> colorAndPatternString value ])
-			   asOrderedDictionary) } asDictionary
+		  ('markers' -> (markerDropList items collect: #asJSON)).
+		  ('markers-selectedIndex' -> markerDropList selectedIndex) }
+		  asDictionary
 ]
 
 { #category : 'layout' }
@@ -135,20 +103,33 @@ GolapItemList >> colorFor: aGolapNode [
 ]
 
 { #category : 'accessing-markers' }
-GolapItemList >> currentMarker [
-	^ markerDropList selectedItem ifNotNil: #key
+GolapItemList >> colorMarkers [
+
+	^ markerDropList items select: #isColorMarker
+]
+
+{ #category : 'enumerating' }
+GolapItemList >> colorMarkersAndNodesDo: aBlock [
+
+	self golapModelDo: [ :golapModel |
+			markerDropList items do: [ :marker |
+					aBlock value: marker value: (Array streamContents: [ :stream |
+								 marker nodeIdsDo: [ :id |
+										 (golapModel nodeAt: id ifAbsent: [ nil ]) ifNotNil: [ :node |
+											 stream nextPut: node ] ] ]) ] ]
 ]
 
 { #category : 'accessing-markers' }
-GolapItemList >> currentMarker: aColor [
-	| item |
-	item := markerDropList getList
-		detect: [ :assoc | 
-			assoc model
-				ifNil: [ aColor isNil ]
-				ifNotNil: [ assoc model key = aColor ] ]
-		ifNone: [ ^ nil ].
-	markerDropList selectItem: item model
+GolapItemList >> currentMarker [
+
+	^ markerDropList selectedItem
+]
+
+{ #category : 'accessing-markers' }
+GolapItemList >> currentMarker: aGolapMarker [
+
+	markerDropList selectItem: aGolapMarker.
+	self updateGlobalImage
 ]
 
 { #category : 'layout' }
@@ -182,16 +163,19 @@ GolapItemList >> filter: aCollectionOfGolapNode [
 GolapItemList >> fromJSON: aDictionary [
 
 	aDictionary
-		at: 'markerFilters' ifPresent: [ :dict |
-				markerDropList items: (dict associations collect: [ :assoc |
-									 (assoc key isEmpty
-										  ifTrue: [ nil ]
-										  ifFalse: [ Color fromHexString: assoc key ])
-									 -> assoc value ])
-						, (markerDropList items select: [ :assoc | assoc key isSymbol ]) ];
-		at: 'marker' ifPresent: [ :hexString |
-				hexString ifNotNil: [
-						self currentMarker: (Color fromHexString: hexString) ] ]
+		at: 'markers' ifPresent: [ :array |
+				markerDropList items: (array collect: [ :dict |
+									 (GolapAbstractMarker fromJSON: dict)
+										 updateIn: self;
+										 yourself ]) ];
+		at: 'markers-selectedIndex'
+		ifPresent: [ :integer | markerDropList selectIndex: integer ]
+]
+
+{ #category : 'accessing' }
+GolapItemList >> golap [
+
+	^ golap
 ]
 
 { #category : 'accessing' }
@@ -203,6 +187,12 @@ GolapItemList >> golap: aGolap [
 GolapItemList >> golapDo: aBlock [
 
 	^ golap ifNotNil: aBlock
+]
+
+{ #category : 'accessing' }
+GolapItemList >> golapModelDo: aBlock [
+
+	golap model ifNotNil: aBlock
 ]
 
 { #category : 'private' }
@@ -243,54 +233,28 @@ GolapItemList >> initializePresenters [
 
 	markerDropList := self newDropList
 		                  items: {
-				                  (nil -> '').
-				                  (Color red -> '').
-				                  (Color yellow darker -> '').
-				                  (Color green -> '').
-				                  (Color blue -> '').
-				                  (#addMarkerColor -> '') };
-		                  display: [ :assoc | '' ];
-		                  displayIcon: [ :assoc |
-				                  assoc key
-					                  ifNotNil: [ :c |
-							                  c isSymbol
-								                  ifTrue: [ self iconForSelector: c ]
-								                  ifFalse: [ self iconForCircleColor: c ] ]
-					                  ifNil: [ nil ] ];
-		                  whenSelectedItemChangedDo: [
-				                  markerDropList selectedItem ifNotNil: [
-							                  :selectedItem |
-							                  selectedItem key isSymbol
-								                  ifTrue: [ self perform: selectedItem key ]
-								                  ifFalse: [
-										                  lastSelectedMarkerIndex := markerDropList
-											                                             selectedIndex.
-										                  queryField text: selectedItem value asText.
-										                  self updateItemsList.
-										                  self updateGlobalImage ] ] ];
+				                  GolapNoMarker new.
+				                  (GolapColorMarker colorHexString:
+						                   Color red asHexString).
+				                  (GolapColorMarker colorHexString:
+						                   Color yellow darker asHexString).
+				                  (GolapColorMarker colorHexString:
+						                   Color green asHexString).
+				                  (GolapColorMarker colorHexString:
+						                   Color blue asHexString).
+				                  GolapAddMarker new };
+		                  display: [ :marker | '' ];
+		                  displayIcon: [ :marker | marker icon ];
+		                  whenSelectedItemChangedDo: [ :marker |
+				                  marker activatedIn: self.
+				                  self updateGlobalImage ];
 		                  yourself.
 	lastSelectedMarkerIndex := 0.
-	queryField := self newTextInput whenSubmitDo: [ :txt |
-			              | text |
-			              text := queryField text asString trim.
-			              self updateGlobalImageAfter: [
-					              | selectedMarker nodes |
-					              selectedMarker := markerDropList selectedItem.
-					              selectedMarker value: text.
-					              nodes := OrderedCollection new.
-					              text ifNotEmpty: [ :q |
-							              | regexs |
-							              regexs := (q substrings: ',') collect: [ :pattern |
-								                        self regexFor: pattern trim ].
-							              nodes := self nodes select: [ :v |
-								                       regexs anySatisfy: [ :regex |
-									                       regex matches: v name ] ] ].
-					              selectedMarker key ifNotNil: [ :marker |
-							              self nodes do: [ :node |
-								              node removeMarker: selectedMarker key ].
-							              nodes do: [ :node |
-								              node addMarker: selectedMarker key ] ] ].
-			              self updateItemsList ].
+	queryField := self newTextInput
+		              whenSubmitDo: [ :text |
+				              markerDropList selectedItem ifNotNil: [ :marker |
+						              marker queryString: text asString trim ] ];
+		              yourself.
 	presetQueryButton := self newButton
 		                     icon: (Smalltalk ui icons iconNamed: #back);
 		                     action: [ golap openPresetQueryDialog ];
@@ -334,16 +298,13 @@ GolapItemList >> markMenu: aGolapNode [
 
 	| markMenu |
 	markMenu := self newMenu.
-	markerDropList listItems do: [ :listItem |
-			| color |
-			color := listItem key.
-			color isColor ifTrue: [
-					(aGolapNode hasMarker: color) ifFalse: [
-							markMenu addItem: [ :menuItem |
-									menuItem
-										name: '';
-										icon: (self iconForCircleColor: color);
-										action: [ self add: aGolapNode toMarker: color ] ] ] ] ].
+	markerDropList listItems do: [ :marker |
+			(marker includesNode: aGolapNode) ifFalse: [
+					markMenu addItem: [ :menuItem |
+							menuItem
+								name: '';
+								icon: marker icon;
+								action: [ self add: aGolapNode toMarker: marker ] ] ] ].
 	^ markMenu
 ]
 
@@ -352,30 +313,38 @@ GolapItemList >> markSelectionsMenu [
 
 	| markMenu |
 	markMenu := self newMenu.
-	markerDropList listItems do: [ :listItem |
-			| color |
-			color := listItem key.
-			color isColor ifTrue: [
+	markerDropList items do: [ :marker |
+			marker isColorMarker ifTrue: [
 					markMenu addItem: [ :menuItem |
 							menuItem
 								name: '';
-								icon: (self iconForCircleColor: color);
-								action: [ self addSelectionsToMarker: color ] ] ] ].
+								icon: marker icon;
+								action: [ self addSelectionsToMarker: marker ] ] ] ].
 	^ markMenu
 ]
 
 { #category : 'accessing-markers' }
 GolapItemList >> markedNodes [
 
+	| marker |
+	marker := self currentMarker.
 	^ Array streamContents: [ :stream |
-			  self model
-				  nodesWithMarker: self currentMarker
-				  do: [ :node | stream nextPut: node ] ]
+			  self model nodesDo: [ :node |
+				  (marker includesNode: node) ifTrue: [ stream nextPut: node ] ] ]
 ]
 
 { #category : 'private' }
 GolapItemList >> markerDropList [
+
 	^ markerDropList
+]
+
+{ #category : 'accessing-markers' }
+GolapItemList >> markersAtNode: aGolapNode do: aBlock [
+
+	markerDropList items do: [ :marker |
+			(marker isColorMarker and: [ marker includesNode: aGolapNode ])
+				ifTrue: [ aBlock value: marker ] ]
 ]
 
 { #category : 'accessing' }
@@ -490,39 +459,17 @@ GolapItemList >> regexFor: aString [
 ]
 
 { #category : 'removing' }
-GolapItemList >> remove: aGolapNode fromMarker: aColor [
+GolapItemList >> remove: aGolapNode fromMarker: aGolapMarker [
 
-	self updateGlobalImageAfter: [
-			aGolapNode removeMarker: aColor.
-			markerDropList items do: [ :assoc |
-					assoc key = aColor ifTrue: [
-							| patterns |
-							patterns := (assoc value substrings: ',')
-								            collect: #trim
-								            thenSelect: #notEmpty.
-							patterns := patterns copyWithout: aGolapNode name.
-							assoc value: (',' join: patterns) ] ].
-			self currentMarker: aColor.
-			self updateItemsList ]
+	aGolapMarker removeNode: aGolapNode.
+	self currentMarker: aGolapMarker
 ]
 
 { #category : 'removing' }
-GolapItemList >> removeAll: aCollectionOfGolapNode fromMarker: aColor [
+GolapItemList >> removeAll: aCollectionOfGolapNode fromMarker: aGolapMarker [
 
-	self updateGlobalImageAfter: [
-			aCollectionOfGolapNode do: [ :node | node removeMarker: aColor ].
-			markerDropList items do: [ :assoc |
-					assoc key = aColor ifTrue: [
-							| patterns |
-							patterns := (assoc value substrings: ',')
-								            collect: #trim
-								            thenSelect: #notEmpty.
-							patterns := patterns reject: [ :pattern |
-								            aCollectionOfGolapNode anySatisfy: [ :node |
-									            node name = pattern ] ].
-							assoc value: (',' join: patterns) ] ].
-			self currentMarker: aColor.
-			self updateItemsList ]
+	aCollectionOfGolapNode do: [ :node | aGolapMarker removeNode: node ].
+	self currentMarker: aGolapMarker
 ]
 
 { #category : 'removing' }
@@ -617,15 +564,14 @@ GolapItemList >> unmarkMenu: aGolapNode [
 
 	| unmarkMenu |
 	unmarkMenu := self newMenu.
-	markerDropList listItems do: [ :listItem |
-			| color |
-			color := listItem key.
-			(aGolapNode hasMarker: color) ifTrue: [
-					unmarkMenu addItem: [ :menuItem |
-							menuItem
-								name: '';
-								icon: (self iconForCircleColor: color);
-								action: [ self remove: aGolapNode fromMarker: color ] ] ] ].
+	markerDropList items do: [ :marker |
+			(marker isColorMarker and: [ marker includesNode: aGolapNode ])
+				ifTrue: [
+						unmarkMenu addItem: [ :menuItem |
+								menuItem
+									name: '';
+									icon: marker icon;
+									action: [ self remove: aGolapNode fromMarker: marker ] ] ] ].
 	^ unmarkMenu
 ]
 
@@ -634,15 +580,13 @@ GolapItemList >> unmarkSelectionsMenu [
 
 	| markMenu |
 	markMenu := self newMenu.
-	markerDropList listItems do: [ :listItem |
-			| color |
-			color := listItem key.
-			color isColor ifTrue: [
+	markerDropList items do: [ :marker |
+			marker isColorMarker ifTrue: [
 					markMenu addItem: [ :item |
 							item
 								name: '';
-								icon: (self iconForCircleColor: color);
-								action: [ self removeSelectionsFromMarker: color ] ] ] ].
+								icon: marker icon;
+								action: [ self removeSelectionsFromMarker: marker ] ] ] ].
 	^ markMenu
 ]
 
@@ -668,16 +612,7 @@ GolapItemList >> updateGlobalImageAfter: aBlock layout: aBoolean [
 { #category : 'updating' }
 GolapItemList >> updateItemsList [
 
-	| nodes |
-	self modelDo: [ :model |
-			nodes := model nodes asArray select: [ :node |
-				         self showsNode: node ].
-			self currentMarker
-				ifNotNil: [ :marker |
-				nodes := nodes select: [ :node | node hasMarker: marker ] ]
-				ifNil: [ nodes := self filter: nodes ].
-			nodeList
-				items: ((nodes asSortedCollection:
-						  [ :node | model valueAtNode: node ] descending) collect: #id)
-				selectItems: nodeList selectedItems ]
+	markerDropList items do: [ :marker | marker updateIn: self ].
+	markerDropList selectedItem ifNotNil: [ :marker |
+		marker activatedIn: self ]
 ]

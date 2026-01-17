@@ -358,37 +358,31 @@ GolapElaborationPresenter >> newPinShape [
 { #category : 'instance creation' }
 GolapElaborationPresenter >> newShapeForAssociateNode: aGolapNode [
 
-	self golapModelDo: [ :golapModel |
-			| shapes markersAndNodes |
-			shapes := RSGroup new.
-			markersAndNodes := Array streamContents: [ :stream |
-					                   golap markersAndNodesDo: [ :c :vs |
-						                   c ifNotNil: [
-							                   stream nextPut: c -> vs asIdentitySet ] ] ].
-			(golap colorForNode: aGolapNode) ifNotNil: [ :color |
-					| shape |
-					shape := self newLabelForNode: aGolapNode.
-					self canvas addNode: shape.
-					nodes at: aGolapNode put: shape.
-					shapes add: shape.
-					markersAndNodes do: [ :colorAndVs |
-							(colorAndVs value includes: aGolapNode) ifTrue: [
-									shape := RSBox new
-										         position: shape position;
-										         extent: shape extent + 4 asPoint;
-										         borderWidth: 4;
-										         borderColor: colorAndVs key;
-										         color: Color transparent;
-										         yourself.
-									shapes add: shape ] ].
-					(golap includesPin: aGolapNode) ifTrue: [
-						shapes add: self newPinShape ].
-					shapes add:
-						((self newBarForAssociateNode: aGolapNode) translateBy:
-							 0 @ shape extent y) ].
-			shapes := shapes asShapeFor: aGolapNode.
-			^ shapes ].
-	^ nil
+	| shapes |
+	golap ifNil: [ ^ nil ].
+	shapes := RSGroup new.
+	(golap colorForNode: aGolapNode) ifNotNil: [ :color |
+			| shape |
+			shape := self newLabelForNode: aGolapNode.
+			self canvas addNode: shape.
+			nodes at: aGolapNode put: shape.
+			shapes add: shape.
+			golap markersAtNode: aGolapNode do: [ :marker |
+					shape := RSBox new
+						         position: shape position;
+						         extent: shape extent + 4 asPoint;
+						         borderWidth: 4;
+						         borderColor: marker color;
+						         color: Color transparent;
+						         yourself.
+					shapes add: shape ].
+			(golap includesPin: aGolapNode) ifTrue: [
+				shapes add: self newPinShape ].
+			shapes add:
+				((self newBarForAssociateNode: aGolapNode) translateBy:
+					 0 @ shape extent y) ].
+	shapes := shapes asShapeFor: aGolapNode.
+	^ shapes
 ]
 
 { #category : 'instance creation' }
@@ -439,28 +433,23 @@ GolapElaborationPresenter >> newShapeForEdge: aGolapEdge [
 GolapElaborationPresenter >> newShapeForRootNode: aGolapNode [
 
 	self golapModelDo: [ :golapModel |
-			| shapes markersAndNodes |
+			| shapes |
 			shapes := RSGroup new.
-			markersAndNodes := Array streamContents: [ :stream |
-					                   golap markersAndNodesDo: [ :c :vs |
-						                   c ifNotNil: [
-							                   stream nextPut: c -> vs asIdentitySet ] ] ].
 			(golap colorForNode: aGolapNode) ifNotNil: [ :color |
 					| shape |
 					shape := self newLabelForNode: aGolapNode.
 					self canvas addNode: shape.
 					nodes at: aGolapNode put: shape.
 					shapes add: shape.
-					markersAndNodes do: [ :colorAndVs |
-							(colorAndVs value includes: aGolapNode) ifTrue: [
-									shape := RSBox new
-										         position: shape position;
-										         extent: shape extent + 4 asPoint;
-										         borderWidth: 4;
-										         borderColor: colorAndVs key;
-										         color: Color transparent;
-										         yourself.
-									shapes add: shape ] ].
+					golap markersAtNode: aGolapNode do: [ :marker |
+							shape := RSBox new
+								         position: shape position;
+								         extent: shape extent + 4 asPoint;
+								         borderWidth: 4;
+								         borderColor: marker color;
+								         color: Color transparent;
+								         yourself.
+							shapes add: shape ].
 					(golap includesPin: aGolapNode) ifTrue: [
 						shapes add: self newPinShape ] ].
 			shapes := shapes asShapeFor: aGolapNode.

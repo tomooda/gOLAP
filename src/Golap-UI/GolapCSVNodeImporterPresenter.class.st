@@ -39,6 +39,17 @@ GolapCSVNodeImporterPresenter class >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'snapshot' }
+GolapCSVNodeImporterPresenter >> asJSON [
+
+	^ super asJSON
+		  at: 'idDropList' put: idDropList selectedIndex;
+		  at: 'nameDropList' put: nameDropList selectedIndex;
+		  at: 'photoUrlColumnDropList'
+		  put: photoUrlColumnDropList selectedIndex;
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapCSVNodeImporterPresenter >> availableEvaluators [
 
@@ -93,6 +104,19 @@ GolapCSVNodeImporterPresenter >> defaultNameColumn [
 					  (dataframe at: 1 at: (dataframe indexOfColumnNamed: column))
 						  isString ]
 				  ifNone: [ nil ] ]
+]
+
+{ #category : 'snapshot' }
+GolapCSVNodeImporterPresenter >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	aDictionary
+		at: 'idDropList'
+		ifPresent: [ :integer | idDropList selectIndex: integer ];
+		at: 'nameDropList'
+		ifPresent: [ :integer | nameDropList selectIndex: integer ];
+		at: 'photoUrlColumnDropList'
+		ifPresent: [ :integer | photoUrlColumnDropList selectIndex: integer ]
 ]
 
 { #category : 'accessing' }
