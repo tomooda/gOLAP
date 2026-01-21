@@ -113,6 +113,23 @@ GolapArticulationPointOverviewPresenter >> friendsRankChanged [
 	self updateCanvas
 ]
 
+{ #category : 'snapshot' }
+GolapArticulationPointOverviewPresenter >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	aDictionary
+		at: 'friendsRank'
+		ifPresent: [ :integer | friendsRankField number: integer ];
+		at: 'minimumIslandSize'
+		ifPresent: [ :integer | minimumIslandSizeField number: integer ];
+		at: 'articulationPoint' ifPresent: [ :string |
+				string ifNotNil: [
+							articulationPointList selectItem: (articulationPointList items
+										 detect: [ :node | node id = string ]
+										 ifNone: [ nil ]) ] ];
+		yourself
+]
+
 { #category : 'initialization' }
 GolapArticulationPointOverviewPresenter >> initializePresenters [
 
@@ -302,6 +319,7 @@ GolapArticulationPointOverviewPresenter >> sumNeighborsOrdersOf: aGolapNode [
 { #category : 'updating' }
 GolapArticulationPointOverviewPresenter >> updateArticulationPointList [
 
+	reallyVisibleEdges ifNil: [ ^ self ].
 	lock critical: [
 			self golapModelDo: [ :golapModel |
 					| minimumIslandSize items |

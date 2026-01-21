@@ -118,21 +118,21 @@ Golap class >> golapMenuOn: aBuilder [
 		with: [
 				(aBuilder item: #'サーバファイルを開く...')
 					parent: 'Golap';
-					order: 5;
+					order: 60;
 					target: self;
 					selector: #openFile;
 					help: 'サーバからのグラフデータを保存したファイルを選択して開きます';
 					withSeparatorAfter.
 				(aBuilder item: #'設定...')
 					parent: 'Golap';
-					order: 6;
+					order: 90;
 					target: self;
 					selector: #showSettingBrowser;
 					help: '設定ウィンドウを開きます';
 					withSeparatorAfter.
 				(aBuilder item: #'About...')
 					parent: 'Golap';
-					order: 7;
+					order: 99;
 					target: self;
 					selector: #openAboutDialog;
 					help: 'gOLAPのロゴとバージョンを表示します';

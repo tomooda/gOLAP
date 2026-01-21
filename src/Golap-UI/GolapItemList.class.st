@@ -254,7 +254,7 @@ GolapItemList >> initializePresenters [
 	queryField := self newTextInput
 		              whenSubmitDo: [ :text |
 				              markerDropList selectedItem ifNotNil: [ :marker |
-						              marker queryString: text asString trim ] ];
+						              marker queryString: text asString trim in: self ] ];
 		              yourself.
 	presetQueryButton := self newButton
 		                     icon: (Smalltalk ui icons iconNamed: #back);

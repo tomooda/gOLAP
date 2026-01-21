@@ -63,20 +63,24 @@ TGolapSnapshotablePresenter >> fromJSON: aDictionary [
 { #category : 'snapshot' }
 TGolapSnapshotablePresenter >> fromWindowJSON: aString bounds: aRectangle [
 
-	aString = 'open' ifTrue: [ ^ self openBounds: aRectangle ].
-	aString = 'minimized' ifTrue: [
-			^ (self openBounds: aRectangle)
-				  minimize;
-				  open ].
-	aString = 'maximized' ifTrue: [
-			^ (self openBounds: aRectangle)
-				  maximize;
-				  open ].
-	aRectangle ifNotNil: [
-			^ self asWindow
-				  initialPosition: aRectangle origin;
-				  initialExtent: aRectangle extent ].
-	^ nil
+	[
+		aString = 'open' ifTrue: [ ^ self openBounds: aRectangle ].
+		aString = 'minimized' ifTrue: [
+				^ (self openBounds: aRectangle)
+					  minimize;
+					  open ].
+		aString = 'maximized' ifTrue: [
+				^ (self openBounds: aRectangle)
+					  maximize;
+					  open ].
+		aRectangle ifNotNil: [
+				^ self asWindow
+					  initialPosition: aRectangle origin;
+					  initialExtent: aRectangle extent ].
+		^ nil ] ensure: [
+			self currentWorld submorphs do: [ :morph |
+					(morph model isKindOf: SpModalWindowPresenter) ifTrue: [
+						morph comeToFront ] ] ]
 ]
 
 { #category : 'snapshot' }

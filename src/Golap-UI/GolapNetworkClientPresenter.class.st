@@ -1,6 +1,8 @@
 Class {
 	#name : 'GolapNetworkClientPresenter',
 	#superclass : 'SpPresenter',
+	#traits : 'TGolapSnapshotablePresenter',
+	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'urlInput',
 		'presetUrlButton',
@@ -33,7 +35,7 @@ GolapNetworkClientPresenter class >> golapMenuOn: aBuilder [
 	<worldMenu>
 	(aBuilder item: #'サーバクエリウィンドウを開く...')
 		parent: 'Golap';
-		order: 2;
+		order: 40;
 		target: self;
 		selector: #open;
 		help: 'サーバクエリを編集して送信するウィンドウを開きます'

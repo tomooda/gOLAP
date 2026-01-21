@@ -54,7 +54,7 @@ GolapCSVLauncher class >> golapMenuOn: aBuilder [
 	<worldMenu>
 	(aBuilder item: #'表(CSV)ファイルを開く...')
 		parent: 'Golap';
-		order: 3;
+		order: 50;
 		target: GolapCSVLauncher;
 		selector: #open;
 		help: '商品CSVファイルと関連CSVファイルを選択してグラフを開きます'
