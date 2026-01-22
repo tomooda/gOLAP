@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'golap',
 		'tree',
-		'roassal'
+		'roassal',
+		'lock'
 	],
 	#category : 'Golap-Visualization-Clustering',
 	#package : 'Golap-Visualization',
@@ -80,6 +81,13 @@ GolapHierarchicalClusteringPresenter >> golap: aGolap [
 GolapHierarchicalClusteringPresenter >> golapChanged [
 
 	golap model ifNotNil: [ self updateTree ]
+]
+
+{ #category : 'initialization' }
+GolapHierarchicalClusteringPresenter >> initialize [
+
+	super initialize.
+	lock := Mutex new
 ]
 
 { #category : 'initialization' }
@@ -163,57 +171,63 @@ GolapHierarchicalClusteringPresenter >> updateCanvas [
 GolapHierarchicalClusteringPresenter >> updateNode [
 
 	self isDisplayed ifTrue: [
-			self canvas shapes do: [ :shape |
-					(shape model isKindOf: GolapHierarchicalClusteringLeaf) ifTrue: [
-						shape color:
-							(self colorForNode: (golap model nodeAt: shape model id)) ].
-					(shape model isArray and: [ shape model first = #marker ])
-						ifTrue: [
-								| node marker |
-								node := shape model second.
-								marker := shape model third.
-								shape color: ((marker includesNode: node)
-										 ifTrue: [ marker color ]
-										 ifFalse: [ Color transparent ]) ] ].
-			self canvas signalUpdate ]
+			lock critical: [
+					self canvas shapes do: [ :shape |
+							(shape model isKindOf: GolapHierarchicalClusteringLeaf)
+								ifTrue: [
+									shape color:
+										(self colorForNode: (golap model nodeAt: shape model id)) ].
+							(shape model isArray and: [ shape model first = #marker ])
+								ifTrue: [
+										| node marker |
+										node := shape model second.
+										marker := shape model third.
+										shape color: ((marker includesNode: node)
+												 ifTrue: [ marker color ]
+												 ifFalse: [ Color transparent ]) ] ].
+					self canvas signalUpdate ] ]
 ]
 
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updateNode: aGolapNode [
 
 	self isDisplayed ifTrue: [
-			self canvas shapes do: [ :shape |
-					((shape model isKindOf: GolapHierarchicalClusteringLeaf) and: [
-						 shape model id = aGolapNode id ]) ifTrue: [
-						shape color:
-							(self colorForNode: (golap model nodeAt: shape model id)) ].
-					(shape model isArray and: [ shape model first = #marker ])
-						ifTrue: [
-								| node marker |
-								node := shape model second.
-								marker := shape model third.
-								shape color: ((marker includesNode: node)
-										 ifTrue: [ marker color ]
-										 ifFalse: [ Color transparent ]) ] ].
-			self canvas signalUpdate ]
+			lock critical: [
+					self canvas shapes do: [ :shape |
+							((shape model isKindOf: GolapHierarchicalClusteringLeaf) and: [
+								 shape model id = aGolapNode id ]) ifTrue: [
+								shape color:
+									(self colorForNode: (golap model nodeAt: shape model id)) ].
+							(shape model isArray and: [ shape model first = #marker ])
+								ifTrue: [
+										| node marker |
+										node := shape model second.
+										marker := shape model third.
+										shape color: ((marker includesNode: node)
+												 ifTrue: [ marker color ]
+												 ifFalse: [ Color transparent ]) ] ].
+					self canvas signalUpdate ] ]
 ]
 
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updatePhotoimage: shape [
 
-	(golap model nodeAt: shape model id) photoimage ifNotNil: [
-		:photoimage |
-		(shape schildren contains: [ :child | child model = #photoimage ])
-			ifFalse: [
-				shape canvas addShape: ((RSBitmap newFrom: photoimage)
-						 model: #photoimage;
-						 position:
-							 (shape centroid: shape externalRadius - shape innerRadius / 2
-									  + (golap allMarkerColors size * 10 + 20));
-						 extent: (shape externalRadius
-							  * ((shape alphaAngle - shape betaAngle) abs / 90.0 * 3.14)
-								  min: shape externalRadius - shape innerRadius) asPoint;
-						 yourself) ] ]
+	lock critical: [
+			(golap model nodeAt: shape model id) photoimage ifNotNil: [
+					:photoimage |
+					(shape schildren contains: [ :child | child model = #photoimage ])
+						ifFalse: [
+								shape canvas addShape: ((RSBitmap newFrom: photoimage)
+										 model: #photoimage;
+										 position:
+											 (shape centroid:
+													  shape externalRadius - shape innerRadius / 2
+													  + (golap allMarkerColors size * 10 + 20));
+										 extent: (shape externalRadius
+											  *
+												  ((shape alphaAngle - shape betaAngle) abs / 90.0 * 3.14)
+												  min: shape externalRadius - shape innerRadius) asPoint;
+										 yourself) ] ] ]
 ]
 
 { #category : 'updating' }
@@ -240,7 +254,9 @@ GolapHierarchicalClusteringPresenter >> windowTitle [
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> zoomToFit [
 
-	self canvas
-		zoomToFit;
-		signalUpdate
+	self isDisplayed ifTrue: [
+			lock critical: [
+					self canvas camera privExtent: roassal extent.
+					self canvas camera zoomToFit: roassal extent.
+					self canvas signalUpdate ] ]
 ]
