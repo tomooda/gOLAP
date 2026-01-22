@@ -25,18 +25,6 @@ GolapNodeProductInfoRetriever class >> tag [
 	^ 'node'
 ]
 
-{ #category : 'snapshot' }
-GolapNodeProductInfoRetriever >> asJSON [
-
-	| json |
-	json := super asJSON.
-	availableColumns ifNotNil: [
-		json at: 'avaiableColumns' put: availableColumns ].
-	photoUrlColumn ifNotNil: [
-		json at: 'photoUrlColumn' put: photoUrlColumn ].
-	^ json
-]
-
 { #category : 'accessing' }
 GolapNodeProductInfoRetriever >> availableColumns [
 
@@ -47,17 +35,6 @@ GolapNodeProductInfoRetriever >> availableColumns [
 GolapNodeProductInfoRetriever >> availableColumns: anArrayOfString [
 
 	availableColumns := anArrayOfString
-]
-
-{ #category : 'snapshot' }
-GolapNodeProductInfoRetriever >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'avaiableColumns'
-		ifPresent: [ :array | availableColumns := array ];
-		at: 'photoUrlColumn'
-		ifPresent: [ :string | photoUrlColumn := string ].
-	super fromJSON: aDictionary
 ]
 
 { #category : 'accessing' }

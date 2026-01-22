@@ -87,17 +87,6 @@ GolapCSVLauncher >> addPair [
 						ifNil: [ pairsTable selectIndex: 1 ] ] ]
 ]
 
-{ #category : 'snapshot' }
-GolapCSVLauncher >> asJSON [
-
-	^ self basicAsJSON
-		  at: 'pairPresenter' put: pairPresenter asJSON;
-		  at: 'pairsTable' put: pairsTable asJSON;
-		  at: 'nodeImporterPresenter' put: nodeImporterPresenter asJSON;
-		  at: 'edgeImporterPresenter' put: edgeImporterPresenter asJSON;
-		  yourself
-]
-
 { #category : 'enumerating' }
 GolapCSVLauncher >> dataframePairsAndNamesDo: aBlock [
 
@@ -116,20 +105,6 @@ GolapCSVLauncher >> dataframePairsAndNamesDo: aBlock [
 						csv2 } ] ].
 		item last ifNotNil: [ :pair |
 			aBlock value: pair first value: pair second value: item third ] ]
-]
-
-{ #category : 'snapshot' }
-GolapCSVLauncher >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'pairPresenter'
-		ifPresent: [ :json | pairPresenter fromJSON: json ];
-		at: 'pairsTable' ifPresent: [ :json | pairsTable fromJSON: json ];
-		at: 'nodeImporterPresenter'
-		ifPresent: [ :json | nodeImporterPresenter fromJSON: json ];
-		at: 'edgeImporterPresenter'
-		ifPresent: [ :json | edgeImporterPresenter fromJSON: json ].
-	self basicFromJSON: aDictionary
 ]
 
 { #category : 'enumerating' }

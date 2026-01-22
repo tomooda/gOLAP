@@ -435,18 +435,18 @@ GolapQueryHistoryPresenter >> updateButtons [
 
 	queryHistoryList selectedItem
 		ifNotNil: [ :record |
-			{
-				tagButton.
-				addToNarrativeButton } do: #enable.
-			self
-				selectedNarrativeDo: [ :narrative |
-				removeFromNarrativeButton enable ]
-				ifChronicleDo: [ removeFromNarrativeButton disable ] ]
+				{
+					tagButton.
+					addToNarrativeButton } do: #enable.
+				self
+					selectedNarrativeDo: [ :narrative |
+					removeFromNarrativeButton enable ]
+					ifChronicleDo: [ removeFromNarrativeButton disable ] ]
 		ifNil: [
-			{
-				tagButton.
-				addToNarrativeButton.
-				removeFromNarrativeButton } do: #disable ].
+				{
+					tagButton.
+					addToNarrativeButton.
+					removeFromNarrativeButton } do: #disable ].
 	removeNarrativeButton enabled: self narrativeSelected
 ]
 

@@ -6,11 +6,19 @@ Class {
 	#tag : 'Dandellion'
 }
 
+{ #category : 'instance creation' }
+GolapDandelionChartPresenter >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	self updateTree
+]
+
 { #category : 'updating' }
 GolapDandelionChartPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
 			| colorMarkers sunburstBuilder bezierBuilder |
+			self ensureTree.
 			colorMarkers := golap colorMarkers.
 			sunburstBuilder := RSSunburstBuilder new.
 			self canvas shapes copy do: #remove.

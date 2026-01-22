@@ -78,15 +78,6 @@ GolapItemList >> allMarkerColors [
 		  thenSelect: [ :marker | marker notNil ]
 ]
 
-{ #category : 'snapshot' }
-GolapItemList >> asJSON [
-
-	^ {
-		  ('markers' -> (markerDropList items collect: #asJSON)).
-		  ('markers-selectedIndex' -> markerDropList selectedIndex) }
-		  asDictionary
-]
-
 { #category : 'layout' }
 GolapItemList >> buttonHeight [
 
@@ -157,19 +148,6 @@ GolapItemList >> filter: aCollectionOfGolapNode [
 				  aCollectionOfGolapNode select: [ :v |
 					  regexs anySatisfy: [ :regex | regex matches: v name ] ] ]
 		  ifEmpty: [ aCollectionOfGolapNode ]
-]
-
-{ #category : 'snapshot' }
-GolapItemList >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'markers' ifPresent: [ :array |
-				markerDropList items: (array collect: [ :dict |
-									 (GolapAbstractMarker fromJSON: dict)
-										 updateIn: self;
-										 yourself ]) ];
-		at: 'markers-selectedIndex'
-		ifPresent: [ :integer | markerDropList selectIndex: integer ]
 ]
 
 { #category : 'accessing' }

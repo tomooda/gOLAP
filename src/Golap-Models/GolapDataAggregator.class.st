@@ -7,17 +7,6 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapDataAggregator class >> fromJSON: aDictionary [
-
-	self allSubclassesDo: [ :subclass |
-		subclass isAbstract not ifTrue: [
-			aDictionary
-				at: subclass tag
-				ifPresent: [ :subtag | ^ subclass fromSubtag: subtag ] ] ].
-	^ nil
-]
-
-{ #category : 'instance creation' }
 GolapDataAggregator class >> fromSubtag: anArray [
 
 	^ self subclassResponsibility
@@ -33,12 +22,6 @@ GolapDataAggregator class >> isAbstract [
 GolapDataAggregator class >> tag [
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'converting' }
-GolapDataAggregator >> asJSON [
-
-	^ { (self tag -> self subtag) } asOrderedDictionary
 ]
 
 { #category : 'accessing' }

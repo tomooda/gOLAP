@@ -35,12 +35,6 @@ GolapPhotoImageRetriever class >> tag [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'snapshot' }
-GolapPhotoImageRetriever >> asJSON [
-
-	^ { ('tag' -> self class tag) } asDictionary
-]
-
 { #category : 'accessing-cache' }
 GolapPhotoImageRetriever >> cacheAt: aString ifAbsentPut: errorBlock [
 
@@ -83,12 +77,6 @@ GolapPhotoImageRetriever >> commit: copy [
 GolapPhotoImageRetriever >> configPresenter [
 
 	^ nil
-]
-
-{ #category : 'snapshot' }
-GolapPhotoImageRetriever >> fromJSON: aDictionary [
-
-	
 ]
 
 { #category : 'accessing' }

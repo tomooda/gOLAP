@@ -2,7 +2,6 @@ Class {
 	#name : 'GolapClusteredHeatmapPresenter',
 	#superclass : 'GolapHierarchicalClusteringPresenter',
 	#instVars : [
-		'currentTree',
 		'grid',
 		'showsClusterMeansCheckBox',
 		'rankSlider',
@@ -15,23 +14,6 @@ Class {
 	#package : 'Golap-Visualization',
 	#tag : 'Heatmap'
 }
-
-{ #category : 'snapshot' }
-GolapClusteredHeatmapPresenter >> asJSON [
-
-	| json |
-	json := super asJSON.
-	json
-		at: 'rank' put: rankSlider value;
-		at: 'showsClusterMeans' put: showsClusterMeansCheckBox state;
-		at: 'showsSingletonClusters'
-		put: showsSingletonClustersCheckBox state;
-		at: 'showsClusterBoundaries'
-		put: showsClusterBoundariesCheckBox state.
-	evaluatorDropList selectedItem ifNotNil: [ :assoc |
-		json at: 'evaluatorDropList' put: assoc key ].
-	^ json
-]
 
 { #category : 'accessing' }
 GolapClusteredHeatmapPresenter >> availableRanks [
@@ -126,24 +108,6 @@ GolapClusteredHeatmapPresenter >> evaluator [
 GolapClusteredHeatmapPresenter >> evaluatorChanged [
 
 	self updateCanvas
-]
-
-{ #category : 'snapshot' }
-GolapClusteredHeatmapPresenter >> fromJSON: aDictionary [
-
-	super fromJSON: aDictionary.
-	aDictionary
-		at: 'rank' ifPresent: [ :number | rankSlider value: number ];
-		at: 'showsClusterMeans'
-		ifPresent: [ :bool | showsClusterMeansCheckBox state: bool ];
-		at: 'showsSingletonClusters'
-		ifPresent: [ :bool | showsSingletonClustersCheckBox state: bool ];
-		at: 'showsClusterBoundaries'
-		ifPresent: [ :bool | showsClusterBoundariesCheckBox state: bool ];
-		at: 'evaluatorDropList' ifPresent: [ :string |
-				evaluatorDropList selectItem: (evaluatorDropList items
-							 detect: [ :assoc | assoc key = string ]
-							 ifNone: [ nil ]) ]
 ]
 
 { #category : 'accessing' }
@@ -286,110 +250,108 @@ GolapClusteredHeatmapPresenter >> showsSingletonClustersChanged [
 	self updateCanvas
 ]
 
-{ #category : 'accessing' }
-GolapClusteredHeatmapPresenter >> tree: aGolapHierarchicalClusteringTree [
-
-	currentTree := aGolapHierarchicalClusteringTree.
-	super tree: aGolapHierarchicalClusteringTree
-]
-
 { #category : 'updating' }
 GolapClusteredHeatmapPresenter >> updateCanvas [
 
-	self canvas shapes copy do: #remove.
-	self canvas color: Color black.
-	self golapModelDo: [ :golapModel |
-		| rowLabelInteraction leaves clusterMeans rightBound minValue maxValue valueScale cells |
-		self updateEvaluatorDropList.
-		rowLabelInteraction := GolapHeatmapRowLabelInteraction new
-			                       presenter: self;
-			                       golapModel: golapModel;
-			                       yourself.
-		leaves := self visibleLeaves.
-		clusterMeans := showsClusterMeansCheckBox state = true
-			                ifTrue: [ self computeClusterMeans ]
-			                ifFalse: [  ].
-		rightBound := leaves size + 0.5 * self grid.
-		minValue := self minValue.
-		maxValue := self maxValue.
-		minValue := minValue - (maxValue - minValue / 10.0).
-		valueScale := (maxValue - minValue) abs > 1.0e-8
-			              ifTrue: [ 1.0 / (maxValue - minValue) ]
-			              ifFalse: [ 0.0 ].
-		cells := (Array streamContents: [ :stream |
-			          leaves doWithIndex: [ :rowLeaf :rowIndex |
-				          | rowNode rowLabel |
-				          rowNode := golapModel nodeAt: rowLeaf id.
-				          rowLabel := RSLabel new
-					                      text: rowNode name;
-					                      color: Color lightGray.
-				          rowLabel := {
-					                      (RSBox new
-						                       extent: rowLabel extent;
-						                       color: Color transparent).
-					                      rowLabel } asShapeFor: {
-						                      #rowLabel.
-						                      rowNode }.
-				          rowLabel position:
-					          rightBound + self grid + (rowLabel width * 0.5)
-					          @ (rowIndex * self grid).
-				          rowLabel @ rowLabelInteraction.
-				          self canvas add: rowLabel.
-				          leaves doWithIndex: [ :columnLeaf :columnIndex |
-					          | columnNode value |
-					          columnNode := golapModel nodeAt: columnLeaf id.
-					          value := clusterMeans
-						                   ifNotNil: [
-							                   clusterMeans at: {
-									                   (rowLeaf parentAtRank: self rank).
-									                   (columnLeaf parentAtRank: self rank) } ]
-						                   ifNil: [
-						                   self
-							                   valueAtRowNode: rowNode
-							                   columnNode: columnNode ].
-					          value ifNotNil: [
-						          value := value - minValue * valueScale
-							                   min: 1.0
-							                   max: 0.0.
-						          stream nextPut: (RSBox new
-								           extent: self grid asPoint;
-								           color: (Color gray: value);
-								           position:
-									           columnIndex * self grid @ (rowIndex * self grid);
-								           model: {
-										           (columnNode edgeTo: rowNode ifAbsent: [ nil ]).
-										           columnNode.
-										           rowNode };
-								           yourself) ] ] ] ]) asGroup.
-		cells @ (GolapHeatmapCellInteraction new
-			 presenter: self;
-			 golapModel: golapModel;
-			 yourself).
-		self canvas addAll: cells.
-		showsClusterBoundariesCheckBox state = true ifTrue: [
-			(leaves collect: [ :leaf | leaf parentAtRank: self rank ])
-				ifNotEmpty: [ :clusters |
-					| rect |
-					rect := cells asGroup encompassingRectangle.
-					1 to: clusters size - 1 do: [ :index |
-						(clusters at: index) ~= (clusters at: index + 1) ifTrue: [
-							| p |
-							p := index + 0.5 * self grid.
-							self canvas add: (RSLine new
-									 startPoint: rect left @ p;
-									 endPoint: rect right @ p;
-									 color: Color red;
-									 width: 2;
-									 yourself).
-							(self evaluator isKindOf: GolapEdgeEvaluator) ifTrue: [
-								self canvas add: (RSLine new
-										 startPoint: p @ rect top;
-										 endPoint: p @ rect bottom;
-										 color: Color red;
-										 width: 2;
-										 yourself) ] ] ] ] ] ].
-	self updateNode.
-	self zoomToFit
+	self isDisplayed ifTrue: [
+			self ensureTree.
+			self canvas shapes copy do: #remove.
+			self canvas color: Color black.
+			self golapModelDo: [ :golapModel |
+					| rowLabelInteraction leaves clusterMeans rightBound minValue maxValue valueScale cells |
+					self updateEvaluatorDropList.
+					rowLabelInteraction := GolapHeatmapRowLabelInteraction new
+						                       presenter: self;
+						                       golapModel: golapModel;
+						                       yourself.
+					leaves := self visibleLeaves.
+					clusterMeans := showsClusterMeansCheckBox state = true
+						                ifTrue: [ self computeClusterMeans ]
+						                ifFalse: [ ].
+					rightBound := leaves size + 0.5 * self grid.
+					minValue := self minValue.
+					maxValue := self maxValue.
+					minValue := minValue - (maxValue - minValue / 10.0).
+					valueScale := (maxValue - minValue) abs > 1.0e-8
+						              ifTrue: [ 1.0 / (maxValue - minValue) ]
+						              ifFalse: [ 0.0 ].
+					cells := (Array streamContents: [ :stream |
+							          leaves doWithIndex: [ :rowLeaf :rowIndex |
+									          | rowNode rowLabel |
+									          rowNode := golapModel nodeAt: rowLeaf id.
+									          rowLabel := RSLabel new
+										                      text: rowNode name;
+										                      color: Color lightGray.
+									          rowLabel := {
+										                      (RSBox new
+											                       extent: rowLabel extent;
+											                       color: Color transparent).
+										                      rowLabel } asShapeFor: {
+											                      #rowLabel.
+											                      rowNode }.
+									          rowLabel position:
+										          rightBound + self grid + (rowLabel width * 0.5)
+										          @ (rowIndex * self grid).
+									          rowLabel @ rowLabelInteraction.
+									          self canvas add: rowLabel.
+									          leaves doWithIndex: [ :columnLeaf :columnIndex |
+											          | columnNode value |
+											          columnNode := golapModel nodeAt: columnLeaf id.
+											          value := clusterMeans
+												                   ifNotNil: [
+														                   clusterMeans at: {
+																                   (rowLeaf parentAtRank: self rank).
+																                   (columnLeaf parentAtRank: self rank) } ]
+												                   ifNil: [
+												                   self
+													                   valueAtRowNode: rowNode
+													                   columnNode: columnNode ].
+											          value ifNotNil: [
+													          value := value - minValue * valueScale
+														                   min: 1.0
+														                   max: 0.0.
+													          stream nextPut: (RSBox new
+															           extent: self grid asPoint;
+															           color: (Color gray: value);
+															           position:
+																           columnIndex * self grid
+																           @ (rowIndex * self grid);
+															           model: {
+																	           (columnNode
+																		            edgeTo: rowNode
+																		            ifAbsent: [ nil ]).
+																	           columnNode.
+																	           rowNode };
+															           yourself) ] ] ] ]) asGroup.
+					cells @ (GolapHeatmapCellInteraction new
+						 presenter: self;
+						 golapModel: golapModel;
+						 yourself).
+					self canvas addAll: cells.
+					showsClusterBoundariesCheckBox state = true ifTrue: [
+							(leaves collect: [ :leaf | leaf parentAtRank: self rank ])
+								ifNotEmpty: [ :clusters |
+										| rect |
+										rect := cells asGroup encompassingRectangle.
+										1 to: clusters size - 1 do: [ :index |
+												(clusters at: index) ~= (clusters at: index + 1) ifTrue: [
+														| p |
+														p := index + 0.5 * self grid.
+														self canvas add: (RSLine new
+																 startPoint: rect left @ p;
+																 endPoint: rect right @ p;
+																 color: Color red;
+																 width: 2;
+																 yourself).
+														(self evaluator isKindOf: GolapEdgeEvaluator) ifTrue: [
+																self canvas add: (RSLine new
+																		 startPoint: p @ rect top;
+																		 endPoint: p @ rect bottom;
+																		 color: Color red;
+																		 width: 2;
+																		 yourself) ] ] ] ] ] ].
+			self updateNode.
+			self zoomToFit ]
 ]
 
 { #category : 'updating' }
@@ -416,79 +378,79 @@ GolapClusteredHeatmapPresenter >> updateNode [
 	| rightBound |
 	rightBound := 0.
 	self canvas shapes copy do: [ :shape |
-		shape model = #selection ifTrue: [ shape remove ].
-		(shape model isArray and: [ shape model first = #rowLabel ])
-			ifTrue: [
-				rightBound := shape encompassingRectangle right + self grid max:
-					              rightBound ] ].
+			shape model = #selection ifTrue: [ shape remove ].
+			(shape model isArray and: [ shape model first = #rowLabel ])
+				ifTrue: [
+						rightBound := shape encompassingRectangle right + self grid
+							              max: rightBound ] ].
 	self golapModelDo: [ :golapModel |
-		currentTree notNil ifTrue: [
-			| nodes origin corner startIndex |
-			nodes := self visibleLeaves collect: [ :leaf |
-				         golapModel nodeAt: leaf id ].
-			origin := 0.0.
-			corner := (nodes size + 1 * self grid) asFloat.
-			rightBound := rightBound max: corner.
-			startIndex := nil.
-			(nodes copyWith: nil) doWithIndex: [ :node :index |
-				(node notNil and: [ golap includesSelection: node ])
-					ifTrue: [ startIndex ifNil: [ startIndex := index ] ]
-					ifFalse: [
-						startIndex ifNotNil: [
-							| s e |
-							s := startIndex - 0.5 * self grid.
-							e := index - 0.5 * self grid.
-							self canvas
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: s @ origin;
-										 endPoint: s @ corner);
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: s @ corner;
-										 endPoint: e @ corner);
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: e @ corner;
-										 endPoint: e @ origin);
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: e @ origin;
-										 endPoint: s @ origin).
-							self canvas
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: origin @ s;
-										 endPoint: rightBound @ s);
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: rightBound @ s;
-										 endPoint: rightBound @ e);
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: rightBound @ e;
-										 endPoint: origin @ e);
-								add: (RSLine new
-										 model: #selection;
-										 color: Color white;
-										 width: 0.5;
-										 startPoint: origin @ e;
-										 endPoint: origin @ s).
-							startIndex := nil ] ] ] ] ].
+			tree notNil ifTrue: [
+					| nodes origin corner startIndex |
+					nodes := self visibleLeaves collect: [ :leaf |
+						         golapModel nodeAt: leaf id ].
+					origin := 0.0.
+					corner := (nodes size + 1 * self grid) asFloat.
+					rightBound := rightBound max: corner.
+					startIndex := nil.
+					(nodes copyWith: nil) doWithIndex: [ :node :index |
+							(node notNil and: [ golap includesSelection: node ])
+								ifTrue: [ startIndex ifNil: [ startIndex := index ] ]
+								ifFalse: [
+										startIndex ifNotNil: [
+												| s e |
+												s := startIndex - 0.5 * self grid.
+												e := index - 0.5 * self grid.
+												self canvas
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: s @ origin;
+															 endPoint: s @ corner);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: s @ corner;
+															 endPoint: e @ corner);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: e @ corner;
+															 endPoint: e @ origin);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: e @ origin;
+															 endPoint: s @ origin).
+												self canvas
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: origin @ s;
+															 endPoint: rightBound @ s);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: rightBound @ s;
+															 endPoint: rightBound @ e);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: rightBound @ e;
+															 endPoint: origin @ e);
+													add: (RSLine new
+															 model: #selection;
+															 color: Color white;
+															 width: 0.5;
+															 startPoint: origin @ e;
+															 endPoint: origin @ s).
+												startIndex := nil ] ] ] ] ].
 	self canvas signalUpdate
 ]
 
@@ -518,10 +480,10 @@ GolapClusteredHeatmapPresenter >> valueAtRowNode: aGolapNode1 columnNode: aGolap
 GolapClusteredHeatmapPresenter >> visibleLeaves [
 
 	^ showsSingletonClustersCheckBox state = true
-		  ifTrue: [ currentTree ifNotNil: #leaves ifNil: [ Array new ] ]
+		  ifTrue: [ tree ifNotNil: #leaves ifNil: [ Array new ] ]
 		  ifFalse: [
 				  Array streamContents: [ :stream |
-						  currentTree atRank: self rank do: [ :treeNode |
+						  tree atRank: self rank do: [ :treeNode |
 								  treeNode size > 1 ifTrue: [
 									  treeNode leavesDo: [ :leafNode | stream nextPut: leafNode ] ] ] ] ]
 ]
@@ -530,4 +492,18 @@ GolapClusteredHeatmapPresenter >> visibleLeaves [
 GolapClusteredHeatmapPresenter >> windowTitle [
 
 	^ 'Heatmap'
+]
+
+{ #category : 'operations' }
+GolapClusteredHeatmapPresenter >> zoomInAt: aPoint [
+
+	self canvas camera ifNotNil: [ :camera |
+		camera scale: camera scale * 1.1 ]
+]
+
+{ #category : 'operations' }
+GolapClusteredHeatmapPresenter >> zoomOutAt: aPoint [
+
+	self canvas camera ifNotNil: [ :camera |
+		camera scale: camera scale / 1.1 ]
 ]

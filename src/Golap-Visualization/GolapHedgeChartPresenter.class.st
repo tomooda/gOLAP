@@ -26,11 +26,19 @@ GolapHedgeChartPresenter >> friendScoreBetween: aGolapNode1 and: aGolapNode2 [
 	^ friend1 max: friend2
 ]
 
+{ #category : 'instance creation' }
+GolapHedgeChartPresenter >> fromJSON: aDictionary [
+
+	super fromJSON: aDictionary.
+	self updateCanvas
+]
+
 { #category : 'updating' }
 GolapHedgeChartPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
 			| canvas colorMarkers terminals y ystep |
+			self ensureTree.
 			canvas := self canvas.
 			self canvas shapes copy do: #remove.
 			colorMarkers := golap colorMarkers.

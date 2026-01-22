@@ -25,19 +25,6 @@ Class {
 GolapElaborationPresenter >> activateOnNotebookPage [
 ]
 
-{ #category : 'snapshot' }
-GolapElaborationPresenter >> asJSON [
-
-	^ {
-		  ('gap' -> gapSlider value).
-		  ('scale' -> {
-			   scale x.
-			   scale y }).
-		  ('offset' -> {
-			   offset x.
-			   offset y }) } asDictionary
-]
-
 { #category : 'accessing' }
 GolapElaborationPresenter >> camera [
 
@@ -74,17 +61,6 @@ GolapElaborationPresenter >> defaultLayout [
 		  expand: false;
 		  add: roassal expand: true;
 		  yourself
-]
-
-{ #category : 'snapshot' }
-GolapElaborationPresenter >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'gap' ifPresent: [ :num | gapSlider value: num ];
-		at: 'scale'
-		ifPresent: [ :array | scale := array first @ array second ];
-		at: 'offset'
-		ifPresent: [ :array | offset := array first @ array second ]
 ]
 
 { #category : 'updating' }

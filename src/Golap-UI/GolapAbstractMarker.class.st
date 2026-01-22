@@ -15,13 +15,6 @@ GolapAbstractMarker class >> concreteClassFor: aDictionary [
 	^ nil
 ]
 
-{ #category : 'instance creation' }
-GolapAbstractMarker class >> fromJSON: aDictionary [
-
-	^ (self concreteClassFor: aDictionary) ifNotNil: [ :class |
-		  class new fromJSON: aDictionary ]
-]
-
 { #category : 'testing' }
 GolapAbstractMarker class >> isAbstract [
 
@@ -40,20 +33,8 @@ GolapAbstractMarker >> addNode: aGolapNode [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'snapshot' }
-GolapAbstractMarker >> asJSON [
-
-	^ { ('class' -> self class name asString) } asOrderedDictionary
-]
-
 { #category : 'accessing' }
 GolapAbstractMarker >> color [
-
-	^ self subclassResponsibility
-]
-
-{ #category : 'snapshot' }
-GolapAbstractMarker >> fromJSON: aDictionary [
 
 	^ self subclassResponsibility
 ]

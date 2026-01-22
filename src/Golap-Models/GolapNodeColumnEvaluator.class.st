@@ -18,15 +18,6 @@ GolapNodeColumnEvaluator class >> column: aString [
 ]
 
 { #category : 'instance creation' }
-GolapNodeColumnEvaluator class >> fromJSON: aDictionary [
-
-	^ aDictionary
-		  at: self tag
-		  ifPresent: [ :column | self column: column ]
-		  ifAbsent: [ nil ]
-]
-
-{ #category : 'instance creation' }
 GolapNodeColumnEvaluator class >> on: aGolapModel column: aString [
 
 	^ (self on: aGolapModel)

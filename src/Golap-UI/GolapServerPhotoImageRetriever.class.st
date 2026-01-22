@@ -30,18 +30,6 @@ GolapServerPhotoImageRetriever class >> tag [
 	^ 'server'
 ]
 
-{ #category : 'snapshot' }
-GolapServerPhotoImageRetriever >> asJSON [
-
-	| json |
-	json := super asJSON.
-	golapServerUrl ifNotNil: [
-		json at: 'golapServerUrl' put: golapServerUrl asString ].
-	imageServerUrl ifNotNil: [
-		json at: 'imageServerUrl' put: imageServerUrl asString ].
-	^ json
-]
-
 { #category : 'accessing' }
 GolapServerPhotoImageRetriever >> authenticateBlock [
 

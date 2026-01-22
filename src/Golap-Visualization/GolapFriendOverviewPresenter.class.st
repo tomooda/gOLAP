@@ -10,14 +10,6 @@ Class {
 	#tag : 'Friend'
 }
 
-{ #category : 'snapshot' }
-GolapFriendOverviewPresenter >> asJSON [
-
-	^ super asJSON
-		  at: 'friendsRank' put: friendsRankField number;
-		  yourself
-]
-
 { #category : 'accessing' }
 GolapFriendOverviewPresenter >> availableEdges [
 
@@ -48,15 +40,6 @@ GolapFriendOverviewPresenter >> friendsRankChanged [
 	self golapModelDo: [ :golapModel |
 		golapModel friendsEdges: friendsRankField number ].
 	self updateCanvas
-]
-
-{ #category : 'snapshot' }
-GolapFriendOverviewPresenter >> fromJSON: aDictionary [
-
-	super fromJSON: aDictionary.
-	aDictionary
-		at: 'friendsRank'
-		ifPresent: [ :integer | friendsRankField number: integer ]
 ]
 
 { #category : 'initialization' }

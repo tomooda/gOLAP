@@ -17,15 +17,6 @@ GolapEdgeColumnEvaluator class >> column: aString [
 		  yourself
 ]
 
-{ #category : 'instance creation' }
-GolapEdgeColumnEvaluator class >> fromJSON: aDictionary [
-
-	^ aDictionary
-		  at: self tag
-		  ifPresent: [ :column | self column: column ]
-		  ifAbsent: [ nil ]
-]
-
 { #category : 'accessing' }
 GolapEdgeColumnEvaluator class >> tag [
 

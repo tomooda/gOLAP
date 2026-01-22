@@ -41,15 +41,6 @@ GolapColorMarker >> addNode: aGolapNode [
 	^ aGolapNode
 ]
 
-{ #category : 'snapshot' }
-GolapColorMarker >> asJSON [
-
-	^ super asJSON
-		  at: 'color' put: colorHexString;
-		  at: 'query' put: queryString;
-		  yourself
-]
-
 { #category : 'accessing' }
 GolapColorMarker >> color [
 
@@ -73,14 +64,6 @@ GolapColorMarker >> colorHexString: aString [
 			canvas fillColor: Color transparent.
 			self color ifNotNil: [ :color |
 				canvas frameOval: (1 @ 1 corner: 14 @ 14) width: 2 color: color ] ]
-]
-
-{ #category : 'snapshot' }
-GolapColorMarker >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'color' ifPresent: [ :string | self colorHexString: string ];
-		at: 'query' ifPresent: [ :string | queryString := string ]
 ]
 
 { #category : 'accessing' }

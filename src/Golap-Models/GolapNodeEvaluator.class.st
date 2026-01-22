@@ -9,16 +9,6 @@ Class {
 	#tag : 'Evaluators'
 }
 
-{ #category : 'instance creation' }
-GolapNodeEvaluator class >> fromJSON: aDictionary [
-
-	self allSubclassesDo: [ :subclass |
-		subclass isAbstract not ifTrue: [
-			(subclass fromJSON: aDictionary) ifNotNil: [ :evaluator |
-				^ evaluator ] ] ].
-	^ nil
-]
-
 { #category : 'testing' }
 GolapNodeEvaluator class >> isAbstract [
 
@@ -29,12 +19,6 @@ GolapNodeEvaluator class >> isAbstract [
 GolapNodeEvaluator class >> tag [
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'converting' }
-GolapNodeEvaluator >> asJSON [
-
-	^ { (self tag -> self subtag) } asOrderedDictionary
 ]
 
 { #category : 'converting' }

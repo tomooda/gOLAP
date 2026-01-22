@@ -6,12 +6,6 @@ Class {
 	#tag : 'Evaluators'
 }
 
-{ #category : 'instance creation' }
-GolapNodeNumEdgesEvaluator class >> fromJSON: aDictionary [
-
-	^ aDictionary at: self tag ifPresent: [ self new ] ifAbsent: [ nil ]
-]
-
 { #category : 'accessing' }
 GolapNodeNumEdgesEvaluator class >> tag [
 

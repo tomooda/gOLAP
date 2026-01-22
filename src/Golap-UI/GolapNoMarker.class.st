@@ -22,26 +22,10 @@ GolapNoMarker >> addNode: aGolapNode [
 	^ nil
 ]
 
-{ #category : 'snapshot' }
-GolapNoMarker >> asJSON [
-
-	^ super asJSON
-		  at: 'query' put: queryString;
-		  yourself
-]
-
 { #category : 'accessing' }
 GolapNoMarker >> color [
 
 	^ nil
-]
-
-{ #category : 'snapshot' }
-GolapNoMarker >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'query'
-		ifPresent: [ :string | queryString := string ]
 ]
 
 { #category : 'accessing' }

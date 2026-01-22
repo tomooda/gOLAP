@@ -20,13 +20,6 @@ GolapItemInfoRetriever class >> classForJSON: aDictionary [
 	^ nil
 ]
 
-{ #category : 'accessing' }
-GolapItemInfoRetriever class >> fromJSON: aDictionary [
-
-	^ (self classForJSON: aDictionary) ifNotNil: [ :subclass |
-		  subclass new fromJSON: aDictionary ]
-]
-
 { #category : 'testing' }
 GolapItemInfoRetriever class >> isAbstract [
 
@@ -37,16 +30,6 @@ GolapItemInfoRetriever class >> isAbstract [
 GolapItemInfoRetriever class >> tag [
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'snapshot' }
-GolapItemInfoRetriever >> asJSON [
-
-	^ {
-		  ('tag' -> self class tag).
-		  ('photoImageRetrievers'
-		   -> (photoimageRetrievers asArray collect: #asJSON)) }
-		  asDictionary
 ]
 
 { #category : 'accessing' }
@@ -64,15 +47,6 @@ GolapItemInfoRetriever >> availablePhotoimageRetrievers [
 GolapItemInfoRetriever >> defaultPhotoimageRetrievers [
 
 	^ self availablePhotoimageRetrievers
-]
-
-{ #category : 'snapshot' }
-GolapItemInfoRetriever >> fromJSON: aDictionary [
-
-	aDictionary at: 'photoImageRetrievers' ifPresent: [ :array |
-			photoimageRetrievers := array collect: [ :json |
-					                        ((GolapPhotoImageRetriever classForJSON:
-						                          json) for: self) fromJSON: json ] ]
 ]
 
 { #category : 'testing' }

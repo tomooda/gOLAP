@@ -6,18 +6,6 @@ Class {
 	#tag : 'Evaluators'
 }
 
-{ #category : 'instance creation' }
-GolapNodeAggregationEvaluator class >> fromJSON: aDictionary [
-
-	^ aDictionary
-		  at: self tag
-		  ifPresent: [ :subtag |
-			  subtag = self subtag
-				  ifTrue: [ self new ]
-				  ifFalse: [ nil ] ]
-		  ifAbsent: [ nil ]
-]
-
 { #category : 'testing' }
 GolapNodeAggregationEvaluator class >> isAbstract [
 

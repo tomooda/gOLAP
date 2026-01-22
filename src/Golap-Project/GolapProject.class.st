@@ -2,80 +2,197 @@ Class {
 	#name : 'GolapProject',
 	#superclass : 'Object',
 	#instVars : [
-		'name'
+		'projectFile'
+	],
+	#classInstVars : [
+		'current'
 	],
 	#category : 'Golap-Project',
 	#package : 'Golap-Project'
 }
 
-{ #category : 'accessing' }
-GolapProject class >> golapDirectory [
+{ #category : 'sole instance' }
+GolapProject class >> current [
 
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+	^ current ifNil: [ current := self new ]
 ]
 
 { #category : 'accessing' }
-GolapProject class >> illegalCharactersInFilenames [
+GolapProject class >> fileExtension [
 
-	^ '<>:"/\|?*' asSet
+	^ 'golap'
 ]
 
-{ #category : 'accessing' }
-GolapProject class >> projectFileExtention [
+{ #category : 'menus' }
+GolapProject class >> golapMenuOn: aBuilder [
 
-	'gporj'
-]
-
-{ #category : 'enumerating' }
-GolapProject class >> projectFilesDo: aBlock [
-
-	(self golapDirectory filesMatching: '*.' , self projectFileExtention)
-		do: aBlock
-]
-
-{ #category : 'enumerating' }
-GolapProject >> golapsDo: aBlock [
-
-	Golap allInstancesDo: [ :golap |
-			(golap window ifNotNil: #isOpen ifNil: [ false ]) ifTrue: [
-				aBlock value: golap ] ]
-]
-
-{ #category : 'enumerating' }
-GolapProject >> golapsDo: aBlock separatedBy: anotherBlock [
-
-	| firstTime |
-	firstTime := true.
-	self golapsDo: [ :golap |
-			firstTime
-				ifTrue: [ firstTime := false ]
-				ifFalse: [ anotherBlock value ].
-			aBlock value: golap ]
-]
-
-{ #category : 'accessing' }
-GolapProject >> name [
-
-	^ name
-]
-
-{ #category : 'accessing' }
-GolapProject >> name: aString [
-
-	name := aString
+	<worldMenu>
+	(aBuilder item: #GolapProject)
+		label: 'プロジェクト';
+		order: 0.5;
+		with: [
+				(aBuilder item: #'プロジェクトを開く...')
+					parent: #GolapProject;
+					order: 20;
+					target: self;
+					selector: #open;
+					help: 'プロジェクトファイルを開いて、グラフ分析状態を復元します。'.
+				(aBuilder item: #'プロジェクトを保存する...')
+					parent: #GolapProject;
+					order: 21;
+					enabled: self current projectFile notNil;
+					target: self;
+					selector: #save;
+					help: 'グラフ分析状態をプロジェクトファイルに保存します。' ]
 ]
 
 { #category : 'operations' }
-GolapProject >> saveInto: aFileReference [
+GolapProject class >> open [
 
-	aFileReference writeStreamDo: [ :stream |
-			| writer |
-			writer := NeoJSONWriter on: (stream
-					           truncate;
-					           yourself).
-			stream nextPut: $[.
-			self
-				golapsDo: [ :golap | writer nextPut: golap asJSON ]
-				separatedBy: [ stream nextPut: $, ].
-			stream nextPut: $] ]
+	self current open
+]
+
+{ #category : 'accessing' }
+GolapProject class >> projectBaseDirectory [
+
+	^ Golap golapDirectory
+]
+
+{ #category : 'operations' }
+GolapProject class >> save [
+
+	self current save
+]
+
+{ #category : 'converting' }
+GolapProject >> asJSON [
+
+	^ Array streamContents: [ :stream |
+			  | windows |
+			  windows := self golapWindows.
+			  SpProgressDialog new
+				  title: '保存中...';
+				  informUserDuring: [ :progress |
+						  windows withIndexDo: [ :window :index |
+									  progress
+										  label: '保存中... ' , window title;
+										  progressPercent: index * 100 // windows size.
+									  stream nextPut: window presenter asJSON ] ] ]
+]
+
+{ #category : 'converting' }
+GolapProject >> fromJSON: anArray [
+
+	| dialog |
+	dialog := SpProgressDialog new.
+	dialog
+		title: '復元中...';
+		informUserDuring: [ :progress |
+				| widget |
+				widget := dialog adapter widget.
+				anArray withIndexDo: [ :json :index |
+							progress progressPercent: index * 100 // anArray size.
+							json at: 'class' ifPresent: [ :className |
+										(TGolapSnapshotablePresenter users
+											 detect: [ :class | class name asString = className ]
+											 ifNone: [ nil ]) ifNotNil: [ :class |
+												class fromJSON: json ] ] ] ]
+]
+
+{ #category : 'accessing' }
+GolapProject >> golapWindows [
+
+	^ Array streamContents: [ :stream |
+		  self golapWindowsDo: [ :window | stream nextPut: window ] ]
+]
+
+{ #category : 'enumerating' }
+GolapProject >> golapWindowsDo: aBlock [
+
+	self currentWorld taskbars do: [ :taskbar |
+			taskbar submorphs do: [ :m1 |
+					m1 model ifNotNil: [ :m2 |
+							m2 model ifNotNil: [ :m3 |
+									m3 presenter ifNotNil: [ :p |
+										(p respondsTo: #asJSON) ifTrue: [ aBlock value: m3 ] ] ] ] ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> load [
+
+	projectFile ifNotNil: [
+			projectFile readStreamDo: [ :stream |
+					(NeoJSONReader on: stream) next ifNotNil: [ :json |
+							self golapWindowsDo: [ :presenter | presenter close ].
+							self fromJSON: json ] ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> open [
+
+	| dialog |
+	dialog := StOpenFilePresenter new.
+	dialog
+		title: 'プロジェクトを開く';
+		extensions: #( 'golap' ).
+	projectFile
+		ifNotNil: [
+				dialog
+					defaultFolder: projectFile parent;
+					selectFile: projectFile ]
+		ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
+	dialog openModal.
+	^ dialog cancelled
+		  ifTrue: [ nil ]
+		  ifFalse: [
+				  dialog selectedEntry ifNotNil: [ :ref |
+						  projectFile := ref.
+						  self load ] ]
+]
+
+{ #category : 'accessing' }
+GolapProject >> projectFile [
+
+	^ projectFile
+]
+
+{ #category : 'accessing' }
+GolapProject >> projectFile: aFileReference [
+
+	projectFile := aFileReference
+]
+
+{ #category : 'operations' }
+GolapProject >> save [
+
+	| dialog |
+	dialog := StSaveFilePresenter new.
+	dialog
+		title: 'プロジェクトを保存する';
+		extensions: #( 'golap' ).
+	projectFile
+		ifNotNil: [
+				dialog
+					defaultFolder: projectFile parent;
+					selectFile: projectFile ]
+		ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
+	dialog openModal.
+	^ dialog cancelled
+		  ifTrue: [ nil ]
+		  ifFalse: [
+				  dialog selectedEntry ifNotNil: [ :ref |
+						  projectFile := ref.
+						  self store ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> store [
+
+	projectFile ifNotNil: [
+			self asJSON ifNotNil: [ :json |
+					projectFile writeStreamDo: [ :stream |
+							stream truncate.
+							(NeoJSONWriter on: stream)
+								prettyPrint: true;
+								nextPut: json ] ] ]
 ]

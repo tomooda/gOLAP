@@ -24,12 +24,6 @@ GolapAddMarker >> color [
 	^ nil
 ]
 
-{ #category : 'snapshot' }
-GolapAddMarker >> fromJSON: aDictionary [
-
-	
-]
-
 { #category : 'accessing' }
 GolapAddMarker >> icon [
 

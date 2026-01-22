@@ -22,12 +22,6 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapNode class >> fromJSON: aDictionary [
-
-	^ self new fromJSON: aDictionary
-]
-
-{ #category : 'instance creation' }
 GolapNode class >> on: aDataSeries name: aString [
 
 	^ self new
@@ -86,15 +80,6 @@ GolapNode >> argmaxEdge: aBlock [
 				ifTrue: [ argmax := edge.
 					max := value ] ].
 	^ argmax
-]
-
-{ #category : 'snapshot' }
-GolapNode >> asJSON [
-
-	^ {
-		  ('id' -> self id).
-		  ('name' -> self name).
-		  ('data' -> self data) } asOrderedDictionary
 ]
 
 { #category : 'converting' }
@@ -221,17 +206,6 @@ GolapNode >> edgesDo: aBlock [
 GolapNode >> flushPhotoimage [
 
 	photoimage := nil
-]
-
-{ #category : 'snapshot' }
-GolapNode >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'data'
-		ifPresent: [ :dict |
-			data := DataSeries withKeys: dict keys values: dict values ];
-		at: 'name' ifPresent: [ :json | self name: json ];
-		at: 'id' ifPresent: [ :json | self id: json ]
 ]
 
 { #category : 'enumerating' }

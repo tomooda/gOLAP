@@ -21,15 +21,6 @@ GolapEdge class >> on: aDataSeries between: aGolapNode1 and: aGolapNode2 [
 		  yourself
 ]
 
-{ #category : 'snapshot' }
-GolapEdge >> asJSON [
-
-	^ {
-		  ('node1' -> self node1 id).
-		  ('node2' -> self node2 id).
-		  ('data' -> self data) } asOrderedDictionary
-]
-
 { #category : 'accessing' }
 GolapEdge >> at: aString [
 

@@ -15,12 +15,6 @@ Class {
 GolapHierarchicalClusteringPresenter >> activateOnNotebookPage [
 ]
 
-{ #category : 'snapshot' }
-GolapHierarchicalClusteringPresenter >> asJSON [
-
-	^ {  } asDictionary
-]
-
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> canvas [
 
@@ -60,10 +54,10 @@ GolapHierarchicalClusteringPresenter >> edgeWidthForScore: aNumber [
 		  ifFalse: [ 1.0 ]
 ]
 
-{ #category : 'snapshot' }
-GolapHierarchicalClusteringPresenter >> fromJSON: aDictionary [
+{ #category : 'updating' }
+GolapHierarchicalClusteringPresenter >> ensureTree [
 
-	
+	tree ifNil: [ self updateTree ]
 ]
 
 { #category : 'accessing' }
@@ -156,8 +150,7 @@ GolapHierarchicalClusteringPresenter >> tree: aGolapHierarchicalClusteringTree [
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> treeChanged [
 
-	self updateCanvas.
-	golap updateItemsList
+	self updateCanvas
 ]
 
 { #category : 'updating' }
@@ -226,20 +219,16 @@ GolapHierarchicalClusteringPresenter >> updatePhotoimage: shape [
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updateTree [
 
-	self isDisplayed ifTrue: [
-		self withAdapterDo: [ :a |
-			a widgetDo: [ :w |
-				w world ifNotNil: [
-					self tree: (((GolapHierarchicalClustering on: golap model)
-							  rank: 2;
-							  rank: 4;
-							  rank: 8;
-							  rank: 16;
-							  rank: 32;
-							  rank: 64;
-							  rank: 128;
-							  rank: 256;
-							  tree) removeAllBut: golap ids asSet) ] ] ] ]
+	self tree: (((GolapHierarchicalClustering on: golap model)
+			  rank: 2;
+			  rank: 4;
+			  rank: 8;
+			  rank: 16;
+			  rank: 32;
+			  rank: 64;
+			  rank: 128;
+			  rank: 256;
+			  tree) removeAllBut: golap ids asSet)
 ]
 
 { #category : 'accessing' }

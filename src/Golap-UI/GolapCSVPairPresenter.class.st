@@ -73,18 +73,6 @@ GolapCSVPairPresenter class >> lastBasepath: aFileReference [
 	lastBasepath := aFileReference
 ]
 
-{ #category : 'snapshot' }
-GolapCSVPairPresenter >> asJSON [
-
-	^ {
-		  ('basepathField' -> basepathField text).
-		  ('nodeCSVList-selection' -> nodeCSVList selectedItem).
-		  ('edgeCSVList-selection' -> edgeCSVList selectedItem).
-		  ('lastBasepath'
-		   -> (self class basicLastBasepath ifNotNil: #fullName)) }
-		  asOrderedDictionary
-]
-
 { #category : 'updating' }
 GolapCSVPairPresenter >> basepathChanged [
 
@@ -123,21 +111,6 @@ GolapCSVPairPresenter >> edgeCSVFileReference [
 		  | ref |
 		  ref := self basepathReference / basename.
 		  ref isFile ifTrue: [ ref ] ]
-]
-
-{ #category : 'snapshot' }
-GolapCSVPairPresenter >> fromJSON: aDictionary [
-
-	aDictionary
-		at: 'basepathField'
-		ifPresent: [ :string | basepathField text: string ];
-		at: 'nodeCSVList-selection'
-		ifPresent: [ :string | nodeCSVList selectItem: string ];
-		at: 'edgeCSVList-selection'
-		ifPresent: [ :string | edgeCSVList selectItem: string ];
-		at: 'lastBasepath' ifPresent: [ :string |
-				self class lastBasepath:
-						(string ifNotNil: [ string asFileReference ifAbsent: [ nil ] ]) ]
 ]
 
 { #category : 'initialization' }

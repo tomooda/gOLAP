@@ -1,8 +1,7 @@
 Trait {
 	#name : 'TGolapSnapshotablePresenter',
-	#category : 'Golap-UI-Snapshot',
-	#package : 'Golap-UI',
-	#tag : 'Snapshot'
+	#category : 'Golap-Project',
+	#package : 'Golap-Project'
 }
 
 { #category : 'instance creation' }
@@ -64,7 +63,7 @@ TGolapSnapshotablePresenter >> fromJSON: aDictionary [
 TGolapSnapshotablePresenter >> fromWindowJSON: aString bounds: aRectangle [
 
 	[
-		aString = 'open' ifTrue: [ ^ self openBounds: aRectangle ].
+		aString = 'open' ifTrue: [ ^ (self openBounds: aRectangle) open ].
 		aString = 'minimized' ifTrue: [
 				^ (self openBounds: aRectangle)
 					  minimize;
