@@ -226,38 +226,44 @@ GolapProject >> projectName [
 { #category : 'operations' }
 GolapProject >> quit [
 
-	(self
-		 confirmYesNoCancel: 'プロジェクトを保存しますか？'
-		 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ])) ifNotNil: [
-			:ans |
-			ans ifTrue: [ self save ].
-			self closeAll.
-			self projectFile: nil.
-			self updateMenubar ]
+	self golapWindows
+		ifNotEmpty: [
+				(self
+					 confirmYesNoCancel: 'プロジェクトを保存しますか？'
+					 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ]))
+					ifNotNil: [ :ans |
+							ans ifTrue: [ self save ].
+							self closeAll.
+							self projectFile: nil.
+							self updateMenubar ] ]
+		ifEmpty: [
+				self
+					projectFile: nil;
+					updateMenubar ]
 ]
 
 { #category : 'operations' }
 GolapProject >> save [
 
-	| dialog |
-	dialog := StSaveFilePresenter new.
-	dialog
-		title: 'プロジェクトを保存する';
-		extensions: #( 'golap' ).
-	projectFile
-		ifNotNil: [
-				dialog
-					defaultFolder: projectFile parent;
-					selectFile: projectFile ]
-		ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
-	dialog openModal.
-	^ dialog cancelled
-		  ifTrue: [ nil ]
-		  ifFalse: [
-				  dialog selectedEntry ifNotNil: [ :ref |
-						  projectFile := ref.
-						  self store.
-						  self updateMenubar ] ]
+	(self golapWindows notEmpty or: [
+		 self confirm: '空のプロジェクトを保存しますか？' title: 'プロジェクト保存' ]) ifTrue: [
+			| dialog |
+			dialog := StSaveFilePresenter new.
+			dialog
+				title: 'プロジェクトを保存する';
+				extensions: #( 'golap' ).
+			projectFile
+				ifNotNil: [
+						dialog
+							defaultFolder: projectFile parent;
+							selectFile: projectFile ]
+				ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
+			dialog openModal.
+			dialog cancelled ifFalse: [
+					dialog selectedEntry ifNotNil: [ :ref |
+							projectFile := ref.
+							self store.
+							self updateMenubar ] ] ]
 ]
 
 { #category : 'operations' }

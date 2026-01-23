@@ -1,8 +1,6 @@
 Class {
 	#name : 'GolapNetworkClientPresenter',
 	#superclass : 'SpPresenter',
-	#traits : 'TGolapSnapshotablePresenter',
-	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'urlInput',
 		'presetUrlButton',

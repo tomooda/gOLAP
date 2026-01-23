@@ -1,8 +1,6 @@
 Class {
 	#name : 'GolapCSVLauncher',
 	#superclass : 'SpPresenter',
-	#traits : 'TGolapSnapshotablePresenter',
-	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'pairPresenter',
 		'pairsTable',
