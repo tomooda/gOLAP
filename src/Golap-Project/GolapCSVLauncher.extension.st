@@ -5,7 +5,7 @@ GolapCSVLauncher >> asJSON [
 
 	^ self basicAsJSON
 		  at: 'pairPresenter' put: pairPresenter asJSON;
-		  at: 'pairsTable' put: pairsTable asJSON;
+		  at: 'pairsTable' put: pairsTable selectedIndex;
 		  at: 'nodeImporterPresenter' put: nodeImporterPresenter asJSON;
 		  at: 'edgeImporterPresenter' put: edgeImporterPresenter asJSON;
 		  yourself
@@ -17,7 +17,8 @@ GolapCSVLauncher >> fromJSON: aDictionary [
 	aDictionary
 		at: 'pairPresenter'
 		ifPresent: [ :json | pairPresenter fromJSON: json ];
-		at: 'pairsTable' ifPresent: [ :json | pairsTable fromJSON: json ];
+		at: 'pairsTable'
+		ifPresent: [ :integer | pairsTable selectIndex: integer ];
 		at: 'nodeImporterPresenter'
 		ifPresent: [ :json | nodeImporterPresenter fromJSON: json ];
 		at: 'edgeImporterPresenter'

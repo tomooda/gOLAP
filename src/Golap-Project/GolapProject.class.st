@@ -47,7 +47,7 @@ GolapProject class >> golapMenuOn: aBuilder [
 					iconName: #save;
 					parent: #GolapProject;
 					order: 21;
-					enabled: self current projectFile notNil;
+					enabled: true;
 					target: self;
 					selector: #save;
 					help: 'グラフ分析状態をプロジェクトファイルに保存します。'.
@@ -77,13 +77,19 @@ GolapProject class >> projectBaseDirectory [
 { #category : 'operations' }
 GolapProject class >> quit [
 
-	current ifNotNil: #quit
+	self current quit
 ]
 
 { #category : 'operations' }
 GolapProject class >> save [
 
 	self current save
+]
+
+{ #category : 'ui requests' }
+GolapProject >> application [
+
+	^ SpApplication defaultApplication
 ]
 
 { #category : 'converting' }
@@ -106,6 +112,24 @@ GolapProject >> asJSON [
 GolapProject >> closeAll [
 
 	self golapWindowsDo: [ :window | window presenter forceClose ]
+]
+
+{ #category : 'ui requests' }
+GolapProject >> confirm: aString title: anotherString [
+
+	^ self application newConfirm
+		  label: aString;
+		  title: anotherString;
+		  openModal
+]
+
+{ #category : 'ui requests' }
+GolapProject >> confirmYesNoCancel: aString title: anotherString [
+
+	^ (GolapConfirmYesNoCancelDialog newApplication: self application)
+		  label: aString;
+		  title: anotherString;
+		  openModal
 ]
 
 { #category : 'converting' }
@@ -174,7 +198,7 @@ GolapProject >> open [
 		  ifTrue: [ nil ]
 		  ifFalse: [
 				  dialog selectedEntry ifNotNil: [ :ref |
-						  projectFile := ref.
+						  self projectFile: ref.
 						  self load.
 						  self updateMenubar ] ]
 ]
@@ -188,15 +212,28 @@ GolapProject >> projectFile [
 { #category : 'accessing' }
 GolapProject >> projectFile: aFileReference [
 
-	projectFile := aFileReference
+	projectFile := aFileReference.
+	self updateWorldWindowTitle
+]
+
+{ #category : 'accessing' }
+GolapProject >> projectName [
+
+	^ projectFile ifNotNil: [
+		  projectFile basenameWithoutExtension: self class fileExtension ]
 ]
 
 { #category : 'operations' }
 GolapProject >> quit [
 
-	self closeAll.
-	projectFile := nil.
-	self updateMenubar
+	(self
+		 confirmYesNoCancel: 'プロジェクトを保存しますか？'
+		 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ])) ifNotNil: [
+			:ans |
+			ans ifTrue: [ self save ].
+			self closeAll.
+			self projectFile: nil.
+			self updateMenubar ]
 ]
 
 { #category : 'operations' }
@@ -239,4 +276,11 @@ GolapProject >> store [
 GolapProject >> updateMenubar [
 
 	GolapMenubar reset
+]
+
+{ #category : 'updating' }
+GolapProject >> updateWorldWindowTitle [
+
+	self currentWorld worldState worldRenderer osWindow title:
+		(self projectName ifNil: [ 'gOLAP' ])
 ]
