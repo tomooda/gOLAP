@@ -27,23 +27,39 @@ GolapProject class >> fileExtension [
 GolapProject class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
+	<golapMenu>
 	(aBuilder item: #GolapProject)
 		label: 'プロジェクト';
-		order: 0.5;
+		order: 10;
+		parent: #Golap;
 		with: [
-				(aBuilder item: #'プロジェクトを開く...')
+				(aBuilder item: #GolapOpenProjectFile)
+					label: 'プロジェクトを開く...';
+					iconName: #open;
 					parent: #GolapProject;
 					order: 20;
 					target: self;
 					selector: #open;
+					enabled: self current projectFile isNil;
 					help: 'プロジェクトファイルを開いて、グラフ分析状態を復元します。'.
-				(aBuilder item: #'プロジェクトを保存する...')
+				(aBuilder item: #GolapSaveProjectFile)
+					label: 'プロジェクトを保存する...';
+					iconName: #save;
 					parent: #GolapProject;
 					order: 21;
 					enabled: self current projectFile notNil;
 					target: self;
 					selector: #save;
-					help: 'グラフ分析状態をプロジェクトファイルに保存します。' ]
+					help: 'グラフ分析状態をプロジェクトファイルに保存します。'.
+				(aBuilder item: #GolapCloseProject)
+					label: 'プロジェクトを閉じる...';
+					iconName: #close;
+					parent: #GolapProject;
+					order: 80;
+					enabled: self current projectFile notNil;
+					target: self;
+					selector: #quit;
+					help: 'グラフ分析を閉じてプロジェクトを閉じます。' ]
 ]
 
 { #category : 'operations' }
@@ -56,6 +72,12 @@ GolapProject class >> open [
 GolapProject class >> projectBaseDirectory [
 
 	^ Golap golapDirectory
+]
+
+{ #category : 'operations' }
+GolapProject class >> quit [
+
+	current ifNotNil: #quit
 ]
 
 { #category : 'operations' }
@@ -78,6 +100,12 @@ GolapProject >> asJSON [
 										  label: '保存中... ' , window title;
 										  progressPercent: index * 100 // windows size.
 									  stream nextPut: window presenter asJSON ] ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> closeAll [
+
+	self golapWindowsDo: [ :window | window presenter forceClose ]
 ]
 
 { #category : 'converting' }
@@ -123,7 +151,7 @@ GolapProject >> load [
 	projectFile ifNotNil: [
 			projectFile readStreamDo: [ :stream |
 					(NeoJSONReader on: stream) next ifNotNil: [ :json |
-							self golapWindowsDo: [ :presenter | presenter close ].
+							self closeAll.
 							self fromJSON: json ] ] ]
 ]
 
@@ -147,7 +175,8 @@ GolapProject >> open [
 		  ifFalse: [
 				  dialog selectedEntry ifNotNil: [ :ref |
 						  projectFile := ref.
-						  self load ] ]
+						  self load.
+						  self updateMenubar ] ]
 ]
 
 { #category : 'accessing' }
@@ -160,6 +189,14 @@ GolapProject >> projectFile [
 GolapProject >> projectFile: aFileReference [
 
 	projectFile := aFileReference
+]
+
+{ #category : 'operations' }
+GolapProject >> quit [
+
+	self closeAll.
+	projectFile := nil.
+	self updateMenubar
 ]
 
 { #category : 'operations' }
@@ -182,7 +219,8 @@ GolapProject >> save [
 		  ifFalse: [
 				  dialog selectedEntry ifNotNil: [ :ref |
 						  projectFile := ref.
-						  self store ] ]
+						  self store.
+						  self updateMenubar ] ]
 ]
 
 { #category : 'operations' }
@@ -195,4 +233,10 @@ GolapProject >> store [
 							(NeoJSONWriter on: stream)
 								prettyPrint: true;
 								nextPut: json ] ] ]
+]
+
+{ #category : 'updating' }
+GolapProject >> updateMenubar [
+
+	GolapMenubar reset
 ]

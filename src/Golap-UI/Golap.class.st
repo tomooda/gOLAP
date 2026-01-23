@@ -112,31 +112,36 @@ Golap class >> golapDirectory [
 Golap class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
+	<golapMenu>
 	(aBuilder item: #Golap)
 		label: 'gOLAP';
 		order: 1;
 		with: [
-				(aBuilder item: #'サーバファイルを開く...')
-					parent: 'Golap';
-					order: 60;
-					target: self;
-					selector: #openFile;
-					help: 'サーバからのグラフデータを保存したファイルを選択して開きます';
-					withSeparatorAfter.
-				(aBuilder item: #'設定...')
-					parent: 'Golap';
+				(aBuilder item: #GolapServer)
+					label: 'サーバー';
+					order: 20;
+					with: [
+							(aBuilder item: #GolapOpenServerFile)
+								label: 'サーバファイルを開く...';
+								iconName: #open;
+								order: 60;
+								target: self;
+								selector: #openFile;
+								help: 'サーバからのグラフデータを保存したファイルを選択して開きます' ].
+				(aBuilder item: #GolapSettings)
+					label: '設定...';
+					parent: #Golap;
 					order: 90;
 					target: self;
 					selector: #showSettingBrowser;
-					help: '設定ウィンドウを開きます';
-					withSeparatorAfter.
-				(aBuilder item: #'About...')
+					help: '設定ウィンドウを開きます'.
+				(aBuilder item: #GolapAbout)
+					label: 'About...';
 					parent: 'Golap';
 					order: 99;
 					target: self;
 					selector: #openAboutDialog;
-					help: 'gOLAPのロゴとバージョンを表示します';
-					withSeparatorAfter ]
+					help: 'gOLAPのロゴとバージョンを表示します' ]
 ]
 
 { #category : 'accessing' }
@@ -448,14 +453,6 @@ Golap >> confirm: queryString label: titleString [
 		  title: titleString;
 		  label: queryString;
 		  openModal
-]
-
-{ #category : 'ui requests' }
-Golap >> confirmClose [
-
-	^ self
-		  confirm: self window title , 'を閉じますか？'
-		  label: '確認'
 ]
 
 { #category : 'ui requests' }
@@ -826,12 +823,8 @@ Golap >> initializePresenters [
 	colorsAppearancePresenter := GolapColorsAppearance on: self.
 	commentText := self newText
 		               whenTextChangedDo: [
-				               self window ifNotNil: [ :window |
-							               window title: 'gOLAP - '
-									               ,
-										               ((self comment lines collect: #trim)
-											                detect: #notEmpty
-											                ifNone: [ '' ]) ] ];
+			               self window ifNotNil: [ :window |
+					               window title: self windowTitle ] ];
 		               yourself.
 	saveAsButton := self newButton
 		                label: 'save...';
@@ -2265,10 +2258,12 @@ Golap >> visibleEdges [
 { #category : 'accessing' }
 Golap >> windowTitle [
 
-	^ (self basicSnapshotDirectory notNil and: [ 
-		   self isTemporarySnapshot not ])
-		  ifTrue: [ self snapshotDirectory basename ]
-		  ifFalse: [ 'gOLAP' ]
+	^ 'グラフ (' , (commentText
+		   ifNotNil: [
+				   (commentText text asString lines
+					    ifNotEmpty: #first
+					    ifEmpty: [ '' ]) trim ]
+		   ifNil: [ '' ]) , ')'
 ]
 
 { #category : 'accessing-presets' }

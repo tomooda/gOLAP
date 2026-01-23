@@ -53,6 +53,25 @@ TGolapSnapshotablePresenter >> boundsJSON [
 	^ nil
 ]
 
+{ #category : 'initialization' }
+TGolapSnapshotablePresenter >> close [
+
+	self window ifNotNil: #close
+]
+
+{ #category : 'ui requests' }
+TGolapSnapshotablePresenter >> confirmClose [
+
+	^ self isForceClosing or: [
+		  self confirm: self window title , 'を閉じますか？' label: '確認' ]
+]
+
+{ #category : 'initialization' }
+TGolapSnapshotablePresenter >> forceClose [
+
+	self close
+]
+
 { #category : 'snapshot' }
 TGolapSnapshotablePresenter >> fromJSON: aDictionary [
 
@@ -80,6 +99,18 @@ TGolapSnapshotablePresenter >> fromWindowJSON: aString bounds: aRectangle [
 			self currentWorld submorphs do: [ :morph |
 					(morph model isKindOf: SpModalWindowPresenter) ifTrue: [
 						morph comeToFront ] ] ]
+]
+
+{ #category : 'ui requests' }
+TGolapSnapshotablePresenter >> isForceClosing [
+
+	| context |
+	context := thisContext sender.
+	[ context notNil ] whileTrue: [
+			(context receiver == self and: [ context selector = #forceClose ])
+				ifTrue: [ ^ true ].
+			context := context sender ].
+	^ false
 ]
 
 { #category : 'snapshot' }

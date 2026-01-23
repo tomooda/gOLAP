@@ -13,7 +13,9 @@ Class {
 { #category : 'accessing' }
 GolapNoMarker >> activatedIn: aGolapItemList [
 
-	self updateNodeListIn: aGolapItemList
+	self
+		updateQueryIn: aGolapItemList;
+		updateNodeListIn: aGolapItemList
 ]
 
 { #category : 'adding-removing' }
@@ -103,4 +105,11 @@ GolapNoMarker >> updateNodesIn: aGolapItemList [
 						         (model nodes
 							          select: [ :node | aGolapItemList showsNode: node ]
 							          thenCollect: #id) asSet ] ]
+]
+
+{ #category : 'updating' }
+GolapNoMarker >> updateQueryIn: aGolapItemList [
+
+	aGolapItemList modelDo: [ :model |
+		aGolapItemList queryField text: queryString ]
 ]

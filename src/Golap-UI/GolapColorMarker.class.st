@@ -23,7 +23,9 @@ GolapColorMarker class >> colorHexString: aString [
 { #category : 'accessing' }
 GolapColorMarker >> activatedIn: aGolapItemList [
 
-	self updateNodeListIn: aGolapItemList
+	self
+		updateQueryIn: aGolapItemList;
+		updateNodeListIn: aGolapItemList
 ]
 
 { #category : 'adding-removing' }
@@ -157,4 +159,11 @@ GolapColorMarker >> updateNodesIn: aGolapItemList [
 										          and: [ aGolapItemList showsNode: node ] ]
 							          thenCollect: #id) asSet ]
 				         ifEmpty: [ Set new ] ]
+]
+
+{ #category : 'updating' }
+GolapColorMarker >> updateQueryIn: aGolapItemList [
+
+	aGolapItemList modelDo: [ :model |
+		aGolapItemList queryField text: queryString ]
 ]

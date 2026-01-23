@@ -52,12 +52,19 @@ GolapCSVLauncher class >> defaultLayout [
 GolapCSVLauncher class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
-	(aBuilder item: #'表(CSV)ファイルを開く...')
-		parent: 'Golap';
-		order: 50;
-		target: GolapCSVLauncher;
-		selector: #open;
-		help: '商品CSVファイルと関連CSVファイルを選択してグラフを開きます'
+	<golapMenu>
+	(aBuilder item: #GolapTable)
+		label: '表データ';
+		parent: #Golap;
+		order: 40;
+		with: [
+				(aBuilder item: #GolapOpenCSVFile)
+					label: '表(CSV)ファイルを開く...';
+					iconName: #open;
+					order: 50;
+					target: GolapCSVLauncher;
+					selector: #open;
+					help: '商品CSVファイルと関連CSVファイルを選択してグラフを開きます' ]
 ]
 
 { #category : 'instance creation' }

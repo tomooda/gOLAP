@@ -33,8 +33,11 @@ Class {
 GolapNetworkClientPresenter class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
-	(aBuilder item: #'サーバクエリウィンドウを開く...')
-		parent: 'Golap';
+	<golapMenu>
+	(aBuilder item: #GolapServerQuery)
+		label: 'サーバクエリを開く...';
+		iconName: #remote;
+		parent: #GolapServer;
 		order: 40;
 		target: self;
 		selector: #open;
@@ -84,14 +87,6 @@ GolapNetworkClientPresenter >> confirm: queryString label: titleString [
 		  title: titleString;
 		  label: queryString;
 		  openModal
-]
-
-{ #category : 'ui requests' }
-GolapNetworkClientPresenter >> confirmClose [
-
-	^ self
-		  confirm: self window title , 'を閉じますか？'
-		  label: '確認'
 ]
 
 { #category : 'layout' }
