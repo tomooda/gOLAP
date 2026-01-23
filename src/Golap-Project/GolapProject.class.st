@@ -161,12 +161,14 @@ GolapProject >> golapWindows [
 { #category : 'enumerating' }
 GolapProject >> golapWindowsDo: aBlock [
 
+	| presenterClasses |
+	presenterClasses := TGolapSnapshotablePresenter users.
 	self currentWorld taskbars do: [ :taskbar |
 			taskbar submorphs do: [ :m1 |
 					m1 model ifNotNil: [ :m2 |
 							m2 model ifNotNil: [ :m3 |
 									m3 presenter ifNotNil: [ :p |
-										(p respondsTo: #asJSON) ifTrue: [ aBlock value: m3 ] ] ] ] ] ]
+										(presenterClasses includes: p) ifTrue: [ aBlock value: m3 ] ] ] ] ] ]
 ]
 
 { #category : 'operations' }
