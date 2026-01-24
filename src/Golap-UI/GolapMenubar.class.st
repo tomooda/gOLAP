@@ -22,10 +22,11 @@ GolapMenubar class >> open [
 	self new
 		menuBarItems: menuItems;
 		open.
-	Smalltalk
-		at: #CocoaMenu
-		ifPresent: [ :cocoaMenu |
-		(CocoaMenu fromMenuSpec: menu) setAsMainMenu ]
+	OSPlatform current isMacOSX ifTrue: [
+			Smalltalk
+				at: #CocoaMenu
+				ifPresent: [ :cocoaMenu |
+				(CocoaMenu fromMenuSpec: menu) setAsMainMenu ] ]
 ]
 
 { #category : 'class initialization' }

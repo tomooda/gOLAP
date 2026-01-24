@@ -66,6 +66,9 @@ Golap class >> defaultFont: aFont [
 Golap class >> deploy [
 
 	<script>
+	PasteUpMorph shouldShowWorldMenu: false.
+	MenubarMorph showMenubar: false.
+	GolapMenubar reset.
 	MCRepositoryGroup allSubInstancesDo: [ :group |
 		group repositories do: [ :repo | group removeRepository: repo ] ].
 	IceRepository registry removeAll.
@@ -83,8 +86,7 @@ Golap class >> deploy [
 	EpMonitor reset.
 	SessionManager default registerSystemClassNamed: #FreeTypeFileInfo.
 	Golap allInstancesDo: [ :g | g becomeForward: Object new ].
-	5 timesRepeat: [ "PharoCommandLineHandler forcePreferencesOmission: true"
-		Smalltalk garbageCollect ]
+	5 timesRepeat: [ Smalltalk garbageCollect ]
 ]
 
 { #category : 'settings' }
