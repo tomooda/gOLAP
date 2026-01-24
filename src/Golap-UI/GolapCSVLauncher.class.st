@@ -49,7 +49,6 @@ GolapCSVLauncher class >> defaultLayout [
 { #category : 'menus' }
 GolapCSVLauncher class >> golapMenuOn: aBuilder [
 
-	<worldMenu>
 	<golapMenu>
 	(aBuilder item: #GolapTable)
 		label: '表データ';

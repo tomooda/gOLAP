@@ -17,7 +17,6 @@ GolapMenubar class >> open [
 
 	<script>
 	| menu menuItems |
-	self showMenubar ifFalse: [ ^ self ].
 	menu := self menuBuilder menuSpec.
 	menuItems := menu items first subMenu items.
 	self new

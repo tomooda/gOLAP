@@ -26,7 +26,6 @@ GolapProject class >> fileExtension [
 { #category : 'menus' }
 GolapProject class >> golapMenuOn: aBuilder [
 
-	<worldMenu>
 	<golapMenu>
 	(aBuilder item: #GolapProject)
 		label: 'プロジェクト';
@@ -40,14 +39,12 @@ GolapProject class >> golapMenuOn: aBuilder [
 					order: 20;
 					target: self;
 					selector: #open;
-					enabled: self current projectFile isNil;
 					help: 'プロジェクトファイルを開いて、グラフ分析状態を復元します。'.
 				(aBuilder item: #GolapSaveProjectFile)
 					label: 'プロジェクトを保存する...';
 					iconName: #save;
 					parent: #GolapProject;
 					order: 21;
-					enabled: true;
 					target: self;
 					selector: #save;
 					help: 'グラフ分析状態をプロジェクトファイルに保存します。'.
@@ -56,10 +53,9 @@ GolapProject class >> golapMenuOn: aBuilder [
 					iconName: #close;
 					parent: #GolapProject;
 					order: 80;
-					enabled: self current projectFile notNil;
 					target: self;
 					selector: #quit;
-					help: 'グラフ分析を閉じてプロジェクトを閉じます。' ]
+					help: 'グラフ分析を全て閉じます。' ]
 ]
 
 { #category : 'operations' }
@@ -111,6 +107,11 @@ GolapProject >> asJSON [
 { #category : 'operations' }
 GolapProject >> closeAll [
 
+	self golapWindows ifEmpty: [ ^ self ].
+	(self
+		 confirmYesNoCancel: 'プロジェクトを保存しますか？'
+		 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ])) ifNotNil: [
+		:ans | ans ifTrue: [ self save ] ].
 	self golapWindowsDo: [ :window | window presenter forceClose ]
 ]
 
@@ -168,7 +169,8 @@ GolapProject >> golapWindowsDo: aBlock [
 					m1 model ifNotNil: [ :m2 |
 							m2 model ifNotNil: [ :m3 |
 									m3 presenter ifNotNil: [ :p |
-										(presenterClasses includes: p) ifTrue: [ aBlock value: m3 ] ] ] ] ] ]
+										(presenterClasses includes: p class) ifTrue: [
+											aBlock value: m3 ] ] ] ] ] ]
 ]
 
 { #category : 'operations' }
@@ -201,8 +203,7 @@ GolapProject >> open [
 		  ifFalse: [
 				  dialog selectedEntry ifNotNil: [ :ref |
 						  self projectFile: ref.
-						  self load.
-						  self updateMenubar ] ]
+						  self load ] ]
 ]
 
 { #category : 'accessing' }
@@ -228,20 +229,8 @@ GolapProject >> projectName [
 { #category : 'operations' }
 GolapProject >> quit [
 
-	self golapWindows
-		ifNotEmpty: [
-				(self
-					 confirmYesNoCancel: 'プロジェクトを保存しますか？'
-					 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ]))
-					ifNotNil: [ :ans |
-							ans ifTrue: [ self save ].
-							self closeAll.
-							self projectFile: nil.
-							self updateMenubar ] ]
-		ifEmpty: [
-				self
-					projectFile: nil;
-					updateMenubar ]
+	self closeAll.
+	self projectFile: nil
 ]
 
 { #category : 'operations' }
@@ -264,8 +253,7 @@ GolapProject >> save [
 			dialog cancelled ifFalse: [
 					dialog selectedEntry ifNotNil: [ :ref |
 							projectFile := ref.
-							self store.
-							self updateMenubar ] ] ]
+							self store ] ] ]
 ]
 
 { #category : 'operations' }
