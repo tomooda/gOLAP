@@ -42,16 +42,16 @@ GolapProject class >> golapMenuOn: aBuilder [
 		order: 21;
 		target: self;
 		selector: #save;
-		help: 'グラフ分析状態をプロジェクトファイルに保存します。'.
+		help: 'グラフ分析状態をプロジェクトファイルに保存します。';
+		withSeparatorAfter.
 	(aBuilder item: #GolapCloseProject)
-		label: 'プロジェクトを閉じる...';
-		iconName: #close;
+		label: '終了';
+		iconName: #smallQuit;
 		parent: #GolapFileMenu;
-		order: 29;
+		order: 99;
 		target: self;
 		selector: #quit;
-		help: 'グラフ分析を全て閉じます。';
-		withSeparatorAfter
+		help: 'gOLAPを終了します。'
 ]
 
 { #category : 'operations' }
@@ -107,8 +107,9 @@ GolapProject >> closeAll [
 	(self
 		 confirmYesNoCancel: 'プロジェクトを保存しますか？'
 		 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ])) ifNotNil: [
-		:ans | ans ifTrue: [ self save ] ].
-	self golapWindowsDo: [ :window | window presenter forceClose ]
+			:ans |
+			ans ifTrue: [ self save ].
+			self golapWindowsDo: [ :window | window presenter forceClose ] ]
 ]
 
 { #category : 'ui requests' }
@@ -226,7 +227,8 @@ GolapProject >> projectName [
 GolapProject >> quit [
 
 	self closeAll.
-	self projectFile: nil
+	self projectFile: nil.
+	Smalltalk snapshot: false andQuit: true
 ]
 
 { #category : 'operations' }

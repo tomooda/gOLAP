@@ -61,7 +61,8 @@ GolapCSVLauncher class >> golapMenuOn: aBuilder [
 					order: 50;
 					target: GolapCSVLauncher;
 					selector: #open;
-					help: '商品CSVファイルと関連CSVファイルを選択してグラフを開きます' ]
+					help: '商品CSVファイルと関連CSVファイルを選択してグラフを開きます';
+					withSeparatorAfter ]
 ]
 
 { #category : 'instance creation' }

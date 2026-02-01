@@ -109,7 +109,8 @@ GolapCommandLineHandler >> installMenu [
 { #category : 'installing' }
 GolapCommandLineHandler >> installQuitSession [
 
-	Smalltalk at: #WorldState ifPresent: [ :class |
-		class class compile:
-			'quitSession Smalltalk snapshot: false andQuit: true' ]
+	Smalltalk
+		at: #WorldState
+		ifPresent: [ :class |
+		class class compile: 'quitSession GolapProject quit' ]
 ]
