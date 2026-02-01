@@ -50,8 +50,8 @@ GolapCSVLauncher class >> defaultLayout [
 GolapCSVLauncher class >> golapMenuOn: aBuilder [
 
 	<golapMenu>
-	(aBuilder item: #GolapTable)
-		label: '表データ';
+	(aBuilder item: #GolapFileMenu)
+		label: 'ファイル';
 		parent: #Golap;
 		order: 40;
 		with: [

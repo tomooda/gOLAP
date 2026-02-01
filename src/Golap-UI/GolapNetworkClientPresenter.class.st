@@ -35,7 +35,7 @@ GolapNetworkClientPresenter class >> golapMenuOn: aBuilder [
 	(aBuilder item: #GolapServerQuery)
 		label: 'サーバクエリを開く...';
 		iconName: #remote;
-		parent: #GolapServer;
+		parent: #GolapServerMenu;
 		order: 40;
 		target: self;
 		selector: #open;

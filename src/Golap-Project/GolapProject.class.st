@@ -27,35 +27,31 @@ GolapProject class >> fileExtension [
 GolapProject class >> golapMenuOn: aBuilder [
 
 	<golapMenu>
-	(aBuilder item: #GolapProject)
-		label: 'プロジェクト';
-		order: 10;
-		parent: #Golap;
-		with: [
-				(aBuilder item: #GolapOpenProjectFile)
-					label: 'プロジェクトを開く...';
-					iconName: #open;
-					parent: #GolapProject;
-					order: 20;
-					target: self;
-					selector: #open;
-					help: 'プロジェクトファイルを開いて、グラフ分析状態を復元します。'.
-				(aBuilder item: #GolapSaveProjectFile)
-					label: 'プロジェクトを保存する...';
-					iconName: #save;
-					parent: #GolapProject;
-					order: 21;
-					target: self;
-					selector: #save;
-					help: 'グラフ分析状態をプロジェクトファイルに保存します。'.
-				(aBuilder item: #GolapCloseProject)
-					label: 'プロジェクトを閉じる...';
-					iconName: #close;
-					parent: #GolapProject;
-					order: 80;
-					target: self;
-					selector: #quit;
-					help: 'グラフ分析を全て閉じます。' ]
+	(aBuilder item: #GolapOpenProjectFile)
+		label: 'プロジェクトを開く...';
+		iconName: #open;
+		parent: #GolapFileMenu;
+		order: 20;
+		target: self;
+		selector: #open;
+		help: 'プロジェクトファイルを開いて、グラフ分析状態を復元します。'.
+	(aBuilder item: #GolapSaveProjectFile)
+		label: 'プロジェクトを保存する...';
+		iconName: #save;
+		parent: #GolapFileMenu;
+		order: 21;
+		target: self;
+		selector: #save;
+		help: 'グラフ分析状態をプロジェクトファイルに保存します。'.
+	(aBuilder item: #GolapCloseProject)
+		label: 'プロジェクトを閉じる...';
+		iconName: #close;
+		parent: #GolapFileMenu;
+		order: 29;
+		target: self;
+		selector: #quit;
+		help: 'グラフ分析を全て閉じます。';
+		withSeparatorAfter
 ]
 
 { #category : 'operations' }

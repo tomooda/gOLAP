@@ -118,9 +118,9 @@ Golap class >> golapMenuOn: aBuilder [
 		label: 'gOLAP';
 		order: 1;
 		with: [
-				(aBuilder item: #GolapServer)
+				(aBuilder item: #GolapServerMenu)
 					label: 'サーバー';
-					order: 20;
+					order: 50;
 					with: [
 							(aBuilder item: #GolapOpenServerFile)
 								label: 'サーバファイルを開く...';
