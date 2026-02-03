@@ -82,6 +82,7 @@ GolapCommandLineHandler >> installIcon [
 { #category : 'installing' }
 GolapCommandLineHandler >> installMenu [
 
+	GolapMenubar reset.
 	OSWindowDriver current startUp: true.
 	OSPlatform current isMacOSX ifTrue: [
 			| main |
