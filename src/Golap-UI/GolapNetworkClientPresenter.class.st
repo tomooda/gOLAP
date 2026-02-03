@@ -87,6 +87,12 @@ GolapNetworkClientPresenter >> confirm: queryString label: titleString [
 		  openModal
 ]
 
+{ #category : 'ui requests' }
+GolapNetworkClientPresenter >> confirmClose [
+
+	^ self confirm: self window title , 'を閉じますか？' label: '確認'
+]
+
 { #category : 'layout' }
 GolapNetworkClientPresenter >> defaultLayout [
 
