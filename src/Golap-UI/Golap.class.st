@@ -113,6 +113,7 @@ Golap class >> golapDirectory [
 { #category : 'menus' }
 Golap class >> golapMenuOn: aBuilder [
 
+	<worldMenu>
 	<golapMenu>
 	(aBuilder item: #Golap)
 		label: 'gOLAP';

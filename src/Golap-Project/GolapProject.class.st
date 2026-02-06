@@ -26,6 +26,7 @@ GolapProject class >> fileExtension [
 { #category : 'menus' }
 GolapProject class >> golapMenuOn: aBuilder [
 
+	<worldMenu>
 	<golapMenu>
 	(aBuilder item: #GolapOpenProjectFile)
 		label: 'プロジェクトを開く...';

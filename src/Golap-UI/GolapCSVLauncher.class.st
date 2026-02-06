@@ -49,6 +49,7 @@ GolapCSVLauncher class >> defaultLayout [
 { #category : 'menus' }
 GolapCSVLauncher class >> golapMenuOn: aBuilder [
 
+	<worldMenu>
 	<golapMenu>
 	(aBuilder item: #GolapFileMenu)
 		label: 'ファイル';
