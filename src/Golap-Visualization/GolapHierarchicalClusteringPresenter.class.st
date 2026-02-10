@@ -127,6 +127,12 @@ GolapHierarchicalClusteringPresenter >> showsNode: aGolapNode [
 	^ false
 ]
 
+{ #category : 'testing' }
+GolapHierarchicalClusteringPresenter >> showsPhotoimages [
+
+	^ golap showsPhotoimages
+]
+
 { #category : 'operations' }
 GolapHierarchicalClusteringPresenter >> toggleSelection: aGolapNode [
 
@@ -213,21 +219,22 @@ GolapHierarchicalClusteringPresenter >> updateNode: aGolapNode [
 GolapHierarchicalClusteringPresenter >> updatePhotoimage: shape [
 
 	lock critical: [
-			(golap model nodeAt: shape model id) photoimage ifNotNil: [
-					:photoimage |
-					(shape schildren contains: [ :child | child model = #photoimage ])
-						ifFalse: [
-								shape canvas addShape: ((RSBitmap newFrom: photoimage)
-										 model: #photoimage;
-										 position:
-											 (shape centroid:
-													  shape externalRadius - shape innerRadius / 2
-													  + (golap allMarkerColors size * 10 + 20));
-										 extent: (shape externalRadius
-											  *
-												  ((shape alphaAngle - shape betaAngle) abs / 90.0 * 3.14)
-												  min: shape externalRadius - shape innerRadius) asPoint;
-										 yourself) ] ] ]
+			self showsPhotoimages ifTrue: [
+					(golap model nodeAt: shape model id) photoimage ifNotNil: [
+							:photoimage |
+							(shape schildren contains: [ :child |
+								 child model = #photoimage ]) ifFalse: [
+									shape canvas addShape: ((RSBitmap newFrom: photoimage)
+											 model: #photoimage;
+											 position:
+												 (shape centroid:
+														  shape externalRadius - shape innerRadius / 2
+														  + (golap allMarkerColors size * 10 + 20));
+											 extent: (shape externalRadius
+												  *
+													  ((shape alphaAngle - shape betaAngle) abs / 90.0 * 3.14)
+													  min: shape externalRadius - shape innerRadius) asPoint;
+											 yourself) ] ] ] ]
 ]
 
 { #category : 'updating' }

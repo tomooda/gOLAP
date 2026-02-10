@@ -6,7 +6,8 @@ Class {
 		'golap',
 		'photoimageRetrievers',
 		'photoimageRetrievalProgressBar',
-		'startPhotoimageRetrievalButton'
+		'startPhotoimageRetrievalButton',
+		'showPhotoImagesCheckbox'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -70,6 +71,7 @@ GolapItemsAppearance >> defaultLayout [
 				   add: photoimageRetrievalProgressBar;
 				   add: startPhotoimageRetrievalButton width: self buttonHeight)
 		  expand: false;
+		  add: showPhotoImagesCheckbox expand: false;
 		  yourself
 ]
 
@@ -90,7 +92,13 @@ GolapItemsAppearance >> initializePresenters [
 		                                  action: [
 			                                  golap ifNotNil:
 					                                  #startPhotoimageRetrievingProcess ];
-		                                  yourself
+		                                  yourself.
+	showPhotoImagesCheckbox := self newCheckBox
+		                           label: '商品画像を表示する';
+		                           state: true;
+		                           whenChangedDo: [
+			                           self showsPhotoimagesChanged ];
+		                           yourself
 ]
 
 { #category : 'initialization' }
@@ -117,6 +125,24 @@ GolapItemsAppearance >> setGolap: aGolap [
 	golap := aGolap.
 	photoimageRetrievers golap: aGolap.
 	self updatePhotoimageRetrievers
+]
+
+{ #category : 'testing' }
+GolapItemsAppearance >> showsPhotoimages [
+
+	^ showPhotoImagesCheckbox state
+]
+
+{ #category : 'testing' }
+GolapItemsAppearance >> showsPhotoimages: aBoolean [
+
+	showPhotoImagesCheckbox state: aBoolean = true
+]
+
+{ #category : 'updating' }
+GolapItemsAppearance >> showsPhotoimagesChanged [
+
+	golap ifNotNil: #showsPhotoimagesChanged
 ]
 
 { #category : 'snapshot' }

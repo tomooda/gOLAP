@@ -23,31 +23,30 @@ GolapNodeInteraction >> clicked: event [
 { #category : 'hooks' }
 GolapNodeInteraction >> createPopupFor: aShape event: event [
 
-	^ (presenter golap model nodeAt: aShape model id) photoimage
-		  ifNotNil: [ :photoimage |
-			  | imageShape labelShape popupShape |
-			  imageShape := RSBitmap newFrom: photoimage.
-			  labelShape := shapeBuilder shapeFor:
-				                (presenter golap model nodeAt: aShape model id)
-					                name.
-			  imageShape translateBottomLeftTo: 0 @ 0.
-			  labelShape translateTopLeftTo: 0 @ 0.
-			  popupShape := RSComposite new
-				                shapes: {
-						                imageShape.
-						                labelShape };
-				                yourself.
-			  popupShape isFixed: true.
-			  event canvas addShape: popupShape.
-			  popupShape ]
-		  ifNil: [
-			  | popupShape |
-			  popupShape := shapeBuilder shapeFor:
-				                (presenter golap model nodeAt: aShape model id)
-					                name.
-			  popupShape isFixed: true.
-			  event canvas addShape: popupShape.
-			  popupShape ]
+	| popupShape |
+	presenter showsPhotoimages ifTrue: [
+			(presenter golap model nodeAt: aShape model id) photoimage
+				ifNotNil: [ :photoimage |
+						| imageShape labelShape |
+						imageShape := RSBitmap newFrom: photoimage.
+						labelShape := shapeBuilder shapeFor:
+							              (presenter golap model nodeAt: aShape model id)
+								              name.
+						imageShape translateBottomLeftTo: 0 @ 0.
+						labelShape translateTopLeftTo: 0 @ 0.
+						popupShape := RSComposite new
+							              shapes: {
+									              imageShape.
+									              labelShape };
+							              yourself.
+						popupShape isFixed: true.
+						event canvas addShape: popupShape.
+						^ popupShape ] ].
+	popupShape := shapeBuilder shapeFor:
+		              (presenter golap model nodeAt: aShape model id) name.
+	popupShape isFixed: true.
+	event canvas addShape: popupShape.
+	^ popupShape
 ]
 
 { #category : 'hooks' }

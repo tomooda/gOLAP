@@ -426,17 +426,20 @@ GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
 GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 
 	self golapModelDo: [ :golapModel |
-			| shapes color |
+			| photoimage shapes color |
 			shapes := RSGroup new.
+			photoimage := self showsPhotoimages
+				              ifTrue: [ aGolapNode photoimage ]
+				              ifFalse: [ nil ].
 			(self colorForNode: aGolapNode) ifNotNil: [ :c |
 					| v r shape |
 					color := c.
 					v := golapModel valueAtNode: aGolapNode.
 					r := (v abs + 0.1) log - 1.0 log * freqScale max: 10.
-					shape := aGolapNode photoimage
-						         ifNotNil: [ :form |
+					shape := photoimage
+						         ifNotNil: [
 								         RSBitmap new
-									         form: form;
+									         form: photoimage;
 									         model: #photoimage ]
 						         ifNil: [
 								         RSCircle new
@@ -468,19 +471,19 @@ GolapOverviewPresenter >> newShapeForNode: aGolapNode [
 						shapes add: self newPinShape ] ].
 			shapes ifEmpty: [ ^ nil ].
 			shapes := shapes asShapeFor: aGolapNode.
-			(aGolapNode photoimage isNil or: [
-				 golap includesSelection: aGolapNode ]) ifTrue: [
-					(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
-							| labelOffset |
-							labelOffset := (self fourDirectionFrom:
-								                (self edgeVectorOf: aGolapNode)) negated
-							               * (shapes extent + label extent * 0.5 + 4).
-							shapes
-								when: RSPositionChangedEvent
-								do: [ label position: shapes position + labelOffset ]
-								for: label.
-							label position: shapes position + labelOffset.
-							self canvas add: label ] ].
+			(photoimage isNil or: [ golap includesSelection: aGolapNode ])
+				ifTrue: [
+						(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
+								| labelOffset |
+								labelOffset := (self fourDirectionFrom:
+									                (self edgeVectorOf: aGolapNode)) negated
+								               * (shapes extent + label extent * 0.5 + 4).
+								shapes
+									when: RSPositionChangedEvent
+									do: [ label position: shapes position + labelOffset ]
+									for: label.
+								label position: shapes position + labelOffset.
+								self canvas add: label ] ].
 			^ shapes ].
 	^ nil
 ]
@@ -556,6 +559,12 @@ GolapOverviewPresenter >> showsNode: aGolapNode [
 
 	^ reallyVisibleNodes notNil and: [
 		  reallyVisibleNodes includes: aGolapNode ]
+]
+
+{ #category : 'testing' }
+GolapOverviewPresenter >> showsPhotoimages [
+
+	^ golap showsPhotoimages
 ]
 
 { #category : 'updating' }

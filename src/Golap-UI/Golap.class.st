@@ -1885,6 +1885,24 @@ Golap >> showsNode: aGolapNode [
 	^ false
 ]
 
+{ #category : 'testing' }
+Golap >> showsPhotoimages [
+
+	^ itemsAppearancePresenter showsPhotoimages
+]
+
+{ #category : 'testing' }
+Golap >> showsPhotoimages: aBoolean [
+
+	itemsAppearancePresenter showsPhotoimages: aBoolean
+]
+
+{ #category : 'updating' }
+Golap >> showsPhotoimagesChanged [
+
+	self application showWaitCursorWhile: [ self updateGlobalImage ]
+]
+
 { #category : 'accessing-dimensions' }
 Golap >> silentAddDimension: aGolapOverviewModel named: aString [
 	dimensions at: aString put: aGolapOverviewModel.
@@ -2170,10 +2188,8 @@ Golap >> updateDimensions [
 { #category : 'drawing' }
 Golap >> updateGlobalImage [
 
-	polishOverviewPresenter updateCanvas.
-	friendOverviewPresenter updateCanvas.
-	articulationPointOverviewPresenter updateCanvas.
-	elaborationPresenter updateCanvas.
+	visualizationNotebook selectedPage activePresenter ifNotNil: [ :p |
+		(p respondsTo: #updateCanvas) ifTrue: [ p updateCanvas ] ].
 	self announcer announce: GolapViewUpdated new
 ]
 

@@ -32,18 +32,21 @@ GolapHeatmapCellInteraction >> clicked: event [
 { #category : 'hooks' }
 GolapHeatmapCellInteraction >> createPopupFor: aShape event: event [
 
-	| popupShape edge columnNode rowNode shapes |
+	| showsPhotoimages popupShape edge columnNode rowNode shapes |
+	showsPhotoimages := presenter showsPhotoimages.
 	edge := aShape model first.
 	columnNode := aShape model second.
 	rowNode := aShape model third.
 	shapes := Array streamContents: [ :stream |
-			          columnNode photoimage ifNotNil: [ :form |
-				          stream nextPut: (RSBitmap new form: form) ].
+			          showsPhotoimages ifTrue: [
+					          columnNode photoimage ifNotNil: [ :form |
+						          stream nextPut: (RSBitmap new form: form) ] ].
 			          stream nextPut: (RSLabel new text: columnNode name).
 			          stream nextPut: (RSLabel new text: '&').
 			          stream nextPut: (RSLabel new text: rowNode name).
-			          rowNode photoimage ifNotNil: [ :form |
-				          stream nextPut: (RSBitmap new form: form) ].
+			          showsPhotoimages ifTrue: [
+					          rowNode photoimage ifNotNil: [ :form |
+						          stream nextPut: (RSBitmap new form: form) ] ].
 			          edge ifNotNil: [
 					          stream nextPut: (RSLabel new text:
 							           'value: '

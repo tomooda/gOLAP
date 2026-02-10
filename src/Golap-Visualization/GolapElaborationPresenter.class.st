@@ -236,6 +236,8 @@ GolapElaborationPresenter >> newLabelForEdge: aGolapEdge [
 GolapElaborationPresenter >> newLabelForNode: aGolapNode [
 
 	^ self golapModelDo: [ :model |
+			  | showsPhotoimages |
+			  showsPhotoimages := golap showsPhotoimages.
 			  (golap colorForNode: aGolapNode) ifNotNil: [ :color |
 					  | label |
 					  label := self
@@ -270,14 +272,15 @@ GolapElaborationPresenter >> newLabelForNode: aGolapNode [
 																				              (baseModel valueAtNode: v) ]
 																	              ifNil: [ '0' ]) ] ] ]))
 						           color: color.
-					  aGolapNode photoimage ifNotNil: [ :form |
-							  | bitmap |
-							  bitmap := RSBitmap new form: form.
-							  label := {
-								           (bitmap translateTo: bitmap extent * 0.5).
-								           (label translateTo:
-									            label extent * 0.5 + (0 @ bitmap extent y)) }
-								           asShape ].
+					  showsPhotoimages ifTrue: [
+							  aGolapNode photoimage ifNotNil: [ :form |
+									  | bitmap |
+									  bitmap := RSBitmap new form: form.
+									  label := {
+										           (bitmap translateTo: bitmap extent * 0.5).
+										           (label translateTo:
+											            label extent * 0.5 + (0 @ bitmap extent y)) }
+										           asShape ] ].
 					  (golap includesSelection: aGolapNode) ifTrue: [
 							  label := {
 								           (RSBox new
@@ -542,6 +545,12 @@ GolapElaborationPresenter >> showsNode: aGolapNode [
 
 	^ (rootNodes includes: aGolapNode) or: [
 		  associateNodes includes: aGolapNode ]
+]
+
+{ #category : 'testing' }
+GolapElaborationPresenter >> showsPhotoimages [
+
+	^ golap showsPhotoimages
 ]
 
 { #category : 'updating' }
