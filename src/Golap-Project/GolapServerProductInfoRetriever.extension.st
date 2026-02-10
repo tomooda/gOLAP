@@ -19,17 +19,18 @@ GolapServerProductInfoRetriever >> asJSON [
 { #category : '*Golap-Project' }
 GolapServerProductInfoRetriever >> fromJSON: aDictionary [
 
-	aDictionary at: self class tag ifPresent: [ :json |
-			json
-				at: 'server-url'
-				ifPresent: [ :url | self golapServerUrl: url ].
-			json
-				at: 'image-url'
-				ifPresent: [ :url | self imageRepositoryUrl: url ].
-			json
-				at: 'item-query'
-				ifPresent: [ :q | self itemFieldQuerySpec: q ].
-			json at: 'server-config' ifPresent: [ :s | self serverConfig: s ].
-			json at: 'query' ifPresent: [ :q | self query: q ] ].
+	aDictionary
+		at: 'server-url'
+		ifPresent: [ :url | self golapServerUrl: url ].
+	aDictionary
+		at: 'image-url'
+		ifPresent: [ :url | self imageRepositoryUrl: url ].
+	aDictionary
+		at: 'item-query'
+		ifPresent: [ :q | self itemFieldQuerySpec: q ].
+	aDictionary
+		at: 'server-config'
+		ifPresent: [ :s | self serverConfig: s ].
+	aDictionary at: 'query' ifPresent: [ :q | self query: q ].
 	super fromJSON: aDictionary
 ]

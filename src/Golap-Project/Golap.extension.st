@@ -35,6 +35,7 @@ Golap >> asJSON [
 		  at: 'heatmap' put: heatmapPresenter asJSON;
 		  at: 'visualizationNotebook-selectedPageIndex'
 		  put: visualizationNotebook selectedPageIndex;
+		  at: 'showsPhotoimages' put: self showsPhotoimages;
 		  yourself
 ]
 
@@ -69,9 +70,10 @@ Golap >> fromJSON: aDictionary [
 				ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];
 				at: 'colorsAppearance'
 				ifPresent: [ :json | colorsAppearancePresenter fromJSON: json ];
-				at: 'itemInfoRetriever'
-				ifPresent: [ :json |
-				itemInfoRetriever := GolapItemInfoRetriever fromJSON: json ];
+				at: 'itemInfoRetriever' ifPresent: [ :json |
+					itemInfoRetriever := GolapItemInfoRetriever fromJSON: json.
+					itemsAppearancePresenter updatePhotoimageRetrievers.
+					self startPhotoimageRetrievingProcess ];
 				at: 'itemList' ifPresent: [ :json | itemList fromJSON: json ];
 				at: 'edgeList' ifPresent: [ :json | edgeList fromJSON: json ];
 				at: 'comment' ifPresent: [ :text | commentText text: text ];
@@ -91,7 +93,9 @@ Golap >> fromJSON: aDictionary [
 				ifPresent: [ :json | heatmapPresenter fromJSON: json ];
 				at: 'visualizationNotebook-selectedPageIndex'
 				ifPresent: [ :integer |
-				visualizationNotebook selectPageIndex: integer ].
+				visualizationNotebook selectPageIndex: integer ];
+				at: 'showsPhotoimages'
+				ifPresent: [ :bool | self basicShowsPhotoimages: bool ].
 			self basicFromJSON: aDictionary.
 			self selectedPageChanged ]
 ]

@@ -43,6 +43,12 @@ GolapItemsAppearance class >> on: aGolap [
 		yourself
 ]
 
+{ #category : 'testing' }
+GolapItemsAppearance >> basicShowsPhotoimages: aBoolean [
+
+	showPhotoImagesCheckbox setState: aBoolean = true
+]
+
 { #category : 'layout' }
 GolapItemsAppearance >> buttonHeight [
 

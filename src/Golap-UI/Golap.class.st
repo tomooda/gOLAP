@@ -358,6 +358,12 @@ Golap >> authenticateBlock: aBlock [
 		itemInfoRetriever authenticateBlock: aBlock ]
 ]
 
+{ #category : 'testing' }
+Golap >> basicShowsPhotoimages: aBoolean [
+
+	itemsAppearancePresenter basicShowsPhotoimages: aBoolean
+]
+
 { #category : 'snapshot' }
 Golap >> basicSnapshotDirectory [
 
@@ -2188,7 +2194,8 @@ Golap >> updateDimensions [
 { #category : 'drawing' }
 Golap >> updateGlobalImage [
 
-	visualizationNotebook selectedPage activePresenter ifNotNil: [ :p |
+	(visualizationNotebook selectedPage ifNotNil: #activePresenter)
+		ifNotNil: [ :p |
 		(p respondsTo: #updateCanvas) ifTrue: [ p updateCanvas ] ].
 	self announcer announce: GolapViewUpdated new
 ]
