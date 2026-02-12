@@ -67,6 +67,7 @@ Golap class >> deploy [
 
 	<script>
 	GolapMenubar reset.
+	GolapProject flushCurrent.
 	MCRepositoryGroup allSubInstancesDo: [ :group |
 		group repositories do: [ :repo | group removeRepository: repo ] ].
 	IceRepository registry removeAll.

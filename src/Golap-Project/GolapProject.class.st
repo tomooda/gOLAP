@@ -23,6 +23,12 @@ GolapProject class >> fileExtension [
 	^ 'golap'
 ]
 
+{ #category : 'sole instance' }
+GolapProject class >> flushCurrent [
+
+	current := nil
+]
+
 { #category : 'menus' }
 GolapProject class >> golapMenuOn: aBuilder [
 
