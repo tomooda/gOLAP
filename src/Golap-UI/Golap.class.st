@@ -18,7 +18,6 @@ Class {
 		'frontList',
 		'queryViewTree',
 		'itemsAppearancePresenter',
-		'saveAsButton',
 		'authenticateBlock',
 		'edgesAppearancePresenter',
 		'colorsAppearancePresenter',
@@ -28,7 +27,6 @@ Class {
 		'snapshotDirectory',
 		'snapshotEnabled',
 		'saveAsSvgButton',
-		'saveSnapshotButton',
 		'photoImageRetrievingProcess',
 		'commentText',
 		'dandelionPresenter',
@@ -545,7 +543,6 @@ Golap >> defaultLayout [
 				   positionOfSlider: 0.70;
 				   add: visualizationNotebook;
 				   add: (SpBoxLayout newVertical
-						    add: saveSnapshotButton height: self buttonHeight;
 						    add: saveAsSvgButton height: self buttonHeight;
 						    add: saveAsPngButton height: self buttonHeight;
 						    add: resendQueryButton height: self buttonHeight;
@@ -572,22 +569,6 @@ Golap >> disableSnapshotWhile: aBlock [
 	oldSnapshotEnabled := snapshotEnabled.
 	snapshotEnabled := false.
 	aBlock ensure: [ snapshotEnabled := oldSnapshotEnabled ]
-]
-
-{ #category : 'operations' }
-Golap >> dumpToFile [
-	"UIManager default
-		informUserDuring: [ :progress | 
-			(UIManager default
-				chooseForSaveFileReference: 'Save gOLAP data'
-				extensions: #('csv')
-				path: GolapModel coocurrenceDataDirectory)
-				ifNotNil: [ :ref | 
-					ref
-						writeStreamDo:
-							[ :writeStream | self writeCSVOn: writeStream progressBlock: [ :v | progress value: v ] ] ] ]"
-
-	self notYetImplemented
 ]
 
 { #category : 'accessing' }
@@ -835,13 +816,9 @@ Golap >> initializePresenters [
 			               self window ifNotNil: [ :window |
 					               window title: self windowTitle ] ];
 		               yourself.
-	saveAsButton := self newButton
-		                label: 'save...';
-		                action: [ self dumpToFile ];
-		                yourself.
 	saveAsPngButton := self newButton
 		                   label: 'save as PNG...';
-		                   action: [ self saveFullImage ];
+		                   action: [ self saveAsPNG ];
 		                   yourself.
 	saveAsSvgButton := self newButton
 		                   label: 'save as SVG...';
@@ -851,10 +828,6 @@ Golap >> initializePresenters [
 		                     label: 'resend query';
 		                     action: [ self resendQuery ];
 		                     yourself.
-	saveSnapshotButton := self newButton
-		                      label: 'save snapshot...';
-		                      action: [ self saveSnapshot ];
-		                      yourself.
 	queryViewTree := (self instantiate: GolapTreeTablePresenter)
 		                 addColumn:
 			                 (SpStringTableColumn evaluated: [ :assoc |
@@ -1510,6 +1483,21 @@ Golap >> removeReferenceNode: aGolapNode [
 	self updateGlobalImage
 ]
 
+{ #category : 'ui requests' }
+Golap >> requestFileToSave: aString extensions: anArrayOfString [
+
+	| dialog |
+	dialog := StSaveFilePresenter new.
+	dialog
+		title: aString;
+		extensions: anArrayOfString.
+	dialog defaultFolder: self golapDirectory.
+	dialog openModal.
+	dialog cancelled ifFalse: [
+		dialog selectedEntry ifNotNil: [ :ref | ^ ref ] ].
+	^ nil
+]
+
 { #category : 'operations' }
 Golap >> resendQuery [
 
@@ -1722,15 +1710,74 @@ Golap >> retrievePhotoimages [
 ]
 
 { #category : 'operations' }
+Golap >> saveAsPNG [
+
+	(self requestFileToSave: 'PNG ファイルに保存します' extensions: #( 'png' ))
+		ifNotNil: [ :ref | self saveAsPNG: ref ]
+]
+
+{ #category : 'operations' }
+Golap >> saveAsPNG: aFileReference [
+
+	self activeVisualizationDo: [ :visualization |
+			visualization canvas ifNotNil: [ :canvas |
+					| oldMorph oldExtent oldPosition oldFixedShapes rect |
+					oldMorph := canvas morph.
+					oldExtent := canvas extent.
+					oldPosition := canvas camera position.
+					oldFixedShapes := canvas fixedShapes.
+					canvas fixedShapes: RSGroup new.
+					rect := canvas encompassingRectangle.
+					canvas extent: rect extent + (10 @ 10).
+					canvas camera position: rect center negated.
+					canvas pngExporter
+						withoutFixedShapes;
+						exportToFile: aFileReference.
+					canvas
+						morph: oldMorph;
+						extent: oldExtent.
+					canvas camera position: oldPosition.
+					canvas fixedShapes: oldFixedShapes.
+					canvas signalUpdate ] ]
+]
+
+{ #category : 'operations' }
 Golap >> saveAsSVG [
 
-	self notYetImplemented
+	(self requestFileToSave: 'SVG ファイルに保存します' extensions: #( 'svg' ))
+		ifNotNil: [ :ref | self saveAsSVG: ref ]
+]
+
+{ #category : 'operations' }
+Golap >> saveAsSVG: aFileReference [
+
+	self activeVisualizationDo: [ :visualization |
+			visualization canvas ifNotNil: [ :canvas |
+					| oldMorph oldExtent oldPosition oldFixedShapes rect |
+					oldMorph := canvas morph.
+					oldExtent := canvas extent.
+					oldPosition := canvas camera position.
+					oldFixedShapes := canvas fixedShapes.
+					canvas fixedShapes: RSGroup new.
+					rect := canvas encompassingRectangle.
+					canvas extent: rect extent + (10 @ 10).
+					canvas camera position: rect center negated.
+					canvas svgCairoExporter
+						withoutFixedShapes;
+						exportToFile: aFileReference.
+					canvas
+						morph: oldMorph;
+						extent: oldExtent.
+					canvas camera position: oldPosition.
+					canvas fixedShapes: oldFixedShapes.
+					canvas signalUpdate ] ]
 ]
 
 { #category : 'operations' }
 Golap >> saveFullImage [
 
-	self notYetImplemented
+	(self requestFileToSave: 'PNG ファイルに保存します' extensions: #( 'png' ))
+		ifNotNil: [ :ref | self saveAsPNG: ref ]
 ]
 
 { #category : 'history' }
