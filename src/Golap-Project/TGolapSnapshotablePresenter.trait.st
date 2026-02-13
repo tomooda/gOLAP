@@ -60,6 +60,15 @@ TGolapSnapshotablePresenter >> close [
 ]
 
 { #category : 'ui requests' }
+TGolapSnapshotablePresenter >> confirm: queryString label: titleString [
+
+	^ self application newConfirm
+		  title: titleString;
+		  label: queryString;
+		  openModal
+]
+
+{ #category : 'ui requests' }
 TGolapSnapshotablePresenter >> confirmClose [
 
 	^ self isForceClosing or: [

@@ -1,6 +1,8 @@
 Class {
 	#name : 'GolapNetworkClientPresenter',
 	#superclass : 'SpPresenter',
+	#traits : 'TGolapSnapshotablePresenter',
+	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'urlInput',
 		'presetUrlButton',
@@ -10,10 +12,8 @@ Class {
 		'serverConfig',
 		'fieldsAndValuesCache',
 		'queryPresenter',
-		'queryText',
 		'usesRawQuery',
 		'queryNotebook',
-		'usesRawQueryText',
 		'commentText',
 		'queryHistoryPresenter',
 		'usesQueryHistory',
@@ -76,21 +76,6 @@ GolapNetworkClientPresenter >> comment [
 GolapNetworkClientPresenter >> comment: aString [
 
 	commentText text: aString
-]
-
-{ #category : 'ui requests' }
-GolapNetworkClientPresenter >> confirm: queryString label: titleString [
-
-	^ self application newConfirm
-		  title: titleString;
-		  label: queryString;
-		  openModal
-]
-
-{ #category : 'ui requests' }
-GolapNetworkClientPresenter >> confirmClose [
-
-	^ self confirm: self window title , 'を閉じますか？' label: '確認'
 ]
 
 { #category : 'layout' }
@@ -231,13 +216,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 		            text: self defaultUrl;
 		            whenTextChangedDo: [ :old :new |
 			            old ~= new ifTrue: [ self flushAuth ] ];
-		            whenSubmitDo: [ :text |
-				            self updateServerConfig.
-				            queryPresenter
-					            resetItemFilterSpec;
-					            resetTransactionFilterSpec.
-				            queryPalettePresenter url: text trim.
-				            queryHistoryPresenter url: text trim ];
+		            whenSubmitDo: [ :text | self urlInputSubmitted ];
 		            yourself.
 	presetUrlButton := self newButton
 		                   icon: (Smalltalk ui icons iconNamed: #back);
@@ -263,15 +242,8 @@ GolapNetworkClientPresenter >> initializePresenters [
 					                  queryHistoryPresenter updateQueryHistoryList ];
 				                  yourself);
 		                 whenSelectedPageChangedDo: [
-				                 usesRawQuery := queryNotebook selectedPageIndex
-				                                 = 2.
-				                 usesQueryHistory := queryNotebook
-					                                     selectedPageIndex = 3.
-				                 usesQueryHistory ifTrue: [
-						                 openButton ifNotNil: #enable.
-						                 saveButton ifNotNil: #enable ] ];
+		                 self selectedPageChanged ];
 		                 yourself.
-	usesRawQueryText := false.
 	queryPalettePresenter := (self instantiate:
 			                          GolapQueryPalettePresenter)
 		                         importQueryBlock: [ self generateQueryText ];
@@ -364,13 +336,13 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 	aDictionary
 		at: 'url' ifPresent: [ :string | self url: string ];
 		at: 'rawQuery' ifPresent: [ :string |
-			queryPalettePresenter query: string.
-			usesRawQuery := true.
-			queryNotebook selectPageIndex: 2 ]
+				queryPalettePresenter query: string.
+				usesRawQuery := true.
+				queryNotebook selectPageIndex: 2 ]
 		ifAbsent: [
-			queryPresenter loadJSON: aDictionary.
-			usesRawQuery := false.
-			queryNotebook selectPageIndex: 1 ].
+				queryPresenter fromJSON: aDictionary.
+				usesRawQuery := false.
+				queryNotebook selectPageIndex: 1 ].
 	self updateServerConfig.
 	queryPresenter
 		resetItemFilterSpec;
@@ -566,6 +538,16 @@ GolapNetworkClientPresenter >> retrieveConfig: aString field: anotherString ifEr
 		do: [ :ex | ^ errorBlock value ]
 ]
 
+{ #category : 'updating' }
+GolapNetworkClientPresenter >> selectedPageChanged [
+
+	usesRawQuery := queryNotebook selectedPageIndex = 2.
+	usesQueryHistory := queryNotebook selectedPageIndex = 3.
+	usesQueryHistory ifTrue: [
+			openButton ifNotNil: #enable.
+			saveButton ifNotNil: #enable ]
+]
+
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> serverConfig [
 
@@ -646,6 +628,19 @@ GolapNetworkClientPresenter >> url [
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> url: aString [
 	urlInput text: aString
+]
+
+{ #category : 'updating' }
+GolapNetworkClientPresenter >> urlInputSubmitted [
+
+	| text |
+	text := urlInput text.
+	self updateServerConfig.
+	queryPresenter
+		resetItemFilterSpec;
+		resetTransactionFilterSpec.
+	queryPalettePresenter url: text trim.
+	queryHistoryPresenter url: text trim
 ]
 
 { #category : 'accessing' }

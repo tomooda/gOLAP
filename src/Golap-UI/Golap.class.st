@@ -454,15 +454,6 @@ Golap >> comment: aString [
 ]
 
 { #category : 'ui requests' }
-Golap >> confirm: queryString label: titleString [
-
-	^ self application newConfirm
-		  title: titleString;
-		  label: queryString;
-		  openModal
-]
-
-{ #category : 'ui requests' }
 Golap >> confirmOpen [
 
 	model ifNotNil: [
