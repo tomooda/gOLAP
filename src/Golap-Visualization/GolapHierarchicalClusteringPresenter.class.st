@@ -71,9 +71,6 @@ GolapHierarchicalClusteringPresenter >> golap [
 GolapHierarchicalClusteringPresenter >> golap: aGolap [
 
 	golap := aGolap.
-	golap announcer
-		when: GolapModelUpdated send: #updateTree to: self;
-		when: GolapViewUpdated send: #updateNode to: self.
 	self golapChanged
 ]
 

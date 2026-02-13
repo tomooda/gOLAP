@@ -268,7 +268,8 @@ GolapNetworkClientPresenter >> initializePresenters [
 				                 usesQueryHistory := queryNotebook
 					                                     selectedPageIndex = 3.
 				                 usesQueryHistory ifTrue: [
-					                 openButton ifNotNil: #enable ] ];
+						                 openButton ifNotNil: #enable.
+						                 saveButton ifNotNil: #enable ] ];
 		                 yourself.
 	usesRawQueryText := false.
 	queryPalettePresenter := (self instantiate:
@@ -308,6 +309,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 	saveButton := self newButton
 		              label: 'Save';
 		              action: [ self dumpToFile ];
+		              disable;
 		              yourself.
 	openButton := self newButton
 		              label: 'Ok';
@@ -569,6 +571,7 @@ GolapNetworkClientPresenter >> serverConfig [
 
 	^ serverConfig ifNil: [
 			  openButton ifNotNil: #disable.
+			  saveButton ifNotNil: #disable.
 			  self url asUrl authority ifNotNil: [
 					  [
 						  serverConfig := (GolapHttpClient
@@ -587,6 +590,7 @@ GolapNetworkClientPresenter >> serverConfig [
 											                  status second trim = '0' ifFalse: [
 												                  ^ nil ].
 											                  openButton ifNotNil: #enable.
+											                  saveButton ifNotNil: #enable.
 											                  (NeoJSONReader on: stream)
 												                  mapClass: OrderedDictionary;
 												                  next ] ] ]
