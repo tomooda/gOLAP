@@ -169,12 +169,12 @@ GolapProject >> golapWindowsDo: aBlock [
 	| presenterClasses |
 	presenterClasses := TGolapSnapshotablePresenter users.
 	self currentWorld taskbars do: [ :taskbar |
-			taskbar submorphs do: [ :m1 |
-					m1 model ifNotNil: [ :m2 |
-							m2 model ifNotNil: [ :m3 |
-									m3 presenter ifNotNil: [ :p |
-										(presenterClasses includes: p class) ifTrue: [
-											aBlock value: m3 ] ] ] ] ] ]
+			taskbar submorphs do: [ :morph |
+					([ morph model model presenter ]
+						 on: MessageNotUnderstood
+						 do: [ :ex | ex return: nil ]) ifNotNil: [ :p |
+						(presenterClasses includes: p class) ifTrue: [
+							aBlock value: p window ] ] ] ]
 ]
 
 { #category : 'operations' }
