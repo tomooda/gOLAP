@@ -47,33 +47,34 @@ GolapClusteredHeatmapPresenter >> computeClusterMeans [
 	clusterNodes := tree treesAtRank: self rank.
 	means := Dictionary new: clusterNodes size squared.
 	self golapModelDo: [ :golapModel |
-		1 to: clusterNodes size do: [ :rowIndex |
-			| rowCluster rowNodes |
-			rowCluster := clusterNodes at: rowIndex.
-			rowNodes := rowCluster graphNodes.
-			1 to: clusterNodes size do: [ :columnIndex |
-				| columnCluster columnNodes n mean |
-				columnCluster := clusterNodes at: columnIndex.
-				columnNodes := columnCluster graphNodes.
-				n := rowNodes size * columnNodes size.
-				mean := n = 0
-					        ifTrue: [ nil ]
-					        ifFalse: [
-						        | sum |
-						        sum := 0.
-						        rowNodes do: [ :rowNode |
-							        columnNodes do: [ :columnNode |
-								        sum := sum
-								               +
-								               (self
-									                valueAtRowNode: rowNode
-									                columnNode: columnNode) ] ].
-						        sum asFloat / n asFloat ].
-				means
-					at: {
-							rowCluster.
-							columnCluster }
-					put: mean ] ] ].
+			1 to: clusterNodes size do: [ :rowIndex |
+					| rowCluster rowNodes |
+					rowCluster := clusterNodes at: rowIndex.
+					rowNodes := rowCluster idsCollect: [ :id | golapModel nodeAt: id ].
+					1 to: clusterNodes size do: [ :columnIndex |
+							| columnCluster columnNodes n mean |
+							columnCluster := clusterNodes at: columnIndex.
+							columnNodes := columnCluster idsCollect: [ :id |
+								               golapModel nodeAt: id ].
+							n := rowNodes size * columnNodes size.
+							mean := n = 0
+								        ifTrue: [ nil ]
+								        ifFalse: [
+										        | sum |
+										        sum := 0.
+										        rowNodes do: [ :rowNode |
+												        columnNodes do: [ :columnNode |
+													        sum := sum
+													               +
+													               (self
+														                valueAtRowNode: rowNode
+														                columnNode: columnNode) ] ].
+										        sum asFloat / n asFloat ].
+							means
+								at: {
+										rowCluster.
+										columnCluster }
+								put: mean ] ] ].
 	^ means
 ]
 
