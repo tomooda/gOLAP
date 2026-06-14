@@ -3,12 +3,21 @@ Class {
 	#superclass : 'GolapNode',
 	#instVars : [
 		'oldEdges',
-		'oldNodes'
+		'oldNodes',
+		'ids'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
 	#tag : 'Graph'
 }
+
+{ #category : 'instance creation' }
+GolapMergedNode class >> on: aDataSeries name: aString ids: anArrayOfString [
+
+	^ (self on: aDataSeries name: aString)
+		  ids: anArrayOfString;
+		  yourself
+]
 
 { #category : 'testing' }
 GolapMergedNode >> hasNode: aGolapNode [
@@ -20,7 +29,20 @@ GolapMergedNode >> hasNode: aGolapNode [
 GolapMergedNode >> idDo: aBlock [
 
 	aBlock value: self id.
-	oldNodes do: [ :v | v idDo: aBlock ]
+	oldNodes ifNotNil: [ oldNodes do: [ :v | v idDo: aBlock ] ].
+	ids ifNotNil: [ ids do: aBlock ]
+]
+
+{ #category : 'accessing' }
+GolapMergedNode >> ids [
+
+	^ ids
+]
+
+{ #category : 'accessing' }
+GolapMergedNode >> ids: anArrayOfString [
+
+	ids := anArrayOfString
 ]
 
 { #category : 'testing' }

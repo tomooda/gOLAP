@@ -376,41 +376,9 @@ GolapModel >> maxNodeValue [
 { #category : 'accessing-node' }
 GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
-	aCollectionOfGolapNode ifNotEmpty: [
-		| newNode oldEdgesByPeers oldEdges |
-		newNode := self
-			           createMergedNodeFrom: aCollectionOfGolapNode
-			           named: aString.
-		oldEdgesByPeers := IdentityDictionary new.
-		oldEdges := OrderedCollection new:
-			            aCollectionOfGolapNode size
-			            * aCollectionOfGolapNode size.
-		aCollectionOfGolapNode do: [ :node |
-			node edges copy do: [ :edge |
-				| peer |
-				peer := edge peerOf: node.
-				(aCollectionOfGolapNode includes: peer) ifFalse: [
-					(oldEdgesByPeers at: peer ifAbsentPut: [ OrderedCollection new ])
-						add: edge ].
-				oldEdges add: edge.
-				edge remove ].
-			self nodes removeKey: node id ].
-		oldEdgesByPeers keysAndValuesDo: [ :peer :edges |
-			newNode
-				createEdgeTo: peer
-				data:
-					(DataSeries newFrom: (edgeAggregators collect: [ :aggregator |
-							  aggregator value: (edges collect: #data) ])) ].
-		newNode
-			oldEdges: oldEdges asArray;
-			oldNodes:
-				(aCollectionOfGolapNode asArray sorted:
-						 self nodeEvaluator descending).
-		self nodes at: aString put: newNode.
-		self flushEdgeRanks.
-		friendsEdges := nil.
-		self friendsEdges: self friendsRank.
-		^ newNode ]
+	merge merge: (aCollectionOfGolapNode collect: #id) into: aString.
+	self updateNodesAndEdges.
+	^ nodes at: aString ifAbsent: [ nil ]
 ]
 
 { #category : 'accessing' }
@@ -743,30 +711,8 @@ GolapModel >> repeat: anInteger1 polishAddAbove: aNumber1 removeBelow: aNumber2 
 { #category : 'accessing-node' }
 GolapModel >> resetMerges [
 
-	| newNodes nextPutNode newEdges |
-	newNodes := Dictionary new: nodes size.
-	nextPutNode := [ :node |
-	               node isMergedNode
-		               ifTrue: [ node oldNodes do: nextPutNode ]
-		               ifFalse: [ newNodes at: node id put: node copy ] ].
-	nodes valuesDo: nextPutNode.
-	newEdges := IdentityDictionary new: 1024.
-	newNodes valuesDo: [ :node |
-		node edgesDo: [ :edge |
-			(edge node1 isMergedNode or: [ edge node2 isMergedNode ]) ifFalse: [
-				newEdges at: edge ifAbsentPut: [
-					edge copy
-						node1: (newNodes at: edge node1 id);
-						node2: (newNodes at: edge node2 id);
-						yourself ] ] ] ].
-	newNodes valuesDo: [ :node |
-		node edges: (node edges
-				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
-				 thenSelect: #notNil) ].
-	nodes := newNodes.
-	mergedNodes := IdentityDictionary new.
-	friendsEdges := nil.
-	self flushEdgeRanks
+	merge unmergeAll.
+	self updateNodesAndEdges
 ]
 
 { #category : 'accessing-node' }
@@ -789,13 +735,8 @@ GolapModel >> resetPolish [
 { #category : 'accessing-node' }
 GolapModel >> unmergeNode: aGolapNode [
 
-	aGolapNode isMergedNode ifFalse: [ ^ self ].
-	aGolapNode oldNodesDo: [ :node | self nodes at: node id put: node ].
-	aGolapNode oldEdgesDo: [ :edge |
-		(edge node1 hasEdge: edge) ifFalse: [ edge node1 addEdge: edge ].
-		(edge node2 hasEdge: edge) ifFalse: [ edge node2 addEdge: edge ] ].
-	aGolapNode edgesAndNodeDo: [ :edge :peer | peer removeEdge: edge ].
-	self nodes removeKey: aGolapNode id.
+	merge unmerge: aGolapNode id.
+	self updateNodesAndEdges.
 	^ aGolapNode
 ]
 
@@ -833,7 +774,8 @@ GolapModel >> updateNodesAndEdges [
 													  withKeys: newData keys
 													  values: newData values
 													  name: root asString)
-											 name: root ]) ] ].
+											 name: root
+											 ids: (leafBaseNodes collect: #id) ]) ] ].
 	newRootEdges := Dictionary new.
 	baseGraph edgesDo: [ :baseEdge |
 			merge rootsAt: baseEdge node1 do: [ :root1 |
