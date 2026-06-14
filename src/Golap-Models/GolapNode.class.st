@@ -10,7 +10,6 @@ Class {
 		'negativePolishEdges',
 		'scores',
 		'label',
-		'rectangles',
 		'photoimage',
 		'isReferenceNode'
 	],
@@ -45,11 +44,6 @@ GolapNode >> addNegativePolishEdge: aGolapEdge [
 { #category : 'polishing' }
 GolapNode >> addPositivePolishEdge: aGolapEdge [
 	positivePolishEdges add: aGolapEdge
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> addRectangle: aRectangle with: aGolapNode [
-	rectangles at: aGolapNode put: aRectangle
 ]
 
 { #category : 'adding-removing' }
@@ -291,8 +285,7 @@ GolapNode >> initialize [
 	hiddenEdges := OrderedCollection new.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	scores := Dictionary new.
-	rectangles := Dictionary new
+	scores := Dictionary new
 ]
 
 { #category : 'testing' }
@@ -394,8 +387,7 @@ GolapNode >> postCopy [
 	hiddenEdges := hiddenEdges copy.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	scores := Dictionary new.
-	rectangles := Dictionary new
+	scores := Dictionary new
 ]
 
 { #category : 'printing' }
@@ -417,11 +409,6 @@ GolapNode >> rankOf: aGolapEdge in: aGolapModel [
 	edges do: [ :edge |
 		score < (aGolapModel valueAtEdge: edge) ifTrue: [ rank := rank + 1 ] ].
 	^ rank
-]
-
-{ #category : 'accessing' }
-GolapNode >> rectangles [
-	^ rectangles
 ]
 
 { #category : 'adding-removing' }

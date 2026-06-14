@@ -489,33 +489,6 @@ GolapModel >> nodesDo: aBlock [
 		aBlock cull: (nodes at: id) cull: id ]
 ]
 
-{ #category : 'private' }
-GolapModel >> originalNodes [
-
-	| newNodes nextPutNode newEdges |
-	newNodes := Dictionary new: self nodes size.
-	nextPutNode := [ :node |
-		               node isMergedNode
-			               ifTrue: [ node oldNodes do: nextPutNode ]
-			               ifFalse: [ newNodes at: node id put: node copy ] ].
-	self nodes valuesDo: nextPutNode.
-	newEdges := IdentityDictionary new: 1024.
-	newNodes valuesDo: [ :node |
-			node edgesDo: [ :edge |
-					(edge node1 isMergedNode or: [ edge node2 isMergedNode ])
-						ifFalse: [
-								newEdges at: edge ifAbsentPut: [
-										edge copy
-											node1: (newNodes at: edge node1 id);
-											node2: (newNodes at: edge node2 id);
-											yourself ] ] ] ].
-	newNodes valuesDo: [ :node |
-			node edges: (node edges
-					 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
-					 thenSelect: #notNil) ].
-	^ newNodes
-]
-
 { #category : 'polishing' }
 GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anInteger [
 

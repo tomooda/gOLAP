@@ -2,8 +2,6 @@ Class {
 	#name : 'GolapMergedNode',
 	#superclass : 'GolapNode',
 	#instVars : [
-		'oldEdges',
-		'oldNodes',
 		'ids'
 	],
 	#category : 'Golap-Models-Graph',
@@ -21,15 +19,14 @@ GolapMergedNode class >> on: aDataSeries name: aString ids: anArrayOfString [
 
 { #category : 'testing' }
 GolapMergedNode >> hasNode: aGolapNode [
-	^ (super hasNode: aGolapNode)
-		or: [ oldNodes contains: [ :v | v hasNode: aGolapNode ] ]
+
+	^ (super hasNode: aGolapNode) or: [ ids includes: aGolapNode id ]
 ]
 
 { #category : 'enumerating' }
 GolapMergedNode >> idDo: aBlock [
 
 	aBlock value: self id.
-	oldNodes ifNotNil: [ oldNodes do: [ :v | v idDo: aBlock ] ].
 	ids ifNotNil: [ ids do: aBlock ]
 ]
 
@@ -47,8 +44,8 @@ GolapMergedNode >> ids: anArrayOfString [
 
 { #category : 'testing' }
 GolapMergedNode >> includesId: anObject [
-	^ (super includesId: anObject)
-		or: [ oldNodes contains: [ :v | v includesId: anObject ] ]
+
+	^ (super includesId: anObject) or: [ ids includes: anObject ]
 ]
 
 { #category : 'testing' }
@@ -57,41 +54,9 @@ GolapMergedNode >> isMergedNode [
 ]
 
 { #category : 'accessing' }
-GolapMergedNode >> oldEdges [
-	^ oldEdges
-]
-
-{ #category : 'accessing' }
-GolapMergedNode >> oldEdges: aCollectionOfGolapEdges [
-	oldEdges := aCollectionOfGolapEdges
-]
-
-{ #category : 'enumerating' }
-GolapMergedNode >> oldEdgesDo: aBlock [
-	oldEdges do: aBlock
-]
-
-{ #category : 'accessing' }
-GolapMergedNode >> oldNodes [
-	^ oldNodes
-]
-
-{ #category : 'accessing' }
-GolapMergedNode >> oldNodes: aCollectionOfGolapNodes [
-	oldNodes := aCollectionOfGolapNodes
-]
-
-{ #category : 'enumerating' }
-GolapMergedNode >> oldNodesDo: aBlock [
-	oldNodes do: aBlock
-]
-
-{ #category : 'accessing' }
 GolapMergedNode >> photoId [
 
-	^ (oldNodes notNil and: [ oldNodes notEmpty ])
-		  ifTrue: [ oldNodes first photoId ]
-		  ifFalse: [ self id ]
+	^ ids ifNotEmpty: #first ifEmpty: [ self id ]
 ]
 
 { #category : 'accessing' }
