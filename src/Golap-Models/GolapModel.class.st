@@ -13,7 +13,9 @@ Class {
 		'nodeEvaluator',
 		'nodes',
 		'edgeRanks',
-		'referenceNodes'
+		'referenceNodes',
+		'baseGraph',
+		'merge'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -156,21 +158,22 @@ GolapModel >> diff: aGolapModel [
 	| doneEdges |
 	doneEdges := IdentitySet new: 1024.
 	aGolapModel nodesDo: [ :node |
-		nodes
-			at: node id
-			ifPresent: [ :myNode | myNode diff: node ]
-			ifAbsentPut: [ (GolapNode on: node data name: node name) negated ] ].
+			self nodes
+				at: node id
+				ifPresent: [ :myNode | myNode diff: node ]
+				ifAbsentPut: [ (GolapNode on: node data name: node name) negated ] ].
 
 	aGolapModel nodesDo: [ :node |
-		node edgesDo: [ :edge |
-			(doneEdges includes: edge) ifFalse: [
-				| myNode1 myNode2 |
-				doneEdges add: edge.
-				myNode1 := nodes at: edge node1 id.
-				myNode2 := nodes at: edge node2 id.
-				(myNode1 edgeTo: myNode2 ifAbsent: [ nil ])
-					ifNotNil: [ :myEdge | myEdge diff: edge ]
-					ifNil: [ (myNode1 createEdgeTo: myNode2 data: edge data) negated ] ] ] ]
+			node edgesDo: [ :edge |
+					(doneEdges includes: edge) ifFalse: [
+							| myNode1 myNode2 |
+							doneEdges add: edge.
+							myNode1 := self nodes at: edge node1 id.
+							myNode2 := self nodes at: edge node2 id.
+							(myNode1 edgeTo: myNode2 ifAbsent: [ nil ])
+								ifNotNil: [ :myEdge | myEdge diff: edge ]
+								ifNil: [
+								(myNode1 createEdgeTo: myNode2 data: edge data) negated ] ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -229,7 +232,7 @@ GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
 GolapModel >> edgesDo: aBlock [
 
 	| done |
-	done := IdentitySet new: nodes size.
+	done := IdentitySet new: self nodes size.
 	self nodesDo: [ :node |
 			node edgesDo: [ :edge |
 					(done includes: edge) ifFalse: [
@@ -317,6 +320,8 @@ GolapModel >> indexAtReferenceNode: aGolapNode [
 GolapModel >> initialize [
 
 	super initialize.
+	baseGraph := GolapBaseGraph new.
+	merge := GolapNodeMerge new.
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
@@ -462,13 +467,13 @@ GolapModel >> nodeAggregators: aCollectionOfGolapDataAggregator [
 ]
 
 { #category : 'accessing-node' }
-GolapModel >> nodeAt: anInteger [
-	^ self nodes at: anInteger
+GolapModel >> nodeAt: aString [
+	^ self nodes at: aString
 ]
 
 { #category : 'accessing-node' }
-GolapModel >> nodeAt: anInteger ifAbsent: errorBlock [
-	^ self nodes at: anInteger ifAbsent: errorBlock
+GolapModel >> nodeAt: aString ifAbsent: errorBlock [
+	^ self nodes at: aString ifAbsent: errorBlock
 ]
 
 { #category : 'accessing' }
@@ -511,10 +516,8 @@ GolapModel >> nodeListWithKeyword: aString [
 GolapModel >> nodes [
 
 	^ nodes ifNil: [
-		  nodes := Dictionary new.
-		  friendsEdges := nil.
-		  self flushEdgeRanks.
-		  nodes ]
+			  self updateNodesAndEdges.
+			  nodes ]
 ]
 
 { #category : 'enumerating' }
@@ -528,25 +531,26 @@ GolapModel >> nodesDo: aBlock [
 GolapModel >> originalNodes [
 
 	| newNodes nextPutNode newEdges |
-	newNodes := Dictionary new: nodes size.
+	newNodes := Dictionary new: self nodes size.
 	nextPutNode := [ :node |
-	               node isMergedNode
-		               ifTrue: [ node oldNodes do: nextPutNode ]
-		               ifFalse: [ newNodes at: node id put: node copy ] ].
-	nodes valuesDo: nextPutNode.
+		               node isMergedNode
+			               ifTrue: [ node oldNodes do: nextPutNode ]
+			               ifFalse: [ newNodes at: node id put: node copy ] ].
+	self nodes valuesDo: nextPutNode.
 	newEdges := IdentityDictionary new: 1024.
 	newNodes valuesDo: [ :node |
-		node edgesDo: [ :edge |
-			(edge node1 isMergedNode or: [ edge node2 isMergedNode ]) ifFalse: [
-				newEdges at: edge ifAbsentPut: [
-					edge copy
-						node1: (newNodes at: edge node1 id);
-						node2: (newNodes at: edge node2 id);
-						yourself ] ] ] ].
+			node edgesDo: [ :edge |
+					(edge node1 isMergedNode or: [ edge node2 isMergedNode ])
+						ifFalse: [
+								newEdges at: edge ifAbsentPut: [
+										edge copy
+											node1: (newNodes at: edge node1 id);
+											node2: (newNodes at: edge node2 id);
+											yourself ] ] ] ].
 	newNodes valuesDo: [ :node |
-		node edges: (node edges
-				 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
-				 thenSelect: #notNil) ].
+			node edges: (node edges
+					 collect: [ :edge | newEdges at: edge ifAbsent: [ nil ] ]
+					 thenSelect: #notNil) ].
 	^ newNodes
 ]
 
@@ -622,12 +626,10 @@ GolapModel >> postCopy [
 	edgeEvaluator := edgeEvaluator ifNotNil: #copy.
 	nodeAggregators := nodeAggregators ifNotNil: #copy.
 	edgeAggregators := edgeAggregators ifNotNil: #copy.
-	nodes := self originalNodes.
+	self updateNodesAndEdges.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	mergedNodes := IdentityDictionary new.
-	friendsEdges := nil.
-	self flushEdgeRanks
+	mergedNodes := IdentityDictionary new
 ]
 
 { #category : 'accessing' }
@@ -639,44 +641,26 @@ GolapModel >> rankAtEdge: aGolapEdge [
 { #category : 'private' }
 GolapModel >> readEdgeDataframe: edgeDataframe idColumn: aString and: anotherString [
 
-	edgeDataframe do: [ :row |
-		| node1 node2 |
-		node1 := row
-			         at: aString
-			         ifPresent: [ :id |
-			         nodes at: id asString ifAbsent: [ nil ] ].
-		node2 := row
-			         at: anotherString
-			         ifPresent: [ :id |
-			         nodes at: id asString ifAbsent: [ nil ] ].
-		(node1 notNil and: [ node2 notNil and: [ node1 ~~ node2 ] ])
-			ifTrue: [ node1 createEdgeTo: node2 data: row ] ]
+	baseGraph
+		readEdgeDataframe: edgeDataframe
+		idColumn: aString
+		and: anotherString.
+	self updateNodesAndEdges
 ]
 
 { #category : 'private' }
 GolapModel >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn: anotherString [
 
-	| newNodes |
-	newNodes := Dictionary new: nodeDataframe size.
-	nodeDataframe withIndexDo: [ :row :index |
-		| id name |
-		id := (row at: aString ifAbsent: [ index ]) asString.
-		name := (row at: anotherString ifAbsent: [ id ]) asString.
-		row name: id.
-		newNodes at: id ifAbsentPut: (self createNode: row name: name) ].
-	nodes := newNodes.
-	friendsEdges := nil.
-	self flushEdgeRanks
+	baseGraph
+		readNodeDataframe: nodeDataframe
+		idColumn: aString
+		nameColumn: anotherString.
+	self updateNodesAndEdges
 ]
 
 { #category : 'private' }
 GolapModel >> readServerDataframe: aDataFrame [
 
-	| newNodes |
-	aDataFrame columnNames: (aDataFrame columnNames collect: [ :string |
-			 (string includes: $%)
-				 ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
-				 ifFalse: [ string ] ]).
 	nodeEvaluator := GolapNodeColumnEvaluator column: 'frequency'.
 	edgeEvaluator := GolapEdgeColumnEvaluator column: 'jaccard'.
 	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
@@ -695,32 +679,8 @@ GolapModel >> readServerDataframe: aDataFrame [
 		                   (GolapWeightedAverageDataAggregator
 			                    column: 'PMI'
 			                    weightColumn: 'frequency') }.
-	newNodes := Dictionary new.
-	aDataFrame do: [ :data |
-		| id1 id2 node1 node2 |
-		id1 := data at: 'node1'.
-		id2 := data at: 'node2'.
-		node1 := newNodes at: id1 ifAbsentPut: [
-			         self
-				         createNode: (DataSeries
-						          withKeys: { 'frequency' }
-						          values: { (data at: 'frequency1') }
-						          name: id1)
-				         name: (data at: 'node1n') ].
-		id2 ifNotNil: [
-			node2 := newNodes at: id2 ifAbsentPut: [
-				         self
-					         createNode: (DataSeries
-							          withKeys: { 'frequency' }
-							          values: { (data at: 'frequency2') }
-							          name: id2)
-					         name: (data at: 'node2n') ].
-			(data at: 'effective' ifAbsent: [ 1 ]) > 0
-				ifTrue: [ node1 createEdgeTo: node2 data: data ]
-				ifFalse: [ node1 createHiddenEdgeTo: node2 data: data ] ] ].
-	nodes := newNodes.
-	friendsEdges := nil.
-	self flushEdgeRanks
+	baseGraph readServerDataframe: aDataFrame.
+	self updateNodesAndEdges
 ]
 
 { #category : 'accessing-reference nodes' }
@@ -843,6 +803,70 @@ GolapModel >> unmergeNode: aGolapNode [
 	aGolapNode edgesAndNodeDo: [ :edge :peer | peer removeEdge: edge ].
 	self nodes removeKey: aGolapNode id.
 	^ aGolapNode
+]
+
+{ #category : 'updating' }
+GolapModel >> updateFriends [
+
+	friendsEdges := nil.
+	self flushEdgeRanks
+]
+
+{ #category : 'updating' }
+GolapModel >> updateNodesAndEdges [
+
+	| baseNodes newRoots newNodes newRootEdges |
+	baseNodes := Dictionary new: baseGraph numberOfNodes.
+	newRoots := Set new.
+	baseGraph nodesDo: [ :baseNode |
+			baseNodes at: baseNode id put: baseNode.
+			merge rootsAt: baseNode id do: [ :id | newRoots add: id ] ].
+	newNodes := Dictionary new.
+	newRoots do: [ :root |
+			((merge leavesAt: root) collect: [ :leaf | baseNodes at: leaf ])
+				ifNotEmpty: [ :leafBaseNodes |
+						newNodes at: root put: (leafBaseNodes size = 1
+								 ifTrue: [ leafBaseNodes first asGolapNode ]
+								 ifFalse: [
+										 | newData |
+										 newData := DataSeries newFrom:
+											            (nodeAggregators collect: [ :aggregation |
+												             aggregation value:
+													             (leafBaseNodes collect: #data) ]).
+										 newData name: root.
+										 GolapMergedNode
+											 on:
+											 (DataSeries
+												  withKeys: newData keys
+												  values: newData values
+												  name: root)
+											 name: root ]) ] ].
+	newRootEdges := Dictionary new.
+	baseGraph edgesDo: [ :baseEdge |
+			merge rootsAt: baseEdge node1 do: [ :root1 |
+					merge rootsAt: baseEdge node2 do: [ :root2 |
+							root1 = root2 ifFalse: [
+									(newRootEdges
+										 at: (root1 < root2
+												  ifTrue: [ Array with: root1 with: root2 ]
+												  ifFalse: [ Array with: root2 with: root1 ])
+										 ifAbsentPut: [ OrderedCollection new ]) add: baseEdge data ] ] ] ].
+	newRootEdges keysAndValuesDo: [ :rootPair :dataArray |
+			newNodes at: rootPair first ifPresent: [ :node1 |
+					newNodes at: rootPair second ifPresent: [ :node2 |
+							(dataArray size = 1 and: [
+								 (dataArray first at: 'effective' ifAbsent: [ 1 ]) <= 0 ])
+								ifTrue: [
+								node1 createHiddenEdgeTo: node2 data: dataArray first ]
+								ifFalse: [
+										node1 createEdgeTo: node2 data: (dataArray size = 1
+												 ifTrue: [ dataArray first ]
+												 ifFalse: [
+														 DataSeries newFrom:
+															 (edgeAggregators collect: [ :aggregator |
+																  aggregator value: dataArray ]) ]) ] ] ] ].
+	nodes := newNodes.
+	self updateFriends
 ]
 
 { #category : 'accessing' }
