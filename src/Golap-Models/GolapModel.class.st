@@ -402,12 +402,6 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 					(DataSeries newFrom: (edgeAggregators collect: [ :aggregator |
 							  aggregator value: (edges collect: #data) ])) ].
 		newNode
-			x: ((aCollectionOfGolapNode collect: #x thenSelect: #notNil)
-					 ifEmpty: [ nil ]
-					 ifNotEmpty: #average);
-			y: ((aCollectionOfGolapNode collect: #y thenSelect: #notNil)
-					 ifEmpty: [ nil ]
-					 ifNotEmpty: #average);
 			oldEdges: oldEdges asArray;
 			oldNodes:
 				(aCollectionOfGolapNode asArray sorted:

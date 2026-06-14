@@ -9,8 +9,6 @@ Class {
 		'positivePolishEdges',
 		'negativePolishEdges',
 		'scores',
-		'x',
-		'y',
 		'label',
 		'rectangles',
 		'photoimage',
@@ -80,14 +78,6 @@ GolapNode >> argmaxEdge: aBlock [
 				ifTrue: [ argmax := edge.
 					max := value ] ].
 	^ argmax
-]
-
-{ #category : 'converting' }
-GolapNode >> asPoint [
-
-	^ (x notNil and: [ y notNil ])
-		  ifTrue: [ x @ y ]
-		  ifFalse: [ nil ]
 ]
 
 { #category : 'accessing' }
@@ -361,14 +351,6 @@ GolapNode >> negativePolishEdgesDo: aBlock [
 	negativePolishEdges do: aBlock
 ]
 
-{ #category : 'accessing' }
-GolapNode >> nodeAtPoint: aPoint [
-
-	rectangles keysAndValuesDo: [ :node :rect |
-		(rect containsPoint: aPoint - (x @ y)) ifTrue: [ ^ node ] ].
-	^ nil
-]
-
 { #category : 'enumerating' }
 GolapNode >> nodesAndScoresDo: aBlock [
 	scores keysAndValuesDo: aBlock
@@ -398,12 +380,6 @@ GolapNode >> photoimage: aFormOrAny [
 	photoimage := aFormOrAny
 ]
 
-{ #category : 'accessing' }
-GolapNode >> position: aPoint [
-	self x: aPoint x.
-	self y: aPoint y
-]
-
 { #category : 'polishing' }
 GolapNode >> positivePolishEdgesDo: aBlock [
 	positivePolishEdges do: aBlock
@@ -427,10 +403,8 @@ GolapNode >> printOn: aStream [
 
 	aStream nextPutAll: 'V('.
 	self id printOn: aStream.
-	aStream nextPutAll: ' '.
-	x printOn: aStream.
 	aStream nextPutAll: ', '.
-	y printOn: aStream.
+	self name printOn: aStream.
 	aStream nextPutAll: ') '
 ]
 
@@ -448,17 +422,6 @@ GolapNode >> rankOf: aGolapEdge in: aGolapModel [
 { #category : 'accessing' }
 GolapNode >> rectangles [
 	^ rectangles
-]
-
-{ #category : 'enumerating' }
-GolapNode >> rectanglesAndNodesAndScoresAt: aPoint do: aBlock [
-
-	rectangles keysAndValuesDo: [ :node :rect |
-		(rect containsPoint: aPoint - (x @ y)) ifTrue: [
-			aBlock
-				value: (rect origin + (x @ y) extent: rect extent)
-				value: node
-				value: (self scoreWith: node) ] ]
 ]
 
 { #category : 'adding-removing' }
@@ -509,24 +472,4 @@ GolapNode >> setData: aDataSeries name: aString [
 { #category : 'accessing' }
 GolapNode >> totalScore [
 	^ scores ifEmpty: [ 0 ] ifNotEmpty: #sum
-]
-
-{ #category : 'accessing' }
-GolapNode >> x [
-	^ x
-]
-
-{ #category : 'accessing' }
-GolapNode >> x: aNumber [
-	x := aNumber
-]
-
-{ #category : 'accessing' }
-GolapNode >> y [
-	^ y
-]
-
-{ #category : 'accessing' }
-GolapNode >> y: aNumber [
-	y := aNumber
 ]

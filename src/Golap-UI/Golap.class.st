@@ -292,39 +292,13 @@ Golap >> announceGolapViewUpdated [
 { #category : 'merging' }
 Golap >> applyMergesToModel: aGolapModel [
 
-	| positions |
-	positions := Dictionary new:
-		             (model
-			              ifNil: [ 256 ]
-			              ifNotNil: [ model nodes size * 3 // 2 ]).
-	model ifNotNil: [
-		model nodesDo: [ :node |
-			node asPoint ifNotNil: [ :p | positions at: node id put: p ] ] ].
 	aGolapModel resetNodes.
-	aGolapModel nodesDo: [ :node |
-		positions at: node id ifPresent: [ :p |
-			node
-				x: p x;
-				y: p y ] ].
 	merges do: [ :assoc |
-		| oldNodes newNode |
-		oldNodes := assoc value
-			            collect: [ :id |
-			            aGolapModel nodes at: id ifAbsent: [ nil ] ]
-			            thenSelect: #notNil.
-		newNode := aGolapModel
-			           mergeNodes: (assoc value
-					            collect: [ :id |
-					            aGolapModel nodes at: id ifAbsent: [ nil ] ]
-					            thenSelect: #notNil)
-			           named: assoc key.
-		newNode
-			x: ((oldNodes collect: #x thenSelect: #notNil)
-					 ifEmpty: [ nil ]
-					 ifNotEmpty: #average);
-			y: ((oldNodes collect: #y thenSelect: #notNil)
-					 ifEmpty: [ nil ]
-					 ifNotEmpty: #average) ].
+			aGolapModel
+				mergeNodes: (assoc value
+						 collect: [ :id | aGolapModel nodes at: id ifAbsent: [ nil ] ]
+						 thenSelect: #notNil)
+				named: assoc key ].
 	^ aGolapModel
 ]
 
@@ -1078,23 +1052,16 @@ Golap >> model: aGolapModel [
 Golap >> model: aGolapModel forceUpdate: aBoolean [
 
 	(aBoolean == false and: [ aGolapModel == model ]) ifTrue: [ ^ self ].
-	(model notNil and: [ aGolapModel notNil ]) ifTrue: [
-		model nodes keysAndValuesDo: [ :id :v1 |
-			(aGolapModel nodeAt: id ifAbsent: [ nil ]) ifNotNil: [ :v2 |
-				v2
-					x: v1 x;
-					y: v1 y ] ] ].
 	model := aGolapModel.
 	model ifNotNil: [
-		self
-			updateGlobalImageAfter: [
-				model flushFriendsEdges.
-				self unselectAll.
-				model ifNotNil: [
-					edgesAppearancePresenter updateModel: model.
-					itemList updateItemsList ] ]
-			layout: (aGolapModel nodes anySatisfy: [ :node |
-					 node x isNil or: [ node y isNil ] ]) ].
+			self
+				updateGlobalImageAfter: [
+						model flushFriendsEdges.
+						self unselectAll.
+						model ifNotNil: [
+								edgesAppearancePresenter updateModel: model.
+								itemList updateItemsList ] ]
+				layout: aBoolean ].
 	self announceGolapModelUpdated
 ]
 
