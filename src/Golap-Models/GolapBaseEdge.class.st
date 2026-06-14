@@ -42,7 +42,7 @@ GolapBaseEdge >> node1 [
 { #category : 'accessing' }
 GolapBaseEdge >> node1: aString [
 
-	node1 := aString
+	node1 := aString asString
 ]
 
 { #category : 'accessing' }
@@ -54,5 +54,5 @@ GolapBaseEdge >> node2 [
 { #category : 'accessing' }
 GolapBaseEdge >> node2: aString [
 
-	node2 := aString
+	node2 := aString asString
 ]

@@ -57,7 +57,7 @@ GolapBaseNode >> id [
 { #category : 'accessing' }
 GolapBaseNode >> id: aString [
 
-	data name: aString
+	data name: aString asString
 ]
 
 { #category : 'accessing' }

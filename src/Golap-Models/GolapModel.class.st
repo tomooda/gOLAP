@@ -131,18 +131,18 @@ GolapModel >> createMergedNodeFrom: aCollectionOfGolapNode named: aString [
 
 	^ aCollectionOfGolapNode
 		  ifNotEmpty: [
-			  | oldData newData |
-			  oldData := aCollectionOfGolapNode collect: #data.
-			  newData := DataSeries newFrom:
-				             (nodeAggregators collect: [ :aggregation |
-					              aggregation value: oldData ]).
-			  newData name: aString.
-			  GolapMergedNode
-				  on: (DataSeries
-						   withKeys: newData keys
-						   values: newData values
-						   name: aString)
-				  name: aString ]
+				  | oldData newData |
+				  oldData := aCollectionOfGolapNode collect: #data.
+				  newData := DataSeries newFrom:
+					             (nodeAggregators collect: [ :aggregation |
+						              aggregation value: oldData ]).
+				  newData name: aString.
+				  GolapMergedNode
+					  on: (DataSeries
+							   withKeys: newData keys
+							   values: newData values
+							   name: aString asString)
+					  name: aString ]
 		  ifEmpty: [ nil ]
 ]
 
@@ -835,11 +835,10 @@ GolapModel >> updateNodesAndEdges [
 													             (leafBaseNodes collect: #data) ]).
 										 newData name: root.
 										 GolapMergedNode
-											 on:
-											 (DataSeries
-												  withKeys: newData keys
-												  values: newData values
-												  name: root)
+											 on: (DataSeries
+													  withKeys: newData keys
+													  values: newData values
+													  name: root asString)
 											 name: root ]) ] ].
 	newRootEdges := Dictionary new.
 	baseGraph edgesDo: [ :baseEdge |

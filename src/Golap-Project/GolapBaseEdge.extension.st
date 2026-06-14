@@ -20,7 +20,7 @@ GolapBaseEdge class >> fromJSON: aDictionary [
 { #category : '*Golap-Project' }
 GolapBaseEdge >> fromJSON: aDictionary [
 
-	node1 := aDictionary at: 'node1'.
-	node2 := aDictionary at: 'node2'.
+	node1 := (aDictionary at: 'node1') asString.
+	node2 := (aDictionary at: 'node2') asString.
 	data := aDictionary at: 'data'
 ]

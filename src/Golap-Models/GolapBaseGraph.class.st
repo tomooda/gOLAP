@@ -78,8 +78,8 @@ GolapBaseGraph >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn:
 			id := row at: aString ifAbsent: [ index ].
 			name := (row at: anotherString ifAbsent: [ id ]) asString.
 			newNodes
-				at: id
-				ifAbsentPut: [GolapBaseNode id: id name: name data: row ] ].
+				at: id asString
+				ifAbsentPut: [ GolapBaseNode id: id name: name data: row ] ].
 	nodes := newNodes values asArray
 ]
 
