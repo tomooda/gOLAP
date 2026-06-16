@@ -595,7 +595,7 @@ GolapElaborationPresenter >> updateGraph [
 				                  node -> (model valueAtNode: node) ])
 				                 asSortedCollection: #value descending) collect:
 				                #key.
-			rootSet := rootNodes asIdentitySet.
+			rootSet := newRootNodes asIdentitySet.
 			associateScores := IdentityDictionary new: rootNodes size * 2.
 			newRootNodes do: [ :node |
 					node edgesAndNodeDo: [ :edge :peer |
@@ -608,7 +608,7 @@ GolapElaborationPresenter >> updateGraph [
 			newAssociateNodes := (associateScores associations
 				                      asSortedCollection: #value descending)
 				                     collect: #key.
-			barScale := associateNodes
+			barScale := newAssociateNodes
 				            ifNotEmpty: [
 				            500.0 / associateScores values max asFloat ]
 				            ifEmpty: [ 1.0 ] ].
