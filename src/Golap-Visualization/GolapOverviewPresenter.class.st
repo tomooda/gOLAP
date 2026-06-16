@@ -558,7 +558,7 @@ GolapOverviewPresenter >> scale: aNumber at: aPoint [
 GolapOverviewPresenter >> showsNode: aGolapNode [
 
 	^ reallyVisibleNodes notNil and: [
-		  reallyVisibleNodes includes: aGolapNode ]
+		  reallyVisibleNodes anySatisfy: [ :n | n id = aGolapNode id ] ]
 ]
 
 { #category : 'testing' }
@@ -570,10 +570,12 @@ GolapOverviewPresenter >> showsPhotoimages [
 { #category : 'updating' }
 GolapOverviewPresenter >> updateCanvas [
 
-	self isDisplayed ifTrue: [
-			self
-				updateGraph;
-				updateNodeShapes ]
+	self isDisplayed
+		ifTrue: [
+				self
+					updateGraph;
+					updateNodeShapes ]
+		ifFalse: [ self updateGraph ]
 ]
 
 { #category : 'updating' }

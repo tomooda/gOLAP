@@ -3,11 +3,10 @@ Extension { #name : 'GolapModel' }
 { #category : '*Golap-Project' }
 GolapModel >> asJSON [
 
-	| json  |
-	json := Dictionary new.
+	| json |
+	json := OrderedDictionary new.
 	baseGraph toJSON: json.
-	merge toJSON: json.
-	^ OrderedDictionary new
+	^ json
 		  at: 'nodeEvaluator' put: nodeEvaluator asJSON;
 		  at: 'nodeAggregators' put: (nodeAggregators collect: #asJSON);
 		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
@@ -41,7 +40,6 @@ GolapModel >> fromJSON: aDictionary [
 				edgeAggregators := array collect: [ :json |
 						                   GolapDataAggregator fromJSON: json ] ].
 	baseGraph := GolapBaseGraph fromJSON: aDictionary.
-	merge fromJSON: aDictionary.
 	self updateNodesAndEdges.
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.

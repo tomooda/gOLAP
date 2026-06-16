@@ -993,20 +993,20 @@ Golap >> mergeMenu [
 Golap >> mergeNodes: aCollectionOfIds [
 
 	aCollectionOfIds size < 2 ifTrue: [ ^ nil ].
-	^ model ifNotNil: [ 
-		  (UIManager default
-			   request: '統合したノード名'
-			   initialAnswer: ''
-			   title: 'ノードの統合') ifNotNil: [ :nodeName | 
-			  (model nodes includesKey: nodeName)
-				  ifTrue: [ 
-					  UIManager default alert: '名前が重複しています'.
-					  nil ]
-				  ifFalse: [ 
-					  merges add: nodeName -> aCollectionOfIds copy.
-					  self updateModel.
-					  itemList updateItemsList.
-					  nodeName ] ] ]
+	^ model ifNotNil: [
+			  (UIManager default
+				   request: '統合したノード名'
+				   initialAnswer: ''
+				   title: 'ノードの統合') ifNotNil: [ :nodeName |
+					  (model nodes includesKey: nodeName)
+						  ifTrue: [
+								  UIManager default alert: '名前が重複しています'.
+								  nil ]
+						  ifFalse: [
+								  merges add: nodeName -> aCollectionOfIds copy.
+								  self updateModel.
+								  itemList updateItemsList.
+								  nodeName ] ] ]
 ]
 
 { #category : 'merging' }
@@ -2226,7 +2226,7 @@ Golap >> updateGlobalImageAfter: aBlock layout: aBoolean [
 					self updateGlobalImage ] ]
 ]
 
-{ #category : 'operations' }
+{ #category : 'updating' }
 Golap >> updateItemView [
 	self
 		showItemView:
@@ -2235,19 +2235,22 @@ Golap >> updateItemView [
 				ifAbsent: [ ^ self ])
 ]
 
-{ #category : 'operations' }
+{ #category : 'updating' }
 Golap >> updateItemsList [
 
 	itemList updateItemsList
 ]
 
-{ #category : 'operations' }
+{ #category : 'updating' }
 Golap >> updateModel [
 
 	self model: self selectedModel.
 	self isUpdateModelBlocked ifTrue: [ ^ self ].
-	itemList modelChanged.
+	itemList updateItemsList.
 	edgeList modelChanged.
+	self visualizationsDo: [ :presenter |
+			(presenter respondsTo: #updateCanvas) ifTrue: [
+				presenter updateCanvas ] ].
 	self activeVisualizationDo: [ :presenter |
 			(presenter respondsTo: #ensureNodePositions) ifTrue: [
 				presenter ensureNodePositions ] ].
@@ -2284,6 +2287,12 @@ Golap >> url: aZnUrl [
 Golap >> visibleEdges [
 
 	^ edgesAppearancePresenter visibleEdges
+]
+
+{ #category : 'enumerating' }
+Golap >> visualizationsDo: aBlock [
+
+	visualizationNotebook pages do: aBlock
 ]
 
 { #category : 'accessing' }

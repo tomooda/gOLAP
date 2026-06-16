@@ -438,6 +438,12 @@ GolapModel >> nodeAt: aString ifAbsent: errorBlock [
 	^ self nodes at: aString ifAbsent: errorBlock
 ]
 
+{ #category : 'accessing-node' }
+GolapModel >> nodeAt: aString ifPresent: aBlock ifAbsent: errorBlock [
+
+	^ self nodes at: aString ifPresent: aBlock ifAbsent: errorBlock
+]
+
 { #category : 'accessing' }
 GolapModel >> nodeEvaluator [
 
@@ -703,6 +709,15 @@ GolapModel >> resetPolish [
 	negativePolishEdges := IdentitySet new.
 	friendsEdges := nil.
 	self flushEdgeRanks
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> setMerges: anOrderedCollectionOfAssociations [
+
+	merge unmergeAll.
+	anOrderedCollectionOfAssociations do: [ :assoc |
+		merge merge: assoc value into: assoc key ].
+	self updateNodesAndEdges
 ]
 
 { #category : 'accessing-node' }

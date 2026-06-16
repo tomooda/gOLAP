@@ -543,8 +543,8 @@ GolapElaborationPresenter >> scale: aNumber at: aPoint [
 { #category : 'testing' }
 GolapElaborationPresenter >> showsNode: aGolapNode [
 
-	^ (rootNodes includes: aGolapNode) or: [
-		  associateNodes includes: aGolapNode ]
+	^ (rootNodes anySatisfy: [ :n | n id = aGolapNode id ]) or: [
+		  associateNodes anySatisfy: [ :n | n id = aGolapNode id ] ]
 ]
 
 { #category : 'testing' }
@@ -571,29 +571,33 @@ GolapElaborationPresenter >> updateAssociateNodePositions [
 { #category : 'updating' }
 GolapElaborationPresenter >> updateCanvas [
 
-	self isDisplayed ifTrue: [
-		self updateGraph.
-		self canvas shapes copy do: #remove.
-		self canvas color: Color white.
-		self
-			renderNodesIn: self canvas;
-			renderEdgesIn: self canvas.
-		self canvas signalUpdate ]
+	self isDisplayed
+		ifTrue: [
+				self updateGraph.
+				self canvas shapes copy do: #remove.
+				self canvas color: Color white.
+				self
+					renderNodesIn: self canvas;
+					renderEdgesIn: self canvas.
+				self canvas signalUpdate ]
+		ifFalse: [ self updateGraph ]
 ]
 
 { #category : 'updating' }
 GolapElaborationPresenter >> updateGraph [
 
-	rootNodes := Array new.
-	associateNodes := Array new.
+	| newRootNodes newAssociateNodes |
+	newRootNodes := Array new.
+	newAssociateNodes := Array new.
 	self golapModelDo: [ :model |
 			| rootSet associateScores |
-			rootNodes := ((golap markedNodes collect: [ :node |
-				               node -> (model valueAtNode: node) ])
-				              asSortedCollection: #value descending) collect: #key.
+			newRootNodes := ((golap markedNodes collect: [ :node |
+				                  node -> (model valueAtNode: node) ])
+				                 asSortedCollection: #value descending) collect:
+				                #key.
 			rootSet := rootNodes asIdentitySet.
 			associateScores := IdentityDictionary new: rootNodes size * 2.
-			rootNodes do: [ :node |
+			newRootNodes do: [ :node |
 					node edgesAndNodeDo: [ :edge :peer |
 							(rootSet includes: peer) ifFalse: [
 									associateScores
@@ -601,13 +605,15 @@ GolapElaborationPresenter >> updateGraph [
 										put:
 										(associateScores at: peer ifAbsent: [ 0 ])
 										+ (model valueAtEdge: edge) ] ] ].
-			associateNodes := (associateScores associations
-				                   asSortedCollection: #value descending)
-				                  collect: #key.
+			newAssociateNodes := (associateScores associations
+				                      asSortedCollection: #value descending)
+				                     collect: #key.
 			barScale := associateNodes
 				            ifNotEmpty: [
 				            500.0 / associateScores values max asFloat ]
 				            ifEmpty: [ 1.0 ] ].
+	rootNodes := newRootNodes.
+	associateNodes := newAssociateNodes.
 	golap updateItemsList
 ]
 

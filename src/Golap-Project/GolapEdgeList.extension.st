@@ -17,8 +17,9 @@ GolapEdgeList >> fromJSON: aDictionary [
 
 	self updateNodeDropList.
 	aDictionary
-		at: 'node-selection'
-		ifPresent: [ :object | nodeDropList selectItem: object ];
+		at: 'node-selection' ifPresent: [ :object |
+				(nodeDropList items includes: object) ifTrue: [
+						nodeDropList selectItem: object ] ];
 		at: 'edge-selection' ifPresent: [ :arrayOrNil |
 				arrayOrNil ifNotNil: [
 							| id1 id2 |
