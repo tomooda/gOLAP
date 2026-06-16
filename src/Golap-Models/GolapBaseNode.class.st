@@ -16,17 +16,8 @@ GolapBaseNode class >> id: aString name: anotherString data: aDictionary [
 	^ self new
 		  data:
 			  (DataSeries withKeys: aDictionary keys values: aDictionary values);
-		  id: aString;
-		  name: anotherString;
-		  yourself
-]
-
-{ #category : 'instance creation' }
-GolapBaseNode class >> on: aDataSeries name: aString [
-
-	^ self new
-		  data: aDataSeries;
-		  name: aString;
+		  id: aString asString;
+		  name: (anotherString ifNil: [ aString ]) asString;
 		  yourself
 ]
 

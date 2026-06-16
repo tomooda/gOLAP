@@ -94,11 +94,21 @@ GolapBaseGraph >> readServerDataframe: aDataFrame [
 	newNodes := Dictionary new.
 	newEdges := OrderedCollection new: aDataFrame size.
 	aDataFrame do: [ :data |
-			| id1 id2 |
+			| id1 |
 			id1 := data at: 'node1'.
-			id2 := data at: 'node2'.
-			id2 ifNotNil: [
-				newEdges add: (GolapBaseEdge node1: id1 node2: id2 data: data) ] ].
+			newNodes at: id1 ifAbsentPut: [
+					GolapBaseNode
+						id: id1 asString
+						name: (data at: 'node1n')
+						data: { ('frequency' -> (data at: 'frequency1')) } asDictionary ].
+			(data at: 'node2') ifNotNil: [ :id2 |
+					newNodes at: id2 ifAbsentPut: [
+							GolapBaseNode
+								id: id2 asString
+								name: (data at: 'node2n')
+								data:
+								{ ('frequency' -> (data at: 'frequency2')) } asDictionary ].
+					newEdges add: (GolapBaseEdge node1: id1 node2: id2 data: data) ] ].
 	nodes := newNodes values asArray.
 	edges := newEdges asArray
 ]
