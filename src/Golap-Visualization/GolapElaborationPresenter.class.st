@@ -543,8 +543,9 @@ GolapElaborationPresenter >> scale: aNumber at: aPoint [
 { #category : 'testing' }
 GolapElaborationPresenter >> showsNode: aGolapNode [
 
-	^ (rootNodes anySatisfy: [ :n | n id = aGolapNode id ]) or: [
-		  associateNodes anySatisfy: [ :n | n id = aGolapNode id ] ]
+	^ true
+	"^ (rootNodes anySatisfy: [ :n | n id = aGolapNode id ]) or: [
+		  associateNodes anySatisfy: [ :n | n id = aGolapNode id ] ]"
 ]
 
 { #category : 'testing' }

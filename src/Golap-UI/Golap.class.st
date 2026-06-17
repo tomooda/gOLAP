@@ -1828,6 +1828,7 @@ Golap >> selectedNodesDo: aBlock [
 { #category : 'updating' }
 Golap >> selectedPageChanged [
 
+	self updateItemsList.
 	visualizationNotebook selectedPage activePresenter ifNotNil: [ :p |
 			(p respondsTo: #activateOnNotebookPage) ifTrue: [
 				p activateOnNotebookPage ].
