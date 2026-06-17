@@ -266,7 +266,7 @@ GolapNode >> id: anObject [
 ]
 
 { #category : 'enumerating' }
-GolapNode >> idDo: aBlock [
+GolapNode >> idsDo: aBlock [
 
 	aBlock value: self id
 ]

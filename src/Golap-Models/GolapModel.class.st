@@ -373,6 +373,12 @@ GolapModel >> maxNodeValue [
 	^ maxNode ifNotNil: [ maxValue ] ifNil: [ 1.0 ]
 ]
 
+{ #category : 'accessing' }
+GolapModel >> merge [
+
+	^ merge
+]
+
 { #category : 'accessing-node' }
 GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
@@ -436,6 +442,12 @@ GolapModel >> nodeAt: aString [
 { #category : 'accessing-node' }
 GolapModel >> nodeAt: aString ifAbsent: errorBlock [
 	^ self nodes at: aString ifAbsent: errorBlock
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> nodeAt: aString ifPresent: aBlock [
+
+	^ self nodes at: aString ifPresent: aBlock
 ]
 
 { #category : 'accessing-node' }
@@ -756,14 +768,11 @@ GolapModel >> updateNodesAndEdges [
 											            (nodeAggregators collect: [ :aggregation |
 												             aggregation value:
 													             (leafBaseNodes collect: #data) ]).
-										 newData name: root.
+										 newData name: root asString.
 										 GolapMergedNode
-											 on: (DataSeries
-													  withKeys: newData keys
-													  values: newData values
-													  name: root asString)
-											 name: root
-											 ids: (leafBaseNodes collect: #id) ]) ] ].
+											 on: newData
+											 name: root asString
+											 ids: (leafBaseNodes collect: [ :n | n id asString ]) ]) ] ].
 	newRootEdges := Dictionary new.
 	baseGraph edgesDo: [ :baseEdge |
 			merge rootsAt: baseEdge node1 do: [ :root1 |

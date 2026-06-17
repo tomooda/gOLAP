@@ -38,6 +38,32 @@ GolapOverviewPresenter >> availableEdges [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'updating' }
+GolapOverviewPresenter >> basicUpdateNodePositions [
+
+	(reallyVisibleNodes notNil and: [ reallyVisibleEdges notNil ])
+		ifTrue: [
+				self golapModelDo: [ :golapModel |
+						| rootPositions newNodePositions |
+						rootPositions := GolapOverviewGridLayouter
+							                 layoutNodes:
+								                 (reallyVisibleNodes select: [ :node |
+									                  (golapModel isReferenceNode: node) not ])
+							                 edges: (reallyVisibleEdges select: [ :edge |
+									                  (golapModel isReferenceEdge: edge) not ]).
+						newNodePositions := Dictionary new: rootPositions size * 3 // 2.
+						rootPositions keysAndValuesDo: [ :root :position |
+								newNodePositions at: root put: position.
+								golapModel merge
+									leavesAt: root
+									do: [ :id |
+									root = id ifFalse: [ newNodePositions at: id put: position ] ] ].
+						nodePositions := newNodePositions ].
+				self
+					updateNodeShapes;
+					forceZoomToFit ]
+]
+
 { #category : 'accessing' }
 GolapOverviewPresenter >> camera [
 
@@ -109,25 +135,33 @@ GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
 ]
 
 { #category : 'updating' }
+GolapOverviewPresenter >> ensureNodePositionAt: aString ifFailed: errorBlock [
+
+	nodePositions at: aString ifAbsentPut: [
+			golap model
+				nodeAt: aString
+				ifPresent: [ :node |
+						| ps |
+						ps := OrderedCollection new.
+						node idsDo: [ :id |
+							nodePositions at: id ifPresent: [ :p | ps add: p ] ].
+						ps ifNotEmpty: #average ifEmpty: [ ^ errorBlock value ] ]
+				ifAbsent: [ ^ errorBlock value ] ]
+]
+
+{ #category : 'updating' }
 GolapOverviewPresenter >> ensureNodePositions [
 
 	self isDisplayed ifTrue: [
 			self golapModelDo: [ :golapModel |
 					self availableEdges do: [ :edge |
-							((golapModel valueAtEdge: edge) notNil and: [
-									 (nodePositions includesKey: edge node1 id) not or: [
-										 (nodePositions includesKey: edge node2 id) not ] ])
-								ifTrue: [
-										nodePositions := GolapOverviewGridLayouter
-											                 layoutNodes:
-												                 (reallyVisibleNodes select: [ :node |
-													                  (golapModel isReferenceNode: node) not ])
-											                 edges: (reallyVisibleEdges select: [ :e |
-													                  (golapModel isReferenceEdge: e) not ]).
-										self
-											updateNodeShapes;
-											forceZoomToFit.
-										^ self ] ] ] ]
+							(golapModel valueAtEdge: edge) notNil ifTrue: [
+									self
+										ensureNodePositionAt: edge node1 id
+										ifFailed: [ ^ self basicUpdateNodePositions ].
+									self
+										ensureNodePositionAt: edge node2 id
+										ifFailed: [ ^ self basicUpdateNodePositions ] ] ] ] ]
 ]
 
 { #category : 'operations' }
@@ -172,7 +206,7 @@ GolapOverviewPresenter >> golap: aGolap [
 { #category : 'updating' }
 GolapOverviewPresenter >> golapChanged [
 
-	self updateNodePositions
+	self ensureNodePositions
 ]
 
 { #category : 'enumerating' }
@@ -602,6 +636,7 @@ GolapOverviewPresenter >> updateGraph [
 								add: edge node1;
 								add: edge node2 ].
 					reallyVisibleNodes := connectedNodes asArray.
+					self ensureNodePositions.
 					golap updateItemsList ] ]
 ]
 
@@ -627,19 +662,7 @@ GolapOverviewPresenter >> updateNodePositions [
 
 	self isDisplayed ifTrue: [
 			self updateGraph.
-			(reallyVisibleNodes notNil and: [ reallyVisibleEdges notNil ])
-				ifTrue: [
-						self golapModelDo: [ :golapModel |
-								nodePositions := GolapOverviewGridLayouter
-									                 layoutNodes:
-										                 (reallyVisibleNodes select: [ :node |
-											                  (golapModel isReferenceNode: node) not ])
-									                 edges:
-										                 (reallyVisibleEdges select: [ :edge |
-											                  (golapModel isReferenceEdge: edge) not ]) ].
-						self
-							updateNodeShapes;
-							forceZoomToFit ] ]
+			self basicUpdateNodePositions ]
 ]
 
 { #category : 'updating' }

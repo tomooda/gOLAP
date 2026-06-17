@@ -293,5 +293,6 @@ GolapPolishOverviewPresenter >> updateGraph [
 								add: edge node1;
 								add: edge node2 ].
 					reallyVisibleNodes := connectedNodes asArray.
+					self ensureNodePositions.
 					golap updateItemsList ] ]
 ]

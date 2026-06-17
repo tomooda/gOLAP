@@ -408,6 +408,12 @@ GolapQueryHistoryPresenter >> tagIcon [
 	^ form
 ]
 
+{ #category : 'accessing' }
+GolapQueryHistoryPresenter >> tail [
+
+	^ queryStorage chronicleTail
+]
+
 { #category : 'columns' }
 GolapQueryHistoryPresenter >> timestampColumn [
 

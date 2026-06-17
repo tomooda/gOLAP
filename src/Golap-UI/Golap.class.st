@@ -1782,7 +1782,7 @@ Golap >> saveSnapshot [
 { #category : 'accessing-selection' }
 Golap >> select: aGolapNode [
 
-	aGolapNode idDo: [ :id | selections add: id ].
+	aGolapNode idsDo: [ :id | selections add: id ].
 	self showItemView: aGolapNode.
 	self updateSelection
 ]
@@ -1791,7 +1791,7 @@ Golap >> select: aGolapNode [
 Golap >> selectAll: aCollectionOfGolapNode [
 
 	aCollectionOfGolapNode do: [ :node |
-		node idDo: [ :id | selections add: id ] ].
+		node idsDo: [ :id | selections add: id ] ].
 	self showItemView: aCollectionOfGolapNode anyOne.
 	self updateSelection
 ]
@@ -1856,7 +1856,7 @@ Golap >> selections: aCollectionOfGolapNode [
 	| newSelections |
 	newSelections := Set new: aCollectionOfGolapNode size.
 	aCollectionOfGolapNode do: [ :v |
-		v idDo: [ :id | newSelections add: id ] ].
+		v idsDo: [ :id | newSelections add: id ] ].
 	selections = newSelections ifFalse: [
 		selections := newSelections.
 		self showItemView: aCollectionOfGolapNode last.
@@ -2171,7 +2171,7 @@ Golap >> unmergeNode: aString [
 { #category : 'accessing-selection' }
 Golap >> unselect: aGolapNode [
 
-	aGolapNode idDo: [ :id | selections remove: id ifAbsent: [  ] ].
+	aGolapNode idsDo: [ :id | selections remove: id ifAbsent: [  ] ].
 	self updateSelection
 ]
 
@@ -2186,7 +2186,7 @@ Golap >> unselectAll [
 Golap >> unselectAll: aCollectionOfGolapNode [
 
 	aCollectionOfGolapNode do: [ :node |
-		node idDo: [ :id | selections remove: id ifAbsent: [  ] ] ].
+		node idsDo: [ :id | selections remove: id ifAbsent: [  ] ] ].
 	self updateSelection
 ]
 

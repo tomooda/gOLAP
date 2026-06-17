@@ -23,13 +23,6 @@ GolapMergedNode >> hasNode: aGolapNode [
 	^ (super hasNode: aGolapNode) or: [ ids includes: aGolapNode id ]
 ]
 
-{ #category : 'enumerating' }
-GolapMergedNode >> idDo: aBlock [
-
-	aBlock value: self id.
-	ids ifNotNil: [ ids do: aBlock ]
-]
-
 { #category : 'accessing' }
 GolapMergedNode >> ids [
 
@@ -40,6 +33,13 @@ GolapMergedNode >> ids [
 GolapMergedNode >> ids: anArrayOfString [
 
 	ids := anArrayOfString
+]
+
+{ #category : 'enumerating' }
+GolapMergedNode >> idsDo: aBlock [
+
+	aBlock value: self id.
+	ids ifNotNil: [ ids do: aBlock ]
 ]
 
 { #category : 'testing' }
