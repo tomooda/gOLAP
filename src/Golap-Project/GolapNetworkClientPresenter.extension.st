@@ -1,6 +1,12 @@
 Extension { #name : 'GolapNetworkClientPresenter' }
 
 { #category : '*Golap-Project' }
+GolapNetworkClientPresenter class >> asJSON [
+
+	^ current ifNotNil: #asJSON
+]
+
+{ #category : '*Golap-Project' }
 GolapNetworkClientPresenter >> asJSON [
 
 	^ self basicAsJSON

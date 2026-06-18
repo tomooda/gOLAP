@@ -1,36 +1,15 @@
 Class {
-	#name : 'GolapProject',
-	#superclass : 'Object',
+	#name : 'GolapNamedProject',
+	#superclass : 'GolapAbstractProject',
 	#instVars : [
 		'projectFile'
-	],
-	#classInstVars : [
-		'current'
 	],
 	#category : 'Golap-Project',
 	#package : 'Golap-Project'
 }
 
-{ #category : 'sole instance' }
-GolapProject class >> current [
-
-	^ current ifNil: [ current := self new ]
-]
-
-{ #category : 'accessing' }
-GolapProject class >> fileExtension [
-
-	^ 'golap'
-]
-
-{ #category : 'sole instance' }
-GolapProject class >> flushCurrent [
-
-	current := nil
-]
-
 { #category : 'menus' }
-GolapProject class >> golapMenuOn: aBuilder [
+GolapNamedProject class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
 	<golapMenu>
@@ -62,53 +41,31 @@ GolapProject class >> golapMenuOn: aBuilder [
 ]
 
 { #category : 'operations' }
-GolapProject class >> open [
+GolapNamedProject class >> open [
 
 	self current open
 ]
 
 { #category : 'accessing' }
-GolapProject class >> projectBaseDirectory [
+GolapNamedProject class >> projectBaseDirectory [
 
-	^ Golap golapDirectory
+	^ self golapDirectory
 ]
 
 { #category : 'operations' }
-GolapProject class >> quit [
+GolapNamedProject class >> quit [
 
 	self current quit
 ]
 
 { #category : 'operations' }
-GolapProject class >> save [
+GolapNamedProject class >> save [
 
 	self current save
 ]
 
-{ #category : 'ui requests' }
-GolapProject >> application [
-
-	^ SpApplication defaultApplication
-]
-
-{ #category : 'converting' }
-GolapProject >> asJSON [
-
-	^ Array streamContents: [ :stream |
-			  | windows |
-			  windows := self golapWindows.
-			  SpProgressDialog new
-				  title: '保存中...';
-				  informUserDuring: [ :progress |
-						  windows withIndexDo: [ :window :index |
-									  progress
-										  label: '保存中... ' , window title;
-										  progressPercent: index * 100 // windows size.
-									  stream nextPut: window presenter asJSON ] ] ]
-]
-
 { #category : 'operations' }
-GolapProject >> closeAll [
+GolapNamedProject >> closeAll [
 
 	self golapWindows ifEmpty: [ ^ self ].
 	(self
@@ -119,76 +76,18 @@ GolapProject >> closeAll [
 			self golapWindowsDo: [ :window | window presenter forceClose ] ]
 ]
 
-{ #category : 'ui requests' }
-GolapProject >> confirm: aString title: anotherString [
-
-	^ self application newConfirm
-		  label: aString;
-		  title: anotherString;
-		  openModal
-]
-
-{ #category : 'ui requests' }
-GolapProject >> confirmYesNoCancel: aString title: anotherString [
-
-	^ (GolapConfirmYesNoCancelDialog newApplication: self application)
-		  label: aString;
-		  title: anotherString;
-		  openModal
-]
-
-{ #category : 'converting' }
-GolapProject >> fromJSON: anArray [
-
-	| dialog |
-	dialog := SpProgressDialog new.
-	dialog
-		title: '復元中...';
-		informUserDuring: [ :progress |
-				| widget |
-				widget := dialog adapter widget.
-				anArray withIndexDo: [ :json :index |
-							progress progressPercent: index * 100 // anArray size.
-							json at: 'class' ifPresent: [ :className |
-										(TGolapSnapshotablePresenter users
-											 detect: [ :class | class name asString = className ]
-											 ifNone: [ nil ]) ifNotNil: [ :class |
-												class fromJSON: json ] ] ] ]
-]
-
-{ #category : 'accessing' }
-GolapProject >> golapWindows [
-
-	^ Array streamContents: [ :stream |
-		  self golapWindowsDo: [ :window | stream nextPut: window ] ]
-]
-
-{ #category : 'enumerating' }
-GolapProject >> golapWindowsDo: aBlock [
-
-	| presenterClasses |
-	presenterClasses := TGolapSnapshotablePresenter users.
-	self currentWorld taskbars do: [ :taskbar |
-			taskbar submorphs do: [ :morph |
-					([ morph model model presenter ]
-						 on: MessageNotUnderstood
-						 do: [ :ex | ex return: nil ]) ifNotNil: [ :p |
-						(presenterClasses includes: p class) ifTrue: [
-							aBlock value: p window ] ] ] ]
-]
-
 { #category : 'operations' }
-GolapProject >> load [
+GolapNamedProject >> load [
 
-	projectFile ifNotNil: [
-			projectFile readStreamDo: [ :stream |
+	self projectFile ifNotNil: [ :ref |
+			ref readStreamDo: [ :stream |
 					(NeoJSONReader on: stream) next ifNotNil: [ :json |
 							self closeAll.
 							self fromJSON: json ] ] ]
 ]
 
 { #category : 'operations' }
-GolapProject >> open [
+GolapNamedProject >> open [
 
 	| dialog |
 	dialog := StOpenFilePresenter new.
@@ -211,27 +110,35 @@ GolapProject >> open [
 ]
 
 { #category : 'accessing' }
-GolapProject >> projectFile [
+GolapNamedProject >> projectFile [
 
 	^ projectFile
 ]
 
 { #category : 'accessing' }
-GolapProject >> projectFile: aFileReference [
+GolapNamedProject >> projectFile: aFileReference [
 
 	projectFile := aFileReference.
 	self updateWorldWindowTitle
 ]
 
 { #category : 'accessing' }
-GolapProject >> projectName [
+GolapNamedProject >> projectName [
 
 	^ projectFile ifNotNil: [
 		  projectFile basenameWithoutExtension: self class fileExtension ]
 ]
 
+{ #category : 'accessing' }
+GolapNamedProject >> projectName: aString [
+
+	self projectFile:
+		(self class projectBaseDirectory / aString withExtension:
+			 self class fileExtension)
+]
+
 { #category : 'operations' }
-GolapProject >> quit [
+GolapNamedProject >> quit [
 
 	self closeAll.
 	self projectFile: nil.
@@ -239,7 +146,7 @@ GolapProject >> quit [
 ]
 
 { #category : 'operations' }
-GolapProject >> save [
+GolapNamedProject >> save [
 
 	(self golapWindows notEmpty or: [
 		 self confirm: '空のプロジェクトを保存しますか？' title: 'プロジェクト保存' ]) ifTrue: [
@@ -262,7 +169,7 @@ GolapProject >> save [
 ]
 
 { #category : 'operations' }
-GolapProject >> store [
+GolapNamedProject >> store [
 
 	projectFile ifNotNil: [
 			self asJSON ifNotNil: [ :json |
@@ -274,13 +181,13 @@ GolapProject >> store [
 ]
 
 { #category : 'updating' }
-GolapProject >> updateMenubar [
+GolapNamedProject >> updateMenubar [
 
 	GolapMenubar reset
 ]
 
 { #category : 'updating' }
-GolapProject >> updateWorldWindowTitle [
+GolapNamedProject >> updateWorldWindowTitle [
 
 	self currentWorld worldState worldRenderer osWindow title:
 		(self projectName ifNil: [ 'gOLAP' ])

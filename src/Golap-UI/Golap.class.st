@@ -65,7 +65,8 @@ Golap class >> deploy [
 
 	<script>
 	GolapMenubar reset.
-	GolapProject flushCurrent.
+	GolapNamedProject flushCurrent.
+	GolapNetworkClientPresenter flushCurrent.
 	MCRepositoryGroup allSubInstancesDo: [ :group |
 		group repositories do: [ :repo | group removeRepository: repo ] ].
 	IceRepository registry removeAll.
@@ -145,6 +146,12 @@ Golap class >> golapMenuOn: aBuilder [
 					help: 'gOLAPのロゴとバージョンを表示します' ]
 ]
 
+{ #category : 'class initialization' }
+Golap class >> initialize [
+
+	SessionManager default registerUserClassNamed: self name
+]
+
 { #category : 'accessing' }
 Golap class >> nameEndOfLineDelimiter [
 	^ NameEndOfLineDelimiter ifNil: [ '||' ]
@@ -214,6 +221,29 @@ Golap class >> openFile [
 	^ overview
 ]
 
+{ #category : 'startup - shutdown' }
+Golap class >> resume [
+
+	[
+		self sessionFile readStreamDo: [ :stream |
+				(NeoJSONReader on: stream) next ifNotNil: [ :json |
+						json
+							at: 'session'
+							ifPresent: [ :phantom |
+								GolapPhantasmicProject fromJSON: phantom ];
+							at: 'last-query'
+							ifPresent: [ :query |
+								GolapNetworkClientPresenter fromJSON: query ] ] ] ]
+		on: Exception
+		do: [ :ex |  ]
+]
+
+{ #category : 'startup - shutdown' }
+Golap class >> sessionFile [
+
+	^ self golapDirectory / '.golap'
+]
+
 { #category : 'menus' }
 Golap class >> showSettingBrowser [
 
@@ -223,6 +253,36 @@ Golap class >> showSettingBrowser [
 				(self packageOrganizer packageNamed: #'Network-Kernel').
 				(self packageOrganizer packageNamed: #'Golap-UI') };
 		open
+]
+
+{ #category : 'startup - shutdown' }
+Golap class >> shutDown: aBoolean [
+
+	aBoolean ifTrue: [ self suspend ]
+]
+
+{ #category : 'startup - shutdown' }
+Golap class >> startUp: aBoolean [
+
+	aBoolean ifTrue: [ self resume ]
+]
+
+{ #category : 'startup - shutdown' }
+Golap class >> suspend [
+
+	[
+		| json |
+		json := Dictionary new.
+		"GolapPhantasmicProject asJSON ifNotNil: [ :project |
+			json at: 'session' put: project ]."
+		GolapNetworkClientPresenter asJSON ifNotNil: [ :query |
+			json at: 'last-query' put: query ].
+		self sessionFile
+			ensureDelete;
+			writeStreamDo: [ :stream |
+				(NeoJSONWriter on: stream) nextPut: json ] ]
+		on: Exception
+		do: [ :ex |  ]
 ]
 
 { #category : 'accessing' }

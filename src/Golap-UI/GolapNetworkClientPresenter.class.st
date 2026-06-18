@@ -22,10 +22,37 @@ Class {
 		'saveButton',
 		'openButton'
 	],
+	#classInstVars : [
+		'current'
+	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
 	#tag : 'Query'
 }
+
+{ #category : 'sole instance' }
+GolapNetworkClientPresenter class >> basicCurrent [
+
+	^ current
+]
+
+{ #category : 'sole instance' }
+GolapNetworkClientPresenter class >> current [
+
+	^ current ifNil: [ current := self new ]
+]
+
+{ #category : 'sole instance' }
+GolapNetworkClientPresenter class >> flushCurrent [
+
+	current := nil
+]
+
+{ #category : 'instance creation' }
+GolapNetworkClientPresenter class >> fromJSON: aDictionary [
+
+	^ self current fromJSON: aDictionary
+]
 
 { #category : 'menus' }
 GolapNetworkClientPresenter class >> golapMenuOn: aBuilder [
@@ -45,7 +72,7 @@ GolapNetworkClientPresenter class >> golapMenuOn: aBuilder [
 { #category : 'menus' }
 GolapNetworkClientPresenter class >> open [
 
-	^ self new open
+	^ self current open
 ]
 
 { #category : 'accessing' }
