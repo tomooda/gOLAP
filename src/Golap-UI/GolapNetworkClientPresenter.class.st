@@ -379,66 +379,69 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 GolapNetworkClientPresenter >> openGolap [
 
 	self clearPreviewFilterField.
-	usesQueryHistory
-		ifTrue: [
-				queryHistoryPresenter historyRecord ifNotNil: [ :record |
-						| golap |
-						golap := Golap new.
-						golap blockUpdateModelWhile: [
-							golap loadFromQueryRecord: record hideDuplicate ].
-						golap confirmOpen.
-						golap open maximize.
-						golap updateModel ] ]
-		ifFalse: [
-				| queryRecord api golap |
-				queryRecord := self recordHiDeHo.
-				api := GolapApiClient
-					       url: self url
-					       query: self query
-					       comment: self comment
-					       serverConfig: self serverConfig
-					       itemFieldQuerySpec: self itemFieldQuerySpec
-					       authenticateBlock: self authenticateBlock.
-				golap := Golap new.
-				[
-					golap
-						queryRecord: queryRecord;
-						itemInfoRetriever:
-							(GolapServerProductInfoRetriever fromApiClient: api);
-						authenticateBlock: api authenticateBlock;
-						query: (NeoJSONReader fromString: api query);
-						url: api url;
-						comment: api comment;
-						imageRepositoryUrl: api imageUrl;
-						itemFieldQuerySpec: api itemFieldQuerySpec;
-						itemViewUrl: api url ]
-					on: Error
-					do: [ :ex |
-							UIManager default alert:
-								'Can''t open the given URL: ' , api url asString ].
-				golap snapshotData: api readStream do: [ :readStream |
-						readStream ifNil: [ golap delete ] ifNotNil: [
-								readStream isString
-									ifTrue: [ UIManager default alert: readStream ]
-									ifFalse: [
-											Cursor wait showWhile: [
-													UIManager default informUserDuring: [ :bar |
-															bar
-																min: 0;
-																max: readStream size.
-															golap blockUpdateModelWhile: [
-																	[
-																		bar value: readStream position.
-																		readStream atEnd ] whileFalse: [
-																		golap readDimensionFrom: readStream ].
-																	bar label: 'updating dimensions'.
-																	golap updateDimensions.
-																	bar label: 'updating models'.
+	[
+		usesQueryHistory
+			ifTrue: [
+					queryHistoryPresenter historyRecord ifNotNil: [ :record |
+							| golap |
+							golap := Golap new.
+							golap blockUpdateModelWhile: [
+								golap loadFromQueryRecord: record hideDuplicate ].
+							golap confirmOpen.
+							golap open maximize.
+							golap updateModel ] ]
+			ifFalse: [
+					| queryRecord api golap |
+					queryRecord := self recordHiDeHo.
+					api := GolapApiClient
+						       url: self url
+						       query: self query
+						       comment: self comment
+						       serverConfig: self serverConfig
+						       itemFieldQuerySpec: self itemFieldQuerySpec
+						       authenticateBlock: self authenticateBlock.
+					golap := Golap new.
+					[
+						golap
+							queryRecord: queryRecord;
+							itemInfoRetriever:
+								(GolapServerProductInfoRetriever fromApiClient: api);
+							authenticateBlock: api authenticateBlock;
+							query: (NeoJSONReader fromString: api query);
+							url: api url;
+							comment: api comment;
+							imageRepositoryUrl: api imageUrl;
+							itemFieldQuerySpec: api itemFieldQuerySpec;
+							itemViewUrl: api url ]
+						on: Error
+						do: [ :ex |
+								UIManager default alert:
+									'Can''t open the given URL: ' , api url asString ].
+					golap snapshotData: api readStream do: [ :readStream |
+							readStream ifNil: [ golap delete ] ifNotNil: [
+									readStream isString
+										ifTrue: [ UIManager default alert: readStream ]
+										ifFalse: [
+												Cursor wait showWhile: [
+														UIManager default informUserDuring: [ :bar |
+																bar
+																	min: 0;
+																	max: readStream size.
+																golap blockUpdateModelWhile: [
+																		[
+																			bar value: readStream position.
+																			readStream atEnd ] whileFalse: [
+																			golap readDimensionFrom: readStream ].
+																		bar label: 'updating dimensions'.
+																		golap updateDimensions.
+																		bar label: 'updating models'.
 
-																	bar label: 'updating graph' ].
-															golap confirmOpen.
-															golap open maximize.
-															golap updateModel ] ] ] ] ] ]
+																		bar label: 'updating graph' ].
+																golap confirmOpen.
+																golap open maximize.
+																golap updateModel ] ] ] ] ] ] ]
+		on: GolapAborted
+		do: [ :ex |  ]
 ]
 
 { #category : 'operations' }
