@@ -93,9 +93,9 @@ TGolapSnapshotablePresenter >> fromWindowJSON: aString bounds: aRectangle [
 	[
 		aString = 'open' ifTrue: [ ^ (self openBounds: aRectangle) open ].
 		aString = 'minimized' ifTrue: [
-				^ (self openBounds: aRectangle)
-					  minimize;
-					  open ].
+				^ self asWindow
+					  open;
+					  minimize ].
 		aString = 'maximized' ifTrue: [
 				^ (self openBounds: aRectangle)
 					  maximize;
