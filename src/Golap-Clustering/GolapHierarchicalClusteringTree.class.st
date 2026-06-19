@@ -145,6 +145,14 @@ GolapHierarchicalClusteringTree >> nodesDo: aBlock [
 ]
 
 { #category : 'accessing' }
+GolapHierarchicalClusteringTree >> numberOfNodesAndLeaves [
+
+	^ self trees
+		  inject: 1
+		  into: [ :subtotal :tree | subtotal + tree numberOfNodesAndLeaves ]
+]
+
+{ #category : 'accessing' }
 GolapHierarchicalClusteringTree >> oneLeaf [
 
 	^ self subclassResponsibility

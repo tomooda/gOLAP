@@ -1094,7 +1094,7 @@ Golap >> model [
 Golap >> model: aGolapModel [
 
 	self model: aGolapModel forceUpdate: true.
-	polishOverviewPresenter
+"	polishOverviewPresenter
 		updateCanvas;
 		zoomToFit.
 	friendOverviewPresenter
@@ -1105,7 +1105,7 @@ Golap >> model: aGolapModel [
 		zoomToFit.
 	elaborationPresenter
 		updateCanvas;
-		zoomToFit
+		zoomToFit"
 ]
 
 { #category : 'accessing' }
@@ -1980,6 +1980,18 @@ Golap >> showsPhotoimagesChanged [
 Golap >> silentAddDimension: aGolapOverviewModel named: aString [
 	dimensions at: aString put: aGolapOverviewModel.
 	^ aGolapOverviewModel
+]
+
+{ #category : 'accessing-selection' }
+Golap >> silentlySelect: aGolapNode [
+
+	aGolapNode idsDo: [ :id | selections add: id ]
+]
+
+{ #category : 'accessing-selection' }
+Golap >> silentlyUnselect: aGolapNode [
+
+	aGolapNode idsDo: [ :id | selections remove: id ifAbsent: [ ] ]
 ]
 
 { #category : 'private' }

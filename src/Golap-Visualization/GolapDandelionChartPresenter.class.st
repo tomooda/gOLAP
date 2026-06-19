@@ -23,15 +23,24 @@ GolapDandelionChartPresenter >> updateCanvas [
 					colorMarkers := golap colorMarkers.
 					sunburstBuilder := RSSunburstBuilder new.
 					self canvas shapes copy do: #remove.
-					sunburstBuilder
-						container: self canvas;
-						sliceColor: [ :slice |
-								slice model isLeaf
-									ifTrue: [
-										self colorForNode: (golap model nodeAt: slice model id) ]
-									ifFalse: [ Color transparent ] ];
-						explore: tree using: #trees;
-						build.
+					SpProgressDialog new
+						title: '描画中…';
+						informUserDuring: [ :progress |
+								| due sofar |
+								due := tree numberOfNodesAndLeaves.
+								sofar := 0.
+								sunburstBuilder
+									container: self canvas;
+									sliceColor: [ :slice |
+											slice model isLeaf
+												ifTrue: [
+													self colorForNode: (golap model nodeAt: slice model id) ]
+												ifFalse: [ Color transparent ] ];
+									explore: tree using: [ :t |
+											sofar := sofar + 100.
+											progress progressPercent: sofar // (due + 1).
+											t trees ];
+									build ].
 					sunburstBuilder shapes do: [ :shape |
 							shape model isLeaf ifTrue: [
 									| radius |

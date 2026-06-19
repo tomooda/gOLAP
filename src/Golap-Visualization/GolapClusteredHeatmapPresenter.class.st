@@ -258,124 +258,146 @@ GolapClusteredHeatmapPresenter >> showsSingletonClustersChanged [
 GolapClusteredHeatmapPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
+			(thisContext senderSelectorsIncludes: #updateCanvas) ifTrue: [
+				^ self ].
 			lock critical: [
-					self ensureTree.
 					self canvas shapes copy do: #remove.
 					self canvas color: Color black.
-					self golapModelDo: [ :golapModel |
-							| rowLabelInteraction leaves clusterMeans rightBound minValue maxValue valueScale cells |
-							self updateEvaluatorDropList.
-							rowLabelInteraction := GolapHeatmapRowLabelInteraction new
-								                       presenter: self;
-								                       golapModel: golapModel;
-								                       yourself.
-							leaves := self visibleLeaves.
-							clusterMeans := showsClusterMeansCheckBox state = true
-								                ifTrue: [ self computeClusterMeans ]
-								                ifFalse: [ ].
-							rightBound := leaves size + 0.5 * self grid.
-							minValue := self minValue.
-							maxValue := self maxValue.
-							minValue := minValue - (maxValue - minValue / 10.0).
-							valueScale := (maxValue - minValue) abs > 1.0e-8
-								              ifTrue: [ 1.0 / (maxValue - minValue) ]
-								              ifFalse: [ 0.0 ].
-							cells := (Array streamContents: [ :stream |
-									          leaves doWithIndex: [ :rowLeaf :rowIndex |
-											          | rowNode rowLabel |
-											          rowNode := golapModel nodeAt: rowLeaf id.
-											          rowLabel := RSLabel new
-												                      text: rowNode name;
-												                      color: Color lightGray.
-											          rowLabel := {
-												                      (RSBox new
-													                       extent: rowLabel extent;
-													                       color: Color transparent).
-												                      rowLabel } asShapeFor: {
-													                      #rowLabel.
-													                      rowNode }.
-											          rowLabel position:
-												          rightBound + self grid + (rowLabel width * 0.5)
-												          @ (rowIndex * self grid).
-											          rowLabel @ rowLabelInteraction.
-											          self canvas add: rowLabel.
-											          leaves doWithIndex: [ :columnLeaf :columnIndex |
-													          | columnNode value |
-													          columnNode := golapModel nodeAt: columnLeaf id.
-													          value := clusterMeans
-														                   ifNotNil: [
-																                   clusterMeans at: {
-																		                   (rowLeaf parentAtRank: self rank).
-																		                   (columnLeaf parentAtRank:
-																			                    self rank) } ]
-														                   ifNil: [
-														                   self
-															                   valueAtRowNode: rowNode
-															                   columnNode: columnNode ].
-													          value ifNotNil: [
-															          value := value - minValue * valueScale
-																                   min: 1.0
-																                   max: 0.0.
-															          stream nextPut: (RSBox new
-																	           extent: self grid asPoint;
-																	           color: (Color gray: value);
-																	           position:
-																		           columnIndex * self grid
-																		           @ (rowIndex * self grid);
-																	           model: {
-																			           (columnNode
-																				            edgeTo: rowNode
-																				            ifAbsent: [ nil ]).
-																			           columnNode.
-																			           rowNode };
-																	           yourself) ] ] ] ]) asGroup.
-							cells @ (GolapHeatmapCellInteraction new
-								 presenter: self;
-								 golapModel: golapModel;
-								 yourself).
-							self canvas addAll: cells.
-							showsClusterBoundariesCheckBox state = true ifTrue: [
-									(leaves collect: [ :leaf | leaf parentAtRank: self rank ])
-										ifNotEmpty: [ :clusters |
-												| rect |
-												rect := cells asGroup encompassingRectangle.
-												1 to: clusters size - 1 do: [ :index |
-														(clusters at: index) ~= (clusters at: index + 1)
-															ifTrue: [
-																	| p |
-																	p := index + 0.5 * self grid.
-																	self canvas add: (RSLine new
-																			 startPoint: rect left @ p;
-																			 endPoint: rect right @ p;
-																			 color: Color red;
-																			 width: 2;
-																			 yourself).
-																	(self evaluator isKindOf: GolapEdgeEvaluator)
+					[
+						Cursor wait showWhile: [
+								0.1 seconds wait.
+								self ensureTree.
+								self golapModelDo: [ :golapModel |
+										| rowLabelInteraction leaves clusterMeans rightBound minValue maxValue valueScale cells |
+										self updateEvaluatorDropList.
+										rowLabelInteraction := GolapHeatmapRowLabelInteraction new
+											                       presenter: self;
+											                       golapModel: golapModel;
+											                       yourself.
+										leaves := self visibleLeaves.
+										clusterMeans := showsClusterMeansCheckBox state = true
+											                ifTrue: [ self computeClusterMeans ]
+											                ifFalse: [ ].
+										rightBound := leaves size + 0.5 * self grid.
+										minValue := self minValue.
+										maxValue := self maxValue.
+										minValue := minValue - (maxValue - minValue / 10.0).
+										valueScale := (maxValue - minValue) abs > 1.0e-8
+											              ifTrue: [ 1.0 / (maxValue - minValue) ]
+											              ifFalse: [ 0.0 ].
+										SpProgressDialog new
+											title: '描画中…';
+											informUserDuring: [ :progress |
+													| due sofar |
+													due := tree leaves size.
+													sofar := 0.
+													cells := (Array streamContents: [ :stream |
+																          leaves doWithIndex: [ :rowLeaf :rowIndex |
+																			          | rowNode rowLabel |
+																			          rowNode := golapModel nodeAt: rowLeaf id.
+																			          rowLabel := RSLabel new
+																				                      text: rowNode name;
+																				                      color: Color lightGray.
+																			          rowLabel := {
+																				                      (RSBox new
+																					                       extent: rowLabel extent;
+																					                       color: Color transparent).
+																				                      rowLabel } asShapeFor: {
+																					                      #rowLabel.
+																					                      rowNode }.
+																			          rowLabel position:
+																				          rightBound + self grid
+																				          + (rowLabel width * 0.5)
+																				          @ (rowIndex * self grid).
+																			          rowLabel @ rowLabelInteraction.
+																			          self canvas add: rowLabel.
+																			          leaves doWithIndex: [
+																					          :columnLeaf
+																					          :columnIndex |
+																					          | columnNode value |
+																					          columnNode := golapModel nodeAt:
+																						                        columnLeaf id.
+																					          value := clusterMeans
+																						                   ifNotNil: [
+																								                   clusterMeans at: {
+																										                   (rowLeaf parentAtRank:
+																											                    self rank).
+																										                   (columnLeaf
+																											                    parentAtRank: self rank) } ]
+																						                   ifNil: [
+																						                   self
+																							                   valueAtRowNode: rowNode
+																							                   columnNode: columnNode ].
+																					          value ifNotNil: [
+																							          value := value - minValue
+																							                   * valueScale
+																								                   min: 1.0
+																								                   max: 0.0.
+																							          stream nextPut: (RSBox new
+																									           extent: self grid asPoint;
+																									           color: (Color gray: value);
+																									           position:
+																										           columnIndex * self grid
+																										           @ (rowIndex * self grid);
+																									           model: {
+																											           (columnNode
+																												            edgeTo: rowNode
+																												            ifAbsent: [ nil ]).
+																											           columnNode.
+																											           rowNode };
+																									           yourself) ] ].
+																			          progress progressPercent:
+																				          (sofar := sofar + 100) // due ] ])
+														         asGroup ].
+										cells @ (GolapHeatmapCellInteraction new
+											 presenter: self;
+											 golapModel: golapModel;
+											 yourself).
+										self canvas addAll: cells.
+										showsClusterBoundariesCheckBox state = true ifTrue: [
+												(leaves collect: [ :leaf | leaf parentAtRank: self rank ])
+													ifNotEmpty: [ :clusters |
+															| rect |
+															rect := cells asGroup encompassingRectangle.
+															1 to: clusters size - 1 do: [ :index |
+																	(clusters at: index) ~= (clusters at: index + 1)
 																		ifTrue: [
+																				| p |
+																				p := index + 0.5 * self grid.
 																				self canvas add: (RSLine new
-																						 startPoint: p @ rect top;
-																						 endPoint: p @ rect bottom;
+																						 startPoint: rect left @ p;
+																						 endPoint: rect right @ p;
 																						 color: Color red;
 																						 width: 2;
-																						 yourself) ] ] ] ] ] ].
-					self updateNode ] ]
+																						 yourself).
+																				(self evaluator isKindOf: GolapEdgeEvaluator)
+																					ifTrue: [
+																							self canvas add: (RSLine new
+																									 startPoint: p @ rect top;
+																									 endPoint: p @ rect bottom;
+																									 color: Color red;
+																									 width: 2;
+																									 yourself) ] ] ] ] ] ].
+								self updateNode ] ] forkAt: Processor userBackgroundPriority ] ]
 ]
 
 { #category : 'updating' }
 GolapClusteredHeatmapPresenter >> updateEvaluatorDropList [
 
-	| selection items |
-	selection := evaluatorDropList selectedItem.
+	| oldEvaluator items |
+	oldEvaluator := self evaluator.
 	items := Array streamContents: [ :stream |
-		         golap ifNotNil: [
-			         stream nextPut: '---アイテム---' -> golap nodeEvaluator.
-			         golap nodeEvaluators do: [ :evaluator |
-				         stream nextPut: evaluator name -> evaluator ].
-			         stream nextPut: '--- 関連 ----' -> golap edgeEvaluator.
-			         golap edgeEvaluators do: [ :evaluator |
-				         stream nextPut: evaluator name -> evaluator ] ] ].
+			         golap ifNotNil: [
+					         stream nextPut: '---アイテム---' -> golap nodeEvaluator.
+					         golap nodeEvaluators do: [ :evaluator |
+						         stream nextPut: evaluator name -> evaluator ].
+					         stream nextPut: '--- 関連 ----' -> golap edgeEvaluator.
+					         golap edgeEvaluators do: [ :evaluator |
+						         stream nextPut: evaluator name -> evaluator ] ] ].
 	evaluatorDropList items: items.
-	(items includes: selection) ifTrue: [
+	(items
+		 detect: [ :assoc | assoc value = oldEvaluator ]
+		 ifNone: [ nil ]) ifNotNil: [ :selection |
 		evaluatorDropList selectItem: selection ]
 ]
 

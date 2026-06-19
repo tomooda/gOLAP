@@ -28,6 +28,15 @@ GolapHierarchicalClusteringPresenter >> colorForNode: aGolapNode [
 	^ golap colorForNode: aGolapNode
 ]
 
+{ #category : 'ui requests' }
+GolapHierarchicalClusteringPresenter >> confirm: aString title: anotherString [
+
+	^ self application newConfirm
+		  label: aString;
+		  title: anotherString;
+		  openModal
+]
+
 { #category : 'layout' }
 GolapHierarchicalClusteringPresenter >> defaultLayout [
 
@@ -161,7 +170,7 @@ GolapHierarchicalClusteringPresenter >> tree: aGolapHierarchicalClusteringTree [
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> treeChanged [
 
-	self updateCanvas
+	
 ]
 
 { #category : 'updating' }

@@ -21,11 +21,11 @@ GolapHeatmapCellInteraction >> clicked: event [
 				 presenter golap includesSelection: node2 ])
 				ifTrue: [
 						presenter golap
-							unselect: node1;
+							silentlyUnselect: node1;
 							unselect: node2 ]
 				ifFalse: [
 						presenter golap
-							select: node1;
+							silentlySelect: node1;
 							select: node2 ] ]
 ]
 
