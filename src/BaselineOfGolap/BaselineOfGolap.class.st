@@ -68,30 +68,25 @@ BaselineOfGolap >> baseline: spec [
 				with: [ spec repository: 'github://tomooda/Xenq:main/src' ].
 			spec
 				package: 'Golap-Application'
-				with: [ spec requires: #( 'Phleeter' ) ].
-			spec
+				with: [ spec requires: #( 'Phleeter' ) ];
+				package: 'Golap-Clustering' with: [ spec requires: #(  ) ];
+				package: 'Golap-Models'
+				with: [ spec requires: #( 'DataFrame' 'Golap-Clustering' ) ];
 				package: 'Golap-Networking'
-				with: [ spec requires: #( 'DataFrame' ) ].
-			spec
-				package: 'Golap-Project'
-				with: [
-				spec requires:
-					#( 'Golap-UI' 'Golap-Models' 'Golap-Visualization' ) ].
-			spec
+				with: [ spec requires: #( 'Golap-UI' ) ];
+				package: 'Golap-Project' with: [
+						spec requires:
+								#( 'DataFrame' 'Golap-Query' 'Golap-UI' 'Golap-Visualization' ) ];
 				package: 'Golap-Query'
-				with: [ spec requires: #( 'PetitParser2Core' ) ].
-			spec package: 'Golap-UI' with: [
-					spec requires:
-						#( 'Golap-Clustering' 'Golap-Models' 'Golap-Networking'
-						   'Golap-Query' 'HiDeHo' 'DataFrame' 'Xenq' ) ].
+				with: [ spec requires: #( 'PetitParser2Core' 'Golap-UI' ) ];
+				package: 'Golap-UI' with: [
+						spec requires:
+								#( 'HiDeHo' 'DataFrame' 'Xenq' 'Golap-Models' 'Golap-Networking'
+								   'Golap-Project' 'Golap-Query' 'Golap-Visualization' ) ].
 			spec
 				package: 'Golap-Visualization'
 				with: [
 				spec requires: #( 'Golap-Clustering' 'Golap-Models' 'Golap-UI' ) ].
-			spec
-				package: 'Golap-Models'
-				with: [ spec requires: #( 'DataFrame' 'Golap-Clustering' ) ].
-			spec package: 'Golap-Clustering' with: [ spec requires: #(  ) ].
 			spec postLoadDoIt: #postLoad.
 			spec
 				group: 'Core'

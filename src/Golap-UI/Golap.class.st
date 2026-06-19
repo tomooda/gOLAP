@@ -229,8 +229,8 @@ Golap class >> resume [
 				(NeoJSONReader on: stream) next ifNotNil: [ :json |
 						json
 							at: 'session'
-							ifPresent: [ :phantom |
-								GolapPhantasmicProject fromJSON: phantom ];
+							ifPresent: [ :session |
+								GolapPhantasmicProject fromJSON: session ];
 							at: 'last-query'
 							ifPresent: [ :query |
 								GolapNetworkClientPresenter fromJSON: query ] ] ] ]
@@ -264,7 +264,8 @@ Golap class >> shutDown: aBoolean [
 { #category : 'startup - shutdown' }
 Golap class >> startUp: aBoolean [
 
-	aBoolean ifTrue: [ self resume ]
+	aBoolean ifTrue: [
+		Smalltalk session addDeferredStartupAction: [ self resume ] ]
 ]
 
 { #category : 'startup - shutdown' }
