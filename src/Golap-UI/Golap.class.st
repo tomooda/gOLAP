@@ -273,8 +273,8 @@ Golap class >> suspend [
 	[
 		| json |
 		json := Dictionary new.
-		"GolapPhantasmicProject asJSON ifNotNil: [ :project |
-			json at: 'session' put: project ]."
+		GolapPhantasmicProject asJSON ifNotNil: [ :project |
+			json at: 'session' put: project ].
 		GolapNetworkClientPresenter asJSON ifNotNil: [ :query |
 			json at: 'last-query' put: query ].
 		self sessionFile
