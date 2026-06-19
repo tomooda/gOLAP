@@ -113,5 +113,5 @@ GolapCommandLineHandler >> installQuitSession [
 	Smalltalk
 		at: #WorldState
 		ifPresent: [ :class |
-		class class compile: 'quitSession GolapProject quit' ]
+		class class compile: 'quitSession GolapNamedProject quit' ]
 ]

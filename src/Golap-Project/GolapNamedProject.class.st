@@ -140,8 +140,6 @@ GolapNamedProject >> projectName: aString [
 { #category : 'operations' }
 GolapNamedProject >> quit [
 
-	self closeAll.
-	self projectFile: nil.
 	Smalltalk snapshot: false andQuit: true
 ]
 
