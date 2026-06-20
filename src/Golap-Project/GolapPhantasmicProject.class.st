@@ -33,8 +33,8 @@ GolapPhantasmicProject >> fromJSON: aDictionaryOrNil [
 
 	aDictionaryOrNil ifNotNil: [
 			aDictionaryOrNil
-				at: 'project'
-				ifPresent: [ :projectName |
-					GolapNamedProject current projectName: projectName ];
+				at: 'project' ifPresent: [ :projectName |
+						projectName ifNotNil: [
+								GolapNamedProject current projectName: projectName ] ];
 				at: 'windows' ifPresent: [ :windows | super fromJSON: windows ] ]
 ]
