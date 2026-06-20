@@ -109,10 +109,15 @@ GolapOverviewPresenter >> defaultLayout [
 ]
 
 { #category : 'operations' }
-GolapOverviewPresenter >> drag: aGolapNode by: aPoint [
+GolapOverviewPresenter >> drag: aGolapNode by: event [
 
-	nodePositions at: aGolapNode id ifPresent: [ :point |
-		nodePositions at: aGolapNode id put: aPoint / self scale + point ].
+	nodePositions
+		at: aGolapNode id
+		ifPresent: [ :point |
+			nodePositions
+				at: aGolapNode id
+				put: event step / self scale + point ]
+		ifAbsentPut: [ event step / self scale + event position ].
 	self updateNodeShapePositions.
 	lock critical: [ self canvas signalUpdate ]
 ]
@@ -145,8 +150,17 @@ GolapOverviewPresenter >> ensureNodePositionAt: aString ifFailed: errorBlock [
 						ps := OrderedCollection new.
 						node idsDo: [ :id |
 							nodePositions at: id ifPresent: [ :p | ps add: p ] ].
-						ps ifNotEmpty: #average ifEmpty: [ ^ errorBlock value ] ]
-				ifAbsent: [ ^ errorBlock value ] ]
+						ps ifEmpty: [
+								node edges do: [ :edge |
+									nodePositions
+										at: (edge peerOf: node) id
+										ifPresent: [ :p | ps add: p ] ] ].
+						ps ifEmpty: [
+								node edges do: [ :edge |
+										(edge peerOf: node) idsDo: [ :id |
+											nodePositions at: id ifPresent: [ :p | ps add: p ] ] ] ].
+						ps ifNotEmpty: #average ifEmpty: errorBlock ]
+				ifAbsent: errorBlock ]
 ]
 
 { #category : 'updating' }
@@ -156,12 +170,8 @@ GolapOverviewPresenter >> ensureNodePositions [
 			self golapModelDo: [ :golapModel |
 					self availableEdges do: [ :edge |
 							(golapModel valueAtEdge: edge) notNil ifTrue: [
-									self
-										ensureNodePositionAt: edge node1 id
-										ifFailed: [ ^ self basicUpdateNodePositions ].
-									self
-										ensureNodePositionAt: edge node2 id
-										ifFailed: [ ^ self basicUpdateNodePositions ] ] ] ] ]
+									self ensureNodePositionAt: edge node1 id ifFailed: [ 0 @ 0 ].
+									self ensureNodePositionAt: edge node2 id ifFailed: [ 0 @ 0 ] ] ] ] ]
 ]
 
 { #category : 'operations' }
