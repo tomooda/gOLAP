@@ -53,12 +53,14 @@ Golap >> fromJSON: aDictionary [
 												 fromJSON: pair second;
 												 yourself)
 										named: pair first ] ];
-				at: 'baseList'
-				ifPresent: [ :string |
-				string ifNotNil: [ baseList selectItem: string ] ];
-				at: 'frontList'
-				ifPresent: [ :string |
-				string ifNotNil: [ frontList selectItem: string ] ];
+				at: 'baseList' ifPresent: [ :string |
+					string ifNotNil: [
+							(baseList items includes: string) ifTrue: [
+								baseList selectItem: string ] ] ];
+				at: 'frontList' ifPresent: [ :string |
+					string ifNotNil: [
+							(frontList items includes: string) ifTrue: [
+								frontList selectItem: string ] ] ];
 				at: 'merges' ifPresent: [ :array |
 					merges := (array collect: [ :pair | pair first -> pair second ])
 						          asOrderedCollection.

@@ -37,7 +37,7 @@ GolapQueryPresenter >> fromJSON: aDicitonary [
 			[ :obj | self transactionFilterSpec: (GolapTransactionFilterSpec fromJSON: obj) ];
 		at: 'itemFilter'
 			ifPresent:
-				[ :obj | self itemFilterSpec: (GolapTransactionFilterSpec fromJSON: obj) ];
+				[ :obj | self itemFilterSpec: (GolapItemFilterSpec fromJSON: obj) ];
 		at: 'granularity'
 			ifPresent: [ :dict | 
 			dict

@@ -45,6 +45,7 @@ GolapNetworkClientPresenter class >> current [
 { #category : 'sole instance' }
 GolapNetworkClientPresenter class >> flushCurrent [
 
+	<script>
 	current := nil
 ]
 
