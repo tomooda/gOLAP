@@ -54,7 +54,7 @@ GolapOverviewGridLayouter >> createMatrixFromNodes: aCollectionOfGolapNode [
 				          | nodes n squareN numDummies dummyStep |
 				          nodes := OrderedCollection withAll:
 					                   (aCollectionOfGolapNode sorted: #id ascending).
-				          n := (nodes size sqrt * 1.4) ceiling.
+				          n := (nodes size sqrt * 1.4) ceiling + 2.
 				          squareN := n squared.
 				          numDummies := squareN - nodes size.
 				          dummyStep := nodes size asFloat
@@ -140,8 +140,8 @@ GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollect
 				self createMatrixFromNodes: aCollectionOfGolapNode.
 				0 to: reps - 1 do: [ :rep |
 							self
-								improveEveryNodeFrom: aCollectionOfGolapNode
-								interim: [ :v |
+								makeSpace;
+								improveEveryNodeFrom: aCollectionOfGolapNode interim: [ :v |
 										progress progressPercent:
 												v / reps asFloat + (rep asFloat / reps asFloat) * 100.0 ] ].
 				progress
@@ -159,6 +159,38 @@ GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollect
 												 ifTrue: [ 0.1 ]
 												 ifFalse: [ -0.1 ]) @ (y asFloat + yOffset) ] ] ] ].
 	^ positions
+]
+
+{ #category : 'accessing' }
+GolapOverviewGridLayouter >> makeSpace [
+
+	| width height xs ys minX maxX minY maxY leftGap rightGap topGap bottomGap dx dy |
+	matrix ifEmpty: [ ^ self ].
+	width := matrix size.
+	height := matrix first size.
+	xs := nodeX values asArray.
+	ys := nodeY values asArray.
+	minX := xs min.
+	maxX := xs max.
+	minY := ys min.
+	maxY := ys max.
+	leftGap := minX - 1.
+	rightGap := matrix size - maxX.
+	topGap := minY - 1.
+	bottomGap := matrix first size - maxY.
+	dx := rightGap - leftGap.
+	dx := dx abs // 2 * dx sign.
+	dy := bottomGap - topGap.
+	dy := dy abs // 2 * dy sign.
+	dx = 0 ifFalse: [
+		nodeX keys do: [ :node | nodeX at: node put: (nodeX at: node) + dx ] ].
+	dy = 0 ifFalse: [
+		nodeY keys do: [ :node | nodeY at: node put: (nodeY at: node) + dy ] ].
+	(dx = 0 and: [ dy = 0 ]) ifFalse: [
+			matrix := (1 to: width) collect: [ :x |
+				          Array new: height withAll: nil ].
+			nodeX keys do: [ :node |
+				(matrix at: (nodeX at: node)) at: (nodeY at: node) put: node ] ]
 ]
 
 { #category : 'enumerating' }
