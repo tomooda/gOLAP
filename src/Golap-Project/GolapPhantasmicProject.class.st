@@ -21,10 +21,9 @@ GolapPhantasmicProject class >> fromJSON: aDictionaryOrNil [
 GolapPhantasmicProject >> asJSON [
 
 	| json |
-	json := Dictionary new.
+	json := super asJSON.
 	GolapNamedProject basicCurrent ifNotNil: [ :project |
 		json at: 'project' put: project projectName ].
-	json at: 'windows' put: super asJSON.
 	^ json
 ]
 
@@ -32,9 +31,8 @@ GolapPhantasmicProject >> asJSON [
 GolapPhantasmicProject >> fromJSON: aDictionaryOrNil [
 
 	aDictionaryOrNil ifNotNil: [
-			aDictionaryOrNil
-				at: 'project' ifPresent: [ :projectName |
-						projectName ifNotNil: [
-								GolapNamedProject current projectName: projectName ] ];
-				at: 'windows' ifPresent: [ :windows | super fromJSON: windows ] ]
+			aDictionaryOrNil at: 'project' ifPresent: [ :projectName |
+					projectName ifNotNil: [
+						GolapNamedProject current projectName: projectName ] ].
+			super fromJSON: aDictionaryOrNil ]
 ]

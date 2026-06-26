@@ -47,9 +47,14 @@ GolapAbstractProject >> application [
 { #category : 'converting' }
 GolapAbstractProject >> asJSON [
 
-	^ Array streamContents: [ :stream |
-			  self golapWindows do: [ :window |
-				  stream nextPut: window presenter asJSON ] ]
+	| json |
+	json := Dictionary new.
+	GolapNetworkClientPresenter asJSON ifNotNil: [ :query |
+		json at: 'last-query' put: query ].
+	json at: 'windows' put: (Array streamContents: [ :stream |
+				 self golapWindows do: [ :window |
+					 stream nextPut: window presenter asJSON ] ]).
+	^ json
 ]
 
 { #category : 'ui requests' }
@@ -71,22 +76,14 @@ GolapAbstractProject >> confirmYesNoCancel: aString title: anotherString [
 ]
 
 { #category : 'converting' }
-GolapAbstractProject >> fromJSON: anArray [
+GolapAbstractProject >> fromJSON: aDictionary [
 
-	| dialog |
-	dialog := SpProgressDialog new.
-	dialog
-		title: '復元中...';
-		informUserDuring: [ :progress |
-				| widget |
-				widget := dialog adapter widget.
-				anArray withIndexDo: [ :json :index |
-							progress progressPercent: index * 100 // anArray size.
-							json at: 'class' ifPresent: [ :className |
-										(TGolapSnapshotablePresenter users
-											 detect: [ :class | class name asString = className ]
-											 ifNone: [ nil ]) ifNotNil: [ :class |
-												class fromJSON: json ] ] ] ]
+	aDictionary ifNotNil: [
+			aDictionary isArray ifTrue: [ ^ self restoreWindows: aDictionary ].
+			aDictionary
+				at: 'last-query'
+				ifPresent: [ :query | GolapNetworkClientPresenter fromJSON: query ];
+				at: 'windows' ifPresent: [ :array | self restoreWindows: array ] ]
 ]
 
 { #category : 'accessing' }
@@ -108,4 +105,23 @@ GolapAbstractProject >> golapWindowsDo: aBlock [
 						 do: [ :ex | ex return: nil ]) ifNotNil: [ :p |
 						(presenterClasses includes: p class) ifTrue: [
 							aBlock value: p window ] ] ] ]
+]
+
+{ #category : 'converting' }
+GolapAbstractProject >> restoreWindows: anArray [
+
+	| dialog |
+	dialog := SpProgressDialog new.
+	dialog
+		title: '復元中...';
+		informUserDuring: [ :progress |
+				| widget |
+				widget := dialog adapter widget.
+				anArray withIndexDo: [ :json :index |
+							progress progressPercent: index * 100 // anArray size.
+							json at: 'class' ifPresent: [ :className |
+										(TGolapSnapshotablePresenter users
+											 detect: [ :class | class name asString = className ]
+											 ifNone: [ nil ]) ifNotNil: [ :class |
+												class fromJSON: json ] ] ] ]
 ]

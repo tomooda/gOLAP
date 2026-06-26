@@ -205,7 +205,7 @@ GolapApiClient >> serverConfig: aDictionary [
 
 { #category : 'accessing' }
 GolapApiClient >> timeout [
-	^ 3
+	^ 0
 ]
 
 { #category : 'accessing' }

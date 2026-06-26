@@ -230,10 +230,7 @@ Golap class >> resume [
 						json
 							at: 'session'
 							ifPresent: [ :session |
-								GolapPhantasmicProject fromJSON: session ];
-							at: 'last-query'
-							ifPresent: [ :query |
-								GolapNetworkClientPresenter fromJSON: query ] ] ] ]
+							GolapPhantasmicProject fromJSON: session ] ] ] ]
 		on: Exception
 		do: [ :ex |  ]
 ]
@@ -276,8 +273,6 @@ Golap class >> suspend [
 		json := Dictionary new.
 		GolapPhantasmicProject asJSON ifNotNil: [ :project |
 			json at: 'session' put: project ].
-		GolapNetworkClientPresenter asJSON ifNotNil: [ :query |
-			json at: 'last-query' put: query ].
 		self sessionFile
 			ensureDelete;
 			writeStreamDo: [ :stream |

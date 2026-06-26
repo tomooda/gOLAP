@@ -193,10 +193,11 @@ GolapHttpClient >> createCnonce [
 
 { #category : 'operations' }
 GolapHttpClient >> execute [
+
 	| result |
 	result := super execute.
-	response code = 401
-		ifTrue: [ self authenticate ifNotNil: [ :r | result := r ] ].
+	response code = 401 ifTrue: [
+		self authenticate ifNotNil: [ :r | result := r ] ].
 	^ result
 ]
 
@@ -228,4 +229,10 @@ GolapHttpClient >> md5Hash: aString [
 	^ (MD5 new
 		initialize;
 		hashStream: aString asByteArray readStream) hex
+]
+
+{ #category : 'options' }
+GolapHttpClient >> numberOfRetries [
+
+	^ 0
 ]

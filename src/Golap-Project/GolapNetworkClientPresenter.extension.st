@@ -9,7 +9,7 @@ GolapNetworkClientPresenter class >> asJSON [
 { #category : '*Golap-Project' }
 GolapNetworkClientPresenter >> asJSON [
 
-	^ self basicAsJSON
+	^ OrderedDictionary new
 		  at: 'url' put: urlInput text asString;
 		  at: 'comment' put: commentText text asString;
 		  at: 'basic-query' put: queryPresenter asJSON;
@@ -28,6 +28,5 @@ GolapNetworkClientPresenter >> fromJSON: aDictionary [
 		at: 'basic-query'
 		ifPresent: [ :json | queryPresenter fromJSON: json ];
 		at: 'queryNotebook-index'
-		ifPresent: [ :integer | queryNotebook selectPageIndex: integer ].
-	self basicFromJSON: aDictionary
+		ifPresent: [ :integer | queryNotebook selectPageIndex: integer ]
 ]

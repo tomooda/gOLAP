@@ -1,8 +1,6 @@
 Class {
 	#name : 'GolapNetworkClientPresenter',
 	#superclass : 'SpPresenter',
-	#traits : 'TGolapSnapshotablePresenter',
-	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'urlInput',
 		'presetUrlButton',
@@ -92,6 +90,12 @@ GolapNetworkClientPresenter >> authenticateBlock [
 GolapNetworkClientPresenter >> clearPreviewFilterField [
 
 	queryPresenter clearPreviewFilterField
+]
+
+{ #category : 'initialization' }
+GolapNetworkClientPresenter >> close [
+
+	self window ifNotNil: #close
 ]
 
 { #category : 'accessing' }
@@ -332,11 +336,7 @@ GolapNetworkClientPresenter >> initializeWindow: aWindowPresenter [
 
 	aWindowPresenter
 		title: 'サーバクエリ';
-		initialExtent: self initialExtent.
-	aWindowPresenter whenWillCloseDo: [ :announcement |
-			self confirmClose
-				ifTrue: [ announcement allowClose ]
-				ifFalse: [ announcement denyClose ] ]
+		initialExtent: self initialExtent
 ]
 
 { #category : 'accessing' }
@@ -613,7 +613,7 @@ GolapNetworkClientPresenter >> serverConfig [
 
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> timeout [
-	^ 3
+	^ 1
 ]
 
 { #category : 'accessing' }
