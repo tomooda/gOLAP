@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'field',
 		'predicates',
-		'isNegative'
+		'isNegative',
+		'isDisjunct'
 	],
 	#category : 'Golap-Query-AST',
 	#package : 'Golap-Query',
@@ -20,13 +21,14 @@ GolapQueryClauseSpec class >> clauseSpecClassFor: aJSONObject [
 
 { #category : 'instance creation' }
 GolapQueryClauseSpec class >> fromJSON: aJSONObject [
+
 	^ (self clauseSpecClassFor: aJSONObject) new
-		field: (aJSONObject at: 'field');
-		predicates:
-			((aJSONObject at: 'predicates')
-				collect: [ :obj | GolapQueryPredicateSpec fromJSON: obj ]);
-		isNegative: (aJSONObject at: 'isNegative');
-		yourself
+		  field: (aJSONObject at: 'field');
+		  predicates: ((aJSONObject at: 'predicates') collect: [ :obj |
+					   GolapQueryPredicateSpec fromJSON: obj ]);
+		  isNegative: (aJSONObject at: 'isNegative' ifAbsent: [ false ]);
+		  isDisjunct: (aJSONObject at: 'isDisjunct' ifAbsent: [ false ]);
+		  yourself
 ]
 
 { #category : 'instance creation' }
@@ -68,10 +70,12 @@ GolapQueryClauseSpec class >> on: aFieldNameString withAll: aCollectionOfGolapQu
 
 { #category : 'comparing' }
 GolapQueryClauseSpec >> = anObject [
-	^ self class = anObject class
-		and: [ field = anObject field
-				and: [ predicates = anObject predicates
-						and: [ self isNegative = anObject isNegative ] ] ]
+
+	^ self class = anObject class and: [
+			  field = anObject field and: [
+					  predicates = anObject predicates and: [
+							  self isNegative = anObject isNegative and: [
+								  self isDisjunct = anObject isDisjunct ] ] ] ]
 ]
 
 { #category : 'adding' }
@@ -81,16 +85,30 @@ GolapQueryClauseSpec >> addPredicate: aGolapQueryPredicateSpec [
 
 { #category : 'converting' }
 GolapQueryClauseSpec >> asJSON [
+
 	^ Dictionary new
-		at: 'field' put: field;
-		at: 'predicates' put: (predicates collect: #asJSON);
-		at: 'isNegative' put: isNegative;
-		yourself
+		  at: 'field' put: field;
+		  at: 'predicates' put: (predicates collect: #asJSON);
+		  at: 'isNegative' put: isNegative;
+		  at: 'isDisjunct' put: isDisjunct;
+		  yourself
 ]
 
 { #category : 'enumerating' }
 GolapQueryClauseSpec >> bareLiteralsDo: aBlock [
 	predicates do: [ :predicate | predicate bareLiteralsDo: aBlock ]
+]
+
+{ #category : 'operations' }
+GolapQueryClauseSpec >> beConjunct [
+
+	self isDisjunct: false
+]
+
+{ #category : 'operations' }
+GolapQueryClauseSpec >> beDisjunct [
+
+	self isDisjunct: true
 ]
 
 { #category : 'operations' }
@@ -130,14 +148,18 @@ GolapQueryClauseSpec >> hasPredicates [
 
 { #category : 'comparing' }
 GolapQueryClauseSpec >> hash [
-	^ ((self class hash bitXor: field hash) bitXor: predicates hash)
-		bitXor: isNegative
+
+	^ (((self class hash bitXor: field hash) bitXor: predicates hash)
+		   bitXor: self isNegative) bitXor: self isDisjunct
 ]
 
 { #category : 'initialization' }
 GolapQueryClauseSpec >> initialize [
+
 	super initialize.
-	predicates := OrderedCollection new
+	predicates := OrderedCollection new.
+	isNegative := false.
+	isDisjunct := false
 ]
 
 { #category : 'testing' }
@@ -146,11 +168,29 @@ GolapQueryClauseSpec >> isClauseSpec [
 ]
 
 { #category : 'testing' }
+GolapQueryClauseSpec >> isConjunct [
+
+	^ self isDisjunct not
+]
+
+{ #category : 'testing' }
+GolapQueryClauseSpec >> isDisjunct [
+
+	^ isDisjunct = true
+]
+
+{ #category : 'accessing' }
+GolapQueryClauseSpec >> isDisjunct: aBoolean [
+
+	isDisjunct := aBoolean = true
+]
+
+{ #category : 'testing' }
 GolapQueryClauseSpec >> isItemClause [
 	^ false
 ]
 
-{ #category : 'accessing' }
+{ #category : 'testing' }
 GolapQueryClauseSpec >> isNegative [
 	^ isNegative = true
 ]
@@ -260,6 +300,12 @@ GolapQueryClauseSpec >> removePredicate: aGolapQueryPredicateSpec ifAbsent: erro
 	^ predicates
 		remove: aGolapQueryPredicateSpec
 		ifAbsent: errorBlock
+]
+
+{ #category : 'operations' }
+GolapQueryClauseSpec >> toggleConjunctDisjunct [
+
+	isDisjunct := isDisjunct ~= true
 ]
 
 { #category : 'accessing' }

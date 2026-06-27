@@ -38,22 +38,16 @@ GolapTransactionFilterSpec >> printQueryOn: aStream [
 					                      (clause hasPredicates or: [
 						                       clause hasItemFilter ]) ifTrue: [
 						                      stream nextPut: clause ] ] ].
-	(itemClauses size min: 1) + transactionClauses size >= 2 ifTrue: [
+	(itemClauses notEmpty and: [ transactionClauses notEmpty ]) ifTrue: [
 		aStream nextPutAll: 'and(' ].
-	transactionClauses
-		do: [ :clause | clause printQueryOn: aStream ]
-		separatedBy: [ aStream nextPut: $, ].
-	(transactionClauses notEmpty and: [ itemClauses notEmpty ]) ifTrue: [
-		aStream nextPut: $, ].
+	transactionClauses ifNotEmpty: [
+			self printQueryFromClauses: transactionClauses on: aStream.
+			itemClauses ifNotEmpty: [ aStream nextPut: $, ] ].
 	itemClauses ifNotEmpty: [
 			aStream nextPutAll: 'sel_item('.
-			itemClauses size >= 2 ifTrue: [ aStream nextPutAll: 'and(' ].
-			itemClauses
-				do: [ :clause | clause printQueryOn: aStream ]
-				separatedBy: [ aStream nextPut: $, ].
-			itemClauses size >= 2 ifTrue: [ aStream nextPut: $) ].
+			self printQueryFromClauses: itemClauses on: aStream.
 			aStream nextPut: $) ].
-	(itemClauses size min: 1) + transactionClauses size >= 2 ifTrue: [
+	(itemClauses notEmpty and: [ transactionClauses notEmpty ]) ifTrue: [
 		aStream nextPut: $) ]
 ]
 

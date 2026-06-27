@@ -150,27 +150,31 @@ GolapFilterPresenter >> clauseList [
 
 { #category : 'menus' }
 GolapFilterPresenter >> clauseListMenu [
+
 	| menu |
 	menu := self newMenu.
-	clauseList selection selectedItem
-		ifNotNil: [ :clause | 
+	clauseList selection selectedItem ifNotNil: [ :clause |
 			menu
-				addGroup: [ :menuGroup | 
-					menuGroup
-						addItem: [ :menuItem | 
-							menuItem
-								name:
-									(clause isNegative
-										ifTrue: [ 'make positive' ]
-										ifFalse: [ 'make negative' ]);
-								action: [ self toggleNegative ] ] ];
-				addGroup: [ :menuGroup | 
-					menuGroup
-						addItem: [ :menuItem | 
-							menuItem
-								name: 'clear filters';
-								action: [ self clearClause ];
-								enabled: self clauseHasPredicates ] ] ].
+				addGroup: [ :menuGroup |
+						menuGroup addItem: [ :menuItem |
+									menuItem
+										name: (clause isNegative
+												 ifTrue: [ '肯定形にする' ]
+												 ifFalse: [ '否定形にする' ]);
+										action: [ self toggleNegative ] ] ];
+				addGroup: [ :menuGroup |
+						menuGroup addItem: [ :menuItem |
+								menuItem
+									name: (clause isDisjunct
+											 ifTrue: [ '必須にする' ]
+											 ifFalse: [ 'いずれかにする' ]);
+									action: [ self toggleConjunctDisjunct ] ] ];
+				addGroup: [ :menuGroup |
+						menuGroup addItem: [ :menuItem |
+								menuItem
+									name: 'クリア';
+									action: [ self clearClause ];
+									enabled: self clauseHasPredicates ] ] ].
 	^ menu
 ]
 
@@ -229,18 +233,28 @@ GolapFilterPresenter >> initializePresenters [
 		              beSingleSelection;
 		              addColumn: (SpStringTableColumn new
 				               width: 20;
-				               evaluated: [ :clauseSpec | 
-					               (clauseSpec hasPredicates or: [ 
-							                clauseSpec hasItemFilter ])
-						               ifTrue: [ 
-							               clauseSpec isNegative
-								               ifTrue: [ '-' ]
-								               ifFalse: [ '+' ] ]
-						               ifFalse: [ ' ' ] ]);
+				               evaluated: [ :clauseSpec |
+						               (clauseSpec hasPredicates or: [
+								                clauseSpec hasItemFilter ])
+							               ifTrue: [
+									               clauseSpec isConjunct
+										               ifTrue: [ '必' ]
+										               ifFalse: [ '選' ] ]
+							               ifFalse: [ ' ' ] ]);
+		              addColumn: (SpStringTableColumn new
+				               width: 20;
+				               evaluated: [ :clauseSpec |
+						               (clauseSpec hasPredicates or: [
+								                clauseSpec hasItemFilter ])
+							               ifTrue: [
+									               clauseSpec isNegative
+										               ifTrue: [ '-' ]
+										               ifFalse: [ '+' ] ]
+							               ifFalse: [ ' ' ] ]);
 		              addColumn:
-		              (SpStringTableColumn evaluated: [ :clauseSpec | 
+		              (SpStringTableColumn evaluated: [ :clauseSpec |
 			               clauseSpec field ]);
-		              whenSelectionChangedDo: [ 
+		              whenSelectionChangedDo: [
 		              self clauseListSelectionChanged ];
 		              contextMenu: [ self clauseListMenu ];
 		              contextKeyBindings: (CmCommandGroup forSpec
@@ -261,21 +275,21 @@ GolapFilterPresenter >> initializePresenters [
 		              borderWidth: 1;
 		              yourself.
 	predicateList := self newList
-		                 display: [ :spec | 
-			                 spec isPredicateSpec
-				                 ifTrue: [ spec printSpec ]
-				                 ifFalse: [ 
-					                 (spec hasPredicates
-						                  ifTrue: [ 
-							                  spec isNegative
-								                  ifTrue: [ '-' ]
-								                  ifFalse: [ '+' ] ]
-						                  ifFalse: [ ' ' ]) , spec field ] ];
+		                 display: [ :spec |
+				                 spec isPredicateSpec
+					                 ifTrue: [ spec printSpec ]
+					                 ifFalse: [
+							                 (spec hasPredicates
+								                  ifTrue: [
+										                  spec isNegative
+											                  ifTrue: [ '-' ]
+											                  ifFalse: [ '+' ] ]
+								                  ifFalse: [ ' ' ]) , spec field ] ];
 		                 dropEnabled: true;
-		                 acceptDrop: [ :transfer | 
+		                 acceptDrop: [ :transfer |
 			                 self addPredicateSilent:
 					                 (',' join: transfer passenger) ];
-		                 whenSelectionChangedDo: [ 
+		                 whenSelectionChangedDo: [
 			                 self predicateListSelectionChanged ];
 		                 contextMenu: [ self predicateListMenu ];
 		                 contextKeyBindings: (CmCommandGroup forSpec
@@ -292,23 +306,23 @@ GolapFilterPresenter >> initializePresenters [
 		                 yourself.
 	predicateField := self newTextInput
 		                  dropEnabled: true;
-		                  acceptDrop: [ :transfer | 
+		                  acceptDrop: [ :transfer |
 			                  self predicateFieldDropped: transfer passenger ];
-		                  whenSubmitDo: [ :txt | 
+		                  whenSubmitDo: [ :txt |
 			                  self predicateFieldAccepted ];
 		                  borderColor: (Color gray: 0.9);
 		                  borderWidth: 1;
 		                  yourself.
 	guardFieldDropList := self newDropList
-		                      display: [ :clauseSpec | 
+		                      display: [ :clauseSpec |
 			                      clauseSpec ifNil: [ '-' ] ];
 		                      yourself.
 	guardPredicatesField := self newTextInput
 		                        dropEnabled: true;
-		                        acceptDrop: [ :transfer | 
+		                        acceptDrop: [ :transfer |
 			                        guardPredicatesField text:
 					                        (',' join: transfer passenger) ];
-		                        whenSubmitDo: [ :txt | 
+		                        whenSubmitDo: [ :txt |
 			                        self guardPredicatesFieldAccepted ];
 		                        borderColor: (Color gray: 0.9);
 		                        borderWidth: 1;
@@ -331,29 +345,32 @@ GolapFilterPresenter >> initializePresenters [
 		               yourself.
 	previewFilterBlock := [ :items | items ].
 	previewFilterField := self newTextInput
-		                      whenSubmitDo: [ :txt | 
-			                      ((previewFilterField text asString trim 
-				                        substrings: ',') collect: [ :string | 
-					                       (((#( '\' '.' '[' ']' '(' ')' '!' '+' '|' )
-						                          inject: string
-						                          into: [ :p :special | 
-							                          p
-								                          copyReplaceAll: special
-								                          with: '\' , special ])
-						                         copyReplaceAll: '*'
-						                         with: '.*')
-						                        copyReplaceAll: '?'
-						                        with: '[ -~]+') asRegex ])
-				                      ifEmpty: [ 
-					                      previewFilterBlock := [ :items | items ] ]
-				                      ifNotEmpty: [ :regexs | 
-					                      previewFilterBlock := [ :items | 
-					                                            items select: [ :item | 
-							                                            regexs anySatisfy: [ 
-									                                            :regex | 
-									                                            regex matches:
-											                                            item ] ] ] ].
-			                      self updatePreviewList ];
+		                      whenSubmitDo: [ :txt |
+				                      ((previewFilterField text asString trim
+					                        substrings: ',') collect: [ :string |
+							                       (((#( '\' '.' '[' ']' '(' ')' '!' '+'
+							                             '|' )
+								                          inject: string
+								                          into: [ :p :special |
+									                          p
+										                          copyReplaceAll: special
+										                          with: '\' , special ])
+								                         copyReplaceAll: '*'
+								                         with: '.*')
+								                        copyReplaceAll: '?'
+								                        with: '[ -~]+') asRegex ])
+					                      ifEmpty: [
+						                      previewFilterBlock := [ :items | items ] ]
+					                      ifNotEmpty: [ :regexs |
+							                      previewFilterBlock := [ :items |
+								                                            items select: [
+										                                            :item |
+										                                            regexs
+											                                            anySatisfy: [
+												                                            :regex |
+												                                            regex
+													                                            matches: item ] ] ] ].
+				                      self updatePreviewList ];
 		                      borderColor: (Color gray: 0.9);
 		                      borderWidth: 1;
 		                      yourself.
@@ -365,11 +382,11 @@ GolapFilterPresenter >> initializePresenters [
 		add: previewFilterField;
 		add: guardFieldDropList;
 		add: guardPredicatesField.
-	self whenBuiltDo: [ :w | 
-		| font |
-		font := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m | 
-			(m respondsTo: #font:) ifTrue: [ m font: font ] ] ]
+	self whenBuiltDo: [ :w |
+			| font |
+			font := TextStyle defaultFont.
+			w widget allMorphsDo: [ :m |
+				(m respondsTo: #font:) ifTrue: [ m font: font ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -404,11 +421,11 @@ GolapFilterPresenter >> predicateListMenu [
 			menuGroup
 				addItem: [ :menuItem | 
 					menuItem
-						name: 'remove';
+						name: '削除';
 						action: [ self removePredicate ] ];
 				addItem: [ :menuItem | 
 					menuItem
-						name: 'remove all';
+						name: '全て削除';
 						action: [ self removeAllPredicates ] ] ]
 ]
 
@@ -432,14 +449,14 @@ GolapFilterPresenter >> previewListMenu [
 	^ self newMenu
 		addItem: [ :menuItem | 
 			menuItem
-				name: 'copy';
+				name: 'コピー';
 				action: [ self copyPreviewListSelection ] ]
 ]
 
 { #category : 'menus' }
 GolapFilterPresenter >> previewListMenu: aMenu shifted: shifted [ 
 	^ aMenu
-		add: 'copy' target: self selector: #copyPreviewListSelection;
+		add: 'コピー' target: self selector: #copyPreviewListSelection;
 		yourself
 ]
 
@@ -481,6 +498,15 @@ GolapFilterPresenter >> removePredicate [
 { #category : 'accessing' }
 GolapFilterPresenter >> timeout [
 	^ query timeout
+]
+
+{ #category : 'operations' }
+GolapFilterPresenter >> toggleConjunctDisjunct [
+
+	clauseList selection selectedItem ifNotNil: [ :clause |
+			clause toggleConjunctDisjunct.
+			self updateClauseList.
+			clauseList selectItem: clause ]
 ]
 
 { #category : 'operations' }

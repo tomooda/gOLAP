@@ -31,6 +31,12 @@ GolapFilterSpec class >> fromString: aString ifError: errorBlock [
 	^ query
 ]
 
+{ #category : 'testing' }
+GolapFilterSpec class >> isAbstract [
+
+	^ self = GolapFilterSpec
+]
+
 { #category : 'instance creation' }
 GolapFilterSpec class >> withAll: aCollectionOfGolapQueryClauseSpec [
 	| query |
@@ -94,6 +100,33 @@ GolapFilterSpec >> initialize [
 { #category : 'testing' }
 GolapFilterSpec >> isFilterSpec [
 	^ true
+]
+
+{ #category : 'printing' }
+GolapFilterSpec >> printQueryFromClauses: aCollectionOfGolapQueryClauseSpec on: aStream [
+
+	| conjuncts disjuncts |
+	conjuncts := OrderedCollection new.
+	disjuncts := OrderedCollection new.
+	aCollectionOfGolapQueryClauseSpec do: [ :clause |
+			clause isDisjunct
+				ifTrue: [ disjuncts add: clause query ]
+				ifFalse: [ conjuncts add: clause query ] ].
+	disjuncts size = 1 ifTrue: [ conjuncts add: disjuncts first ].
+	disjuncts size > 1 ifTrue: [
+			conjuncts add: (String streamContents: [ :stream |
+						 stream nextPutAll: 'or('.
+						 disjuncts
+							 do: [ :disjunct | stream nextPutAll: disjunct ]
+							 separatedBy: [ stream nextPut: $, ].
+						 stream nextPut: $) ]) ].
+	conjuncts size = 1 ifTrue: [ aStream nextPutAll: conjuncts first ].
+	conjuncts size > 1 ifTrue: [
+			aStream nextPutAll: 'and('.
+			conjuncts
+				do: [ :conjunct | aStream nextPutAll: conjunct ]
+				separatedBy: [ aStream nextPut: $, ].
+			aStream nextPut: $) ]
 ]
 
 { #category : 'printing' }
