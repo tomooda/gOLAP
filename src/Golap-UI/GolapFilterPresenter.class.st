@@ -231,26 +231,36 @@ GolapFilterPresenter >> initializePresenters [
 	clauseList := self newTable
 		              disableSearch;
 		              beSingleSelection;
-		              addColumn: (SpStringTableColumn new
+		              addColumn:
+			              ((HiDeButtonTableColumn evaluated: [ :clauseSpec |
+						                (clauseSpec hasPredicates or: [
+								                 clauseSpec hasItemFilter ])
+							                ifTrue: [
+									                clauseSpec isConjunct
+										                ifTrue: [ '必' ]
+										                ifFalse: [ '選' ] ]
+							                ifFalse: [ ' ' ] ])
+				               action: [ :clauseSpec |
+					               self toggleConjunctDisjunct: clauseSpec ];
+				               beNotExpandable;
 				               width: 20;
-				               evaluated: [ :clauseSpec |
-						               (clauseSpec hasPredicates or: [
-								                clauseSpec hasItemFilter ])
-							               ifTrue: [
-									               clauseSpec isConjunct
-										               ifTrue: [ '必' ]
-										               ifFalse: [ '選' ] ]
-							               ifFalse: [ ' ' ] ]);
-		              addColumn: (SpStringTableColumn new
+				               color: Color transparent;
+				               yourself);
+		              addColumn:
+			              ((HiDeButtonTableColumn evaluated: [ :clauseSpec |
+						                (clauseSpec hasPredicates or: [
+								                 clauseSpec hasItemFilter ])
+							                ifTrue: [
+									                clauseSpec isNegative
+										                ifTrue: [ 'ー' ]
+										                ifFalse: [ '＋' ] ]
+							                ifFalse: [ ' ' ] ])
+				               action: [ :clauseSpec |
+					               self toggleNegative: clauseSpec ];
+				               beNotExpandable;
 				               width: 20;
-				               evaluated: [ :clauseSpec |
-						               (clauseSpec hasPredicates or: [
-								                clauseSpec hasItemFilter ])
-							               ifTrue: [
-									               clauseSpec isNegative
-										               ifTrue: [ '-' ]
-										               ifFalse: [ '+' ] ]
-							               ifFalse: [ ' ' ] ]);
+				               color: Color transparent;
+				               yourself);
 		              addColumn:
 		              (SpStringTableColumn evaluated: [ :clauseSpec |
 			               clauseSpec field ]);
@@ -504,18 +514,30 @@ GolapFilterPresenter >> timeout [
 GolapFilterPresenter >> toggleConjunctDisjunct [
 
 	clauseList selection selectedItem ifNotNil: [ :clause |
-			clause toggleConjunctDisjunct.
-			self updateClauseList.
-			clauseList selectItem: clause ]
+		self toggleConjunctDisjunct: clause ]
+]
+
+{ #category : 'operations' }
+GolapFilterPresenter >> toggleConjunctDisjunct: aGolapQueryClauseSpec [
+
+	aGolapQueryClauseSpec toggleConjunctDisjunct.
+	self updateClauseList.
+	clauseList selectItem: aGolapQueryClauseSpec
 ]
 
 { #category : 'operations' }
 GolapFilterPresenter >> toggleNegative [
-	clauseList selection selectedItem
-		ifNotNil: [ :clause | 
-			clause toggleNegative.
-			self updateClauseList.
-			clauseList selectItem: clause ]
+
+	clauseList selection selectedItem ifNotNil: [ :clause |
+		self toggleNegative: clause ]
+]
+
+{ #category : 'operations' }
+GolapFilterPresenter >> toggleNegative: aGolapQueryClauseSpec [
+
+	aGolapQueryClauseSpec toggleNegative.
+	self updateClauseList.
+	clauseList selectItem: aGolapQueryClauseSpec
 ]
 
 { #category : 'updating' }
