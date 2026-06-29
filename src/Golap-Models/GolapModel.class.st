@@ -15,7 +15,11 @@ Class {
 		'edgeRanks',
 		'referenceNodes',
 		'baseGraph',
-		'merge'
+		'merge',
+		'polisher',
+		'edgeMinThreshold',
+		'edgeMaxThreshold',
+		'edgeValueNormalizer'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -74,11 +78,13 @@ GolapModel >> - aGolapModel [
 
 { #category : 'polishing' }
 GolapModel >> addNegativePolishEdge: aGolapEdge [
+
 	^ negativePolishEdges add: aGolapEdge
 ]
 
 { #category : 'polishing' }
 GolapModel >> addPositivePolishEdge: aGolapEdge [
+
 	^ positivePolishEdges add: aGolapEdge
 ]
 
@@ -86,6 +92,13 @@ GolapModel >> addPositivePolishEdge: aGolapEdge [
 GolapModel >> addReferenceNode: aGolapNode [
 
 	referenceNodes addLast: aGolapNode id
+]
+
+{ #category : 'enumerating' }
+GolapModel >> allEdgesDo: aBlock [
+
+	self edgesDo: aBlock.
+	negativePolishEdges do: aBlock
 ]
 
 { #category : 'algorithms-articulation points' }
@@ -228,6 +241,32 @@ GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
 	edgeEvaluator := aGolapEdgeEvaluator
 ]
 
+{ #category : 'accessing' }
+GolapModel >> edgeMaxThreshold [
+
+	^ edgeMaxThreshold
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeMaxThreshold: aNumber [
+
+	edgeMaxThreshold := aNumber.
+	self updateNodesAndEdges
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeMinThreshold [
+
+	^ edgeMinThreshold
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeMinThreshold: aNumber [
+
+	edgeMinThreshold := aNumber.
+	self updateNodesAndEdges
+]
+
 { #category : 'enumerating' }
 GolapModel >> edgesDo: aBlock [
 
@@ -322,12 +361,16 @@ GolapModel >> initialize [
 	super initialize.
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
+	polisher := GolapPolisher new.
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	mergedNodes := IdentityDictionary new.
 	edgeRanks := IdentityDictionary new.
-	referenceNodes := OrderedCollection new
+	referenceNodes := OrderedCollection new.
+	edgeValueNormalizer := GolapNormalizer min: 0.0 max: 0.0.
+	edgeMinThreshold := nil.
+	edgeMaxThreshold := nil
 ]
 
 { #category : 'accessing-reference nodes' }
@@ -379,7 +422,7 @@ GolapModel >> merge [
 	^ merge
 ]
 
-{ #category : 'accessing-node' }
+{ #category : 'merging' }
 GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 
 	merge merge: (aCollectionOfGolapNode collect: #id) into: aString.
@@ -415,11 +458,6 @@ GolapModel >> minNodeValue [
 			minValue := value.
 			minNode := node ] ].
 	^ minNode ifNotNil: [ minValue ] ifNil: [ 0.0 ]
-]
-
-{ #category : 'polishing' }
-GolapModel >> negativePolishEdgesDo: aBlock [
-	negativePolishEdges do: aBlock
 ]
 
 { #category : 'accessing' }
@@ -508,67 +546,24 @@ GolapModel >> nodesDo: aBlock [
 ]
 
 { #category : 'polishing' }
-GolapModel >> polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anInteger [
+GolapModel >> polishAdditionThreshold: aNumber [
 
-	| changed hop2peers edges |
-	changed := false.
-	hop2peers := IdentityDictionary new.
-	edges := IdentitySet new.
-	self nodesDo: [ :v1 |
-			| peers |
-			peers := hop2peers at: v1 put: IdentityDictionary new.
-			v1 edgesAndNodeDo: [ :e1 :v2 |
-					edges add: e1.
-					v2 edgesAndNodeDo: [ :e2 :v3 |
-							v1 id < v3 id ifTrue: [
-								peers at: v3 put: (peers at: v3 ifAbsent: [ 0 ]) + 1 ] ] ] ].
-	hop2peers keysAndValuesDo: [ :v1 :peersAndDups |
-			peersAndDups keysAndValuesDo: [ :v2 :dups |
-					(v1 canHavePositivePolishEdge: v2) ifFalse: [
-							| denominator |
-							denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
-							denominator > anInteger ifTrue: [
-									dups asFloat
-									/ (v1 numberOfEdges + v2 numberOfEdges - dups) asFloat
-									> aNumber1 ifTrue: [
-											changed := true.
-											(self removeNegativePolishEdgeBetween: v1 and: v2) ifNil: [
-													| newEdge |
-													newEdge := GolapEdge on: nil between: v1 and: v2.
-													v1 addPositivePolishEdge: newEdge.
-													v2 addPositivePolishEdge: newEdge.
-													self addPositivePolishEdge: newEdge ] ] ] ] ] ].
-	edges do: [ :edge |
-			| v1 v2 peersAndDups |
-			edge node1 id <= edge node2 id
-				ifTrue: [
-						v1 := edge node1.
-						v2 := edge node2 ]
-				ifFalse: [
-						v1 := edge node2.
-						v2 := edge node1 ].
-			peersAndDups := hop2peers at: v1.
-			((peersAndDups includesKey: v2) and: [
-					 | dups denominator |
-					 dups := peersAndDups at: v2.
-					 denominator := v1 numberOfEdges + v2 numberOfEdges - dups.
-					 denominator > anInteger and: [
-							 dups asFloat
-							 / (v1 numberOfEdges + v2 numberOfEdges - dups) asFloat
-							 < aNumber2 ] ]) ifTrue: [
-					changed := true.
-					(self removePositivePolishEdgeBetween: v1 and: v2) ifNil: [
-							v1 addNegativePolishEdge: edge.
-							v2 addNegativePolishEdge: edge.
-							self addNegativePolishEdge: edge ] ] ].
-	friendsEdges := nil.
-	self flushEdgeRanks.
-	^ changed
+	polisher additionThreshold: aNumber.
+	self updateNodesAndEdges
 ]
 
 { #category : 'polishing' }
-GolapModel >> positivePolishEdgesDo: aBlock [
-	positivePolishEdges do: aBlock
+GolapModel >> polishMinClusterSize: anInteger [
+
+	polisher minClusterSize: anInteger.
+	self updateNodesAndEdges
+]
+
+{ #category : 'polishing' }
+GolapModel >> polishRemovalThreshold: aNumber [
+
+	polisher removalThreshold: aNumber.
+	self updateNodesAndEdges
 ]
 
 { #category : 'copying' }
@@ -650,6 +645,7 @@ GolapModel >> referenceNodesSize [
 
 { #category : 'polishing' }
 GolapModel >> removeNegativePolishEdge: aGolapEdge [
+
 	^ negativePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
 ]
 
@@ -665,20 +661,22 @@ GolapModel >> removeNegativePolishEdgeBetween: aGolapNode1 and: aGolapNode2 [
 
 { #category : 'polishing' }
 GolapModel >> removePositivePolishEdge: aGolapEdge [
+
 	^ positivePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
 ]
 
 { #category : 'polishing' }
 GolapModel >> removePositivePolishEdgeBetween: aGolapNode1 and: aGolapNode2 [
 
-	self positivePolishEdgesDo: [ :edge |
-		((aGolapNode1 == edge node1 and: [ aGolapNode2 == edge node2 ]) or: [
-			 aGolapNode1 == edge node2 and: [ aGolapNode2 == edge node1 ] ])
-			ifTrue: [
-				aGolapNode1 removePositivePolishEdge: edge.
-				aGolapNode2 removePositivePolishEdge: edge.
-				self removePositivePolishEdge: edge.
-				^ edge ] ].
+	positivePolishEdges do: [ :edge |
+			((aGolapNode1 == edge node1 and: [ aGolapNode2 == edge node2 ])
+				 or: [
+				 aGolapNode1 == edge node2 and: [ aGolapNode2 == edge node1 ] ])
+				ifTrue: [
+						aGolapNode1 removePositivePolishEdge: edge.
+						aGolapNode2 removePositivePolishEdge: edge.
+						self removePositivePolishEdge: edge.
+						^ edge ] ].
 	^ nil
 ]
 
@@ -689,41 +687,20 @@ GolapModel >> removeReferenceNode: aGolapNode [
 ]
 
 { #category : 'polishing' }
-GolapModel >> repeat: anInteger1 polishAddAbove: aNumber1 removeBelow: aNumber2 minDenominator: anInteger2 [
-	self resetPolish.
-	anInteger1
-		timesRepeat: [ (self
-				polishAddAbove: aNumber1
-				removeBelow: aNumber2
-				minDenominator: anInteger2)
-				ifFalse: [ ^ self ] ]
+GolapModel >> repeatsPolish: aBoolean [
+
+	polisher repeats: aBoolean.
+	self updateNodesAndEdges
 ]
 
-{ #category : 'accessing-node' }
+{ #category : 'merging' }
 GolapModel >> resetMerges [
 
 	merge unmergeAll.
 	self updateNodesAndEdges
 ]
 
-{ #category : 'accessing-node' }
-GolapModel >> resetNodes [
-
-	self resetMerges.
-	self resetPolish
-]
-
-{ #category : 'polishing' }
-GolapModel >> resetPolish [
-
-	self nodesDo: [ :v | v resetPolish ].
-	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new.
-	friendsEdges := nil.
-	self flushEdgeRanks
-]
-
-{ #category : 'accessing-node' }
+{ #category : 'merging' }
 GolapModel >> setMerges: anOrderedCollectionOfAssociations [
 
 	merge unmergeAll.
@@ -732,7 +709,7 @@ GolapModel >> setMerges: anOrderedCollectionOfAssociations [
 	self updateNodesAndEdges
 ]
 
-{ #category : 'accessing-node' }
+{ #category : 'merging' }
 GolapModel >> unmergeNode: aGolapNode [
 
 	merge unmerge: aGolapNode id.
@@ -783,21 +760,32 @@ GolapModel >> updateNodesAndEdges [
 												  ifTrue: [ Array with: root1 with: root2 ]
 												  ifFalse: [ Array with: root2 with: root1 ])
 										 ifAbsentPut: [ OrderedCollection new ]) add: baseEdge data ] ] ] ].
-	newRootEdges keysAndValuesDo: [ :rootPair :dataArray |
+	newRootEdges := newRootEdges collect: [ :dataArray |
+			                (dataArray size = 1
+				                 ifTrue: [ dataArray first copy ]
+				                 ifFalse: [
+						                 DataSeries newFrom:
+								                 (edgeAggregators collect: [ :aggregator |
+										                  aggregator value: dataArray ]) ])
+				                at: 'effective' ifAbsentPut: [ 1 ];
+				                yourself ].
+	edgeEvaluator ifNotNil: [
+			edgeValueNormalizer := GolapNormalizer from:
+				                       (newRootEdges values collect: [ :data |
+					                        edgeEvaluator value: data graph: self ]).
+			newRootEdges := newRootEdges select: [ :data |
+					                (edgeValueNormalizer normalize:
+						                 (edgeEvaluator value: data graph: self))
+						                between: (edgeMinThreshold ifNil: [ 0.0 ])
+						                and: (edgeMaxThreshold ifNil: [ 1.0 ]) ] ].
+	newRootEdges keysAndValuesDo: [ :rootPair :data |
 			newNodes at: rootPair first ifPresent: [ :node1 |
 					newNodes at: rootPair second ifPresent: [ :node2 |
-							(dataArray size = 1 and: [
-								 (dataArray first at: 'effective' ifAbsent: [ 1 ]) <= 0 ])
-								ifTrue: [
-								node1 createHiddenEdgeTo: node2 data: dataArray first ]
-								ifFalse: [
-										node1 createEdgeTo: node2 data: (dataArray size = 1
-												 ifTrue: [ dataArray first ]
-												 ifFalse: [
-														 DataSeries newFrom:
-															 (edgeAggregators collect: [ :aggregator |
-																  aggregator value: dataArray ]) ]) ] ] ] ].
+							(data at: 'effective' ifAbsent: [ 1 ]) <= 0
+								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data ]
+								ifFalse: [ node1 createEdgeTo: node2 data: data ] ] ] ].
 	nodes := newNodes.
+	polisher applyTo: self.
 	self updateFriends
 ]
 

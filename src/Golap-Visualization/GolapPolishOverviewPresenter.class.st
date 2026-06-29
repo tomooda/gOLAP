@@ -8,13 +8,13 @@ Class {
 		'visibleEdgeMaxPercentileSlider',
 		'resetVisibleEdgePercentileButton',
 		'layoutButton',
-		'polishIterationCheckbox',
-		'positivePolishSlider',
-		'positivePolishField',
-		'negativePolishSlider',
-		'negativePolishField',
-		'polishMinDenominatorField',
-		'showsPolishEdgesCheckbox'
+		'showsPolishEdgesCheckbox',
+		'polishRepeatsCheckbox',
+		'polishMinClusterSize',
+		'polishRemovalThresholdField',
+		'polishRemovalThresholdSlider',
+		'polishAdditionThresholdField',
+		'polishAdditionThresholdSlider'
 	],
 	#category : 'Golap-Visualization-Polish',
 	#package : 'Golap-Visualization',
@@ -28,9 +28,7 @@ GolapPolishOverviewPresenter >> availableEdges [
 			  self golapModelDo: [ :golapModel |
 					  showsPolishEdgesCheckbox state
 						  ifTrue: [
-								  golapModel
-									  edgesDo: [ :edge | stream nextPut: edge ];
-									  negativePolishEdgesDo: [ :edge | stream nextPut: edge ] ]
+						  golapModel allEdgesDo: [ :edge | stream nextPut: edge ] ]
 						  ifFalse: [
 						  golapModel edgesDo: [ :edge | stream nextPut: edge ] ] ] ]
 ]
@@ -73,20 +71,20 @@ GolapPolishOverviewPresenter >> defaultLayout [
 				   expand: false;
 				   add: (SpBoxLayout newHorizontal
 						    add: '最小関連数' expand: false;
-						    add: polishMinDenominatorField width: 50;
+						    add: polishMinClusterSize width: 50;
 						    yourself)
 				   expand: false;
 				   add: (SpBoxLayout newVertical
-						    add: negativePolishSlider expand: false;
-						    add: positivePolishSlider expand: false;
+						    add: polishRemovalThresholdSlider expand: false;
+						    add: polishAdditionThresholdSlider expand: false;
 						    yourself)
 				   width: 200;
 				   add: (SpBoxLayout newVertical
-						    add: negativePolishField expand: false;
-						    add: positivePolishField expand: false;
+						    add: polishRemovalThresholdField expand: false;
+						    add: polishAdditionThresholdField expand: false;
 						    yourself)
 				   width: 50;
-				   add: polishIterationCheckbox width: 100;
+				   add: polishRepeatsCheckbox width: 100;
 				   add: (SpBoxLayout newVertical
 						    add:
 							    ('更新' asPresenter displayBackgroundColor: [
@@ -129,61 +127,65 @@ GolapPolishOverviewPresenter >> initializePresenters [
 				                                    visibleEdgeMaxPercentileSlider
 					                                    value: 100 ];
 		                                    yourself.
-	polishIterationCheckbox := self newCheckBox
+	polishRepeatsCheckbox := self newCheckBox
 		                           label: '繰り返し';
 		                           state: false;
-		                           whenChangedDo: [ self polish ];
+		                           whenChangedDo: [
+			                           self repeatsPolish:
+					                           polishRepeatsCheckbox state ];
 		                           yourself.
-	positivePolishSlider := self newSlider
+	polishAdditionThresholdSlider := self newSlider
 		                        label: '+研磨';
 		                        min: 0.0;
 		                        max: 1.0;
 		                        value: 1.0;
 		                        quantum: 0.01;
 		                        whenValueChangedDo: [
-				                        positivePolishField number:
-						                        positivePolishSlider value.
-				                        self polish ];
+			                        polishAdditionThresholdField number:
+					                        polishAdditionThresholdSlider value ];
 		                        borderWidth: 0;
 		                        yourself.
-	positivePolishField := self newNumberInput
+	polishAdditionThresholdField := self newNumberInput
 		                       beFloat;
 		                       placeholder: '+研磨';
 		                       minimum: 0.8;
 		                       maximum: 1.0;
 		                       number: 1.0;
 		                       whenNumberChangedDo: [
-				                       positivePolishSlider value:
-						                       positivePolishField number.
-				                       self polish ].
-	negativePolishSlider := self newSlider
+				                       polishAdditionThresholdSlider value:
+						                       polishAdditionThresholdField number.
+				                       self polishAdditionThreshold:
+						                       polishAdditionThresholdField number ].
+	polishRemovalThresholdSlider := self newSlider
 		                        label: '-研磨';
 		                        min: 0.0;
 		                        max: 0.2;
 		                        value: 0.0;
 		                        quantum: 0.01;
 		                        whenValueChangedDo: [
-				                        negativePolishField number:
-						                        negativePolishSlider value.
-				                        self polish ];
+			                        polishRemovalThresholdField number:
+					                        polishRemovalThresholdSlider value ];
 		                        borderWidth: 0;
 		                        yourself.
-	negativePolishField := self newNumberInput
+	polishRemovalThresholdField := self newNumberInput
 		                       beFloat;
 		                       placeholder: '-研磨';
 		                       minimum: 0.0;
 		                       maximum: 0.2;
 		                       number: 0.0;
 		                       whenNumberChangedDo: [
-				                       negativePolishSlider value:
-						                       negativePolishField number.
-				                       self polish ].
-	polishMinDenominatorField := self newNumberInput
+				                       polishRemovalThresholdSlider value:
+						                       polishRemovalThresholdField number.
+				                       self polishRemovalThreshold:
+						                       polishRemovalThresholdField number ].
+	polishMinClusterSize := self newNumberInput
 		                             beInteger;
 		                             placeholder: '最小関連数';
 		                             minimum: 1;
 		                             number: 3;
-		                             whenNumberChangedDo: [ self polish ].
+		                             whenNumberChangedDo: [
+			                             self polishMinClusterSize:
+					                             polishMinClusterSize number ].
 	showsPolishEdgesCheckbox := self newCheckBox
 		                            label: '表示';
 		                            state: false;
@@ -200,7 +202,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 { #category : 'accessing' }
 GolapPolishOverviewPresenter >> negativePolishFactor [
 
-	^ negativePolishField number ifNil: [ 0.0 ]
+	^ polishRemovalThresholdField number ifNil: [ 0.0 ]
 ]
 
 { #category : 'instance creation' }
@@ -218,23 +220,33 @@ GolapPolishOverviewPresenter >> newShapeForEdge: aGolapEdge [
 ]
 
 { #category : 'operations' }
-GolapPolishOverviewPresenter >> polish [
+GolapPolishOverviewPresenter >> polishAdditionThreshold: aNumber [
 
 	golap updateGlobalImageAfter: [
-			golap model
-				repeat: (polishIterationCheckbox state
-						 ifTrue: [ 100 ]
-						 ifFalse: [ 1 ])
-				polishAddAbove: self positivePolishFactor
-				removeBelow: self negativePolishFactor
-				minDenominator: polishMinDenominatorField number.
+			golap model polishAdditionThreshold: aNumber.
+			golap announceGolapModelUpdated ]
+]
+
+{ #category : 'operations' }
+GolapPolishOverviewPresenter >> polishMinClusterSize: aNumber [
+
+	golap updateGlobalImageAfter: [
+			golap model polishMinClusterSize: aNumber.
+			golap announceGolapModelUpdated ]
+]
+
+{ #category : 'operations' }
+GolapPolishOverviewPresenter >> polishRemovalThreshold: aNumber [
+
+	golap updateGlobalImageAfter: [
+			golap model polishRemovalThreshold: aNumber.
 			golap announceGolapModelUpdated ]
 ]
 
 { #category : 'accessing' }
 GolapPolishOverviewPresenter >> positivePolishFactor [
 
-	^ positivePolishField number ifNil: [ 1.0 ]
+	^ polishAdditionThresholdField number ifNil: [ 1.0 ]
 ]
 
 { #category : 'rendering' }
@@ -246,6 +258,14 @@ GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 					line parent ifNotNil: [
 							line model ifNotNil: [ :edge |
 								edge isPositivePolishEdge ifTrue: [ line pushFront ] ] ] ] ]
+]
+
+{ #category : 'operations' }
+GolapPolishOverviewPresenter >> repeatsPolish: aBoolean [
+
+	golap updateGlobalImageAfter: [
+			golap model repeatsPolish: aBoolean.
+			golap announceGolapModelUpdated ]
 ]
 
 { #category : 'updating' }

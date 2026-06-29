@@ -8,10 +8,10 @@ GolapPolishOverviewPresenter >> asJSON [
 		  put: visibleEdgeMinPercentileSlider value;
 		  at: 'visibleEdgeMaxPercentile'
 		  put: visibleEdgeMaxPercentileSlider value;
-		  at: 'polishIteration' put: polishIterationCheckbox state;
-		  at: 'positivePolish' put: positivePolishField number;
-		  at: 'negativePolish' put: negativePolishField number;
-		  at: 'polishMinDenominator' put: polishMinDenominatorField number;
+		  at: 'polishIteration' put: polishRepeatsCheckbox state;
+		  at: 'positivePolish' put: polishAdditionThresholdField number;
+		  at: 'negativePolish' put: polishRemovalThresholdField number;
+		  at: 'polishMinDenominator' put: polishMinClusterSize number;
 		  at: 'showsPolishEdges' put: showsPolishEdgesCheckbox state;
 		  yourself
 ]
@@ -26,13 +26,13 @@ GolapPolishOverviewPresenter >> fromJSON: aDictionary [
 		at: 'visibleEdgeMaxPercentile'
 		ifPresent: [ :number | visibleEdgeMaxPercentileSlider value: number ];
 		at: 'polishIteration'
-		ifPresent: [ :bool | polishIterationCheckbox state: bool ];
+		ifPresent: [ :bool | polishRepeatsCheckbox state: bool ];
 		at: 'positivePolish'
-		ifPresent: [ :number | positivePolishField number: number ];
+		ifPresent: [ :number | polishAdditionThresholdField number: number ];
 		at: 'negativePolish'
-		ifPresent: [ :number | negativePolishField number: number ];
+		ifPresent: [ :number | polishRemovalThresholdField number: number ];
 		at: 'polishMinDenominator'
-		ifPresent: [ :integer | polishMinDenominatorField number: integer ];
+		ifPresent: [ :integer | polishMinClusterSize number: integer ];
 		at: 'showsPolishEdges'
 		ifPresent: [ :bool | showsPolishEdgesCheckbox state: bool ].
 	self updateGraph

@@ -348,7 +348,7 @@ Golap >> announceGolapViewUpdated [
 { #category : 'merging' }
 Golap >> applyMergesToModel: aGolapModel [
 
-	aGolapModel resetNodes.
+	aGolapModel resetMerges.
 	merges do: [ :assoc |
 			aGolapModel
 				mergeNodes: (assoc value
