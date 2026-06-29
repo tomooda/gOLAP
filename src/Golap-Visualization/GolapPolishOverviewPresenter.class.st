@@ -99,6 +99,28 @@ GolapPolishOverviewPresenter >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'operations' }
+GolapPolishOverviewPresenter >> edgeMaxThresholdChanged [
+
+	self golapModelDo: [ :model |
+			| percent |
+			percent := visibleEdgeMaxPercentileSlider value.
+			visibleEdgeMaxPercentileSlider label: percent printString , '%'.
+			model edgeMaxThreshold: percent * 0.01.
+			self updateCanvas ]
+]
+
+{ #category : 'operations' }
+GolapPolishOverviewPresenter >> edgeMinThresholdChanged [
+
+	self golapModelDo: [ :model |
+			| percent |
+			percent := visibleEdgeMinPercentileSlider value.
+			visibleEdgeMinPercentileSlider label: percent printString , '%'.
+			model edgeMinThreshold: percent * 0.01.
+			self updateCanvas ]
+]
+
 { #category : 'initialization' }
 GolapPolishOverviewPresenter >> initializePresenters [
 
@@ -109,7 +131,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                                  quantum: 1;
 		                                  value: 0;
 		                                  whenValueChangedDo: [
-			                                  self updateCanvas ];
+			                                  self edgeMinThresholdChanged ];
 		                                  yourself.
 	visibleEdgeMaxPercentileSlider := self newSlider
 		                                  min: 0;
@@ -117,7 +139,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                                  quantum: 1;
 		                                  value: 100;
 		                                  whenValueChangedDo: [
-			                                  self updateCanvas ];
+			                                  self edgeMaxThresholdChanged ];
 		                                  yourself.
 	resetVisibleEdgePercentileButton := self newButton
 		                                    label: 'リセット';
@@ -128,64 +150,74 @@ GolapPolishOverviewPresenter >> initializePresenters [
 					                                    value: 100 ];
 		                                    yourself.
 	polishRepeatsCheckbox := self newCheckBox
-		                           label: '繰り返し';
-		                           state: false;
-		                           whenChangedDo: [
-			                           self repeatsPolish:
-					                           polishRepeatsCheckbox state ];
-		                           yourself.
+		                         label: '繰り返し';
+		                         state: false;
+		                         whenChangedDo: [
+			                         self repeatsPolish:
+					                         polishRepeatsCheckbox state ];
+		                         yourself.
 	polishAdditionThresholdSlider := self newSlider
-		                        label: '+研磨';
-		                        min: 0.0;
-		                        max: 1.0;
-		                        value: 1.0;
-		                        quantum: 0.01;
-		                        whenValueChangedDo: [
-			                        polishAdditionThresholdField number:
-					                        polishAdditionThresholdSlider value ];
-		                        borderWidth: 0;
-		                        yourself.
+		                                 label: '+研磨';
+		                                 min: 0.0;
+		                                 max: 1.0;
+		                                 value: 1.0;
+		                                 quantum: 0.01;
+		                                 whenValueChangedDo: [
+				                                 polishAdditionThresholdField
+					                                 number:
+						                                 polishAdditionThresholdSlider
+							                                 value ];
+		                                 borderWidth: 0;
+		                                 yourself.
 	polishAdditionThresholdField := self newNumberInput
-		                       beFloat;
-		                       placeholder: '+研磨';
-		                       minimum: 0.8;
-		                       maximum: 1.0;
-		                       number: 1.0;
-		                       whenNumberChangedDo: [
-				                       polishAdditionThresholdSlider value:
-						                       polishAdditionThresholdField number.
-				                       self polishAdditionThreshold:
-						                       polishAdditionThresholdField number ].
+		                                beFloat;
+		                                placeholder: '+研磨';
+		                                minimum: 0.8;
+		                                maximum: 1.0;
+		                                number: 1.0;
+		                                whenNumberChangedDo: [
+				                                polishAdditionThresholdSlider
+					                                value:
+						                                polishAdditionThresholdField
+							                                number.
+				                                self polishAdditionThreshold:
+						                                polishAdditionThresholdField
+							                                number ].
 	polishRemovalThresholdSlider := self newSlider
-		                        label: '-研磨';
-		                        min: 0.0;
-		                        max: 0.2;
-		                        value: 0.0;
-		                        quantum: 0.01;
-		                        whenValueChangedDo: [
-			                        polishRemovalThresholdField number:
-					                        polishRemovalThresholdSlider value ];
-		                        borderWidth: 0;
-		                        yourself.
+		                                label: '-研磨';
+		                                min: 0.0;
+		                                max: 0.2;
+		                                value: 0.0;
+		                                quantum: 0.01;
+		                                whenValueChangedDo: [
+			                                polishRemovalThresholdField
+				                                number:
+					                                polishRemovalThresholdSlider
+						                                value ];
+		                                borderWidth: 0;
+		                                yourself.
 	polishRemovalThresholdField := self newNumberInput
-		                       beFloat;
-		                       placeholder: '-研磨';
-		                       minimum: 0.0;
-		                       maximum: 0.2;
-		                       number: 0.0;
-		                       whenNumberChangedDo: [
-				                       polishRemovalThresholdSlider value:
-						                       polishRemovalThresholdField number.
-				                       self polishRemovalThreshold:
-						                       polishRemovalThresholdField number ].
+		                               beFloat;
+		                               placeholder: '-研磨';
+		                               minimum: 0.0;
+		                               maximum: 0.2;
+		                               number: 0.0;
+		                               whenNumberChangedDo: [
+				                               polishRemovalThresholdSlider
+					                               value:
+						                               polishRemovalThresholdField
+							                               number.
+				                               self polishRemovalThreshold:
+						                               polishRemovalThresholdField
+							                               number ].
 	polishMinClusterSize := self newNumberInput
-		                             beInteger;
-		                             placeholder: '最小関連数';
-		                             minimum: 1;
-		                             number: 3;
-		                             whenNumberChangedDo: [
-			                             self polishMinClusterSize:
-					                             polishMinClusterSize number ].
+		                        beInteger;
+		                        placeholder: '最小関連数';
+		                        minimum: 1;
+		                        number: 3;
+		                        whenNumberChangedDo: [
+			                        self polishMinClusterSize:
+					                        polishMinClusterSize number ].
 	showsPolishEdgesCheckbox := self newCheckBox
 		                            label: '表示';
 		                            state: false;
@@ -197,12 +229,6 @@ GolapPolishOverviewPresenter >> initializePresenters [
 				                golap model friendsEdges: golap model nodes size.
 				                self updateNodePositions ];
 		                yourself
-]
-
-{ #category : 'accessing' }
-GolapPolishOverviewPresenter >> negativePolishFactor [
-
-	^ polishRemovalThresholdField number ifNil: [ 0.0 ]
 ]
 
 { #category : 'instance creation' }
@@ -243,12 +269,6 @@ GolapPolishOverviewPresenter >> polishRemovalThreshold: aNumber [
 			golap announceGolapModelUpdated ]
 ]
 
-{ #category : 'accessing' }
-GolapPolishOverviewPresenter >> positivePolishFactor [
-
-	^ polishAdditionThresholdField number ifNil: [ 1.0 ]
-]
-
 { #category : 'rendering' }
 GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 
@@ -275,38 +295,7 @@ GolapPolishOverviewPresenter >> updateGraph [
 			self golapModelDo: [ :model |
 					| visibleEdges connectedNodes |
 					visibleEdges := self availableEdges.
-					(visibleEdges
-						 collect: [ :edge | model valueAtEdge: edge ]
-						 thenSelect: [ :value |
-						 value notNil and: [ value asFloat isFinite ] ])
-						asSortedCollection
-						ifNotEmpty: [ :d |
-								visibleEdgeMinValue := d at:
-									                       (d size - 1
-									                        *
-									                        visibleEdgeMinPercentileSlider value
-									                        * 0.01) rounded + 1.
-								visibleEdgeMaxValue := d at:
-									                       (d size - 1
-									                        *
-									                        visibleEdgeMaxPercentileSlider value
-									                        * 0.01) rounded + 1 ]
-						ifEmpty: [
-								visibleEdgeMaxValue := visibleEdgeMinValue := 0.0.
-								reallyVisibleEdges := Array new.
-								reallyVisibleNodes := Array new.
-								^ self ].
-					visibleEdgeMinPercentileSlider label:
-						visibleEdgeMinValue printString.
-					visibleEdgeMaxPercentileSlider label:
-						visibleEdgeMaxValue printString.
-					reallyVisibleEdges := visibleEdges select: [ :edge |
-							                      (model valueAtEdge: edge)
-								                      ifNil: [ false ]
-								                      ifNotNil: [ :v |
-								                      v
-									                      between: visibleEdgeMinValue
-									                      and: visibleEdgeMaxValue ] ].
+					reallyVisibleEdges := visibleEdges.
 					connectedNodes := IdentitySet new: reallyVisibleEdges size.
 					reallyVisibleEdges do: [ :edge |
 							connectedNodes

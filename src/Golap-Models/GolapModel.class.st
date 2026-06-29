@@ -386,7 +386,7 @@ GolapModel >> isReferenceNode: aGolapNode [
 	^ referenceNodes includes: aGolapNode id
 ]
 
-{ #category : 'accessing' }
+{ #category : 'filtering' }
 GolapModel >> maxEdgeValue [
 
 	| maxValue maxEdge |
@@ -401,7 +401,7 @@ GolapModel >> maxEdgeValue [
 	^ maxEdge ifNotNil: [ maxValue ] ifNil: [ 1.0 ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'filtering' }
 GolapModel >> maxNodeValue [
 
 	| maxValue maxNode |
@@ -430,7 +430,7 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 	^ nodes at: aString ifAbsent: [ nil ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'filtering' }
 GolapModel >> minEdgeValue [
 
 	| minValue minEdge |
@@ -445,7 +445,7 @@ GolapModel >> minEdgeValue [
 	^ minEdge ifNotNil: [ minValue ] ifNil: [ 0.0 ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'filtering' }
 GolapModel >> minNodeValue [
 
 	| minValue minNode |
