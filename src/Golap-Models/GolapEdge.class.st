@@ -147,14 +147,6 @@ GolapEdge >> remove [
 	node2 ifNotNil: [ :v | v basicRemoveEdge: self ]
 ]
 
-{ #category : 'operations' }
-GolapEdge >> replaceNode: aGolapNode1 with: aGolapNode2 [
-	aGolapNode1 basicRemoveEdge: self.
-	self basicReplaceNode: aGolapNode1 with: aGolapNode2.
-	aGolapNode1 addEdge: self.
-	^ aGolapNode2
-]
-
 { #category : 'private' }
 GolapEdge >> setData: aDataSeries [
 

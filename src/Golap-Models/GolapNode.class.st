@@ -38,12 +38,14 @@ GolapNode >> addHiddenEdge: aGolapEdge [
 
 { #category : 'polishing' }
 GolapNode >> addNegativePolishEdge: aGolapEdge [
+
 	^ negativePolishEdges add: aGolapEdge
 ]
 
 { #category : 'polishing' }
 GolapNode >> addPositivePolishEdge: aGolapEdge [
-	positivePolishEdges add: aGolapEdge
+
+	^ positivePolishEdges add: aGolapEdge
 ]
 
 { #category : 'adding-removing' }
@@ -61,15 +63,15 @@ GolapNode >> allEdgesAndNodeDo: aBlock [
 
 { #category : 'enumerating' }
 GolapNode >> argmaxEdge: aBlock [
+
 	| max argmax |
 	max := Float negativeInfinity.
 	argmax := nil.
-	edges
-		do: [ :edge | 
+	self edgesDo: [ :edge |
 			| value |
 			value := aBlock value: edge.
-			value > max
-				ifTrue: [ argmax := edge.
+			value > max ifTrue: [
+					argmax := edge.
 					max := value ] ].
 	^ argmax
 ]
@@ -108,10 +110,12 @@ GolapNode >> basicRemoveEdge: aGolapEdge [
 { #category : 'polishing' }
 GolapNode >> canHavePositivePolishEdge: aGolapNode [
 
-	^ self ~~ aGolapNode and: [
-			  (edges contains: [ :edge |
-					   (edge node1 == self and: [ edge node2 == aGolapNode ]) or: [
-						   edge node1 == aGolapNode and: [ edge node2 == self ] ] ]) not ]
+	self == aGolapNode ifTrue: [ ^ false ].
+	self edgesDo: [ :edge |
+			((edge node1 == self and: [ edge node2 == aGolapNode ]) or: [
+				 edge node1 == aGolapNode and: [ edge node2 == self ] ]) ifTrue: [
+				^ false ] ].
+	^ true
 ]
 
 { #category : 'adding-removing' }
@@ -158,23 +162,23 @@ GolapNode >> edgeTo: aGolapNode ifAbsent: errorBlock [
 { #category : 'accessing' }
 GolapNode >> edges [
 
-	^ edges
+	^ Array streamContents: [ :stream |
+		  self edgesDo: [ :edge | stream nextPut: edge ] ]
 ]
 
 { #category : 'accessing' }
 GolapNode >> edges: anOrderedCollection [
 
-	edges := anOrderedCollection
+	edges := anOrderedCollection.
+	positivePolishEdges removeAll.
+	negativePolishEdges removeAll
 ]
 
 { #category : 'enumerating' }
 GolapNode >> edgesAndNodeDo: aBlock [
-	edges
-		do: [ :edge | 
-			(negativePolishEdges includes: edge)
-				ifFalse: [ aBlock value: edge value: (edge peerOf: self) ] ].
-	positivePolishEdges
-		do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
+
+	self edgesDo: [ :edge |
+		aBlock value: edge value: (edge peerOf: self) ]
 ]
 
 { #category : 'enumerating' }
@@ -194,7 +198,10 @@ GolapNode >> flushPhotoimage [
 
 { #category : 'enumerating' }
 GolapNode >> hasEdge: aGolapEdge [
-	^ edges includes: aGolapEdge
+
+	^ ((edges includes: aGolapEdge) and: [
+		   (negativePolishEdges includes: aGolapEdge) not ]) or: [
+		  positivePolishEdges includes: aGolapEdge ]
 ]
 
 { #category : 'enumerating' }
@@ -290,7 +297,9 @@ GolapNode >> initialize [
 
 { #category : 'testing' }
 GolapNode >> isIsolated [
-	^ edges isEmpty
+
+	self edgesDo: [ :edge | ^ false ].
+	^ true
 ]
 
 { #category : 'testing' }
@@ -351,7 +360,8 @@ GolapNode >> nodesAndScoresDo: aBlock [
 
 { #category : 'accessing' }
 GolapNode >> numberOfEdges [
-	^ edges size
+
+	^ edges size + positivePolishEdges size - negativePolishEdges size
 ]
 
 { #category : 'accessing' }
@@ -385,8 +395,8 @@ GolapNode >> postCopy [
 	data := data copy.
 	edges := edges copy.
 	hiddenEdges := hiddenEdges copy.
-	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new.
+	positivePolishEdges := positivePolishEdges copy.
+	negativePolishEdges := negativePolishEdges copy.
 	scores := Dictionary new
 ]
 
@@ -406,7 +416,7 @@ GolapNode >> rankOf: aGolapEdge in: aGolapModel [
 	| score rank |
 	score := aGolapModel valueAtEdge: aGolapEdge.
 	rank := 1.
-	edges do: [ :edge |
+	self edgesDo: [ :edge |
 		score < (aGolapModel valueAtEdge: edge) ifTrue: [ rank := rank + 1 ] ].
 	^ rank
 ]
