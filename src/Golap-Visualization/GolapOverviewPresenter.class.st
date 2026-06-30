@@ -151,12 +151,12 @@ GolapOverviewPresenter >> ensureNodePositionAt: aString ifFailed: errorBlock [
 						node idsDo: [ :id |
 							nodePositions at: id ifPresent: [ :p | ps add: p ] ].
 						ps ifEmpty: [
-								node edges do: [ :edge |
+								node edgesDo: [ :edge |
 									nodePositions
 										at: (edge peerOf: node) id
 										ifPresent: [ :p | ps add: p ] ] ].
 						ps ifEmpty: [
-								node edges do: [ :edge |
+								node edgesDo: [ :edge |
 										(edge peerOf: node) idsDo: [ :id |
 											nodePositions at: id ifPresent: [ :p | ps add: p ] ] ] ].
 						ps ifNotEmpty: #average ifEmpty: errorBlock ]

@@ -6,6 +6,7 @@ GolapModel >> asJSON [
 	| json |
 	json := OrderedDictionary new.
 	baseGraph toJSON: json.
+	polisher toJSON: json.
 	^ json
 		  at: 'nodeEvaluator' put: nodeEvaluator asJSON;
 		  at: 'nodeAggregators' put: (nodeAggregators collect: #asJSON);
@@ -40,9 +41,7 @@ GolapModel >> fromJSON: aDictionary [
 				edgeAggregators := array collect: [ :json |
 						                   GolapDataAggregator fromJSON: json ] ].
 	baseGraph := GolapBaseGraph fromJSON: aDictionary.
+	polisher := GolapPolisher fromJSON: aDictionary.
 	self updateNodesAndEdges.
-	friendsRank := 5.
-	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new.
-	mergedNodes := IdentityDictionary new
+	friendsRank := 5
 ]

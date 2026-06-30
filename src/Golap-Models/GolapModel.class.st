@@ -8,7 +8,6 @@ Class {
 		'positivePolishEdges',
 		'negativePolishEdges',
 		'edgeAggregators',
-		'mergedNodes',
 		'nodeAggregators',
 		'nodeEvaluator',
 		'nodes',
@@ -118,14 +117,6 @@ GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
 		          edges: aCollectionOfGolapEdge;
 		          yourself.
 	finder articulationPoints do: aBlock
-]
-
-{ #category : 'enumerating' }
-GolapModel >> bindingEdgesDo: aBlock [
-
-	self friendsEdges do: [ :edge |
-		(negativePolishEdges includes: edge) ifFalse: [ aBlock value: edge ] ].
-	positivePolishEdges do: aBlock
 ]
 
 { #category : 'private' }
@@ -365,7 +356,6 @@ GolapModel >> initialize [
 	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	mergedNodes := IdentityDictionary new.
 	edgeRanks := IdentityDictionary new.
 	referenceNodes := OrderedCollection new.
 	edgeValueNormalizer := GolapNormalizer min: 0.0 max: 0.0.
@@ -575,9 +565,8 @@ GolapModel >> postCopy [
 	nodeAggregators := nodeAggregators ifNotNil: #copy.
 	edgeAggregators := edgeAggregators ifNotNil: #copy.
 	self updateNodesAndEdges.
-	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new.
-	mergedNodes := IdentityDictionary new
+	positivePolishEdges := positivePolishEdges copy.
+	negativePolishEdges := negativePolishEdges copy
 ]
 
 { #category : 'accessing' }
@@ -720,8 +709,9 @@ GolapModel >> unmergeNode: aGolapNode [
 { #category : 'updating' }
 GolapModel >> updateFriends [
 
-	friendsEdges := nil.
-	self flushEdgeRanks
+	self
+		flushEdgeRanks;
+		flushFriendsEdges
 ]
 
 { #category : 'updating' }
