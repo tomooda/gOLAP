@@ -41,33 +41,35 @@ GolapArticulationPointOverviewPresenter >> availableEdges [
 { #category : 'accessing' }
 GolapArticulationPointOverviewPresenter >> colorForEdge: aGolapEdge [
 
+	self ensureIslandNodeSets.
 	(aGolapEdge hasNode: self articulationPoint) ifTrue: [ ^ Color black ].
 	islandNodeSets
 		ifNotEmpty: [
-			islandNodeSets withIndexDo: [ :set :index |
-				((set includes: aGolapEdge node1) or: [
-					 set includes: aGolapEdge node2 ]) ifTrue: [
-					^ Color
-						  h: index - 1 * 360 / islandNodeSets size asFloat
-						  s: 0.8
-						  l: 0.3 ] ].
-			^ nil ]
+				islandNodeSets withIndexDo: [ :set :index |
+						((set includes: aGolapEdge node1) or: [
+							 set includes: aGolapEdge node2 ]) ifTrue: [
+							^ Color
+								  h: index - 1 * 360 / islandNodeSets size asFloat
+								  s: 0.8
+								  l: 0.3 ] ].
+				^ nil ]
 		ifEmpty: [ ^ super colorForEdge: aGolapEdge ]
 ]
 
 { #category : 'accessing' }
 GolapArticulationPointOverviewPresenter >> colorForNode: aGolapNode [
 
+	self ensureIslandNodeSets.
 	aGolapNode = self articulationPoint ifTrue: [ ^ Color black ].
 	islandNodeSets
 		ifNotEmpty: [
-			islandNodeSets withIndexDo: [ :set :index |
-				(set includes: aGolapNode) ifTrue: [
-					^ Color
-						  h: index - 1 * 360 / islandNodeSets size asFloat
-						  s: 0.8
-						  l: 0.3 ] ].
-			^ nil ]
+				islandNodeSets withIndexDo: [ :set :index |
+						(set includes: aGolapNode) ifTrue: [
+							^ Color
+								  h: index - 1 * 360 / islandNodeSets size asFloat
+								  s: 0.8
+								  l: 0.3 ] ].
+				^ nil ]
 		ifEmpty: [ ^ super colorForNode: aGolapNode ]
 ]
 
@@ -92,6 +94,14 @@ GolapArticulationPointOverviewPresenter >> defaultLayout [
 				   yourself)
 		  expand: true;
 		  yourself
+]
+
+{ #category : 'updating' }
+GolapArticulationPointOverviewPresenter >> ensureIslandNodeSets [
+
+	^ islandNodeSets ifNil: [
+			  self updateIslandNodeSets.
+			  islandNodeSets ]
 ]
 
 { #category : 'updating' }

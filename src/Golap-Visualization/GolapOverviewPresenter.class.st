@@ -167,11 +167,18 @@ GolapOverviewPresenter >> ensureNodePositionAt: aString ifFailed: errorBlock [
 GolapOverviewPresenter >> ensureNodePositions [
 
 	self isDisplayed ifTrue: [
-			self golapModelDo: [ :golapModel |
-					self availableEdges do: [ :edge |
-							(golapModel valueAtEdge: edge) notNil ifTrue: [
-									self ensureNodePositionAt: edge node1 id ifFailed: [ 0 @ 0 ].
-									self ensureNodePositionAt: edge node2 id ifFailed: [ 0 @ 0 ] ] ] ] ]
+			nodePositions
+				ifEmpty: [ self basicUpdateNodePositions ]
+				ifNotEmpty: [
+						self golapModelDo: [ :golapModel |
+								self availableEdges do: [ :edge |
+										(golapModel valueAtEdge: edge) notNil ifTrue: [
+												self
+													ensureNodePositionAt: edge node1 id
+													ifFailed: [ 0 @ 0 ].
+												self
+													ensureNodePositionAt: edge node2 id
+													ifFailed: [ 0 @ 0 ] ] ] ] ] ]
 ]
 
 { #category : 'operations' }
