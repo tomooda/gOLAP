@@ -36,6 +36,21 @@ GolapPhotoImageRetriever class >> tag [
 ]
 
 { #category : 'accessing-cache' }
+GolapPhotoImageRetriever >> cacheAt: aString ifAbsent: errorBlock [
+
+	| ref |
+	(ref := self cacheDirectory
+	        / (aString , '.png' copyReplaceAll: '/' with: '_')) isFile
+		ifTrue: [
+				ref binaryReadStreamDo: [ :stream |
+						^ [ PNGReadWriter formFromStream: stream ]
+							  on: Exception
+							  do: [ :ex | ex return: nil ] ] ]
+		ifFalse: [ ^ errorBlock value ].
+	^ nil
+]
+
+{ #category : 'accessing-cache' }
 GolapPhotoImageRetriever >> cacheAt: aString ifAbsentPut: errorBlock [
 
 	| ref |

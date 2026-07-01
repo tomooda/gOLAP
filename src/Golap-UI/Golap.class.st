@@ -40,7 +40,8 @@ Class {
 		'articulationPointOverviewPresenter',
 		'itemInfoRetriever',
 		'resendQueryButton',
-		'visualizationNotebook'
+		'visualizationNotebook',
+		'imageCache'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -771,6 +772,26 @@ Golap >> ifSnapshotEnabled: aBlock [
 	snapshotEnabled = true ifTrue: aBlock
 ]
 
+{ #category : 'operations-photoimages' }
+Golap >> imageCacheAt: aGolapNode do: aBlock [
+
+	aGolapNode idsDo: [ :id | imageCache at: id ifPresent: aBlock ]
+]
+
+{ #category : 'operations-photoimages' }
+Golap >> imageCacheAt: aGolapNode ifAbsent: errorBlock [
+
+	aGolapNode idsDo: [ :id |
+		imageCache at: id ifPresent: [ :form | ^ form ] ].
+	^ errorBlock value
+]
+
+{ #category : 'operations-photoimages' }
+Golap >> imageCacheAt: aGolapNode put: aForm [
+
+	^ imageCache at: aGolapNode id put: aForm
+]
+
 { #category : 'accessing' }
 Golap >> imageRepositoryUrl: aString [
 
@@ -798,7 +819,8 @@ Golap >> initialize [
 	dimensions := OrderedDictionary new.
 	merges := OrderedCollection new.
 	snapshotEnabled := true.
-	snapshotBaseName := ''
+	snapshotBaseName := ''.
+	imageCache := Dictionary new: 1024
 ]
 
 { #category : 'initialization' }
@@ -1112,11 +1134,14 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 	model ifNotNil: [
 			self
 				updateGlobalImageAfter: [
+						model announcer
+							when: GolapModelChangedAnnouncement
+							send: #updatePhotoimages
+							to: self.
 						model flushFriendsEdges.
 						self unselectAll.
-						model ifNotNil: [
-								edgesAppearancePresenter updateModel: model.
-								itemList updateItemsList ] ]
+						edgesAppearancePresenter updateModel: model.
+						itemList updateItemsList ]
 				layout: aBoolean ].
 	self announceGolapModelUpdated
 ]
@@ -1487,6 +1512,7 @@ Golap >> release [
 	selections := nil.
 	font := nil.
 	itemView := nil.
+	imageCache := nil.
 	super release
 ]
 
@@ -1689,8 +1715,14 @@ Golap >> retrievePhotoimages [
 			| agenda total tried done |
 			agenda := IdentitySet new.
 			model edgesDo: [ :edge |
-					edge node1 photoimage ifNil: [ agenda add: edge node1 ].
-					edge node2 photoimage ifNil: [ agenda add: edge node2 ] ].
+					edge node1 photoimage ifNil: [
+						self
+							imageCacheAt: edge node1
+							ifAbsent: [ agenda add: edge node1 ] ].
+					edge node2 photoimage ifNil: [
+						self
+							imageCacheAt: edge node2
+							ifAbsent: [ agenda add: edge node2 ] ] ].
 			agenda := agenda asArray.
 			total := agenda size.
 			done := 0.
@@ -1710,6 +1742,7 @@ Golap >> retrievePhotoimages [
 								          node photoimage:
 									          (photoimage scaledToSize:
 										           self photoimageSize asPoint).
+								          self imageCacheAt: node put: node photoimage.
 								          done := done + 1.
 								          done \\ 10 = 0 ifTrue: [
 										          self activeVisualizationDo: [ :presenter |
@@ -1969,7 +2002,10 @@ Golap >> showsPhotoimages: aBoolean [
 { #category : 'updating' }
 Golap >> showsPhotoimagesChanged [
 
-	self application showWaitCursorWhile: [ self updateGlobalImage ]
+	self application showWaitCursorWhile: [
+			self
+				updatePhotoimages;
+				updateGlobalImage ]
 ]
 
 { #category : 'accessing-dimensions' }
@@ -2317,13 +2353,24 @@ Golap >> updateModel [
 	self isUpdateModelBlocked ifTrue: [ ^ self ].
 	itemList updateItemsList.
 	edgeList modelChanged.
+	self
+		updatePhotoimages;
+		startPhotoimageRetrievingProcess.
 	self visualizationsDo: [ :presenter |
 			(presenter respondsTo: #updateCanvas) ifTrue: [
 				presenter updateCanvas ] ].
 	self activeVisualizationDo: [ :presenter |
 			(presenter respondsTo: #ensureNodePositions) ifTrue: [
-				presenter ensureNodePositions ] ].
-	self startPhotoimageRetrievingProcess
+				presenter ensureNodePositions ] ]
+]
+
+{ #category : 'updating' }
+Golap >> updatePhotoimages [
+
+	self model ifNotNil: [ :golapModel |
+			golapModel nodesDo: [ :node |
+					node photoimage ifNil: [
+						self imageCacheAt: node do: [ :form | node photoimage: form ] ] ] ]
 ]
 
 { #category : 'private' }

@@ -181,6 +181,12 @@ GolapOverviewPresenter >> ensureNodePositions [
 													ifFailed: [ 0 @ 0 ] ] ] ] ] ]
 ]
 
+{ #category : 'updating' }
+GolapOverviewPresenter >> ensureVisibleEdges [
+
+	reallyVisibleEdges ifNil: [ self updateGraph ]
+]
+
 { #category : 'operations' }
 GolapOverviewPresenter >> forceZoomToFit [
 
@@ -661,6 +667,7 @@ GolapOverviewPresenter >> updateGraph [
 GolapOverviewPresenter >> updateLineScale [
 
 	| maxValue |
+	self ensureVisibleEdges.
 	reallyVisibleEdges ifEmpty: [ ^ self ].
 	maxValue := (reallyVisibleEdges
 		             collect: [ :e |
@@ -716,6 +723,7 @@ GolapOverviewPresenter >> updateNodeShapes [
 
 	lock critical: [
 			self
+				ensureNodePositions;
 				updateFreqScale;
 				updateLineScale.
 			self canvas shapes copy do: #remove.

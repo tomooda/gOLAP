@@ -100,6 +100,12 @@ GolapModel >> allEdgesDo: aBlock [
 	negativePolishEdges do: aBlock
 ]
 
+{ #category : 'announcements' }
+GolapModel >> announceGraphChanged [
+
+	self announcer announce: (GolapModelChangedAnnouncement on: self)
+]
+
 { #category : 'algorithms-articulation points' }
 GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge [
 
@@ -776,7 +782,8 @@ GolapModel >> updateNodesAndEdges [
 								ifFalse: [ node1 createEdgeTo: node2 data: data ] ] ] ].
 	nodes := newNodes.
 	polisher applyTo: self.
-	self updateFriends
+	self updateFriends.
+	self announceGraphChanged
 ]
 
 { #category : 'accessing' }
