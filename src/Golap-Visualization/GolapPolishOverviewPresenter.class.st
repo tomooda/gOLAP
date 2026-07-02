@@ -50,41 +50,44 @@ GolapPolishOverviewPresenter >> defaultLayout [
 				   add: (SpBoxLayout newVertical
 						    add: (SpBoxLayout newHorizontal
 								     add: '最小' asPresenter expand: false;
-								     add: visibleEdgeMinPercentileSlider expand: false;
+								     add: visibleEdgeMinPercentileSlider expand: true;
 								     yourself)
 						    expand: false;
 						    add: (SpBoxLayout newHorizontal
 								     add: '最大' asPresenter expand: false;
-								     add: visibleEdgeMaxPercentileSlider expand: false;
+								     add: visibleEdgeMaxPercentileSlider expand: true;
 								     yourself)
 						    expand: false;
 						    yourself)
-				   expand: false;
+				   expand: true;
 				   add: '    ' asPresenter expand: false;
 				   add: (SpBoxLayout newVertical
 						    add:
 							    ('研磨' asPresenter displayBackgroundColor: [
 									     Color gray: 0.8 ])
 						    expand: false;
-						    add: showsPolishEdgesCheckbox width: 80;
-						    yourself)
-				   expand: false;
-				   add: (SpBoxLayout newHorizontal
-						    add: '最小関連数' expand: false;
-						    add: polishMinClusterSize width: 50;
+						    add: showsPolishEdgesCheckbox width: 100;
 						    yourself)
 				   expand: false;
 				   add: (SpBoxLayout newVertical
-						    add: polishRemovalThresholdSlider expand: false;
-						    add: polishAdditionThresholdSlider expand: false;
+						    add: (SpBoxLayout newHorizontal
+								     add: '最小関連数' expand: false;
+								     add: polishMinClusterSize width: 50;
+								     yourself)
+						    expand: false;
+						    add: polishRepeatsCheckbox expand: true;
 						    yourself)
-				   width: 200;
+				   expand: false;
+				   add: (SpBoxLayout newVertical
+						    add: polishRemovalThresholdSlider expand: true;
+						    add: polishAdditionThresholdSlider expand: true;
+						    yourself)
+				   expand: true;
 				   add: (SpBoxLayout newVertical
 						    add: polishRemovalThresholdField expand: false;
 						    add: polishAdditionThresholdField expand: false;
 						    yourself)
 				   width: 50;
-				   add: polishRepeatsCheckbox width: 100;
 				   add: (SpBoxLayout newVertical
 						    add:
 							    ('更新' asPresenter displayBackgroundColor: [
