@@ -151,25 +151,25 @@ GolapGooglePhotoImageRetriever >> retrieveImageNamed: aString [
 
 	self isAvailable ifFalse: [ ^ nil ].
 	[
-	| url |
-	url := self googleUrl.
-	url
-		queryAt: 'cx' put: self cseid;
-		queryAt: 'key' put: self apikey;
-		queryAt: 'searchType' put: 'image';
-		queryAt: 'num' put: numImages;
-		queryAt: 'q' put: (aString copyReplaceAll: '_' with: '-').
-	(STONJSON fromString: url retrieveContents)
-		at: 'items'
-		ifPresent: [ :items |
-			items do: [ :item |
-				item at: 'image' ifPresent: [ :image |
-					image at: 'thumbnailLink' ifPresent: [ :link |
-						[
-						^ ImageReadWriter formFromStream:
-							  link asZnUrl retrieveBinaryContents readStream ]
-							on: Exception
-							do: [ :ex |  ] ] ] ] ] ]
+		| url |
+		url := self googleUrl.
+		url
+			queryAt: 'cx' put: self cseid;
+			queryAt: 'key' put: self apikey;
+			queryAt: 'searchType' put: 'image';
+			queryAt: 'num' put: numImages;
+			queryAt: 'q' put: (aString copyReplaceAll: '_' with: '-').
+		(GolapJSON fromString: url retrieveContents)
+			at: 'items'
+			ifPresent: [ :items |
+					items do: [ :item |
+							item at: 'image' ifPresent: [ :image |
+									image at: 'thumbnailLink' ifPresent: [ :link |
+											[
+												^ ImageReadWriter formFromStream:
+													  link asZnUrl retrieveBinaryContents readStream ]
+												on: Exception
+												do: [ :ex |  ] ] ] ] ] ]
 		on: Error
 		do: [ :ex |  ].
 	^ nil

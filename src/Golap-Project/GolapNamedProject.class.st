@@ -81,7 +81,7 @@ GolapNamedProject >> load [
 
 	self projectFile ifNotNil: [ :ref |
 			ref readStreamDo: [ :stream |
-					(NeoJSONReader on: stream) next ifNotNil: [ :json |
+					(GolapJSON fromStream: stream) ifNotNil: [ :json |
 							self closeAll.
 							self fromJSON: json ] ] ]
 ]

@@ -74,26 +74,6 @@ GolapItemView >> node: aGolapNode [
 	self updateItemInfo ] forkAt: Processor userBackgroundPriority
 ]
 
-{ #category : 'snapshot' }
-GolapItemView >> restore: aStream [
-
-	(NeoJSONReader on: aStream) next ifNotNil: [ :json |
-		golap itemInfoRetriever:
-			(GolapItemInfoRetriever fromJSON: json) ]
-]
-
-{ #category : 'snapshot' }
-GolapItemView >> snapshot [
-
-	golap snapshotItemView: [ :stream | self snapshotInto: stream ]
-]
-
-{ #category : 'snapshot' }
-GolapItemView >> snapshotInto: aStream [
-
-	(NeoJSONWriter on: aStream) nextPut: golap itemInfoRetriever asJSON
-]
-
 { #category : 'updating' }
 GolapItemView >> updateImage [
 

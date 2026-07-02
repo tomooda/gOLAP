@@ -193,9 +193,6 @@ GolapCSVLauncher >> launch [
 				 availableColumns: nodeImporterPresenter availableColumns).
 	self golapModelsAndNamesDo: [ :golapModel :name |
 		golap silentAddDimension: golapModel named: name ].
-	golap
-		snapshotBaseName: pairPresenter basepathReference basename;
-		snapshotData.
 	golap updateDimensions.
 	[
 		golap confirmOpen.

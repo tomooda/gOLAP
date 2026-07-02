@@ -210,19 +210,6 @@ GolapEdgesAppearance >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 	nodeEvaluatorList items: aCollectionOfGolapNodeEvaluator
 ]
 
-{ #category : 'snapshot' }
-GolapEdgesAppearance >> restore: aStream [
-
-	(NeoJSONReader on: aStream) next ifNotNil: [ :json |
-			json
-				at: 'edge-evaluator'
-				ifPresent: [ :dict |
-					self edgeEvaluator: (GolapEdgeEvaluator fromJSON: dict) ];
-				at: 'node-evaluator'
-				ifPresent: [ :dict |
-					self nodeEvaluator: (GolapNodeEvaluator fromJSON: dict) ] ]
-]
-
 { #category : 'accessing' }
 GolapEdgesAppearance >> selectEdgeEvaluator: aGolapEdgeEvaluator [
 
@@ -298,24 +285,6 @@ GolapEdgesAppearance >> setModelToSumMode [
 		model nodeEvaluator: (GolapNodeSumEvaluator on: model) ].
 	golap dimensionsDo: [ :m |
 		m nodeEvaluator: (GolapNodeSumEvaluator on: m) ]
-]
-
-{ #category : 'snapshot' }
-GolapEdgesAppearance >> snapshot [
-
-	golap snapshotEdgesAppearance: [ :stream | self snapshotInto: stream ]
-]
-
-{ #category : 'snapshot' }
-GolapEdgesAppearance >> snapshotInto: aStream [
-
-	| json |
-	json := OrderedDictionary new.
-	edgeEvaluatorList selectedItem ifNotNil: [ :edgeEvaluator |
-		json at: 'edge-evaluator' put: edgeEvaluator asJSON ].
-	nodeEvaluatorList selectedItem ifNotNil: [ :nodeEvaluator |
-		json at: 'node-evaluator' put: nodeEvaluator asJSON ].
-	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
 { #category : 'drawing' }

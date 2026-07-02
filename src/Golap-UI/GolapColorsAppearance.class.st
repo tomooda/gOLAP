@@ -288,18 +288,6 @@ GolapColorsAppearance >> positivePolishColor: aColor [
 	self updateGlobalImageAfter: [ positivePolishColor := aColor ]
 ]
 
-{ #category : 'snapshot' }
-GolapColorsAppearance >> restore: aStream [
-
-	(NeoJSONReader on: aStream) next keysAndValuesDo: [ 
-		:colorSelector 
-		:colorHexString | 
-		self
-			perform: (colorSelector , ':') asSymbol
-			with:
-			(colorHexString ifNotNil: [ Color fromHexString: colorHexString ]) ]
-]
-
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> retreatingColor [
 	^ retreatingColor 
@@ -324,25 +312,6 @@ GolapColorsAppearance >> selectionColor: aColor [
 GolapColorsAppearance >> setGolap: aGolap [
 	golap := aGolap.
 	self updateNameList
-]
-
-{ #category : 'snapshot' }
-GolapColorsAppearance >> snapshot [
-
-	golap snapshotColorsAppearance: [ :stream | 
-		self snapshotInto: stream ]
-]
-
-{ #category : 'snapshot' }
-GolapColorsAppearance >> snapshotInto: aStream [
-
-	| json |
-	json := (self colorSelectors collect: [ :selector | 
-		         selector
-		         ->
-		         ((self perform: selector asSymbol) ifNotNil: #asHexString) ])
-		        asOrderedDictionary.
-	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
 { #category : 'drawing' }

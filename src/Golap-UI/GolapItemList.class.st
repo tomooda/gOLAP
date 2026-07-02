@@ -456,29 +456,6 @@ GolapItemList >> removeSelectionsFromMarker: aColor [
 	self removeAll: golap selections fromMarker: aColor
 ]
 
-{ #category : 'snapshot' }
-GolapItemList >> restore: aStream [
-
-	((NeoJSONReader on: aStream)
-		 mapClass: OrderedDictionary;
-		 next) ifNotNil: [ :json |
-			| colorMap |
-			colorMap := Dictionary new.
-			json
-				at: 'selectedMarkerIndex'
-				ifPresent: [ :int | lastSelectedMarkerIndex := int ];
-				at: 'markerFilters' ifPresent: [ :dict |
-						markerDropList items: (dict keys collect: [ :colorString |
-											 (colorString ifEmpty: [ nil ] ifNotEmpty: [
-														  colorMap
-															  at: colorString
-															  ifAbsentPut: [ Color fromHexString: colorString ] ])
-											 -> (dict at: colorString) ]).
-						lastSelectedMarkerIndex ifNotNil: [
-								markerDropList selectIndex: lastSelectedMarkerIndex ] ].
-			self updateItemsList ]
-]
-
 { #category : 'accessing' }
 GolapItemList >> selectedItem [
 
@@ -507,35 +484,6 @@ GolapItemList >> showsNode: aGolapNode [
 GolapItemList >> simpleStringFor: aNumber [
 
 	^ golap simpleStringFor: aNumber
-]
-
-{ #category : 'snapshot' }
-GolapItemList >> snapshot [
-
-	golap snapshotItemList: [ :stream | self snapshotInto: stream ]
-]
-
-{ #category : 'snapshot' }
-GolapItemList >> snapshotColor: aColor [
-
-	^ aColor ifNil: [ '' ] ifNotNil: [ 
-		  aColor isColor
-			  ifTrue: [ aColor asHexString ]
-			  ifFalse: [ aColor ] ]
-]
-
-{ #category : 'snapshot' }
-GolapItemList >> snapshotInto: aStream [
-
-	| json |
-	json := OrderedDictionary new.
-	json at: 'selectedMarkerIndex' put: lastSelectedMarkerIndex.
-	json
-		at: 'markerFilters'
-		put: (markerDropList items collect: [ :colorAndPatternString |
-					 (self snapshotColor: colorAndPatternString key)
-					 -> colorAndPatternString value ]) asOrderedDictionary.
-	(NeoJSONWriter on: aStream) nextPut: json
 ]
 
 { #category : 'menu' }

@@ -127,48 +127,47 @@ GolapApiClient >> random [
 
 { #category : 'accessing' }
 GolapApiClient >> readStream [
-
 	"GolapApiClient new entity"
 
-	[ 
-	| response |
-	UIManager default
-		displayProgress: 'posting a request to ' , self url asString
-		from: 0.0
-		to: 1.0
-		during: [ :bar | 
-			| runId queryJSON client |
-			runId := self createRunId.
-			queryJSON := STONJSON fromString: self query.
-			(queryJSON at: 'query' ifAbsentPut: [ Dictionary new ])
-				at: 'runID'
-				put: runId.
-			query := STONJSON toString: queryJSON.
-			self jobProgressBar
-				clearEvent: #mouseUp;
-				on: #mouseUp send: #value to: [ self cancel: runId ].
-			client := GolapHttpClient new
-				          timeout: (([ NeoJSONReader fromString: self query ]
-						            on: Error
-						            do: [ :ex | ex return: Dictionary new ])
-						           at: 'deadlineTimer'
-						           ifAbsent: [ 600 ]) + 5;
-				          url: self url;
-				          authenticateBlock: self authenticateBlock;
-				          yourself.
-			bar value: 0.1.
-			client entity: (ZnStringEntity text: self query).
-			bar value: 0.2.
-			client post.
-			bar value: 0.5.
-			response := client response.
-			bar value: 1.0.
-			response isSuccess ifFalse: [ ^ response statusLine asString ].
-			^ response entity readStream ] ]
+	[
+		| response |
+		UIManager default
+			displayProgress: 'posting a request to ' , self url asString
+			from: 0.0
+			to: 1.0
+			during: [ :bar |
+					| runId queryJSON client |
+					runId := self createRunId.
+					queryJSON := GolapJSON fromString: self query.
+					(queryJSON at: 'query' ifAbsentPut: [ Dictionary new ])
+						at: 'runID'
+						put: runId.
+					query := GolapJSON toString: queryJSON.
+					self jobProgressBar
+						clearEvent: #mouseUp;
+						on: #mouseUp send: #value to: [ self cancel: runId ].
+					client := GolapHttpClient new
+						          timeout: (([ GolapJSON fromString: self query ]
+								            on: Error
+								            do: [ :ex | ex return: Dictionary new ])
+								           at: 'deadlineTimer'
+								           ifAbsent: [ 600 ]) + 5;
+						          url: self url;
+						          authenticateBlock: self authenticateBlock;
+						          yourself.
+					bar value: 0.1.
+					client entity: (ZnStringEntity text: self query).
+					bar value: 0.2.
+					client post.
+					bar value: 0.5.
+					response := client response.
+					bar value: 1.0.
+					response isSuccess ifFalse: [ ^ response statusLine asString ].
+					^ response entity readStream ] ]
 		on:
 			NetworkError , ZnParseError , ZnHttpUnsuccessful , ZnMissingHost
 			, ZnTooManyRedirects , ZnUnexpectedContentType
-		do: [ :ex | 
+		do: [ :ex |
 			^ (ex messageText ifEmpty: [ 'Network error' ]) , ': '
 			  , url asString ]
 ]

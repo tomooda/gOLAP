@@ -514,7 +514,7 @@ GolapQueryHistoryPresenter >> updateQueryHistoryList [
 GolapQueryHistoryPresenter >> updateQueryText [
 
 	queryText text: (self historyRecord
-			 ifNotNil: [ :record | STONJSON toStringPretty: record query ]
+			 ifNotNil: [ :record | GolapJSON toStringPretty: record query ]
 			 ifNil: [ '' ])
 ]
 

@@ -197,7 +197,7 @@ Golap class >> openFile [
 		 path: GolapModel coocurrenceDataDirectory) in: [ :ref |
 			(ref notNil and: [ ref isFile ])
 				ifTrue: [
-						overview snapshotData: ref readStream do: [ :readStream |
+						ref readStreamDo: [ :readStream |
 								readStream isString
 									ifTrue: [
 											UIManager default alert: readStream.
@@ -227,7 +227,7 @@ Golap class >> resume [
 
 	[
 		self sessionFile readStreamDo: [ :stream |
-				(NeoJSONReader on: stream) next ifNotNil: [ :json |
+				(GolapJSON fromStream: stream) ifNotNil: [ :json |
 						json
 							at: 'session'
 							ifPresent: [ :session |
@@ -394,12 +394,6 @@ Golap >> basicShowsPhotoimages: aBoolean [
 	itemsAppearancePresenter basicShowsPhotoimages: aBoolean
 ]
 
-{ #category : 'snapshot' }
-Golap >> basicSnapshotDirectory [
-
-	^ snapshotDirectory
-]
-
 { #category : 'private' }
 Golap >> blockUpdateModelWhile: aBlock [
 
@@ -507,36 +501,18 @@ Golap >> confirmOpen [
 { #category : 'operations' }
 Golap >> copyAllFromQueryViewTree [
 	Clipboard
-		clipboardText: (STONJSON toString: queryViewTree roots asDictionary)
+		clipboardText: (GolapJSON toString: queryViewTree roots asDictionary)
 ]
 
 { #category : 'operations' }
 Golap >> copyFromQueryViewTree [
+
 	queryViewTree selectedItem
-		ifNotNil:
-			[ :assoc | Clipboard clipboardText: (STONJSON toString: assoc value) ]
-		ifNil: [ Clipboard
-				clipboardText: (STONJSON toString: queryViewTree roots asDictionary) ]
-]
-
-{ #category : 'snapshot' }
-Golap >> createTemporarySnapshotDirectory [
-
-	^ snapshotBaseName ifNotNil: [
-		  | ref |
-		  ref := (self golapDirectory / self temporaryDirectoryName
-		          /
-			          (snapshotBaseName , '--' , DateAndTime now printString
-			           , '--'
-			           ,
-			           ((SharedRandom globalGenerator nextInteger: 1000000) - 1)
-				           printString)) ensureCreateDirectory.
-		  ref / 'createdTime' writeStreamDo: [ :stream |
-			  | now |
-			  now := DateAndTime now.
-			  stream nextPutAll:
-				  now asDate printString , ' ' , now asTime print24 ].
-		  ref ]
+		ifNotNil: [ :assoc |
+		Clipboard clipboardText: (GolapJSON toString: assoc value) ]
+		ifNil: [
+				Clipboard clipboardText:
+					(GolapJSON toString: queryViewTree roots asDictionary) ]
 ]
 
 { #category : 'accessing-colors' }
@@ -582,15 +558,6 @@ Golap >> dimensionAt: aString [
 { #category : 'accessing-dimensions' }
 Golap >> dimensionsDo: aBlock [
 	dimensions do: aBlock
-]
-
-{ #category : 'snapshot' }
-Golap >> disableSnapshotWhile: aBlock [
-
-	| oldSnapshotEnabled |
-	oldSnapshotEnabled := snapshotEnabled.
-	snapshotEnabled := false.
-	aBlock ensure: [ snapshotEnabled := oldSnapshotEnabled ]
 ]
 
 { #category : 'accessing' }
@@ -766,12 +733,6 @@ Golap >> ifNotActive: aBlock [
 	adapter widget world ifNil: [ ^ aBlock value ]
 ]
 
-{ #category : 'snapshot' }
-Golap >> ifSnapshotEnabled: aBlock [
-
-	snapshotEnabled = true ifTrue: aBlock
-]
-
 { #category : 'operations-photoimages' }
 Golap >> imageCacheAt: aGolapNode do: aBlock [
 
@@ -876,7 +837,7 @@ Golap >> initializePresenters [
 			                 (SpStringTableColumn evaluated: [ :assoc |
 						                  | string |
 						                  string := assoc key , ' : '
-						                            , (STONJSON toString: assoc value).
+						                            , (GolapJSON toString: assoc value).
 						                  queryViewTree contentWidth:
 								                  (TextStyle defaultFont widthOfString: string).
 						                  string ]);
@@ -961,14 +922,6 @@ Golap >> initializeWindow: aWindowPresenter [
 				ifTrue: [ announcement allowClose ]
 				ifFalse: [ announcement denyClose ] ].
 	aWindowPresenter whenClosedDo: [ self saveQueryRecord ]
-]
-
-{ #category : 'snapshot' }
-Golap >> isTemporarySnapshot [
-
-	^ self snapshotDirectory isNil or: [
-		  self snapshotDirectory parent basename
-		  = self temporaryDirectoryName ]
 ]
 
 { #category : 'private' }
@@ -1484,8 +1437,10 @@ Golap >> readDimensionFrom: aReadStream [
 
 { #category : 'accessing-presets' }
 Golap >> readPresetQueries [
-	[ self presetQueryFile ensureCreateFile
-		readStreamDo: [ :stream | ^ (NeoJSONReader on: stream) next ] ]
+
+	[
+		self presetQueryFile ensureCreateFile readStreamDo: [ :stream |
+			^ GolapJSON fromStream: stream ] ]
 		on: Error
 		do: [ :ex | ^ Array new ]
 ]
@@ -1541,166 +1496,54 @@ Golap >> requestFileToSave: aString extensions: anArrayOfString [
 { #category : 'operations' }
 Golap >> resendQuery [
 
-	| client overview |
+	| api golap |
 	(self url isNil or: [ self query isNil ]) ifTrue: [ ^ self ].
-	client := GolapApiClient
-		          url: self url
-		          query: (NeoJSONWriter toString: self query)
-		          authenticateBlock: self authenticateBlock.
-	overview := Golap new
-		            url: self url;
-		            yourself.
-	self snapshotDirectory copyAllTo:
-		overview snapshotDirectory ensureDeleteAll.
-	overview snapshotDirectory / 'createdTime' writeStreamDo: [ :stream |
-			| now |
-			now := DateAndTime now.
-			stream nextPutAll:
-				now asDate printString , ' ' , now asTime print24 ].
-	overview open title: overview snapshotDirectory basename.
-	overview snapshotData: client readStream do: [ :readStream |  ].
-	overview restoreSnapshot: overview snapshotDirectory
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreColorsAppearance [
-
-	| ref |
-	ref := self snapshotDirectory / 'appearance-colors.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			colorsAppearancePresenter restore: stream ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreData [
-
-	| ref |
-	ref := self snapshotDirectory / 'data.json'.
-	ref isFile ifTrue: [
-		ref readStreamDo: [ :readStream |
-			dimensions removeAll.
-			(STONJSON fromStream: readStream) keysAndValuesDo: [ :name :json |
-				dimensions at: name put: (GolapModel fromJSON: json) ] ].
-		self updateDimensions ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreEdgesAppearance [
-
-	| ref |
-	ref := self snapshotDirectory / 'appearance-edges.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			edgesAppearancePresenter restore: stream ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreElaborationRenderer [
-
-	
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreItemList [
-
-	| ref |
-	ref := self snapshotDirectory / 'item-list.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | itemList restore: stream ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreItemView [
-
-	| ref |
-	ref := self snapshotDirectory / 'item-view.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | itemView restore: stream ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreItemsAppearance [
-
-	| ref |
-	ref := self snapshotDirectory / 'appearance-items.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			itemsAppearancePresenter restore: stream ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreMerges [
-
-	| ref |
-	ref := self snapshotDirectory / 'merges.json'.
-	ref isFile ifTrue: [ 
-		ref readStreamDo: [ :stream | 
-			(NeoJSONReader on: stream) next ifNotNil: [ :json | 
-				merges := json collect: [ :pair | pair first -> pair second ] ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreOverviewRenderer [
-
-
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreQuery [
-
-	| ref |
-	ref := self snapshotDirectory / 'query.json'.
-	ref isFile ifTrue: [
-		ref readStreamDo: [ :stream |
-			(NeoJSONReader on: stream) next ifNotNil: [ :json |
-				(json at: 'url' ifAbsent: [ nil ]) ifNotNil: [ :string |
-					url := string asUrl ].
-				(json at: 'query' ifAbsent: [ nil ]) ifNotNil: [ :dictionary |
-					self setQuery: dictionary ].
-				(json at: 'comment' ifAbsent: [ nil ]) ifNotNil: [ :comment |
-					self comment: comment ] ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreSelections [
-
-	| ref |
-	ref := self snapshotDirectory / 'selections.json'.
-	ref isFile ifTrue: [
-			ref readStreamDo: [ :stream |
-					(NeoJSONReader on: stream) next
-						at: 'pins' ifPresent: [ :array | pins := array asSet ];
-						at: 'frontDimension'
-						ifPresent: [ :string | frontList selectItem: string ];
-						at: 'baseDimension'
-						ifPresent: [ :string | baseList selectItem: string ];
-						at: 'selections'
-						ifPresent: [ :array | selections := array asSet ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> restoreSnapshot: aFileReference [
-
-	self window ifNotNil: [ :w | w title: aFileReference basename ].
-	snapshotDirectory := aFileReference.
-	self disableSnapshotWhile: [
-			self
-				updateGlobalImageAfter: [
-						self
-							restoreQuery;
-							restoreItemList;
-							restoreItemView;
-							restoreElaborationRenderer;
-							restoreOverviewRenderer;
-							restoreMerges;
-							restoreData;
-							restoreSelections;
-							restoreColorsAppearance;
-							restoreEdgesAppearance;
-							restoreItemsAppearance ]
-				layout: true ].
-	self updateGlobalImageAfter: [ ] layout: true
+	api := GolapApiClient
+		       url: self url
+		       query: (GolapJSON toString: self query)
+		       comment: self comment
+		       serverConfig: itemInfoRetriever serverConfig
+		       itemFieldQuerySpec: itemInfoRetriever itemFieldQuerySpec
+		       authenticateBlock: self authenticateBlock.
+	golap := Golap new.
+	[
+		golap
+			queryRecord: queryRecord hideDuplicate;
+			itemInfoRetriever:
+				(GolapServerProductInfoRetriever fromApiClient: api);
+			authenticateBlock: api authenticateBlock;
+			query: (GolapJSON fromString: api query);
+			url: api url;
+			comment: api comment;
+			imageRepositoryUrl: api imageUrl;
+			itemFieldQuerySpec: api itemFieldQuerySpec;
+			itemViewUrl: api url ]
+		on: Error
+		do: [ :ex | UIManager default alert: 'クエリ送信失敗' , api url asString ].
+	api readStream ifNotNil: [ :readStream |
+			readStream ifNil: [ golap delete ] ifNotNil: [
+					readStream isString
+						ifTrue: [ UIManager default alert: readStream ]
+						ifFalse: [
+								Cursor wait showWhile: [
+										UIManager default informUserDuring: [ :bar |
+												bar
+													min: 0;
+													max: readStream size.
+												golap blockUpdateModelWhile: [
+														| d |
+														d := 0.
+														bar label:
+															'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
+														[
+															bar value: readStream position.
+															readStream atEnd ] whileFalse: [
+															golap readDimensionFrom: readStream ].
+														bar label: 'グラフ更新中 (' , d asString , ')'.
+														golap updateDimensions ].
+												golap confirmOpen.
+												golap open maximize.
+												golap updateModel ] ] ] ] ]
 ]
 
 { #category : 'accessing-colors' }
@@ -1836,36 +1679,6 @@ Golap >> saveQueryRecord [
 		queryRecord graph: (dimensions associations collect: [ :assoc |
 				 assoc key -> assoc value asJSON ]) asOrderedDictionary.
 		queryRecord hideSave ]
-]
-
-{ #category : 'snapshot' }
-Golap >> saveSnapshot [
-
-	| newSnapshotRef |
-	newSnapshotRef := self snapshotBaseDirectory / ((UIManager default
-		                    request: 'スナップショット名'
-		                    initialAnswer: (self isTemporarySnapshot
-				                     ifTrue: [ '' ]
-				                     ifFalse: [ self snapshotDirectory basename ]))
-		                   ifNil: [ ^ self ]).
-	newSnapshotRef ~= self snapshotDirectory ifTrue: [
-			newSnapshotRef exists ifTrue: [
-					(UIManager confirm:
-						 newSnapshotRef basename , 'は既に存在しています。上書きしますか？')
-						ifTrue: [ newSnapshotRef ensureDeleteAll ]
-						ifFalse: [ ^ self ] ].
-			self snapshotDirectory copyAllTo: newSnapshotRef.
-			(self isTemporarySnapshot or: [
-				 UIManager confirm: self snapshotDirectory basename , 'を削除しますか？' ])
-				ifTrue: [ self snapshotDirectory ensureDeleteAll ].
-			snapshotDirectory := newSnapshotRef ].
-	self snapshotMerges.
-	self snapshotSelections.
-	colorsAppearancePresenter snapshot.
-	edgesAppearancePresenter snapshot.
-	itemsAppearancePresenter snapshot.
-	itemList snapshot.
-	itemView snapshot
 ]
 
 { #category : 'accessing-selection' }
@@ -2043,20 +1856,6 @@ Golap >> simpleStringFor: aNumber [
 	^ aNumber printShowingDecimalPlaces: 4
 ]
 
-{ #category : 'snapshot' }
-Golap >> snapshotBaseDirectory [
-
-	^ (self golapDirectory / self snapshotBaseDirectoryName)
-		  ensureCreateDirectory;
-		  yourself
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotBaseDirectoryName [
-
-	^ 'snapshots'
-]
-
 { #category : 'accessing' }
 Golap >> snapshotBaseName [
 
@@ -2067,142 +1866,6 @@ Golap >> snapshotBaseName [
 Golap >> snapshotBaseName: aString [
 
 	snapshotBaseName := aString
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotColorsAppearance: aBlock [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'appearance-colors.json') ensureDelete writeStreamDo: [ 
-				:writeStream | aBlock value: writeStream ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotData [
-
-	self snapshotDirectory ifNotNil: [ :baseDir |
-		(baseDir / 'data.json')
-			ensureDelete;
-			writeStreamDo: [ :writeStream |
-				STONJSON
-					put: (dimensions associations collect: [ :assoc |
-								 assoc key -> assoc value asJSON ]) asOrderedDictionary
-					onStreamPretty: writeStream ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotData: aReadStream do: aBlock [
-
-	self snapshotQuery.
-	(aReadStream notNil and: [ aReadStream isString not ])
-		ifTrue: [
-			aBlock value: aReadStream.
-			self snapshotData ]
-		ifFalse: [ aBlock value: nil ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotDirectory [
-
-	^ (snapshotDirectory ifNil: [ 
-		   snapshotDirectory := self createTemporarySnapshotDirectory ifNil: [ ^ nil ] ])
-		  ensureCreateDirectory
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotEdgesAppearance: aBlock [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'appearance-edges.json') ensureDelete writeStreamDo: [ 
-				:writeStream | aBlock value: writeStream ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotElaborationRenderer: aBlock [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'renderer-elaboration.json') ensureDelete 
-				writeStreamDo: [ :writeStream | aBlock value: writeStream ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotItemList: aBlock [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'item-list.json') ensureDelete writeStreamDo: [ 
-				:writeStream | aBlock value: writeStream ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotItemView: aBlock [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'item-view.json') ensureDelete writeStreamDo: [ 
-				:writeStream | aBlock value: writeStream ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotItemsAppearance: aBlock [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'appearance-items.json') ensureDelete writeStreamDo: [ 
-				:writeStream | aBlock value: writeStream ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotMerges [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'merges.json') ensureDelete writeStreamDo: [ :stream | 
-				(NeoJSONWriter on: stream) nextPut: (merges collect: [ :assoc | 
-						 { 
-							 assoc key.
-							 assoc value } ]) ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotOverviewRenderer: aBlock [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'renderer-overview.json') ensureDelete writeStreamDo: [ 
-				:writeStream | aBlock value: writeStream ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotQuery [
-
-	self ifSnapshotEnabled: [
-		self snapshotDirectory ifNotNil: [ :baseDir |
-			| queryJson |
-			queryJson := Dictionary new.
-			url ifNotNil: [ queryJson at: 'url' put: url printString ].
-			query ifNotNil: [ queryJson at: 'query' put: query ].
-			self comment ifNotNil: [ :comment |
-				queryJson at: 'comment' put: comment ].
-			(baseDir / 'query.json') ensureDelete writeStreamDo: [ :stream |
-				(NeoJSONWriter on: stream) nextPut: queryJson ] ] ]
-]
-
-{ #category : 'snapshot' }
-Golap >> snapshotSelections [
-
-	self ifSnapshotEnabled: [ 
-		self snapshotDirectory ifNotNil: [ :baseDir | 
-			(baseDir / 'selections.json') ensureDelete writeStreamDo: [ 
-				:writeStream | 
-				(NeoJSONWriter on: writeStream) nextPut: { 
-						('selections' -> selections).
-						('pins' -> pins).
-						('frontDimension' -> frontList selectedItem).
-						('baseDimension' -> baseList selectedItem) } asOrderedDictionary ] ] ]
 ]
 
 { #category : 'operations-photoimages' }
@@ -2221,12 +1884,6 @@ Golap >> stopPhotoimageRetrievingProcess [
 	photoImageRetrievingProcess ifNotNil: [ 
 		photoImageRetrievingProcess terminate.
 		photoImageRetrievingProcess := nil ]
-]
-
-{ #category : 'snapshot' }
-Golap >> temporaryDirectoryName [
-
-	^ 'temporary'
 ]
 
 { #category : 'accessing-selection' }

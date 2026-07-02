@@ -210,6 +210,6 @@ GolapServerProductInfoRetriever >> setApiClient: aGolapApiClient [
 	self golapServerUrl: aGolapApiClient url.
 	self imageRepositoryUrl: aGolapApiClient imageUrl.
 	self itemFieldQuerySpec: aGolapApiClient itemFieldQuerySpec.
-	self query: (NeoJSONReader fromString: aGolapApiClient query).
+	self query: (GolapJSON fromString: aGolapApiClient query).
 	self serverConfig: aGolapApiClient serverConfig
 ]

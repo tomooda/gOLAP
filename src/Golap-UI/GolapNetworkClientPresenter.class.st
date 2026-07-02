@@ -18,7 +18,8 @@ Class {
 		'queryPalettePresenter',
 		'resetButton',
 		'saveButton',
-		'openButton'
+		'openButton',
+		'closeCheckBox'
 	],
 	#classInstVars : [
 		'current'
@@ -131,6 +132,7 @@ GolapNetworkClientPresenter >> defaultLayout [
 						    yourself));
 		  add: (SpBoxLayout newHorizontal
 				   hAlignEnd;
+				   add: closeCheckBox expand: false;
 				   add: resetButton expand: false;
 				   add: saveButton expand: false;
 				   add: openButton expand: false;
@@ -182,17 +184,17 @@ GolapNetworkClientPresenter >> dumpToFile [
 				               itemFieldQuerySpec: self itemFieldQuerySpec
 				               authenticateBlock: self authenticateBlock)
 				              readStream.
-			readStream ifNil: [
-				^ UIManager default alert: 'Failed to get server response.' ].
+			readStream ifNil: [ ^ UIManager default alert: 'クエリ送信失敗' ].
 			(UIManager default
-				 chooseForSaveFileReference: 'Save gOLAP data'
+				 chooseForSaveFileReference: 'クエリ結果を保存'
 				 extensions: #( 'csv' )
 				 path: GolapModel coocurrenceDataDirectory) ifNotNil: [ :ref |
 					ref writeStreamDo: [ :writeStream |
 							[ readStream atEnd ] whileFalse: [
 									writeStream
 										nextPutAll: (readStream upTo: Character lf);
-										nextPut: Character lf ] ] ] ]
+										nextPut: Character lf ] ] ] ].
+	closeCheckBox state = true ifTrue: [ self close ]
 ]
 
 { #category : 'accessing' }
@@ -288,7 +290,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 						                     | string |
 						                     string := assoc key , ' : '
 						                               ,
-							                               (STONJSON toString: assoc value).
+							                               (GolapJSON toString: assoc value).
 						                     serverConfigTree contentWidth:
 								                     (TextStyle defaultFont widthOfString:
 										                      string).
@@ -306,17 +308,21 @@ GolapNetworkClientPresenter >> initializePresenters [
 								                     key -> (serverConfig at: key) ] ]);
 		                    yourself.
 	commentText := self newText.
+	closeCheckBox := self newCheckBox
+		                 label: '送信後閉じる';
+		                 state: false;
+		                 yourself.
 	resetButton := self newButton
-		               label: 'Reset';
+		               label: 'リセット';
 		               action: [ self resetQuery ];
 		               yourself.
 	saveButton := self newButton
-		              label: 'Save';
+		              label: 'ダウンロード';
 		              action: [ self dumpToFile ];
 		              disable;
 		              yourself.
 	openButton := self newButton
-		              label: 'Ok';
+		              label: '開く';
 		              disable;
 		              action: [ self openGolap ];
 		              yourself.
@@ -435,7 +441,7 @@ GolapNetworkClientPresenter >> openGolap [
 							itemInfoRetriever:
 								(GolapServerProductInfoRetriever fromApiClient: api);
 							authenticateBlock: api authenticateBlock;
-							query: (NeoJSONReader fromString: api query);
+							query: (GolapJSON fromString: api query);
 							url: api url;
 							comment: api comment;
 							imageRepositoryUrl: api imageUrl;
@@ -443,9 +449,8 @@ GolapNetworkClientPresenter >> openGolap [
 							itemViewUrl: api url ]
 						on: Error
 						do: [ :ex |
-								UIManager default alert:
-									'Can''t open the given URL: ' , api url asString ].
-					golap snapshotData: api readStream do: [ :readStream |
+						UIManager default alert: 'クエリ送信失敗' , api url asString ].
+					api readStream ifNotNil: [ :readStream |
 							readStream ifNil: [ golap delete ] ifNotNil: [
 									readStream isString
 										ifTrue: [ UIManager default alert: readStream ]
@@ -456,20 +461,22 @@ GolapNetworkClientPresenter >> openGolap [
 																	min: 0;
 																	max: readStream size.
 																golap blockUpdateModelWhile: [
+																		| d |
+																		d := 0.
+																		bar label:
+																			'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
 																		[
 																			bar value: readStream position.
 																			readStream atEnd ] whileFalse: [
 																			golap readDimensionFrom: readStream ].
-																		bar label: 'updating dimensions'.
-																		golap updateDimensions.
-																		bar label: 'updating models'.
-
-																		bar label: 'updating graph' ].
+																		bar label: 'グラフ更新中 (' , d asString , ')'.
+																		golap updateDimensions ].
 																golap confirmOpen.
 																golap open maximize.
 																golap updateModel ] ] ] ] ] ] ]
 		on: GolapAborted
-		do: [ :ex |  ]
+		do: [ :ex |  ].
+	closeCheckBox state = true ifTrue: [ self close ]
 ]
 
 { #category : 'operations' }
@@ -521,8 +528,10 @@ GolapNetworkClientPresenter >> query [
 
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> readPresetUrls [
-	[ self presetUrlFile ensureCreateFile
-		readStreamDo: [ :stream | ^ (NeoJSONReader on: stream) next ] ]
+
+	[
+		self presetUrlFile ensureCreateFile readStreamDo: [ :stream |
+			^ GolapJSON fromStream: stream ] ]
 		on: Error
 		do: [ :ex | ^ Array new ]
 ]

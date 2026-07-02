@@ -136,9 +136,9 @@ GolapQueryRecord >> loadGraph [
 GolapQueryRecord >> loadGraph: aFileReference [
 
 	aFileReference / 'graph.json' ifExists: [ :ref |
-		ref readStreamDo: [ :stream |
-			graph := (GolapQueryJSONReaderWriter on: stream) next.
-			^ self ] ].
+			ref readStreamDo: [ :stream |
+					graph := GolapJSON fromStream: stream.
+					^ self ] ].
 	graph := nil
 ]
 
@@ -205,9 +205,9 @@ GolapQueryRecord >> saveComment: aFileReference [
 GolapQueryRecord >> saveGraph: aFileReference [
 
 	graph ifNotNil: [
-		(aFileReference / 'graph.json')
-			ensureDelete;
-			writeStreamDo: [ :stream | STONJSON put: graph onStream: stream ] ]
+			(aFileReference / 'graph.json')
+				ensureDelete;
+				writeStreamDo: [ :stream | GolapJSON put: graph onStream: stream ] ]
 ]
 
 { #category : 'hideho-operations' }

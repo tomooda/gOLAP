@@ -139,22 +139,23 @@ GolapGoogleApiClient >> requestCseid [
 GolapGoogleApiClient >> searchThumbnail: aString [
 
 	self isAvailable ifTrue: [
-		[
-		| url |
-		url := self googleUrl.
-		url
-			queryAt: 'cx' put: self cseid;
-			queryAt: 'key' put: self apikey;
-			queryAt: 'q' put: aString.
-		params keysAndValuesDo: [ :key :value | url queryAt: key put: value ].
-		(STONJSON fromString: url retrieveContents)
-			at: 'items'
-			ifPresent: [ :items |
-				items first at: 'image' ifPresent: [ :image |
-					image at: 'thumbnailLink' ifPresent: [ :thumbUrl |
-						^ ImageReadWriter formFromStream:
-							  thumbUrl asZnUrl retrieveBinaryContents readStream ] ] ] ]
-			on: Exception
-			do: [ :ex |  ] ].
+			[
+				| url |
+				url := self googleUrl.
+				url
+					queryAt: 'cx' put: self cseid;
+					queryAt: 'key' put: self apikey;
+					queryAt: 'q' put: aString.
+				params keysAndValuesDo: [ :key :value |
+					url queryAt: key put: value ].
+				(GolapJSON fromString: url retrieveContents)
+					at: 'items'
+					ifPresent: [ :items |
+							items first at: 'image' ifPresent: [ :image |
+									image at: 'thumbnailLink' ifPresent: [ :thumbUrl |
+											^ ImageReadWriter formFromStream:
+												  thumbUrl asZnUrl retrieveBinaryContents readStream ] ] ] ]
+				on: Exception
+				do: [ :ex |  ] ].
 	^ nil
 ]

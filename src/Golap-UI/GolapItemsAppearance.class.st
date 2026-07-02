@@ -119,12 +119,6 @@ GolapItemsAppearance >> photoimageRetrievalProgressBar [
 	^ photoimageRetrievalProgressBar
 ]
 
-{ #category : 'snapshot' }
-GolapItemsAppearance >> restore: aStream [
-
-
-]
-
 { #category : 'private' }
 GolapItemsAppearance >> setGolap: aGolap [
 
@@ -149,18 +143,6 @@ GolapItemsAppearance >> showsPhotoimages: aBoolean [
 GolapItemsAppearance >> showsPhotoimagesChanged [
 
 	golap ifNotNil: #showsPhotoimagesChanged
-]
-
-{ #category : 'snapshot' }
-GolapItemsAppearance >> snapshot [
-
-	golap snapshotItemsAppearance: [ :stream | self snapshotInto: stream ]
-]
-
-{ #category : 'snapshot' }
-GolapItemsAppearance >> snapshotInto: aStream [
-
-
 ]
 
 { #category : 'updating' }

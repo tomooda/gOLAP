@@ -81,8 +81,7 @@ GolapAbstractProject >> fromJSON: aDictionary [
 	aDictionary ifNotNil: [
 			aDictionary isArray ifTrue: [ ^ self restoreWindows: aDictionary ].
 			aDictionary
-				at: 'last-query'
-				ifPresent: [ :query | GolapNetworkClientPresenter fromJSON: query ];
+				at: 'last-query' ifPresent: [ :query | self restoreQuery: query ];
 				at: 'windows' ifPresent: [ :array | self restoreWindows: array ] ]
 ]
 
@@ -105,6 +104,17 @@ GolapAbstractProject >> golapWindowsDo: aBlock [
 						 do: [ :ex | ex return: nil ]) ifNotNil: [ :p |
 						(presenterClasses includes: p class) ifTrue: [
 							aBlock value: p window ] ] ] ]
+]
+
+{ #category : 'converting' }
+GolapAbstractProject >> restoreQuery: aDictionary [
+
+	| dialog |
+	dialog := SpProgressDialog new.
+	dialog
+		title: 'クエリ復元中...';
+		informUserDuring: [ :progress |
+			GolapNetworkClientPresenter fromJSON: aDictionary ]
 ]
 
 { #category : 'converting' }

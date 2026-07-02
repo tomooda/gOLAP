@@ -303,7 +303,7 @@ GolapQueryPresenter >> openLowerBoundsDialog [
 { #category : 'accessing-query' }
 GolapQueryPresenter >> query [
 
-	^ STONJSON toStringPretty: self queryDictionary
+	^ GolapJSON toStringPretty: self queryDictionary
 ]
 
 { #category : 'accessing-query' }
