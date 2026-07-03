@@ -41,7 +41,8 @@ Class {
 		'itemInfoRetriever',
 		'resendQueryButton',
 		'visualizationNotebook',
-		'imageCache'
+		'imageCache',
+		'leftPaneOpenCloseButton'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -400,10 +401,19 @@ Golap >> blockUpdateModelWhile: aBlock [
 	aBlock value
 ]
 
-{ #category : 'layouts' }
+{ #category : 'layout' }
 Golap >> buttonHeight [
 
 	^ self class buttonHeight
+]
+
+{ #category : 'layout' }
+Golap >> centerPaneLayout [
+
+	^ SpBoxLayout newHorizontal
+		  add: leftPaneOpenCloseButton width: 16;
+		  add: visualizationNotebook expand: true;
+		  yourself
 ]
 
 { #category : 'accessing-colors' }
@@ -525,27 +535,12 @@ Golap >> defaultLayout [
 
 	<spec>
 	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.2;
-		  add: (SpBoxLayout newVertical
-				   add: (SpBoxLayout newHorizontal
-						    add: frontList;
-						    add: baseList)
-				   height: self buttonHeight;
-				   add: edgesAppearancePresenter height: 70;
-				   add: itemsAppearancePresenter height: 300;
-				   add: colorsAppearancePresenter height: 250;
-				   add: 'コメント' expand: false;
-				   add: commentText;
-				   yourself);
+		  positionOfSlider: 0.15;
+		  add: self leftPaneLayout;
 		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.70;
-				   add: visualizationNotebook;
-				   add: (SpBoxLayout newVertical
-						    add: saveAsSvgButton height: self buttonHeight;
-						    add: saveAsPngButton height: self buttonHeight;
-						    add: resendQueryButton height: self buttonHeight;
-						    add: queryViewTree height: 200;
-						    add: itemNotebook);
+				   positionOfSlider: 0.8;
+				   add: self centerPaneLayout;
+				   add: self rightPaneLayout;
 				   yourself);
 		  yourself
 ]
@@ -902,7 +897,12 @@ Golap >> initializePresenters [
 		                         whenSelectedPageChangedDo: [
 			                         self selectedPageChanged ];
 		                         yourself.
-
+	leftPaneOpenCloseButton := self newButton
+		                           state: false;
+		                           action: [
+			                           self leftPaneOpenCloseButtonClicked ];
+		                           yourself.
+	self updateLeftPaneOpenCloseButton.
 	self whenBuiltDo: [ :w |
 			| f |
 			f := TextStyle defaultFont.
@@ -965,6 +965,40 @@ Golap >> itemView [
 Golap >> itemViewUrl: aString [
 
 	itemInfoRetriever golapServerUrl: aString
+]
+
+{ #category : 'layout' }
+Golap >> leftPaneLayout [
+
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: frontList;
+				   add: baseList)
+		  height: self buttonHeight;
+		  add: edgesAppearancePresenter height: 70;
+		  add: itemsAppearancePresenter height: 300;
+		  add: colorsAppearancePresenter height: 250;
+		  add: 'コメント' expand: false;
+		  add: commentText;
+		  yourself
+]
+
+{ #category : 'updating' }
+Golap >> leftPaneOpenCloseButtonClicked [
+
+	leftPaneOpenCloseButton state: leftPaneOpenCloseButton state not.
+	self updateLeftPaneOpenCloseButton.
+	self layout positionOfSlider: (leftPaneOpenCloseButton state
+			 ifTrue: [ 0.0 ]
+			 ifFalse: [ 0.15 ]).
+	self layout children second withAdapterDo: [ :a |
+			a widgetDo: [ :w |
+					| slider |
+					slider := w submorphs second.
+					self layout children second positionOfSlider:
+						slider target width
+						/ (slider target width + slider targetAfter width) ] ].
+	self layout: self layout
 ]
 
 { #category : 'history' }
@@ -1599,6 +1633,17 @@ Golap >> retrievePhotoimages [
 			self updateGlobalImage ]
 ]
 
+{ #category : 'layout' }
+Golap >> rightPaneLayout [
+
+	^ SpBoxLayout newVertical
+		  add: saveAsSvgButton height: self buttonHeight;
+		  add: saveAsPngButton height: self buttonHeight;
+		  add: resendQueryButton height: self buttonHeight;
+		  add: queryViewTree height: 200;
+		  add: itemNotebook
+]
+
 { #category : 'operations' }
 Golap >> saveAsPNG [
 
@@ -2001,6 +2046,14 @@ Golap >> updateItemView [
 Golap >> updateItemsList [
 
 	itemList updateItemsList
+]
+
+{ #category : 'updating' }
+Golap >> updateLeftPaneOpenCloseButton [
+
+	leftPaneOpenCloseButton label: (leftPaneOpenCloseButton state = true
+			 ifTrue: [ '>' ]
+			 ifFalse: [ '<' ])
 ]
 
 { #category : 'updating' }
