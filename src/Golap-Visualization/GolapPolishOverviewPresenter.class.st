@@ -75,7 +75,7 @@ GolapPolishOverviewPresenter >> defaultLayout [
 								     add: polishMinClusterSize width: 50;
 								     yourself)
 						    expand: false;
-						    add: polishRepeatsCheckbox expand: true;
+						    add: polishRepeatsCheckbox width: 100;
 						    yourself)
 				   expand: false;
 				   add: (SpBoxLayout newVertical
