@@ -28,17 +28,9 @@ Class {
 { #category : 'storage' }
 GolapModel class >> chooseCoocurrenceDataDo: aBlock [
 	^ (UIManager default
-		chooseExistingFileReference: 'Select a coocurrence file'
+		chooseExistingFileReference: 'サーバからダウンロードしたファイルを選んでください'
 		extensions: #('csv')
 		path: self coocurrenceDataDirectory) ifNotNil: aBlock
-]
-
-{ #category : 'storage' }
-GolapModel class >> chooseItemsDataDo: aBlock [
-	^ (UIManager default
-		chooseExistingFileReference: 'Select an items file'
-		extensions: #('csv')
-		path: self itemsDataDirectory) ifNotNil: aBlock
 ]
 
 { #category : 'storage' }

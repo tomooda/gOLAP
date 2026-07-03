@@ -188,7 +188,7 @@ GolapNetworkClientPresenter >> dumpToFile [
 			(UIManager default
 				 chooseForSaveFileReference: 'クエリ結果を保存'
 				 extensions: #( 'csv' )
-				 path: GolapModel coocurrenceDataDirectory) ifNotNil: [ :ref |
+				 path: Golap golapDirectory) ifNotNil: [ :ref |
 					ref writeStreamDo: [ :writeStream |
 							[ readStream atEnd ] whileFalse: [
 									writeStream
@@ -463,13 +463,14 @@ GolapNetworkClientPresenter >> openGolap [
 																golap blockUpdateModelWhile: [
 																		| d |
 																		d := 0.
-																		bar label:
-																			'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
 																		[
 																			bar value: readStream position.
 																			readStream atEnd ] whileFalse: [
-																			golap readDimensionFrom: readStream ].
-																		bar label: 'グラフ更新中 (' , d asString , ')'.
+																				bar label:
+																					'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
+
+																				golap readDimensionFrom: readStream ].
+																		bar label: 'グラフ更新中'.
 																		golap updateDimensions ].
 																golap confirmOpen.
 																golap open maximize.
@@ -489,7 +490,7 @@ GolapNetworkClientPresenter >> openPresetUrlDialog [
 		title: 'URL';
 		items: presetUrls asOrderedCollection;
 		addItemBlock: [ 
-			(UIManager default request: '新規プレセット名') ifNotNil: [ :name | 
+			(UIManager default request: '新規プリセット名') ifNotNil: [ :name | 
 					self asJSON
 						at: 'name' put: name;
 						yourself ] ];

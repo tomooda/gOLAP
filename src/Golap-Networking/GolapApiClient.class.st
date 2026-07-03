@@ -132,7 +132,7 @@ GolapApiClient >> readStream [
 	[
 		| response |
 		UIManager default
-			displayProgress: 'posting a request to ' , self url asString
+			displayProgress: 'サーバにクエリを送信中' , self url asString
 			from: 0.0
 			to: 1.0
 			during: [ :bar |
@@ -168,7 +168,7 @@ GolapApiClient >> readStream [
 			NetworkError , ZnParseError , ZnHttpUnsuccessful , ZnMissingHost
 			, ZnTooManyRedirects , ZnUnexpectedContentType
 		do: [ :ex |
-			^ (ex messageText ifEmpty: [ 'Network error' ]) , ': '
+			^ (ex messageText ifEmpty: [ '送信失敗' ]) , ': '
 			  , url asString ]
 ]
 

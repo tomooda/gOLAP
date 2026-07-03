@@ -106,7 +106,7 @@ Golap class >> gOLAPSettingsOn: aBuilder [
 				label: 'End-of-Line for item name' ]
 ]
 
-{ #category : 'utilities' }
+{ #category : 'accessing' }
 Golap class >> golapDirectory [
 
 	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
@@ -185,7 +185,7 @@ Golap class >> openAboutDialog [
 		beNotResizable
 ]
 
-{ #category : 'examples' }
+{ #category : 'utilities' }
 Golap class >> openFile [
 
 	<script: 'GolapOverview openFile'>
@@ -193,9 +193,9 @@ Golap class >> openFile [
 	overview := Golap new.
 	overview open maximize.
 	(UIManager default
-		 chooseExistingFileReference: 'Select a coocurrence file'
+		 chooseExistingFileReference: 'サーバからダウンロードしたファイルを選択してください。'
 		 extensions: #( 'csv' )
-		 path: GolapModel coocurrenceDataDirectory) in: [ :ref |
+		 path: self golapDirectory) in: [ :ref |
 			(ref notNil and: [ ref isFile ])
 				ifTrue: [
 						ref readStreamDo: [ :readStream |
@@ -210,14 +210,16 @@ Golap class >> openFile [
 																min: 0;
 																max: readStream size.
 															overview blockUpdateModelWhile: [
+																	| d |
+																	d := 0.
 																	[
 																		bar value: readStream position.
 																		readStream atEnd ] whileFalse: [
-																		overview readDimensionFrom: readStream ].
-																	bar label: 'updating dimensions'.
-																	overview updateDimensions.
-																	bar label: 'updating models'.
-																	bar label: 'updating graph' ].
+																			'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
+
+																			overview readDimensionFrom: readStream ].
+																	bar label: 'グラフ更新中'.
+																	overview updateDimensions ].
 															overview updateModel ] ] ] ] ]
 				ifFalse: [ overview delete ] ].
 	^ overview
@@ -1359,114 +1361,116 @@ Golap >> queryViewTreeMenu [
 Golap >> readDimensionFrom: aReadStream [
 
 	[
-	| line index name status numItems dataframe columnNames isolatedNodesHeader position numHiddenItems dimension |
-	line := aReadStream upTo: Character lf.
-	index := line indexOf: $:.
-	index = 0 ifTrue: [ ^ nil ].
-	('status:'
-		 ifEmpty: [ true ]
-		 ifNotEmpty: [ line beginsWith: 'status:' caseSensitive: false ])
-		ifTrue: [ name := 'no dimensions' ]
-		ifFalse: [
-			name := line.
-			line := aReadStream upTo: Character lf ].
-	status := Integer readFrom: (line readStream
-			           upToAll: 'status:';
-			           skipSeparators;
-			           yourself).
-	status < 0 ifTrue: [
-		UIManager default alert: line , ' ' , aReadStream upToEnd.
-		self delete.
-		^ self ].
-	status = 2 ifTrue: [
-		UIManager default alert: 'Server timeout'.
-		self delete.
-		^ self ].
-	numItems := Integer readFrom: (line readStream
-			             upToAll: 'sent:';
-			             skipSeparators).
-	numHiddenItems := (line readStream
-		                   upToAll: 'diff:';
-		                   atEnd)
-		                  ifTrue: [ 0 ]
-		                  ifFalse: [
-			                  Integer readFrom: (line readStream
-					                   upToAll: 'diff:';
-					                   skipSeparators) ].
-	UIManager default
-		displayProgress: 'reading ' , name
-		from: 1
-		to: numItems + numHiddenItems
-		during: [ :progress |
-			dataframe := DataFrame
-				             readFromCsv: (String lf join:
-						              { ((aReadStream upTo: Character lf) , ',effective') }
-						              , ((1 to: numItems) collect: [ :i |
-								               progress current: i.
-								               (aReadStream upTo: Character lf) , ',1' ])
-						              , ((1 to: numHiddenItems) collect: [ :i |
-								               progress current: i + numItems.
-								               (aReadStream upTo: Character lf) , ',0' ]))
-				             forceStringColumns:
-				             #( 'node1' 'node2' 'node1n' 'node2n' ) asSet ].
-	dataframe columnNames:
-		(columnNames := dataframe columnNames collect: [ :string |
-			                (string includes: $%)
-				                ifTrue: [
-				                string copyFrom: 1 to: (string indexOf: $%) - 1 ]
-				                ifFalse: [ string ] ]).
-	isolatedNodesHeader := String streamContents: [ :stream |
-		                       stream
-			                       nextPut: Character lf;
-			                       nextPutAll: '## isolated nodes ##';
-			                       nextPut: Character lf;
-			                       nextPutAll: 'sent:' ].
-	position := aReadStream position.
-	(aReadStream next: isolatedNodesHeader size) = isolatedNodesHeader
-		ifTrue: [
-			| numNodes rows |
-			numNodes := (aReadStream upTo: Character lf) trim asNumber.
-			rows := Array streamContents: [ :stream |
-				        (DataFrame
-					         readFromCsv: (String lf join:
-							          ((0 to: numNodes) collect: [ :i |
-								           aReadStream upTo: Character lf ]))
-					         forceStringColumns: #( 'node' 'noden' ) asSet) do: [
-					        :row |
-					        stream nextPut: ((DataSeries
-							          withKeys: dataframe columnNames
-							          values: (dataframe columnNames collect: [ :n | 0 ]))
-							         at: 'node1' put: (row at: 'node');
-							         at: 'node1n' put: (row at: 'noden');
-							         at: 'node2' put: nil;
-							         at: 'node2n' put: String new;
-							         at: 'frequency1' put: (row at: 'frequency');
-							         name: {
-									         (row at: 'node').
-									         nil };
-							         yourself) ] ].
-			dataframe := DataFrame
-				             withRows: dataframe asArrayOfRows , rows
-				             columnNames: columnNames ]
-		ifFalse: [ aReadStream position: position ].
-	{ 'frequency'. 'total' } do: [ :key |
-		| column newColumn |
-		column := dataframe column: key.
-		newColumn := column collect: [ :value | value ifNaN: [ 0 ] ].
-		dataframe column: key put: newColumn ].
-	{ 'support'. 'confidence'. 'lift'. 'jaccard' } do: [ :key |
-		| column newColumn |
-		column := dataframe column: key.
-		newColumn := column collect: [ :value | value ifNaN: [ 0.0 ] ].
-		dataframe column: key put: newColumn ].
-	dimension := GolapModel fromServerDataframe: dataframe.
-	edgesAppearancePresenter updateModel: dimension.
-	self silentAddDimension: dimension named: name.
-	[ aReadStream peekFor: Character lf ] whileTrue ]
+		| line index name status numItems dataframe columnNames isolatedNodesHeader position numHiddenItems dimension |
+		line := aReadStream upTo: Character lf.
+		index := line indexOf: $:.
+		index = 0 ifTrue: [ ^ nil ].
+		('status:'
+			 ifEmpty: [ true ]
+			 ifNotEmpty: [ line beginsWith: 'status:' caseSensitive: false ])
+			ifTrue: [ name := 'no dimensions' ]
+			ifFalse: [
+					name := line.
+					line := aReadStream upTo: Character lf ].
+		status := Integer readFrom: (line readStream
+				           upToAll: 'status:';
+				           skipSeparators;
+				           yourself).
+		status < 0 ifTrue: [
+				UIManager default alert: line , ' ' , aReadStream upToEnd.
+				self delete.
+				^ self ].
+		status = 2 ifTrue: [
+				UIManager default alert: 'サーバタイムアウト'.
+				self delete.
+				^ self ].
+		numItems := Integer readFrom: (line readStream
+				             upToAll: 'sent:';
+				             skipSeparators).
+		numHiddenItems := (line readStream
+			                   upToAll: 'diff:';
+			                   atEnd)
+			                  ifTrue: [ 0 ]
+			                  ifFalse: [
+					                  Integer readFrom: (line readStream
+							                   upToAll: 'diff:';
+							                   skipSeparators) ].
+		UIManager default
+			displayProgress: 'reading ' , name
+			from: 1
+			to: numItems + numHiddenItems
+			during: [ :progress |
+					dataframe := DataFrame
+						             readFromCsv: (String lf join:
+								              { ((aReadStream upTo: Character lf)
+								               , ',effective') }
+								              , ((1 to: numItems) collect: [ :i |
+											               progress current: i.
+											               (aReadStream upTo: Character lf) , ',1' ])
+								              , ((1 to: numHiddenItems) collect: [ :i |
+											               progress current: i + numItems.
+											               (aReadStream upTo: Character lf) , ',0' ]))
+						             forceStringColumns:
+						             #( 'node1' 'node2' 'node1n' 'node2n' ) asSet ].
+		dataframe columnNames:
+			(columnNames := dataframe columnNames collect: [ :string |
+					                (string includes: $%)
+						                ifTrue: [
+						                string copyFrom: 1 to: (string indexOf: $%) - 1 ]
+						                ifFalse: [ string ] ]).
+		isolatedNodesHeader := String streamContents: [ :stream |
+				                       stream
+					                       nextPut: Character lf;
+					                       nextPutAll: '## isolated nodes ##';
+					                       nextPut: Character lf;
+					                       nextPutAll: 'sent:' ].
+		position := aReadStream position.
+		(aReadStream next: isolatedNodesHeader size) = isolatedNodesHeader
+			ifTrue: [
+					| numNodes rows |
+					numNodes := (aReadStream upTo: Character lf) trim asNumber.
+					rows := Array streamContents: [ :stream |
+							        (DataFrame
+								         readFromCsv: (String lf join:
+										          ((0 to: numNodes) collect: [ :i |
+											           aReadStream upTo: Character lf ]))
+								         forceStringColumns: #( 'node' 'noden' ) asSet) do: [
+									        :row |
+									        stream nextPut: ((DataSeries
+											          withKeys: dataframe columnNames
+											          values:
+												          (dataframe columnNames collect: [ :n | 0 ]))
+											         at: 'node1' put: (row at: 'node');
+											         at: 'node1n' put: (row at: 'noden');
+											         at: 'node2' put: nil;
+											         at: 'node2n' put: String new;
+											         at: 'frequency1' put: (row at: 'frequency');
+											         name: {
+													         (row at: 'node').
+													         nil };
+											         yourself) ] ].
+					dataframe := DataFrame
+						             withRows: dataframe asArrayOfRows , rows
+						             columnNames: columnNames ]
+			ifFalse: [ aReadStream position: position ].
+		{ 'frequency'. 'total' } do: [ :key |
+				| column newColumn |
+				column := dataframe column: key.
+				newColumn := column collect: [ :value | value ifNaN: [ 0 ] ].
+				dataframe column: key put: newColumn ].
+		{ 'support'. 'confidence'. 'lift'. 'jaccard' } do: [ :key |
+				| column newColumn |
+				column := dataframe column: key.
+				newColumn := column collect: [ :value | value ifNaN: [ 0.0 ] ].
+				dataframe column: key put: newColumn ].
+		dimension := GolapModel fromServerDataframe: dataframe.
+		edgesAppearancePresenter updateModel: dimension.
+		self silentAddDimension: dimension named: name.
+		[ aReadStream peekFor: Character lf ] whileTrue ]
 		on: Error
 		do: [ :ex |
-			self delete.
-			Processor activeProcess terminate ]
+				self delete.
+				Processor activeProcess terminate ]
 ]
 
 { #category : 'accessing-presets' }
