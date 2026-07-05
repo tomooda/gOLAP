@@ -62,9 +62,10 @@ Golap >> fromJSON: aDictionary [
 							(frontList items includes: string) ifTrue: [
 								frontList selectItem: string ] ] ];
 				at: 'merges' ifPresent: [ :array |
-					merges := (array collect: [ :pair | pair first -> pair second ])
-						          asOrderedCollection.
-					model setMerges: merges ];
+					model ifNotNil: [
+							merges := (array collect: [ :pair | pair first -> pair second ])
+								          asOrderedCollection.
+							model setMerges: merges ] ];
 				at: 'pins'
 				ifPresent: [ :array | pins := array asOrderedCollection ];
 				at: 'selections'
