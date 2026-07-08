@@ -38,7 +38,7 @@ GolapOverviewNodeInteraction >> createLabelFor: aCollectionOfAssociations [
 			labels add: label.
 			top := label encompassingRectangle bottom ].
 	labels addFirst: (RSBox new
-			 color: Color red;
+			 color: Color red darker;
 			 origin: labels encompassingRectangle origin - (5 @ 5)
 			 corner: labels encompassingRectangle corner + (5 @ 5);
 			 yourself).
@@ -70,8 +70,8 @@ GolapOverviewNodeInteraction >> onShape: aCanvas [
 GolapOverviewNodeInteraction >> popupItemInfo: event [
 
 	popup ifNil: [ popup := self createPopup: event ].
-	popup position: event shape encompassingRectangle topCenter
-		- (0 @ (popup encompassingRectangle height // 2)).
+	popup position: event shape encompassingRectangle rightCenter
+		+ (popup encompassingRectangle width // 2 @ 0).
 	event canvas addShape: popup.
 	event canvas signalUpdate
 ]
