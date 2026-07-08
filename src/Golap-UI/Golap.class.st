@@ -1590,6 +1590,13 @@ Golap >> retreatingColor [
 ]
 
 { #category : 'operations-photoimages' }
+Golap >> retrieveItemInfoFor: aGolapNode [
+
+	^ itemInfoRetriever ifNotNil: [
+		  itemInfoRetriever productDataFor: aGolapNode ]
+]
+
+{ #category : 'operations-photoimages' }
 Golap >> retrievePhotoimages [
 
 	model ifNotNil: [
