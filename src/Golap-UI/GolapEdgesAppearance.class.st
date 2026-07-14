@@ -5,10 +5,7 @@ Class {
 		'golap',
 		'edgeEvaluatorList',
 		'nodeEvaluatorList',
-		'edgeMinThresholdSlider',
-		'edgeMaxThresholdSlider',
-		'addToFilterListButton',
-		'filterList'
+		'friendNumberField'
 	],
 	#classVars : [
 		'NamedColors'
@@ -72,6 +69,12 @@ GolapEdgesAppearance >> defaultLayout [
 		  add: edgeEvaluatorList expand: true;
 		  add: '商品指標' asPresenter expand: false;
 		  add: nodeEvaluatorList expand: true;
+		  add: (SpBoxLayout newHorizontal
+				   vAlignCenter;
+				   hAlignEnd;
+				   add: 'フレンド  ' asPresenter expand: false;
+				   add: friendNumberField width: 50)
+		  expand: false;
 		  yourself
 ]
 
@@ -107,6 +110,20 @@ GolapEdgesAppearance >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 	edgeEvaluatorList items: aCollectionOfGolapEdgeEvaluator.
 	self golapModelDo: [ :golapModel |
 		golapModel edgeEvaluators: aCollectionOfGolapEdgeEvaluator ]
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> friend [
+
+	^ friendNumberField number
+]
+
+{ #category : 'updating' }
+GolapEdgesAppearance >> friendNumberFieldChanged [
+
+	self golapModelDo: [ :golapModel |
+			golapModel friend: friendNumberField number.
+			golap updateModel ]
 ]
 
 { #category : 'operations' }
@@ -175,9 +192,9 @@ GolapEdgesAppearance >> initializePresenters [
 						                      | number |
 						                      number := [ text asNumber ]
 							                                on: Exception
-							                                do: [ :ex |
-								                                item lowerThreshold ].
+							                                do: [ :ex | nil ].
 						                      item lowerThreshold: number.
+						                      edgeEvaluatorList refresh.
 						                      self golapModelDo: [ :golapModel |
 									                      golapModel updateNodesAndEdges.
 									                      golap updateModel ] ]);
@@ -192,9 +209,9 @@ GolapEdgesAppearance >> initializePresenters [
 						                      | number |
 						                      number := [ text asNumber ]
 							                                on: Exception
-							                                do: [ :ex |
-								                                item upperThreshold ].
+							                                do: [ :ex | nil ].
 						                      item upperThreshold: number.
+						                      edgeEvaluatorList refresh.
 						                      self golapModelDo: [ :golapModel |
 									                      golapModel updateNodesAndEdges.
 									                      golap updateModel ] ]);
@@ -231,9 +248,9 @@ GolapEdgesAppearance >> initializePresenters [
 						                      | number |
 						                      number := [ text asNumber ]
 							                                on: Exception
-							                                do: [ :ex |
-								                                item lowerThreshold ].
+							                                do: [ :ex | nil ].
 						                      item lowerThreshold: number.
+						                      nodeEvaluatorList refresh.
 						                      self golapModelDo: [ :golapModel |
 									                      golapModel updateNodesAndEdges.
 									                      golap updateModel ] ]);
@@ -248,9 +265,9 @@ GolapEdgesAppearance >> initializePresenters [
 						                      | number |
 						                      number := [ text asNumber ]
 							                                on: Exception
-							                                do: [ :ex |
-								                                item upperThreshold ].
+							                                do: [ :ex | nil ].
 						                      item upperThreshold: number.
+						                      nodeEvaluatorList refresh.
 						                      self golapModelDo: [ :golapModel |
 									                      golapModel updateNodesAndEdges.
 									                      golap updateModel ] ]);
@@ -267,6 +284,15 @@ GolapEdgesAppearance >> initializePresenters [
 		                     selectFirst;
 		                     whenSelectedItemChangedDo: [ :nodeEvaluator |
 		                     self nodeEvaluator: nodeEvaluator ];
+		                     yourself.
+	friendNumberField := self newNumberInput
+		                     beInteger;
+		                     climbRate: 1;
+		                     minimum: 1;
+		                     whenSubmitDo: [ self friendNumberFieldChanged ];
+		                     whenNumberChangedDo: [
+			                     self friendNumberFieldChanged ];
+		                     disable;
 		                     yourself.
 	self whenBuiltDo: [ :w |
 			| f |
@@ -342,12 +368,6 @@ GolapEdgesAppearance >> selectedNodeEvaluatorChanged [
 GolapEdgesAppearance >> setGolap: aGolap [
 	golap := aGolap.
 
-]
-
-{ #category : 'updating' }
-GolapEdgesAppearance >> updateFilterList [
-
-	self golapModelDo: [ :golapModel | filterList ifNotNil: #refresh ]
 ]
 
 { #category : 'drawing' }

@@ -4,6 +4,7 @@ Class {
 	#instVars : [
 		'edgeEvaluators',
 		'edgeEvaluator',
+		'friend',
 		'friendsEdges',
 		'friendsRank',
 		'positivePolishEdges',
@@ -97,6 +98,58 @@ GolapModel >> announceGraphChanged [
 	self announcer announce: (GolapModelChangedAnnouncement on: self)
 ]
 
+{ #category : 'updating' }
+GolapModel >> applyEdgeEvaluators [
+
+	edgeEvaluators ifNotNil: [
+			| edges |
+			edges := Array streamContents: [ :stream |
+				         self edgesDo: [ :edge | stream nextPut: edge ] ].
+			edgeEvaluators do: [ :evaluator |
+				evaluator calibrateWithAll: edges graph: self ].
+			edgeEvaluators do: [ :evaluator |
+					edges do: [ :edge |
+						(evaluator evaluate: edge graph: self) ifNil: [ edge remove ] ] ] ]
+]
+
+{ #category : 'updating' }
+GolapModel >> applyFriend [
+
+	(friend isInteger and: [ friend > 0 ]) ifTrue: [
+			| edgesToRemove |
+			edgesToRemove := IdentitySet new.
+			nodes do: [ :node |
+					| edges friends |
+					edges := IdentitySet new.
+					friends := SortedCollection sortUsing: #value descending.
+					node allEdgesAndNodesDo: [ :e :n |
+							edges add: e.
+							friends add: e -> (self valueAtEdge: e).
+							friends size > friend ifTrue: [ friends removeLast ] ].
+					edges removeAll: (friends collect: #key).
+					edgesToRemove addAll: edges ].
+			edgesToRemove do: [ :edge | edge remove ] ]
+]
+
+{ #category : 'updating' }
+GolapModel >> applyNodeEvaluators [
+
+	nodeEvaluators ifNotNil: [
+			| nodesToRemove |
+			nodeEvaluators do: [ :evaluator |
+				evaluator calibrateWithAll: nodes graph: self ].
+			[
+				nodesToRemove := IdentitySet new.
+				nodeEvaluators do: [ :evaluator |
+						nodes do: [ :node |
+								(evaluator evaluate: node graph: self) ifNil: [
+									nodesToRemove add: node ] ] ].
+				nodesToRemove notEmpty ] whileTrue: [
+					nodesToRemove do: [ :node |
+							node remove.
+							nodes removeKey: node id ] ] ]
+]
+
 { #category : 'algorithms-articulation points' }
 GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge [
 
@@ -125,6 +178,60 @@ GolapModel >> computeFriendsEdges: anInteger [
 		node edgesDo: [ :edge |
 			(self rankAtEdge: edge) <= anInteger ifTrue: [ edges add: edge ] ] ].
 	^ edges asArray
+]
+
+{ #category : 'updating' }
+GolapModel >> constructFromBaseGraph [
+
+	| baseNodes newRoots newNodes newRootEdges |
+	baseNodes := Dictionary new: baseGraph numberOfNodes.
+	newRoots := Set new.
+	baseGraph nodesDo: [ :baseNode |
+			baseNodes at: baseNode id put: baseNode.
+			merge rootsAt: baseNode id do: [ :id | newRoots add: id ] ].
+	newNodes := Dictionary new.
+	newRoots do: [ :root |
+			((merge leavesAt: root) collect: [ :leaf | baseNodes at: leaf ])
+				ifNotEmpty: [ :leafBaseNodes |
+						newNodes at: root put: (leafBaseNodes size = 1
+								 ifTrue: [ leafBaseNodes first asGolapNode ]
+								 ifFalse: [
+										 | newData |
+										 newData := DataSeries newFrom:
+											            (nodeAggregators collect: [ :aggregation |
+												             aggregation value:
+													             (leafBaseNodes collect: #data) ]).
+										 newData name: root asString.
+										 GolapMergedNode
+											 on: newData
+											 name: root asString
+											 ids: (leafBaseNodes collect: [ :n | n id asString ]) ]) ] ].
+	newRootEdges := Dictionary new.
+	baseGraph edgesDo: [ :baseEdge |
+			merge rootsAt: baseEdge node1 do: [ :root1 |
+					merge rootsAt: baseEdge node2 do: [ :root2 |
+							root1 = root2 ifFalse: [
+									(newRootEdges
+										 at: (root1 < root2
+												  ifTrue: [ Array with: root1 with: root2 ]
+												  ifFalse: [ Array with: root2 with: root1 ])
+										 ifAbsentPut: [ OrderedCollection new ]) add: baseEdge data ] ] ] ].
+	newRootEdges := newRootEdges collect: [ :dataArray |
+			                (dataArray size = 1
+				                 ifTrue: [ dataArray first copy ]
+				                 ifFalse: [
+						                 DataSeries newFrom:
+								                 (edgeAggregators collect: [ :aggregator |
+										                  aggregator value: dataArray ]) ])
+				                at: 'effective' ifAbsentPut: [ 1 ];
+				                yourself ].
+	newRootEdges keysAndValuesDo: [ :rootPair :data |
+			newNodes at: rootPair first ifPresent: [ :node1 |
+					newNodes at: rootPair second ifPresent: [ :node2 |
+							(data at: 'effective' ifAbsent: [ 1 ]) <= 0
+								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data ]
+								ifFalse: [ node1 createEdgeTo: node2 data: data ] ] ] ].
+	nodes := newNodes
 ]
 
 { #category : 'private' }
@@ -260,9 +367,11 @@ GolapModel >> flushFriendsEdges [
 	friendsEdges := nil
 ]
 
-{ #category : 'visualizing-labels' }
-GolapModel >> font [
-	^ TextStyle defaultFont
+{ #category : 'accessing' }
+GolapModel >> friend: anIntegerOrNil [
+
+	friend := anIntegerOrNil.
+	self updateNodesAndEdges
 ]
 
 { #category : 'accessing' }
@@ -639,75 +748,10 @@ GolapModel >> updateFriends [
 { #category : 'updating' }
 GolapModel >> updateNodesAndEdges [
 
-	| baseNodes newRoots newNodes newRootEdges |
-	baseNodes := Dictionary new: baseGraph numberOfNodes.
-	newRoots := Set new.
-	baseGraph nodesDo: [ :baseNode |
-			baseNodes at: baseNode id put: baseNode.
-			merge rootsAt: baseNode id do: [ :id | newRoots add: id ] ].
-	newNodes := Dictionary new.
-	newRoots do: [ :root |
-			((merge leavesAt: root) collect: [ :leaf | baseNodes at: leaf ])
-				ifNotEmpty: [ :leafBaseNodes |
-						newNodes at: root put: (leafBaseNodes size = 1
-								 ifTrue: [ leafBaseNodes first asGolapNode ]
-								 ifFalse: [
-										 | newData |
-										 newData := DataSeries newFrom:
-											            (nodeAggregators collect: [ :aggregation |
-												             aggregation value:
-													             (leafBaseNodes collect: #data) ]).
-										 newData name: root asString.
-										 GolapMergedNode
-											 on: newData
-											 name: root asString
-											 ids: (leafBaseNodes collect: [ :n | n id asString ]) ]) ] ].
-	newRootEdges := Dictionary new.
-	baseGraph edgesDo: [ :baseEdge |
-			merge rootsAt: baseEdge node1 do: [ :root1 |
-					merge rootsAt: baseEdge node2 do: [ :root2 |
-							root1 = root2 ifFalse: [
-									(newRootEdges
-										 at: (root1 < root2
-												  ifTrue: [ Array with: root1 with: root2 ]
-												  ifFalse: [ Array with: root2 with: root1 ])
-										 ifAbsentPut: [ OrderedCollection new ]) add: baseEdge data ] ] ] ].
-	newRootEdges := newRootEdges collect: [ :dataArray |
-			                (dataArray size = 1
-				                 ifTrue: [ dataArray first copy ]
-				                 ifFalse: [
-						                 DataSeries newFrom:
-								                 (edgeAggregators collect: [ :aggregator |
-										                  aggregator value: dataArray ]) ])
-				                at: 'effective' ifAbsentPut: [ 1 ];
-				                yourself ].
-	edgeEvaluators ifNotNil: [
-			edgeEvaluators do: [ :evaluator |
-				evaluator calibrateWithAll: newRootEdges graph: self ].
-			edgeEvaluators do: [ :evaluator |
-					newRootEdges := newRootEdges reject: [ :edge |
-						                (evaluator evaluate: edge graph: self) isNil ] ] ].
-	newRootEdges keysAndValuesDo: [ :rootPair :data |
-			newNodes at: rootPair first ifPresent: [ :node1 |
-					newNodes at: rootPair second ifPresent: [ :node2 |
-							(data at: 'effective' ifAbsent: [ 1 ]) <= 0
-								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data ]
-								ifFalse: [ node1 createEdgeTo: node2 data: data ] ] ] ].
-	nodeEvaluators ifNotNil: [
-			| edgesToRemove |
-			nodeEvaluators do: [ :evaluator |
-				evaluator calibrateWithAll: newNodes graph: self ].
-			[
-				edgesToRemove := IdentitySet new.
-				nodeEvaluators do: [ :evaluator |
-						newNodes := newNodes reject: [ :node |
-								            (evaluator evaluate: node graph: self) isNil and: [
-										            node allEdgesAndNodesDo: [ :e :n |
-											            edgesToRemove add: e ].
-										            true ] ] ].
-				edgesToRemove notEmpty ] whileTrue: [
-				edgesToRemove do: [ :edge | edge remove ] ] ].
-	nodes := newNodes.
+	self constructFromBaseGraph.
+	self applyEdgeEvaluators.
+	self applyNodeEvaluators.
+	self applyFriend.
 	polisher applyTo: self.
 	self updateFriends.
 	self announceGraphChanged

@@ -605,6 +605,12 @@ Golap >> freshColor [
 	^ colorsAppearancePresenter freshColor
 ]
 
+{ #category : 'accessing' }
+Golap >> friend [
+
+	^ edgesAppearancePresenter friend
+]
+
 { #category : 'menu' }
 Golap >> globalImageMenu: aGolapNode [
 
@@ -2077,8 +2083,8 @@ Golap >> updateModel [
 	self model: self selectedModel.
 	self model edgeEvaluators: self edgeEvaluators.
 	self model nodeEvaluators: self nodeEvaluators.
+	self model friend: self friend.
 	self isUpdateModelBlocked ifTrue: [ ^ self ].
-	edgesAppearancePresenter updateFilterList.
 	itemList updateItemsList.
 	edgeList modelChanged.
 	self
