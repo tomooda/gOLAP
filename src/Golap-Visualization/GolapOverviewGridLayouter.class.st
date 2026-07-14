@@ -92,14 +92,14 @@ GolapOverviewGridLayouter >> gainBySwappingX: x1 y: y1 andX: x2 y: y2 [
 	| gain |
 	gain := 0.
 	((matrix at: x1) at: y1) ifNotNil: [ :node1 |
-			node1 allEdgesAndNodeDo: [ :edge :peer |
+			node1 allEdgesAndNodesDo: [ :edge :peer |
 					(edges includes: edge) ifTrue: [
 							nodeX at: peer ifPresent: [ :peerX |
 									nodeY at: peer ifPresent: [ :peerY |
 											gain := gain + (x1 - peerX) squared + (y1 - peerY) squared
 											        - (x2 - peerX) squared - (y2 - peerY) squared ] ] ] ] ].
 	((matrix at: x2) at: y2) ifNotNil: [ :node2 |
-			node2 allEdgesAndNodeDo: [ :edge :peer |
+			node2 allEdgesAndNodesDo: [ :edge :peer |
 					(edges includes: edge) ifTrue: [
 							nodeX at: peer ifPresent: [ :peerX |
 									nodeY at: peer ifPresent: [ :peerY |
@@ -132,6 +132,8 @@ GolapOverviewGridLayouter >> improveEveryNodeFrom: aCollectionOfGolapNode interi
 GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollectionOfGolapEdge [
 
 	| positions reps |
+	aCollectionOfGolapNode ifEmpty: [ ^ self ].
+	aCollectionOfGolapEdge ifEmpty: [ ^ self ].
 	SpProgressDialog new
 		title: 'グラフ再配置中…';
 		informUserDuring: [ :progress |

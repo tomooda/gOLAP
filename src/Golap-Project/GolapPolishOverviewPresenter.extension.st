@@ -4,10 +4,6 @@ Extension { #name : 'GolapPolishOverviewPresenter' }
 GolapPolishOverviewPresenter >> asJSON [
 
 	^ super asJSON
-		  at: 'visibleEdgeMinPercentile'
-		  put: visibleEdgeMinPercentileSlider value;
-		  at: 'visibleEdgeMaxPercentile'
-		  put: visibleEdgeMaxPercentileSlider value;
 		  at: 'polishIteration' put: polishRepeatsCheckbox state;
 		  at: 'positivePolish' put: polishAdditionThresholdField number;
 		  at: 'negativePolish' put: polishRemovalThresholdField number;
@@ -21,10 +17,6 @@ GolapPolishOverviewPresenter >> fromJSON: aDictionary [
 
 	super fromJSON: aDictionary.
 	aDictionary
-		at: 'visibleEdgeMinPercentile'
-		ifPresent: [ :number | visibleEdgeMinPercentileSlider value: number ];
-		at: 'visibleEdgeMaxPercentile'
-		ifPresent: [ :number | visibleEdgeMaxPercentileSlider value: number ];
 		at: 'polishIteration'
 		ifPresent: [ :bool | polishRepeatsCheckbox state: bool ];
 		at: 'positivePolish'

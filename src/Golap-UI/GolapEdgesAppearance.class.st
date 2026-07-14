@@ -4,7 +4,11 @@ Class {
 	#instVars : [
 		'golap',
 		'edgeEvaluatorList',
-		'nodeEvaluatorList'
+		'nodeEvaluatorList',
+		'edgeMinThresholdSlider',
+		'edgeMaxThresholdSlider',
+		'addToFilterListButton',
+		'filterList'
 	],
 	#classVars : [
 		'NamedColors'
@@ -64,14 +68,10 @@ GolapEdgesAppearance >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   add: '関連指標' asPresenter expand: true;
-				   add: edgeEvaluatorList width: 150)
-		  height: self buttonHeight;
-		  add: (SpBoxLayout newHorizontal
-				   add: 'アイテム指標' asPresenter expand: true;
-				   add: nodeEvaluatorList width: 150)
-		  height: self buttonHeight;
+		  add: '関連指標' asPresenter expand: false;
+		  add: edgeEvaluatorList expand: true;
+		  add: '商品指標' asPresenter expand: false;
+		  add: nodeEvaluatorList expand: true;
 		  yourself
 ]
 
@@ -92,7 +92,7 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 							golap updateQuery.
 							nodeEvaluatorList withAdapterDo: [ :a |
 								a widgetDo: [ :w | w updateContents ] ].
-							golap announceGolapModelUpdated ] ] ]
+							golap updateModel ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -104,13 +104,21 @@ GolapEdgesAppearance >> edgeEvaluators [
 { #category : 'accessing' }
 GolapEdgesAppearance >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 
-	edgeEvaluatorList items: aCollectionOfGolapEdgeEvaluator
+	edgeEvaluatorList items: aCollectionOfGolapEdgeEvaluator.
+	self golapModelDo: [ :golapModel |
+		golapModel edgeEvaluators: aCollectionOfGolapEdgeEvaluator ]
 ]
 
 { #category : 'operations' }
 GolapEdgesAppearance >> friendsGraph [
 
 	self updateGlobalImageAfter: [ golap announceGolapModelUpdated ]
+]
+
+{ #category : 'accessing' }
+GolapEdgesAppearance >> golapModelDo: aBlock [
+
+	(golap ifNotNil: #model) ifNotNil: aBlock
 ]
 
 { #category : 'accessing' }
@@ -146,27 +154,119 @@ GolapEdgesAppearance >> initialExtent [
 { #category : 'initialization' }
 GolapEdgesAppearance >> initializePresenters [
 
-	edgeEvaluatorList := self newDropList
+	edgeEvaluatorList := self newTable
+		                     addColumn:
+			                     ((SpStringTableColumn
+				                       title: '指標'
+				                       evaluated: [ :item | item name ]) width:
+					                      100);
+		                     addColumn: (SpStringTableColumn
+				                      title: '最小'
+				                      evaluated: [ :item |
+					                      item min ifNotNil: #asString ifNil: [ '' ] ]);
+		                     addColumn: ((SpStringTableColumn
+				                       title: '下限'
+				                       evaluated: [ :item |
+					                       item lowerThreshold
+						                       ifNotNil: #asString
+						                       ifNil: [ '' ] ])
+				                      beEditable;
+				                      onAcceptEdition: [ :item :text |
+						                      | number |
+						                      number := [ text asNumber ]
+							                                on: Exception
+							                                do: [ :ex |
+								                                item lowerThreshold ].
+						                      item lowerThreshold: number.
+						                      self golapModelDo: [ :golapModel |
+									                      golapModel updateNodesAndEdges.
+									                      golap updateModel ] ]);
+		                     addColumn: ((SpStringTableColumn
+				                       title: '上限'
+				                       evaluated: [ :item |
+					                       item upperThreshold
+						                       ifNotNil: #asString
+						                       ifNil: [ '' ] ])
+				                      beEditable;
+				                      onAcceptEdition: [ :item :text |
+						                      | number |
+						                      number := [ text asNumber ]
+							                                on: Exception
+							                                do: [ :ex |
+								                                item upperThreshold ].
+						                      item upperThreshold: number.
+						                      self golapModelDo: [ :golapModel |
+									                      golapModel updateNodesAndEdges.
+									                      golap updateModel ] ]);
+		                     addColumn: (SpStringTableColumn
+				                      title: '最大'
+				                      evaluated: [ :item |
+				                      item max ifNotNil: #asString ifNil: [ '' ] ]);
 		                     items:
 			                     (#( 'frequency' 'jaccard' 'lift' 'PMI' )
 				                      collect: [ :column |
-					                      GolapEdgeColumnEvaluator column: column ]);
-		                     display: [ :item | item name ];
-		                     startWithSelection;
+				                      GolapEdgeColumnEvaluator column: column ]);
+		                     selectFirst;
 		                     whenSelectedItemChangedDo: [ :edgeEvaluator |
-			                     self edgeEvaluator: edgeEvaluator ];
+		                     self edgeEvaluator: edgeEvaluator ];
 		                     yourself.
-	nodeEvaluatorList := self newDropList
+	nodeEvaluatorList := self newTable
+		                     addColumn:
+			                     ((SpStringTableColumn
+				                       title: '指標'
+				                       evaluated: [ :item | item name ]) width:
+					                      100);
+		                     addColumn: (SpStringTableColumn
+				                      title: '最小'
+				                      evaluated: [ :item |
+					                      item min ifNotNil: #asString ifNil: [ '' ] ]);
+		                     addColumn: ((SpStringTableColumn
+				                       title: '下限'
+				                       evaluated: [ :item |
+					                       item lowerThreshold
+						                       ifNotNil: #asString
+						                       ifNil: [ '' ] ])
+				                      beEditable;
+				                      onAcceptEdition: [ :item :text |
+						                      | number |
+						                      number := [ text asNumber ]
+							                                on: Exception
+							                                do: [ :ex |
+								                                item lowerThreshold ].
+						                      item lowerThreshold: number.
+						                      self golapModelDo: [ :golapModel |
+									                      golapModel updateNodesAndEdges.
+									                      golap updateModel ] ]);
+		                     addColumn: ((SpStringTableColumn
+				                       title: '上限'
+				                       evaluated: [ :item |
+					                       item upperThreshold
+						                       ifNotNil: #asString
+						                       ifNil: [ '' ] ])
+				                      beEditable;
+				                      onAcceptEdition: [ :item :text |
+						                      | number |
+						                      number := [ text asNumber ]
+							                                on: Exception
+							                                do: [ :ex |
+								                                item upperThreshold ].
+						                      item upperThreshold: number.
+						                      self golapModelDo: [ :golapModel |
+									                      golapModel updateNodesAndEdges.
+									                      golap updateModel ] ]);
+		                     addColumn: (SpStringTableColumn
+				                      title: '最大'
+				                      evaluated: [ :item |
+				                      item max ifNotNil: #asString ifNil: [ '' ] ]);
 		                     items: {
 				                     (GolapNodeColumnEvaluator column: 'frequency').
 				                     GolapNodeMaxEvaluator new.
 				                     GolapNodeSumEvaluator new.
 				                     GolapNodeAverageEvaluator new.
 				                     GolapNodeNumEdgesEvaluator new };
-		                     display: [ :item | item name ];
-		                     startWithSelection;
+		                     selectFirst;
 		                     whenSelectedItemChangedDo: [ :nodeEvaluator |
-			                     self nodeEvaluator: nodeEvaluator ];
+		                     self nodeEvaluator: nodeEvaluator ];
 		                     yourself.
 	self whenBuiltDo: [ :w |
 			| f |
@@ -191,11 +291,11 @@ GolapEdgesAppearance >> nodeEvaluator [
 GolapEdgesAppearance >> nodeEvaluator: aGolapNodeEvaluator [
 
 	aGolapNodeEvaluator ifNotNil: [
-		golap model ifNotNil: [ :model |
-			self updateGlobalImageAfter: [
-				model nodeEvaluator: aGolapNodeEvaluator.
-				golap updateQuery.
-				golap announceGolapModelUpdated ] ] ]
+			golap model ifNotNil: [ :model |
+					self updateGlobalImageAfter: [
+							model nodeEvaluator: aGolapNodeEvaluator.
+							golap updateQuery.
+							golap updateModel ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -207,7 +307,9 @@ GolapEdgesAppearance >> nodeEvaluators [
 { #category : 'accessing' }
 GolapEdgesAppearance >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 
-	nodeEvaluatorList items: aCollectionOfGolapNodeEvaluator
+	nodeEvaluatorList items: aCollectionOfGolapNodeEvaluator.
+	self golapModelDo: [ :golapModel |
+		golapModel nodeEvaluators: aCollectionOfGolapNodeEvaluator ]
 ]
 
 { #category : 'accessing' }
@@ -242,49 +344,10 @@ GolapEdgesAppearance >> setGolap: aGolap [
 
 ]
 
-{ #category : 'operations' }
-GolapEdgesAppearance >> setModelToAverageMode [
+{ #category : 'updating' }
+GolapEdgesAppearance >> updateFilterList [
 
-	golap model ifNotNil: [ :model |
-		model nodeEvaluator: (GolapNodeAverageEvaluator on: model) ].
-	golap dimensionsDo: [ :m |
-		m nodeEvaluator: (GolapNodeAverageEvaluator on: m) ]
-]
-
-{ #category : 'operations' }
-GolapEdgesAppearance >> setModelToDegreeMode [
-
-	golap model ifNotNil: [ :model |
-		model nodeEvaluator: (GolapNodeNumEdgesEvaluator on: model) ].
-	golap dimensionsDo: [ :m |
-		m nodeEvaluator: (GolapNodeNumEdgesEvaluator on: m) ]
-]
-
-{ #category : 'operations' }
-GolapEdgesAppearance >> setModelToFreqMode [
-
-	golap model ifNotNil: [ :model |
-		model nodeEvaluator: (GolapNodeColumnEvaluator on: model column: 'frequency') ].
-	golap dimensionsDo: [ :m |
-		m nodeEvaluator: (GolapNodeColumnEvaluator on: m column: 'frequency') ]
-]
-
-{ #category : 'operations' }
-GolapEdgesAppearance >> setModelToMaxMode [
-
-	golap model ifNotNil: [ :model |
-		model nodeEvaluator: (GolapNodeMaxEvaluator on: model) ].
-	golap dimensionsDo: [ :m |
-		m nodeEvaluator: (GolapNodeMaxEvaluator on: m) ]
-]
-
-{ #category : 'operations' }
-GolapEdgesAppearance >> setModelToSumMode [
-
-	golap model ifNotNil: [ :model |
-		model nodeEvaluator: (GolapNodeSumEvaluator on: model) ].
-	golap dimensionsDo: [ :m |
-		m nodeEvaluator: (GolapNodeSumEvaluator on: m) ]
+	self golapModelDo: [ :golapModel | filterList ifNotNil: #refresh ]
 ]
 
 { #category : 'drawing' }

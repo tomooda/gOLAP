@@ -9,9 +9,7 @@ Class {
 		'positivePolishEdges',
 		'negativePolishEdges',
 		'scores',
-		'label',
-		'photoimage',
-		'isReferenceNode'
+		'photoimage'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -54,7 +52,7 @@ GolapNode >> addScore: aNumber node: aGolapNode [
 ]
 
 { #category : 'enumerating' }
-GolapNode >> allEdgesAndNodeDo: aBlock [
+GolapNode >> allEdgesAndNodesDo: aBlock [
 
 	edges do: [ :edge | aBlock value: edge value: (edge peerOf: self) ].
 	positivePolishEdges do: [ :edge |
@@ -308,16 +306,6 @@ GolapNode >> isMergedNode [
 ]
 
 { #category : 'accessing' }
-GolapNode >> label [
-	^ label
-]
-
-{ #category : 'accessing' }
-GolapNode >> label: aForm [
-	label := aForm
-]
-
-{ #category : 'accessing' }
 GolapNode >> name [
 
 	^ name ifNil: [ self id ]
@@ -419,6 +407,13 @@ GolapNode >> rankOf: aGolapEdge in: aGolapModel [
 	self edgesDo: [ :edge |
 		score < (aGolapModel valueAtEdge: edge) ifTrue: [ rank := rank + 1 ] ].
 	^ rank
+]
+
+{ #category : 'adding-removing' }
+GolapNode >> remove [
+
+	edges copy do: #remove.
+	hiddenEdges copy do: #remove
 ]
 
 { #category : 'adding-removing' }

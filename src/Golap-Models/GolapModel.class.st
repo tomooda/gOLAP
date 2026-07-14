@@ -2,6 +2,7 @@ Class {
 	#name : 'GolapModel',
 	#superclass : 'Model',
 	#instVars : [
+		'edgeEvaluators',
 		'edgeEvaluator',
 		'friendsEdges',
 		'friendsRank',
@@ -9,16 +10,14 @@ Class {
 		'negativePolishEdges',
 		'edgeAggregators',
 		'nodeAggregators',
+		'nodeEvaluators',
 		'nodeEvaluator',
 		'nodes',
 		'edgeRanks',
 		'referenceNodes',
 		'baseGraph',
 		'merge',
-		'polisher',
-		'edgeMinThreshold',
-		'edgeMaxThreshold',
-		'edgeValueNormalizer'
+		'polisher'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -231,28 +230,9 @@ GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
 ]
 
 { #category : 'accessing' }
-GolapModel >> edgeMaxThreshold [
+GolapModel >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 
-	^ edgeMaxThreshold
-]
-
-{ #category : 'accessing' }
-GolapModel >> edgeMaxThreshold: aNumber [
-
-	edgeMaxThreshold := aNumber.
-	self updateNodesAndEdges
-]
-
-{ #category : 'accessing' }
-GolapModel >> edgeMinThreshold [
-
-	^ edgeMinThreshold
-]
-
-{ #category : 'accessing' }
-GolapModel >> edgeMinThreshold: aNumber [
-
-	edgeMinThreshold := aNumber.
+	edgeEvaluators := aCollectionOfGolapEdgeEvaluator.
 	self updateNodesAndEdges
 ]
 
@@ -355,10 +335,7 @@ GolapModel >> initialize [
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	edgeRanks := IdentityDictionary new.
-	referenceNodes := OrderedCollection new.
-	edgeValueNormalizer := GolapNormalizer min: 0.0 max: 0.0.
-	edgeMinThreshold := nil.
-	edgeMaxThreshold := nil
+	referenceNodes := OrderedCollection new
 ]
 
 { #category : 'accessing-reference nodes' }
@@ -374,36 +351,6 @@ GolapModel >> isReferenceNode: aGolapNode [
 	^ referenceNodes includes: aGolapNode id
 ]
 
-{ #category : 'filtering' }
-GolapModel >> maxEdgeValue [
-
-	| maxValue maxEdge |
-	maxValue := Float negativeInfinity.
-	maxEdge := nil.
-	self edgesDo: [ :edge |
-			| value |
-			value := self valueAtEdge: edge.
-			maxValue < value ifTrue: [
-					maxValue := value.
-					maxEdge := edge ] ].
-	^ maxEdge ifNotNil: [ maxValue ] ifNil: [ 1.0 ]
-]
-
-{ #category : 'filtering' }
-GolapModel >> maxNodeValue [
-
-	| maxValue maxNode |
-	maxValue := Float negativeInfinity.
-	maxNode := nil.
-	self nodesDo: [ :node |
-		| value |
-		value := self valueAtNode: node.
-		maxValue < value ifTrue: [
-			maxValue := value.
-			maxNode := node ] ].
-	^ maxNode ifNotNil: [ maxValue ] ifNil: [ 1.0 ]
-]
-
 { #category : 'accessing' }
 GolapModel >> merge [
 
@@ -416,36 +363,6 @@ GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
 	merge merge: (aCollectionOfGolapNode collect: #id) into: aString.
 	self updateNodesAndEdges.
 	^ nodes at: aString ifAbsent: [ nil ]
-]
-
-{ #category : 'filtering' }
-GolapModel >> minEdgeValue [
-
-	| minValue minEdge |
-	minValue := Float infinity.
-	minEdge := nil.
-	self edgesDo: [ :edge |
-			| value |
-			value := self valueAtEdge: edge.
-			value < minValue ifTrue: [
-					minValue := value.
-					minEdge := edge ] ].
-	^ minEdge ifNotNil: [ minValue ] ifNil: [ 0.0 ]
-]
-
-{ #category : 'filtering' }
-GolapModel >> minNodeValue [
-
-	| minValue minNode |
-	minValue := Float infinity.
-	minNode := nil.
-	self nodesDo: [ :node |
-		| value |
-		value := self valueAtNode: node.
-		value < minValue ifTrue: [
-			minValue := value.
-			minNode := node ] ].
-	^ minNode ifNotNil: [ minValue ] ifNil: [ 0.0 ]
 ]
 
 { #category : 'accessing' }
@@ -492,6 +409,13 @@ GolapModel >> nodeEvaluator [
 GolapModel >> nodeEvaluator: aGolapNodeEvaluator [
 
 	nodeEvaluator := aGolapNodeEvaluator
+]
+
+{ #category : 'accessing' }
+GolapModel >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
+
+	nodeEvaluators := aCollectionOfGolapNodeEvaluator.
+	self updateNodesAndEdges
 ]
 
 { #category : 'accessing' }
@@ -757,21 +681,32 @@ GolapModel >> updateNodesAndEdges [
 										                  aggregator value: dataArray ]) ])
 				                at: 'effective' ifAbsentPut: [ 1 ];
 				                yourself ].
-	edgeEvaluator ifNotNil: [
-			edgeValueNormalizer := GolapNormalizer from:
-				                       (newRootEdges values collect: [ :data |
-					                        edgeEvaluator value: data graph: self ]).
-			newRootEdges := newRootEdges select: [ :data |
-					                (edgeValueNormalizer normalize:
-						                 (edgeEvaluator value: data graph: self))
-						                between: (edgeMinThreshold ifNil: [ 0.0 ])
-						                and: (edgeMaxThreshold ifNil: [ 1.0 ]) ] ].
+	edgeEvaluators ifNotNil: [
+			edgeEvaluators do: [ :evaluator |
+				evaluator calibrateWithAll: newRootEdges graph: self ].
+			edgeEvaluators do: [ :evaluator |
+					newRootEdges := newRootEdges reject: [ :edge |
+						                (evaluator evaluate: edge graph: self) isNil ] ] ].
 	newRootEdges keysAndValuesDo: [ :rootPair :data |
 			newNodes at: rootPair first ifPresent: [ :node1 |
 					newNodes at: rootPair second ifPresent: [ :node2 |
 							(data at: 'effective' ifAbsent: [ 1 ]) <= 0
 								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data ]
 								ifFalse: [ node1 createEdgeTo: node2 data: data ] ] ] ].
+	nodeEvaluators ifNotNil: [
+			| edgesToRemove |
+			nodeEvaluators do: [ :evaluator |
+				evaluator calibrateWithAll: newNodes graph: self ].
+			[
+				edgesToRemove := IdentitySet new.
+				nodeEvaluators do: [ :evaluator |
+						newNodes := newNodes reject: [ :node |
+								            (evaluator evaluate: node graph: self) isNil and: [
+										            node allEdgesAndNodesDo: [ :e :n |
+											            edgesToRemove add: e ].
+										            true ] ] ].
+				edgesToRemove notEmpty ] whileTrue: [
+				edgesToRemove do: [ :edge | edge remove ] ] ].
 	nodes := newNodes.
 	polisher applyTo: self.
 	self updateFriends.

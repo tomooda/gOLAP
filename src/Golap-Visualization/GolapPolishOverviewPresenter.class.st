@@ -2,11 +2,6 @@ Class {
 	#name : 'GolapPolishOverviewPresenter',
 	#superclass : 'GolapOverviewPresenter',
 	#instVars : [
-		'visibleEdgeMaxValue',
-		'visibleEdgeMinValue',
-		'visibleEdgeMinPercentileSlider',
-		'visibleEdgeMaxPercentileSlider',
-		'resetVisibleEdgePercentileButton',
 		'layoutButton',
 		'showsPolishEdgesCheckbox',
 		'polishRepeatsCheckbox',
@@ -40,32 +35,7 @@ GolapPolishOverviewPresenter >> defaultLayout [
 		  add: (SpBoxLayout newHorizontal
 				   vAlignCenter;
 				   add: (SpBoxLayout newVertical
-						    add:
-							    ('関連値' asPresenter displayBackgroundColor: [
-									     Color gray: 0.8 ])
-						    expand: false;
-						    add: resetVisibleEdgePercentileButton expand: false;
-						    yourself)
-				   expand: false;
-				   add: (SpBoxLayout newVertical
-						    add: (SpBoxLayout newHorizontal
-								     add: '最小' asPresenter expand: false;
-								     add: visibleEdgeMinPercentileSlider expand: true;
-								     yourself)
-						    expand: false;
-						    add: (SpBoxLayout newHorizontal
-								     add: '最大' asPresenter expand: false;
-								     add: visibleEdgeMaxPercentileSlider expand: true;
-								     yourself)
-						    expand: false;
-						    yourself)
-				   expand: true;
-				   add: '    ' asPresenter expand: false;
-				   add: (SpBoxLayout newVertical
-						    add:
-							    ('研磨' asPresenter displayBackgroundColor: [
-									     Color gray: 0.8 ])
-						    expand: false;
+						    add: '研磨' asPresenter expand: false;
 						    add: showsPolishEdgesCheckbox width: 100;
 						    yourself)
 				   expand: false;
@@ -89,10 +59,7 @@ GolapPolishOverviewPresenter >> defaultLayout [
 						    yourself)
 				   width: 50;
 				   add: (SpBoxLayout newVertical
-						    add:
-							    ('更新' asPresenter displayBackgroundColor: [
-									     Color gray: 0.8 ])
-						    expand: false;
+						    add: '更新' asPresenter expand: false;
 						    add: layoutButton expand: false;
 						    yourself)
 				   expand: false;
@@ -102,56 +69,10 @@ GolapPolishOverviewPresenter >> defaultLayout [
 		  yourself
 ]
 
-{ #category : 'operations' }
-GolapPolishOverviewPresenter >> edgeMaxThresholdChanged [
-
-	self golapModelDo: [ :model |
-			| percent |
-			percent := visibleEdgeMaxPercentileSlider value.
-			visibleEdgeMaxPercentileSlider label: percent printString , '%'.
-			model edgeMaxThreshold: percent * 0.01.
-			self updateCanvas ]
-]
-
-{ #category : 'operations' }
-GolapPolishOverviewPresenter >> edgeMinThresholdChanged [
-
-	self golapModelDo: [ :model |
-			| percent |
-			percent := visibleEdgeMinPercentileSlider value.
-			visibleEdgeMinPercentileSlider label: percent printString , '%'.
-			model edgeMinThreshold: percent * 0.01.
-			self updateCanvas ]
-]
-
 { #category : 'initialization' }
 GolapPolishOverviewPresenter >> initializePresenters [
 
 	super initializePresenters.
-	visibleEdgeMinPercentileSlider := self newSlider
-		                                  min: 0;
-		                                  max: 100;
-		                                  quantum: 1;
-		                                  value: 0;
-		                                  whenValueChangedDo: [
-			                                  self edgeMinThresholdChanged ];
-		                                  yourself.
-	visibleEdgeMaxPercentileSlider := self newSlider
-		                                  min: 0;
-		                                  max: 100;
-		                                  quantum: 1;
-		                                  value: 100;
-		                                  whenValueChangedDo: [
-			                                  self edgeMaxThresholdChanged ];
-		                                  yourself.
-	resetVisibleEdgePercentileButton := self newButton
-		                                    label: 'リセット';
-		                                    action: [
-				                                    visibleEdgeMinPercentileSlider
-					                                    value: 0.
-				                                    visibleEdgeMaxPercentileSlider
-					                                    value: 100 ];
-		                                    yourself.
 	polishRepeatsCheckbox := self newCheckBox
 		                         label: '繰り返し';
 		                         state: false;

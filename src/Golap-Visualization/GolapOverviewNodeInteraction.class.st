@@ -21,7 +21,7 @@ GolapOverviewNodeInteraction >> createLabelFor: aCollectionOfAssociations [
 			| label |
 			label := RSLabel new
 				         text: assoc key asString , ':';
-				         color: Color white;
+				         color: Color black;
 				         yourself.
 			label translateTopLeftTo: left @ top.
 			labels add: label.
@@ -32,13 +32,13 @@ GolapOverviewNodeInteraction >> createLabelFor: aCollectionOfAssociations [
 			| label |
 			label := RSLabel new
 				         text: assoc value asString;
-				         color: Color white;
+				         color: Color black;
 				         yourself.
 			label translateTopLeftTo: left @ top.
 			labels add: label.
 			top := label encompassingRectangle bottom ].
 	labels addFirst: (RSBox new
-			 color: Color red darker;
+			 color: (Color fromHexString: 'E6F2F7');
 			 origin: labels encompassingRectangle origin - (5 @ 5)
 			 corner: labels encompassingRectangle corner + (5 @ 5);
 			 yourself).

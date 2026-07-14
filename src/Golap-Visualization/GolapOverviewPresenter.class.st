@@ -11,7 +11,6 @@ Class {
 		'reallyVisibleNodes',
 		'freqScale',
 		'lineScale',
-		'activeReferenceNodes',
 		'lock',
 		'nodeShapes'
 	],

@@ -537,7 +537,7 @@ Golap >> defaultLayout [
 
 	<spec>
 	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.15;
+		  positionOfSlider: 0.25;
 		  add: self leftPaneLayout;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.8;
@@ -972,14 +972,18 @@ Golap >> itemViewUrl: aString [
 { #category : 'layout' }
 Golap >> leftPaneLayout [
 
+	<script: 'self new open'>
 	^ SpBoxLayout newVertical
 		  add: (SpBoxLayout newHorizontal
 				   add: frontList;
 				   add: baseList)
 		  height: self buttonHeight;
-		  add: edgesAppearancePresenter height: 70;
-		  add: itemsAppearancePresenter height: 300;
-		  add: colorsAppearancePresenter height: 250;
+		  add: edgesAppearancePresenter expand: true;
+		  add: itemsAppearancePresenter
+		  expand: false
+		  fill: false
+		  padding: 10;
+		  add: colorsAppearancePresenter height: 200;
 		  add: 'コメント' expand: false;
 		  add: commentText;
 		  yourself
@@ -992,7 +996,7 @@ Golap >> leftPaneOpenCloseButtonClicked [
 	self updateLeftPaneOpenCloseButton.
 	self layout positionOfSlider: (leftPaneOpenCloseButton state
 			 ifTrue: [ 0.0 ]
-			 ifFalse: [ 0.15 ]).
+			 ifFalse: [ 0.25 ]).
 	self layout children second withAdapterDo: [ :a |
 			a widgetDo: [ :w |
 					| slider |
@@ -2071,7 +2075,10 @@ Golap >> updateLeftPaneOpenCloseButton [
 Golap >> updateModel [
 
 	self model: self selectedModel.
+	self model edgeEvaluators: self edgeEvaluators.
+	self model nodeEvaluators: self nodeEvaluators.
 	self isUpdateModelBlocked ifTrue: [ ^ self ].
+	edgesAppearancePresenter updateFilterList.
 	itemList updateItemsList.
 	edgeList modelChanged.
 	self

@@ -17,14 +17,6 @@ GolapNodeColumnEvaluator class >> column: aString [
 		  yourself
 ]
 
-{ #category : 'instance creation' }
-GolapNodeColumnEvaluator class >> on: aGolapModel column: aString [
-
-	^ (self on: aGolapModel)
-		  column: aString;
-		  yourself
-]
-
 { #category : 'accessing' }
 GolapNodeColumnEvaluator class >> tag [
 
