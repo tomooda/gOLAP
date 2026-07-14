@@ -26,7 +26,6 @@ Golap >> asJSON [
 		  at: 'edgeList' put: edgeList asJSON;
 		  at: 'comment' put: commentText text;
 		  at: 'polishOverview' put: polishOverviewPresenter asJSON;
-		  at: 'friendOverview' put: friendOverviewPresenter asJSON;
 		  at: 'articulationPointOverview'
 		  put: articulationPointOverviewPresenter asJSON;
 		  at: 'elaboration' put: elaborationPresenter asJSON;
@@ -83,8 +82,6 @@ Golap >> fromJSON: aDictionary [
 				at: 'comment' ifPresent: [ :text | commentText text: text ];
 				at: 'polishOverview'
 				ifPresent: [ :json | polishOverviewPresenter fromJSON: json ];
-				at: 'friendOverview'
-				ifPresent: [ :json | friendOverviewPresenter fromJSON: json ];
 				at: 'articulationPointOverview'
 				ifPresent: [ :json |
 				articulationPointOverviewPresenter fromJSON: json ];

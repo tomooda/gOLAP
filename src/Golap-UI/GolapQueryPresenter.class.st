@@ -3,8 +3,6 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'networkClient',
-		'serverConfigTree',
-		'serverConfig',
 		'itemFields',
 		'sortKey',
 		'sendMax',
@@ -29,55 +27,6 @@ Class {
 	#tag : 'Query'
 }
 
-{ #category : 'layout' }
-GolapQueryPresenter class >> defaultLayout [
-
-	<script: 'GolapQueryPresenter new open'>
-	<spec>
-	^ SpBoxLayout newVertical
-		  add: (SpPanedLayout newHorizontal
-				   add: (SpBoxLayout newVertical
-						    add: 'トランザクション' height: self labelHeight;
-						    add: #transactionFilterPresenter);
-				   add: (SpBoxLayout newVertical
-						    add: 'アイテム' height: self labelHeight;
-						    add: #itemFilterPresenter);
-				   positionOfSlider: 0.5)
-		  expand: true;
-		  add: #lowerBoundsDialogButton height: self buttonHeight;
-		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.4;
-				   add: (SpBoxLayout newVertical
-						    add: (SpBoxLayout newHorizontal
-								     add: '集計' width: 30;
-								     add: #granularityTransaction;
-								     add: #granularityNode)
-						    height: self inputTextHeight;
-						    add: #isolatedNodesCheckBox;
-						    add: (SpBoxLayout newHorizontal
-								     add: 'タイムアウト' width: 100;
-								     add: #deadlineTimer width: 100)
-						    height: self inputTextHeight;
-						    add: (SpBoxLayout newHorizontal
-								     add: '最大取得件数' width: 100;
-								     add: #sendMax width: 100)
-						    height: self inputTextHeight;
-						    add: (SpBoxLayout newHorizontal
-								     add: 'ソートキー' width: 100;
-								     add: #sortKey width: 100)
-						    height: self inputTextHeight);
-				   add: (SpPanedLayout newHorizontal
-						    positionOfSlider: 0.5;
-						    add: (SpBoxLayout newVertical
-								     add: (SpBoxLayout newHorizontal
-										      add: '比較集計' width: 70;
-										      add: #dimensionsKey)
-								     height: self inputTextHeight;
-								     add: #dimensionsValues height: self inputTextHeight);
-						    add: #dimensionsPreview))
-		  height: 180
-]
-
 { #category : 'instance creation' }
 GolapQueryPresenter class >> on: aGolapNetworkClientPresenter [
 	^ self new
@@ -100,6 +49,55 @@ GolapQueryPresenter >> clearPreviewFilterField [
 { #category : 'defaults' }
 GolapQueryPresenter >> defaultInitialExtent [
 	^ 800@600
+]
+
+{ #category : 'layout' }
+GolapQueryPresenter >> defaultLayout [
+
+	<script: 'GolapQueryPresenter new open'>
+	<spec>
+	^ SpBoxLayout newVertical
+		  add: (SpPanedLayout newHorizontal
+				   add: (SpBoxLayout newVertical
+						    add: 'トランザクション' height: self labelHeight;
+						    add: transactionFilterPresenter);
+				   add: (SpBoxLayout newVertical
+						    add: 'アイテム' height: self labelHeight;
+						    add: itemFilterPresenter);
+				   positionOfSlider: 0.5)
+		  expand: true;
+		  add: lowerBoundsDialogButton height: self buttonHeight;
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.4;
+				   add: (SpBoxLayout newVertical
+						    add: (SpBoxLayout newHorizontal
+								     add: '集計' width: 30;
+								     add: granularityTransaction;
+								     add: granularityNode)
+						    height: self inputTextHeight;
+						    add: isolatedNodesCheckBox;
+						    add: (SpBoxLayout newHorizontal
+								     add: 'タイムアウト' width: 100;
+								     add: deadlineTimer width: 100)
+						    height: self inputTextHeight;
+						    add: (SpBoxLayout newHorizontal
+								     add: '最大取得件数' width: 100;
+								     add: sendMax width: 100)
+						    height: self inputTextHeight;
+						    add: (SpBoxLayout newHorizontal
+								     add: 'ソートキー' width: 100;
+								     add: sortKey width: 100)
+						    height: self inputTextHeight);
+				   add: (SpPanedLayout newHorizontal
+						    positionOfSlider: 0.5;
+						    add: (SpBoxLayout newVertical
+								     add: (SpBoxLayout newHorizontal
+										      add: '比較集計' width: 70;
+										      add: dimensionsKey)
+								     height: self inputTextHeight;
+								     add: dimensionsValues height: self inputTextHeight);
+						    add: dimensionsPreview))
+		  height: 180
 ]
 
 { #category : 'private' }
@@ -232,6 +230,12 @@ GolapQueryPresenter >> itemFilterSpec [
 GolapQueryPresenter >> itemFilterSpec: aGolapItemFilterSpec [
 	itemFilterSpec := aGolapItemFilterSpec.
 	itemFilterPresenter updateClauseList
+]
+
+{ #category : 'layout' }
+GolapQueryPresenter >> labelHeight [
+
+	^ self class labelHeight
 ]
 
 { #category : 'accessing' }

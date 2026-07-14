@@ -24,18 +24,14 @@ Class {
 		'saveAsPngButton',
 		'itemList',
 		'itemNotebook',
-		'snapshotDirectory',
-		'snapshotEnabled',
 		'saveAsSvgButton',
 		'photoImageRetrievingProcess',
 		'commentText',
 		'dandelionPresenter',
-		'snapshotBaseName',
 		'hedgePresenter',
 		'edgeList',
 		'heatmapPresenter',
 		'polishOverviewPresenter',
-		'friendOverviewPresenter',
 		'elaborationPresenter',
 		'articulationPointOverviewPresenter',
 		'itemInfoRetriever',
@@ -782,8 +778,6 @@ Golap >> initialize [
 	selections := Set new.
 	dimensions := OrderedDictionary new.
 	merges := OrderedCollection new.
-	snapshotEnabled := true.
-	snapshotBaseName := ''.
 	imageCache := Dictionary new: 1024
 ]
 
@@ -872,9 +866,6 @@ Golap >> initializePresenters [
 	polishOverviewPresenter := self instantiate:
 		                           (GolapPolishOverviewPresenter new golap:
 			                            self).
-	friendOverviewPresenter := self instantiate:
-		                           (GolapFriendOverviewPresenter new golap:
-			                            self).
 	articulationPointOverviewPresenter := self instantiate:
 		                                      (GolapArticulationPointOverviewPresenter
 			                                       new golap: self).
@@ -887,10 +878,8 @@ Golap >> initializePresenters [
 	heatmapPresenter := self instantiate:
 		                    (GolapClusteredHeatmapPresenter new golap: self).
 	visualizationNotebook := self newNotebook
-		                         addPageTitle: '俯瞰図'
+		                         addPageTitle: '研磨'
 		                         provider: [ polishOverviewPresenter ];
-		                         addPageTitle: 'フレンド俯瞰図'
-		                         provider: [ friendOverviewPresenter ];
 		                         addPageTitle: '要衝点図'
 		                         provider: [
 			                         articulationPointOverviewPresenter ];
@@ -1922,18 +1911,6 @@ Golap >> simpleStringFor: aNumber [
 	^ aNumber printShowingDecimalPlaces: 4
 ]
 
-{ #category : 'accessing' }
-Golap >> snapshotBaseName [
-
-	^ snapshotBaseName
-]
-
-{ #category : 'accessing' }
-Golap >> snapshotBaseName: aString [
-
-	snapshotBaseName := aString
-]
-
 { #category : 'operations-photoimages' }
 Golap >> startPhotoimageRetrievingProcess [
 
@@ -2129,8 +2106,7 @@ Golap >> url [
 { #category : 'accessing' }
 Golap >> url: aZnUrl [
 
-	url := aZnUrl asUrl.
-	snapshotBaseName := url host asString
+	url := aZnUrl asUrl
 ]
 
 { #category : 'accessing' }

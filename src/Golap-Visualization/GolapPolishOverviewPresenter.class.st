@@ -144,7 +144,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 					                        polishMinClusterSize number ].
 	showsPolishEdgesCheckbox := self newCheckBox
 		                            label: '表示';
-		                            state: false;
+		                            state: true;
 		                            whenChangedDo: [ self updateCanvas ];
 		                            yourself.
 	layoutButton := self newButton

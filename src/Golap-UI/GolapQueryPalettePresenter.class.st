@@ -31,7 +31,7 @@ Class {
 	#tag : 'Query'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'layouts' }
 GolapQueryPalettePresenter class >> defaultLayout [
 
 	^ SpPanedLayout newHorizontal

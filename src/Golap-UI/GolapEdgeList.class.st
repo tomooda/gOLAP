@@ -6,10 +6,6 @@ Class {
 		'nodeDropList',
 		'peerNodeList'
 	],
-	#classVars : [
-		'EmptyImage',
-		'ImageRepositoryUrl'
-	],
 	#category : 'Golap-UI-Graph',
 	#package : 'Golap-UI',
 	#tag : 'Graph'
