@@ -16,22 +16,6 @@ Class {
 	#tag : 'Retriever'
 }
 
-{ #category : 'layout' }
-GolapPhotoImageRetrieversPresenter class >> defaultLayout [
-
-	^ SpBoxLayout newVertical
-		  add: #retrieverList expand: true;
-		  add: (SpBoxLayout newHorizontal
-				   add: #addRetrieverButton width: self buttonHeight;
-				   add: #removeRetrieverButton width: self buttonHeight;
-				   add: #editRetrieverButton width: self buttonHeight;
-				   add: #moveUpRetrieverButton width: self buttonHeight;
-				   add: #moveDownRetrieverButton width: self buttonHeight;
-				   yourself)
-		  expand: false;
-		  yourself
-]
-
 { #category : 'instance creation' }
 GolapPhotoImageRetrieversPresenter class >> on: aGolapItemInfoRetriever [
 
@@ -69,6 +53,28 @@ GolapPhotoImageRetrieversPresenter >> addRetriever: aGolapPhotoImageRetriever [
 	self editRetriever
 ]
 
+{ #category : 'layout' }
+GolapPhotoImageRetrieversPresenter >> buttonHeight [
+
+	^ self class buttonHeight
+]
+
+{ #category : 'layout' }
+GolapPhotoImageRetrieversPresenter >> defaultLayout [
+
+	^ SpBoxLayout newVertical
+		  add: retrieverList height: self buttonHeight * 4;
+		  add: (SpBoxLayout newHorizontal
+				   add: addRetrieverButton width: self buttonHeight;
+				   add: removeRetrieverButton width: self buttonHeight;
+				   add: editRetrieverButton width: self buttonHeight;
+				   add: moveUpRetrieverButton width: self buttonHeight;
+				   add: moveDownRetrieverButton width: self buttonHeight;
+				   yourself)
+		  expand: false;
+		  yourself
+]
+
 { #category : 'operations' }
 GolapPhotoImageRetrieversPresenter >> editRetriever [
 
@@ -97,8 +103,11 @@ GolapPhotoImageRetrieversPresenter >> golap: aGolap [
 { #category : 'initialization' }
 GolapPhotoImageRetrieversPresenter >> initializePresenters [
 
-	retrieverList := self newList
-		                 display: [ :retriever | retriever shortDescription ];
+	retrieverList := self newTable
+		                 addColumn:
+			                 (SpStringTableColumn evaluated: [ :retriever |
+					                  retriever shortDescription asString ]);
+		                 hideColumnHeaders;
 		                 whenSelectedItemChangedDo: [
 			                 self selectedRetrieverChanged ];
 		                 yourself.

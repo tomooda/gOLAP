@@ -17,25 +17,6 @@ Class {
 	#tag : 'Graph'
 }
 
-{ #category : 'layout' }
-GolapItemsAppearance class >> defaultLayout [
-
-	<spec>
-	^ SpBoxLayout newVertical
-		  add: #fontButton height: self buttonHeight;
-		  add: (SpBoxLayout newHorizontal
-				   add: #showConnectedNodesCheckBox;
-				   add: #showHiddenConnectionNodesCheckBox;
-				   add: #showIsolatedNodesCheckBox)
-		  height: self inputTextHeight;
-		  add: #photoimageRetrievers;
-		  add: (SpBoxLayout newHorizontal
-				   add: #photoimageRetrievalProgressBar;
-				   add: #startPhotoimageRetrievalButton width: self buttonHeight)
-		  expand: false;
-		  yourself
-]
-
 { #category : 'instance creation' }
 GolapItemsAppearance class >> on: aGolap [
 	^ self new
@@ -49,7 +30,7 @@ GolapItemsAppearance >> basicShowsPhotoimages: aBoolean [
 	showPhotoImagesCheckbox setState: aBoolean = true
 ]
 
-{ #category : 'layout' }
+{ #category : 'layouts' }
 GolapItemsAppearance >> buttonHeight [
 
 	^ self class buttonHeight
@@ -65,20 +46,20 @@ GolapItemsAppearance >> chooseFont [
 				onAcceptDo: [ :font | Golap defaultFont: font ] ]
 ]
 
-{ #category : 'layout' }
+{ #category : 'layouts' }
 GolapItemsAppearance >> defaultLayout [
 
 	<spec>
-	^ SpBoxLayout newVertical
-		  add: fontButton expand: false;
-		  add: '商品画像取得' expand: false;
-		  add: photoimageRetrievers;
-		  add: (SpBoxLayout newHorizontal
-				   add: photoimageRetrievalProgressBar;
-				   add: startPhotoimageRetrievalButton width: self buttonHeight)
-		  expand: false;
-		  add: showPhotoImagesCheckbox expand: false;
-		  yourself
+	^ SpBoxLayout newHorizontal add: (SpBoxLayout newVertical
+			   add: fontButton expand: false;
+			   add: '商品画像取得' expand: false;
+			   add: photoimageRetrievers expand: true;
+			   add: (SpBoxLayout newHorizontal
+					    add: photoimageRetrievalProgressBar;
+					    add: startPhotoimageRetrievalButton width: self buttonHeight)
+			   expand: false;
+			   add: showPhotoImagesCheckbox expand: false;
+			   yourself)
 ]
 
 { #category : 'initialization' }

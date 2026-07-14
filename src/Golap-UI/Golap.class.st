@@ -399,13 +399,13 @@ Golap >> blockUpdateModelWhile: aBlock [
 	aBlock value
 ]
 
-{ #category : 'layout' }
+{ #category : 'layouts' }
 Golap >> buttonHeight [
 
 	^ self class buttonHeight
 ]
 
-{ #category : 'layout' }
+{ #category : 'layouts' }
 Golap >> centerPaneLayout [
 
 	^ SpBoxLayout newHorizontal
@@ -528,7 +528,7 @@ Golap >> decliningColor [
 	^ colorsAppearancePresenter decliningColor
 ]
 
-{ #category : 'layout' }
+{ #category : 'layouts' }
 Golap >> defaultLayout [
 
 	<spec>
@@ -964,7 +964,7 @@ Golap >> itemViewUrl: aString [
 	itemInfoRetriever golapServerUrl: aString
 ]
 
-{ #category : 'layout' }
+{ #category : 'layouts' }
 Golap >> leftPaneLayout [
 
 	<script: 'self new open'>
@@ -974,10 +974,7 @@ Golap >> leftPaneLayout [
 				   add: baseList)
 		  height: self buttonHeight;
 		  add: edgesAppearancePresenter expand: true;
-		  add: itemsAppearancePresenter
-		  expand: false
-		  fill: false
-		  padding: 10;
+		  add: itemsAppearancePresenter expand: false;
 		  add: colorsAppearancePresenter height: 200;
 		  add: 'コメント' expand: false;
 		  add: commentText;
@@ -1642,7 +1639,7 @@ Golap >> retrievePhotoimages [
 			self updateGlobalImage ]
 ]
 
-{ #category : 'layout' }
+{ #category : 'layouts' }
 Golap >> rightPaneLayout [
 
 	^ SpBoxLayout newVertical
