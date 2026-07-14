@@ -54,24 +54,15 @@ GolapNode >> addScore: aNumber node: aGolapNode [
 { #category : 'enumerating' }
 GolapNode >> allEdgesAndNodesDo: aBlock [
 
-	edges do: [ :edge | aBlock value: edge value: (edge peerOf: self) ].
-	positivePolishEdges do: [ :edge |
+	self allEdgesDo: [ :edge |
 		aBlock value: edge value: (edge peerOf: self) ]
 ]
 
 { #category : 'enumerating' }
-GolapNode >> argmaxEdge: aBlock [
+GolapNode >> allEdgesDo: aBlock [
 
-	| max argmax |
-	max := Float negativeInfinity.
-	argmax := nil.
-	self edgesDo: [ :edge |
-			| value |
-			value := aBlock value: edge.
-			value > max ifTrue: [
-					argmax := edge.
-					max := value ] ].
-	^ argmax
+	edges do: [ :edge | aBlock value: edge ].
+	positivePolishEdges do: [ :edge | aBlock value: edge ]
 ]
 
 { #category : 'accessing' }

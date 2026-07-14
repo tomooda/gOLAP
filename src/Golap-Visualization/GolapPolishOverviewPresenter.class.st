@@ -149,9 +149,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                            yourself.
 	layoutButton := self newButton
 		                label: ' 再配置 ';
-		                action: [
-				                golap model friendsEdges: golap model nodes size.
-				                self updateNodePositions ];
+		                action: [ self updateNodePositions ];
 		                yourself
 ]
 

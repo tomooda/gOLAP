@@ -33,9 +33,10 @@ GolapArticulationPointOverviewPresenter >> articulationPointChanged [
 { #category : 'accessing' }
 GolapArticulationPointOverviewPresenter >> availableEdges [
 
-	^ (self golapModelDo: [ :golapModel |
-		   golapModel friendsEdges: friendsRankField number ]) ifNil: [
-		  Array new ]
+	self golapModelDo: [ :golapModel |
+			^ Array streamContents: [ :stream |
+				  golapModel edgesDo: [ :edge | stream nextPut: edge ] ] ].
+	^ Array new
 ]
 
 { #category : 'accessing' }
@@ -104,26 +105,10 @@ GolapArticulationPointOverviewPresenter >> ensureIslandNodeSets [
 			  islandNodeSets ]
 ]
 
-{ #category : 'updating' }
-GolapArticulationPointOverviewPresenter >> friendsRankChanged [
-
-	self golapModelDo: [ :golapModel |
-		golapModel friendsEdges: friendsRankField number ].
-	self updateCanvas
-]
-
 { #category : 'initialization' }
 GolapArticulationPointOverviewPresenter >> initializePresenters [
 
 	super initializePresenters.
-	friendsRankField := self newNumberInput
-		                    beInteger;
-		                    placeholder: 'フレンドランク数';
-		                    minimum: 1;
-		                    number: 5;
-		                    autoAccept: true;
-		                    whenNumberChangedDo: [ self friendsRankChanged ];
-		                    yourself.
 	minimumIslandSizeField := self newNumberInput
 		                          beInteger;
 		                          placeholder: '島の最小サイズ';
@@ -135,13 +120,7 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 		                          yourself.
 	layoutButton := self newButton
 		                label: ' 再配置 ';
-		                action: [
-				                golap
-					                updateGlobalImageAfter: [
-						                golap model friendsEdges:
-								                friendsRankField number ]
-					                layout: false.
-				                self updateNodePositions ];
+		                action: [ self updateNodePositions ];
 		                yourself.
 	articulationPointList := self newTable
 		                         hideColumnHeaders;

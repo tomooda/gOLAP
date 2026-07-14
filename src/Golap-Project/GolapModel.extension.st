@@ -42,6 +42,5 @@ GolapModel >> fromJSON: aDictionary [
 						                   GolapDataAggregator fromJSON: json ] ].
 	baseGraph := GolapBaseGraph fromJSON: aDictionary.
 	polisher := GolapPolisher fromJSON: aDictionary.
-	self updateNodesAndEdges.
-	friendsRank := 5
+	self updateNodesAndEdges
 ]

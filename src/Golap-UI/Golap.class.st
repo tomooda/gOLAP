@@ -1126,7 +1126,6 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 							when: GolapModelChangedAnnouncement
 							send: #updatePhotoimages
 							to: self.
-						model flushFriendsEdges.
 						self unselectAll.
 						edgesAppearancePresenter updateModel: model.
 						itemList updateItemsList ]

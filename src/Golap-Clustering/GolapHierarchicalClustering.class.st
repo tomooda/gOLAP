@@ -23,47 +23,46 @@ GolapHierarchicalClustering class >> on: aGolapModel [
 { #category : 'private' }
 GolapHierarchicalClustering >> computeTrees [
 
-	| treeByNode nextTreeMap stream odds evens |
+	| treeByNode nextTreeMap edgeRanks stream odds evens |
 	treeByNode := IdentityDictionary new: golapModel nodes size.
 	trees do: [ :tree |
 		tree idsDo: [ :id |
 			treeByNode at: (golapModel nodeAt: id) put: tree ] ].
 	nextTreeMap := IdentityDictionary new: trees size.
 	trees do: [ :tree |
-		nextTreeMap
-			at: tree
-			put: (GolapHierarchicalClusteringNode with: tree rank: rank) ].
+			nextTreeMap
+				at: tree
+				put: (GolapHierarchicalClusteringNode with: tree rank: rank) ].
+	edgeRanks := IdentityDictionary new.
 	trees do: [ :tree |
-		| doneIds |
-		doneIds := (nextTreeMap at: tree) asArray asIdentitySet.
-		tree idsDo: [ :id |
-			self friendsOf: (golapModel nodeAt: id) do: [ :friend |
-				(doneIds includes: friend id) ifFalse: [
-					| friendTree myNextTree obsoleteNextTree |
-					friendTree := treeByNode at: friend.
-					myNextTree := nextTreeMap at: tree.
-					obsoleteNextTree := nextTreeMap at: friendTree.
-					obsoleteNextTree idsDo: [ :obsoleteId | doneIds add: obsoleteId ].
-					myNextTree merge: obsoleteNextTree.
-					(nextTreeMap keys select: [ :key |
-						 (nextTreeMap at: key) == obsoleteNextTree ]) do: [ :key |
-						nextTreeMap at: key put: myNextTree ] ] ] ] ].
+			| doneIds |
+			doneIds := (nextTreeMap at: tree) asArray asIdentitySet.
+			tree idsDo: [ :id |
+					| node |
+					node := golapModel nodeAt: id.
+					node edgesDo: [ :edge |
+							(edgeRanks at: edge ifAbsentPut: [ edge rankIn: golapModel ]) <= rank ifTrue: [
+									| friend |
+									friend := edge peerOf: node.
+									(doneIds includes: friend id) ifFalse: [
+											| friendTree myNextTree obsoleteNextTree |
+											friendTree := treeByNode at: friend.
+											myNextTree := nextTreeMap at: tree.
+											obsoleteNextTree := nextTreeMap at: friendTree.
+											obsoleteNextTree idsDo: [ :obsoleteId |
+												doneIds add: obsoleteId ].
+											myNextTree merge: obsoleteNextTree.
+											(nextTreeMap keys select: [ :key |
+												 (nextTreeMap at: key) == obsoleteNextTree ]) do: [ :key |
+												nextTreeMap at: key put: myNextTree ] ] ] ] ] ].
 	stream := (nextTreeMap values asIdentitySet asArray sorted:
 		           #score descending) readStream.
 	odds := OrderedCollection new: (nextTreeMap size / 2) ceiling.
 	evens := OrderedCollection new: (nextTreeMap size / 2) ceiling.
 	[ stream atEnd ] whileFalse: [
-		odds add: stream next.
-		stream atEnd ifFalse: [ evens add: stream next ] ].
+			odds add: stream next.
+			stream atEnd ifFalse: [ evens add: stream next ] ].
 	^ evens reverse , odds
-]
-
-{ #category : 'enumerating' }
-GolapHierarchicalClustering >> friendsOf: aGolapNode do: aBlock [
-
-	aGolapNode edgesDo: [ :edge |
-		(golapModel rankAtEdge: edge) <= rank ifTrue: [
-			aBlock value: (edge peerOf: aGolapNode) ] ]
 ]
 
 { #category : 'initialization' }

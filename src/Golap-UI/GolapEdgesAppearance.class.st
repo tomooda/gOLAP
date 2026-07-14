@@ -91,10 +91,7 @@ GolapEdgesAppearance >> edgeEvaluator: aGolapEdgeEvaluator [
 			golap model ifNotNil: [ :model |
 					self updateGlobalImageAfter: [
 							model edgeEvaluator: aGolapEdgeEvaluator.
-							model flushFriendsEdges.
 							golap updateQuery.
-							nodeEvaluatorList withAdapterDo: [ :a |
-								a widgetDo: [ :w | w updateContents ] ].
 							golap updateModel ] ] ]
 ]
 

@@ -5,8 +5,6 @@ Class {
 		'edgeEvaluators',
 		'edgeEvaluator',
 		'friend',
-		'friendsEdges',
-		'friendsRank',
 		'positivePolishEdges',
 		'negativePolishEdges',
 		'edgeAggregators',
@@ -115,20 +113,20 @@ GolapModel >> applyEdgeEvaluators [
 { #category : 'updating' }
 GolapModel >> applyFriend [
 
-	(friend isInteger and: [ friend > 0 ]) ifTrue: [
-			| edgesToRemove |
-			edgesToRemove := IdentitySet new.
-			nodes do: [ :node |
-					| edges friends |
-					edges := IdentitySet new.
-					friends := SortedCollection sortUsing: #value descending.
-					node allEdgesAndNodesDo: [ :e :n |
-							edges add: e.
-							friends add: e -> (self valueAtEdge: e).
-							friends size > friend ifTrue: [ friends removeLast ] ].
-					edges removeAll: (friends collect: #key).
-					edgesToRemove addAll: edges ].
-			edgesToRemove do: [ :edge | edge remove ] ]
+	| edgesToRemove |
+	(friend isInteger and: [ friend > 0 ]) ifFalse: [ ^ self ].
+	edgesToRemove := IdentitySet new.
+	nodes do: [ :node |
+			| edges friends |
+			edges := IdentitySet new.
+			friends := SortedCollection sortUsing: #value descending.
+			node allEdgesDo: [ :e |
+					edges add: e.
+					friends add: e -> (self valueAtEdge: e).
+					friends size > friend ifTrue: [ friends removeLast ] ].
+			edges removeAll: (friends collect: #key).
+			edgesToRemove addAll: edges ].
+	edgesToRemove do: [ :edge | edge remove ]
 ]
 
 { #category : 'updating' }
@@ -167,17 +165,6 @@ GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
 		          edges: aCollectionOfGolapEdge;
 		          yourself.
 	finder articulationPoints do: aBlock
-]
-
-{ #category : 'private' }
-GolapModel >> computeFriendsEdges: anInteger [
-
-	| edges |
-	edges := IdentitySet new.
-	self nodesDo: [ :node |
-		node edgesDo: [ :edge |
-			(self rankAtEdge: edge) <= anInteger ifTrue: [ edges add: edge ] ] ].
-	^ edges asArray
 ]
 
 { #category : 'updating' }
@@ -355,48 +342,11 @@ GolapModel >> edgesDo: aBlock [
 							aBlock value: edge ] ] ]
 ]
 
-{ #category : 'private' }
-GolapModel >> flushEdgeRanks [
-
-	edgeRanks removeAll
-]
-
-{ #category : 'accessing' }
-GolapModel >> flushFriendsEdges [
-
-	friendsEdges := nil
-]
-
 { #category : 'accessing' }
 GolapModel >> friend: anIntegerOrNil [
 
 	friend := anIntegerOrNil.
 	self updateNodesAndEdges
-]
-
-{ #category : 'accessing' }
-GolapModel >> friendsEdges [
-	^ self friendsEdges: self friendsRank
-]
-
-{ #category : 'accessing' }
-GolapModel >> friendsEdges: anInteger [
-
-	| num |
-	anInteger ifNil: [
-		friendsEdges := nil.
-		friendsRank := nil.
-		^ Array new ].
-	num := anInteger asInteger max: 1.
-	friendsRank ~= num ifTrue: [ friendsEdges := nil ].
-	^ friendsEdges ifNil: [
-		  friendsRank := num.
-		  friendsEdges := self computeFriendsEdges: friendsRank ]
-]
-
-{ #category : 'accessing' }
-GolapModel >> friendsRank [
-	^ friendsRank
 ]
 
 { #category : 'accessing' }
@@ -440,10 +390,8 @@ GolapModel >> initialize [
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
 	polisher := GolapPolisher new.
-	friendsRank := 5.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
-	edgeRanks := IdentityDictionary new.
 	referenceNodes := OrderedCollection new
 ]
 
@@ -600,12 +548,6 @@ GolapModel >> postCopy [
 	negativePolishEdges := negativePolishEdges copy
 ]
 
-{ #category : 'accessing' }
-GolapModel >> rankAtEdge: aGolapEdge [
-
-	^ edgeRanks at: aGolapEdge ifAbsentPut: [ aGolapEdge rankIn: self ]
-]
-
 { #category : 'private' }
 GolapModel >> readEdgeDataframe: edgeDataframe idColumn: aString and: anotherString [
 
@@ -738,14 +680,6 @@ GolapModel >> unmergeNode: aGolapNode [
 ]
 
 { #category : 'updating' }
-GolapModel >> updateFriends [
-
-	self
-		flushEdgeRanks;
-		flushFriendsEdges
-]
-
-{ #category : 'updating' }
 GolapModel >> updateNodesAndEdges [
 
 	self constructFromBaseGraph.
@@ -753,7 +687,6 @@ GolapModel >> updateNodesAndEdges [
 	self applyNodeEvaluators.
 	self applyFriend.
 	polisher applyTo: self.
-	self updateFriends.
 	self announceGraphChanged
 ]
 
