@@ -12,36 +12,30 @@ Class {
 	#tag : 'Retriever'
 }
 
-{ #category : 'layout' }
-GolapGooglePhotoImageRetrieverPresenter class >> defaultLayout [
-
-	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   vAlignCenter;
-				   add: 'CSE ID' width: 100;
-				   add: #cseidField;
-				   yourself)
-		  expand: false;
-		  add: (SpBoxLayout newHorizontal
-				   vAlignCenter;
-				   add: 'API Key' width: 100;
-				   add: #apikeyField;
-				   yourself)
-		  expand: false;
-		  add: (SpBoxLayout newHorizontal
-				   vAlignCenter;
-				   add: '有効' width: 100;
-				   add: #enabledCheckbox;
-				   yourself)
-		  expand: false;
-		  yourself
-]
-
 { #category : 'instance creation' }
 GolapGooglePhotoImageRetrieverPresenter class >> on: aGolapGooglePhotoImageRetriever [
 
 	^ self new
 		  retriever: aGolapGooglePhotoImageRetriever;
+		  yourself
+]
+
+{ #category : 'layout' }
+GolapGooglePhotoImageRetrieverPresenter >> defaultLayout [
+
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   vAlignCenter;
+				   add: 'CSE ID' width: 100;
+				   add: cseidField;
+				   yourself)
+		  expand: false;
+		  add: (SpBoxLayout newHorizontal
+				   vAlignCenter;
+				   add: 'API Key' width: 100;
+				   add: apikeyField;
+				   yourself)
+		  expand: false;
 		  yourself
 ]
 
@@ -57,11 +51,7 @@ GolapGooglePhotoImageRetrieverPresenter >> initializePresenters [
 		               whenTextChangedDo: [ :text |
 			               retriever ifNotNil: [
 					               retriever apikey: (text trim ifEmpty: [ nil ]) ] ];
-		               yourself.
-	enabledCheckbox := self newCheckBox
-		                   whenChangedDo: [ :bool |
-			                   retriever ifNotNil: [ retriever enabled: bool ] ];
-		                   yourself
+		               yourself
 ]
 
 { #category : 'initialization' }
@@ -82,8 +72,7 @@ GolapGooglePhotoImageRetrieverPresenter >> retriever: aGolapPhotoImageRetriever 
 
 	retriever := aGolapPhotoImageRetriever.
 	cseidField text: (retriever cseid ifNil: [ '' ]).
-	apikeyField text: (retriever apikey ifNil: [ '' ]).
-	enabledCheckbox state: retriever enabled
+	apikeyField text: (retriever apikey ifNil: [ '' ])
 ]
 
 { #category : 'accessing' }

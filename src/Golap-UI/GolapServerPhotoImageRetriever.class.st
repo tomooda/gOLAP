@@ -89,7 +89,8 @@ GolapServerPhotoImageRetriever >> imageServerUrl: aString [
 { #category : 'testing' }
 GolapServerPhotoImageRetriever >> isAvailable [
 
-	^ golapServerUrl notNil and: [ imageServerUrl ] notNil
+	^ golapServerUrl notNil and: [
+		  imageServerUrl notNil and: [ self enabled ] ]
 ]
 
 { #category : 'enumerating' }

@@ -72,7 +72,7 @@ GolapAttributePhotoImageRetriever >> initialize [
 { #category : 'testing' }
 GolapAttributePhotoImageRetriever >> isAvailable [
 
-	^ availableColumns includes: photoColumn
+	^ (availableColumns includes: photoColumn) and: [ self enabled ]
 ]
 
 { #category : 'enumerating' }

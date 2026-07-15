@@ -9,7 +9,8 @@ Class {
 		'editRetrieverButton',
 		'moveUpRetrieverButton',
 		'moveDownRetrieverButton',
-		'golap'
+		'golap',
+		'clearImageCacheButton'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -59,6 +60,14 @@ GolapPhotoImageRetrieversPresenter >> buttonHeight [
 	^ self class buttonHeight
 ]
 
+{ #category : 'operations' }
+GolapPhotoImageRetrieversPresenter >> clearCache [
+
+	GolapPhotoImageRetriever clearCache.
+	self golapModelDo: [ :golapModel |
+		golapModel nodesDo: [ :node | node flushPhotoimage ] ]
+]
+
 { #category : 'layout' }
 GolapPhotoImageRetrieversPresenter >> defaultLayout [
 
@@ -72,6 +81,7 @@ GolapPhotoImageRetrieversPresenter >> defaultLayout [
 				   add: moveDownRetrieverButton width: self buttonHeight;
 				   yourself)
 		  expand: false;
+		  add: clearImageCacheButton expand: false;
 		  yourself
 ]
 
@@ -100,6 +110,12 @@ GolapPhotoImageRetrieversPresenter >> golap: aGolap [
 	golap := aGolap
 ]
 
+{ #category : 'accessing' }
+GolapPhotoImageRetrieversPresenter >> golapModelDo: aBlock [
+
+	(golap ifNotNil: #model) ifNotNil: aBlock
+]
+
 { #category : 'initialization' }
 GolapPhotoImageRetrieversPresenter >> initializePresenters [
 
@@ -107,9 +123,19 @@ GolapPhotoImageRetrieversPresenter >> initializePresenters [
 		                 addColumn:
 			                 (SpStringTableColumn evaluated: [ :retriever |
 					                  retriever shortDescription asString ]);
+		                 addColumn:
+			                 ((SpCheckBoxTableColumn evaluated: [ :retriever |
+					                   retriever enabled ])
+				                  onActivation: [ :retriever |
+						                  retriever enable.
+						                  retrieverList refresh ];
+				                  onDeactivation: [ :retriever |
+						                  retriever disable.
+						                  retrieverList refresh ];
+				                  width: 20);
 		                 hideColumnHeaders;
 		                 whenSelectedItemChangedDo: [
-			                 self selectedRetrieverChanged ];
+		                 self selectedRetrieverChanged ];
 		                 yourself.
 	addRetrieverButton := self newButton
 		                      icon: (self iconNamed: #add);
@@ -130,7 +156,12 @@ GolapPhotoImageRetrieversPresenter >> initializePresenters [
 	moveDownRetrieverButton := self newButton
 		                           icon: (self iconNamed: #down);
 		                           action: [ self moveDownRetriever ];
-		                           yourself
+		                           yourself.
+	clearImageCacheButton := self newButton
+		                         icon: (self iconNamed: #refreshCircling);
+		                         label: '画像キャッシュをクリア';
+		                         action: [ self clearCache ];
+		                         yourself
 ]
 
 { #category : 'accessing' }

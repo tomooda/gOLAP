@@ -1,10 +1,21 @@
 Class {
 	#name : 'GolapPhotoImageRetriever',
 	#superclass : 'Object',
+	#instVars : [
+		'enabled'
+	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
 	#tag : 'Retriever'
 }
+
+{ #category : 'accessing-cache' }
+GolapPhotoImageRetriever class >> cacheDirectory [
+
+	^ (self golapDirectory / 'imagecache')
+		  ensureCreateDirectory;
+		  yourself
+]
 
 { #category : 'accessing' }
 GolapPhotoImageRetriever class >> classForJSON: aDictionary [
@@ -17,10 +28,22 @@ GolapPhotoImageRetriever class >> classForJSON: aDictionary [
 	^ nil
 ]
 
+{ #category : 'utilities' }
+GolapPhotoImageRetriever class >> clearCache [
+
+	self cacheDirectory ensureDeleteAllChildren
+]
+
 { #category : 'instance creation' }
 GolapPhotoImageRetriever class >> for: aGolapItemInfoRetriever [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'accessing-cache' }
+GolapPhotoImageRetriever class >> golapDirectory [
+
+	^ Golap golapDirectory
 ]
 
 { #category : 'testing' }
@@ -76,10 +99,7 @@ GolapPhotoImageRetriever >> cacheAt: aString ifAbsentPut: errorBlock [
 
 { #category : 'accessing-cache' }
 GolapPhotoImageRetriever >> cacheDirectory [
-
-	^ (self golapDirectory / 'imagecache')
-		  ensureCreateDirectory;
-		  yourself
+	^ self class cacheDirectory
 ]
 
 { #category : 'private' }
@@ -95,9 +115,21 @@ GolapPhotoImageRetriever >> configPresenter [
 ]
 
 { #category : 'accessing' }
+GolapPhotoImageRetriever >> enabled [
+
+	^ enabled = true
+]
+
+{ #category : 'accessing' }
+GolapPhotoImageRetriever >> enabled: aBoolean [
+
+	enabled := aBoolean = true
+]
+
+{ #category : 'accessing' }
 GolapPhotoImageRetriever >> golapDirectory [
 
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
+	^ Golap golapDirectory
 ]
 
 { #category : 'testing' }
@@ -106,12 +138,11 @@ GolapPhotoImageRetriever >> hasConfigPresenter [
 	^ false
 ]
 
-{ #category : 'accessing-cache' }
-GolapPhotoImageRetriever >> imagecacheDirectory [
+{ #category : 'initialization' }
+GolapPhotoImageRetriever >> initialize [
 
-	^ (FileLocator documents / 'gOLAP' / 'imagecache')
-		  ensureCreateDirectory;
-		  yourself
+	super initialize.
+	enabled := true
 ]
 
 { #category : 'testing' }

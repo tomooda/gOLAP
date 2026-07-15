@@ -4,8 +4,7 @@ Class {
 	#instVars : [
 		'cseid',
 		'apikey',
-		'numImages',
-		'enabled'
+		'numImages'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -40,8 +39,7 @@ GolapGooglePhotoImageRetriever >> apikey: aString [
 GolapGooglePhotoImageRetriever >> commit: copy [
 
 	cseid := copy cseid.
-	apikey := copy apikey.
-	enabled := copy enabled
+	apikey := copy apikey
 ]
 
 { #category : 'user interface' }
@@ -63,15 +61,15 @@ GolapGooglePhotoImageRetriever >> cseid: aString [
 ]
 
 { #category : 'accessing' }
-GolapGooglePhotoImageRetriever >> enabled [
+GolapGooglePhotoImageRetriever >> disable [
 
-	^ enabled
+	^ self enabled: false
 ]
 
 { #category : 'accessing' }
-GolapGooglePhotoImageRetriever >> enabled: aBoolean [
+GolapGooglePhotoImageRetriever >> enable [
 
-	enabled := aBoolean
+	^ self enabled: true
 ]
 
 { #category : 'accessing' }
@@ -104,14 +102,13 @@ GolapGooglePhotoImageRetriever >> initialize [
 	super initialize.
 	cseid := self readCseid.
 	apikey := self readApikey.
-	numImages := 1.
-	enabled := false
+	numImages := 1
 ]
 
 { #category : 'testing' }
 GolapGooglePhotoImageRetriever >> isAvailable [
 
-	^ enabled and: [ cseid notNil and: [ apikey notNil ] ]
+	^ cseid notNil and: [ apikey notNil and: [ self enabled ] ]
 ]
 
 { #category : 'enumerating' }
@@ -179,9 +176,6 @@ GolapGooglePhotoImageRetriever >> retrieveImageNamed: aString [
 GolapGooglePhotoImageRetriever >> shortDescription [
 
 	^ 'Google検索' , (self isAvailable
-		   ifTrue: [
-			   enabled
-				   ifTrue: [ '' ]
-				   ifFalse: [ '(停止中)' ] ]
+		   ifTrue: [ '' ]
 		   ifFalse: [ ' (未設定)' ])
 ]

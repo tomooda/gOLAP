@@ -150,9 +150,10 @@ GolapCSVPhotoImageRetriever >> initializeWith: aGolapItemInfoRetriever [
 { #category : 'testing' }
 GolapCSVPhotoImageRetriever >> isAvailable [
 
-	^  dataframe notNil and: [
-(dataframe columnNames includes: idColumn)
-			  and: [  dataframe columnNames includes: photoColumn ] ]
+	^ dataframe notNil and: [
+			  (dataframe columnNames includes: idColumn) and: [
+				  (dataframe columnNames includes: photoColumn) and: [
+					  self enabled ] ] ]
 ]
 
 { #category : 'enumerating' }
@@ -209,9 +210,9 @@ GolapCSVPhotoImageRetriever >> retrieveImageNamed: aString [
 { #category : 'accessing' }
 GolapCSVPhotoImageRetriever >> shortDescription [
 
-	^ 'CSVファイル ' , (csvRef ifNil: [ '(未設定)' ] ifNotNil: #basename) , ' '
-	  , (idColumn ifNil: [ '(IDカラム未設定)' ]) , '->'
-	  , (photoColumn ifNil: [ '(画像カラム未設定)' ])
+	^ 'CSVファイル ' , (csvRef ifNil: [ '(未設定)' ] ifNotNil: [ :basename |
+			   basename , (idColumn isNil or: [ photoColumn isNil ]) ifTrue: [
+				   '(未設定)' ] ])
 ]
 
 { #category : 'updating' }
