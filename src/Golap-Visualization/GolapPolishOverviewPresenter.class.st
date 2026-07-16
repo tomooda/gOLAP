@@ -3,29 +3,36 @@ Class {
 	#superclass : 'GolapOverviewPresenter',
 	#instVars : [
 		'layoutButton',
-		'showsPolishEdgesCheckbox',
-		'polishRepeatsCheckbox',
-		'polishMinClusterSize',
-		'polishRemovalThresholdField',
-		'polishRemovalThresholdSlider',
-		'polishAdditionThresholdField',
-		'polishAdditionThresholdSlider'
+		'applyButton',
+		'fillerThresholdField',
+		'fillerThresholdSlider',
+		'minClusterSizeField',
+		'burrThresholdField',
+		'burrThresholdSlider',
+		'polisher',
+		'polishToConvergeCheckBox'
 	],
 	#category : 'Golap-Visualization-Polish',
 	#package : 'Golap-Visualization',
 	#tag : 'Polish'
 }
 
+{ #category : 'operations' }
+GolapPolishOverviewPresenter >> applyPolish [
+
+	self golapModelDo: [ :golapModel |
+			polisher applyTo: golapModel.
+			polisher reset.
+			self updateCanvas ]
+]
+
 { #category : 'accessing' }
 GolapPolishOverviewPresenter >> availableEdges [
 
 	^ Array streamContents: [ :stream |
 			  self golapModelDo: [ :golapModel |
-					  showsPolishEdgesCheckbox state
-						  ifTrue: [
-						  golapModel allEdgesDo: [ :edge | stream nextPut: edge ] ]
-						  ifFalse: [
-						  golapModel edgesDo: [ :edge | stream nextPut: edge ] ] ] ]
+				  golapModel edgesDo: [ :edge | stream nextPut: edge ] ].
+			  stream nextPutAll: polisher fillerEdges ]
 ]
 
 { #category : 'layout' }
@@ -35,29 +42,34 @@ GolapPolishOverviewPresenter >> defaultLayout [
 		  add: (SpBoxLayout newHorizontal
 				   vAlignCenter;
 				   add: (SpBoxLayout newVertical
+						    vAlignStart;
 						    add: '研磨' asPresenter expand: false;
-						    add: showsPolishEdgesCheckbox width: 100;
 						    yourself)
 				   expand: false;
 				   add: (SpBoxLayout newVertical
 						    add: (SpBoxLayout newHorizontal
 								     add: '最小関連数' expand: false;
-								     add: polishMinClusterSize width: 50;
+								     add: minClusterSizeField width: 50;
 								     yourself)
 						    expand: false;
-						    add: polishRepeatsCheckbox width: 100;
+						    add: polishToConvergeCheckBox width: 100;
 						    yourself)
 				   expand: false;
 				   add: (SpBoxLayout newVertical
-						    add: polishRemovalThresholdSlider expand: true;
-						    add: polishAdditionThresholdSlider expand: true;
+						    add: burrThresholdSlider expand: true;
+						    add: fillerThresholdSlider expand: true;
 						    yourself)
 				   expand: true;
 				   add: (SpBoxLayout newVertical
-						    add: polishRemovalThresholdField expand: false;
-						    add: polishAdditionThresholdField expand: false;
+						    add: burrThresholdField expand: false;
+						    add: fillerThresholdField expand: false;
 						    yourself)
 				   width: 50;
+				   add: (SpBoxLayout newVertical
+						    add: '研磨実行' asPresenter expand: false;
+						    add: applyButton expand: false;
+						    yourself)
+				   expand: false;
 				   add: (SpBoxLayout newVertical
 						    add: '更新' asPresenter expand: false;
 						    add: layoutButton expand: false;
@@ -70,144 +82,133 @@ GolapPolishOverviewPresenter >> defaultLayout [
 ]
 
 { #category : 'initialization' }
+GolapPolishOverviewPresenter >> initialize [
+
+	super initialize.
+	polisher := GolapPolisher new
+]
+
+{ #category : 'initialization' }
 GolapPolishOverviewPresenter >> initializePresenters [
 
 	super initializePresenters.
-	polishRepeatsCheckbox := self newCheckBox
+	polishToConvergeCheckBox := self newCheckBox
 		                         label: '繰り返し';
 		                         state: false;
-		                         whenChangedDo: [
-			                         self repeatsPolish:
-					                         polishRepeatsCheckbox state ];
+		                         whenChangedDo: [ self updateCanvas ];
 		                         yourself.
-	polishAdditionThresholdSlider := self newSlider
-		                                 label: '+研磨';
-		                                 min: 0.0;
-		                                 max: 1.0;
-		                                 value: 1.0;
-		                                 quantum: 0.01;
-		                                 whenValueChangedDo: [
-				                                 polishAdditionThresholdField
-					                                 number:
-						                                 polishAdditionThresholdSlider
-							                                 value ];
-		                                 borderWidth: 0;
-		                                 yourself.
-	polishAdditionThresholdField := self newNumberInput
-		                                beFloat;
-		                                placeholder: '+研磨';
-		                                minimum: 0.8;
-		                                maximum: 1.0;
-		                                number: 1.0;
-		                                whenNumberChangedDo: [
-				                                polishAdditionThresholdSlider
-					                                value:
-						                                polishAdditionThresholdField
-							                                number.
-				                                self polishAdditionThreshold:
-						                                polishAdditionThresholdField
-							                                number ].
-	polishRemovalThresholdSlider := self newSlider
-		                                label: '-研磨';
-		                                min: 0.0;
-		                                max: 0.2;
-		                                value: 0.0;
-		                                quantum: 0.01;
-		                                whenValueChangedDo: [
-			                                polishRemovalThresholdField
-				                                number:
-					                                polishRemovalThresholdSlider
-						                                value ];
-		                                borderWidth: 0;
-		                                yourself.
-	polishRemovalThresholdField := self newNumberInput
-		                               beFloat;
-		                               placeholder: '-研磨';
-		                               minimum: 0.0;
-		                               maximum: 0.2;
-		                               number: 0.0;
-		                               whenNumberChangedDo: [
-				                               polishRemovalThresholdSlider
-					                               value:
-						                               polishRemovalThresholdField
-							                               number.
-				                               self polishRemovalThreshold:
-						                               polishRemovalThresholdField
-							                               number ].
-	polishMinClusterSize := self newNumberInput
-		                        beInteger;
-		                        placeholder: '最小関連数';
-		                        minimum: 1;
-		                        number: 3;
+	fillerThresholdSlider := self newSlider
+		                         label: '+研磨';
+		                         min: 0.0;
+		                         max: 1.0;
+		                         value: 1.0;
+		                         quantum: 0.01;
+		                         whenValueChangedDo: [
+			                         fillerThresholdField number:
+					                         fillerThresholdSlider value ];
+		                         borderWidth: 0;
+		                         yourself.
+	fillerThresholdField := self newNumberInput
+		                        beFloat;
+		                        placeholder: '+研磨';
+		                        minimum: 0.8;
+		                        maximum: 1.0;
+		                        number: 1.0;
 		                        whenNumberChangedDo: [
-			                        self polishMinClusterSize:
-					                        polishMinClusterSize number ].
-	showsPolishEdgesCheckbox := self newCheckBox
-		                            label: '表示';
-		                            state: true;
-		                            whenChangedDo: [ self updateCanvas ];
-		                            yourself.
+				                        fillerThresholdSlider value:
+						                        fillerThresholdField number.
+				                        self updateCanvas ].
+	burrThresholdSlider := self newSlider
+		                       label: '-研磨';
+		                       min: 0.0;
+		                       max: 0.2;
+		                       value: 0.0;
+		                       quantum: 0.01;
+		                       whenValueChangedDo: [
+			                       burrThresholdField number:
+					                       burrThresholdSlider value ];
+		                       borderWidth: 0;
+		                       yourself.
+	burrThresholdField := self newNumberInput
+		                      beFloat;
+		                      placeholder: '-研磨';
+		                      minimum: 0.0;
+		                      maximum: 0.2;
+		                      number: 0.0;
+		                      whenNumberChangedDo: [
+				                      burrThresholdSlider value:
+						                      burrThresholdField number.
+				                      self updateCanvas ].
+	minClusterSizeField := self newNumberInput
+		                       beInteger;
+		                       placeholder: '最小関連数';
+		                       minimum: 1;
+		                       number: 3;
+		                       whenNumberChangedDo: [ self updateCanvas ].
+	applyButton := self newButton
+		               label: '適用';
+		               action: [ self applyPolish ];
+		               yourself.
 	layoutButton := self newButton
 		                label: ' 再配置 ';
 		                action: [ self updateNodePositions ];
 		                yourself
 ]
 
+{ #category : 'testing' }
+GolapPolishOverviewPresenter >> isBurrEdge: aGolapEdge [
+
+	^ polisher burrEdges includes: aGolapEdge
+]
+
+{ #category : 'testing' }
+GolapPolishOverviewPresenter >> isFillerEdge: aGolapEdge [
+
+	^ polisher fillerEdges includes: aGolapEdge
+]
+
 { #category : 'instance creation' }
 GolapPolishOverviewPresenter >> newShapeForEdge: aGolapEdge [
 
 	^ (super newShapeForEdge: aGolapEdge) ifNotNil: [ :line |
-			  showsPolishEdgesCheckbox state ifTrue: [
-					  aGolapEdge isPositivePolishEdge ifTrue: [
-						  line color: golap positivePolishColor ].
-					  aGolapEdge isNegativePolishEdge ifTrue: [
-							  line
-								  color: golap negativePolishColor;
-								  dashArray: #( 2 6 ) ] ].
+			  (self isFillerEdge: aGolapEdge) ifTrue: [
+				  line color: golap positivePolishColor ].
+			  (self isBurrEdge: aGolapEdge) ifTrue: [
+					  line
+						  color: golap negativePolishColor;
+						  dashArray: #( 2 6 ) ].
 			  line ]
-]
-
-{ #category : 'operations' }
-GolapPolishOverviewPresenter >> polishAdditionThreshold: aNumber [
-
-	golap updateGlobalImageAfter: [
-			golap model polishAdditionThreshold: aNumber.
-			golap announceGolapModelUpdated ]
-]
-
-{ #category : 'operations' }
-GolapPolishOverviewPresenter >> polishMinClusterSize: aNumber [
-
-	golap updateGlobalImageAfter: [
-			golap model polishMinClusterSize: aNumber.
-			golap announceGolapModelUpdated ]
-]
-
-{ #category : 'operations' }
-GolapPolishOverviewPresenter >> polishRemovalThreshold: aNumber [
-
-	golap updateGlobalImageAfter: [
-			golap model polishRemovalThreshold: aNumber.
-			golap announceGolapModelUpdated ]
 ]
 
 { #category : 'rendering' }
 GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 
 	super renderEdgesIn: aRSCanvas.
-	showsPolishEdgesCheckbox state ifTrue: [
-			aRSCanvas lines do: [ :line |
-					line parent ifNotNil: [
-							line model ifNotNil: [ :edge |
-								edge isPositivePolishEdge ifTrue: [ line pushFront ] ] ] ] ]
+	aRSCanvas lines do: [ :line |
+			line parent ifNotNil: [
+					line model ifNotNil: [ :edge |
+						edge isPositivePolishEdge ifTrue: [ line pushFront ] ] ] ]
 ]
 
-{ #category : 'operations' }
-GolapPolishOverviewPresenter >> repeatsPolish: aBoolean [
+{ #category : 'updating' }
+GolapPolishOverviewPresenter >> updateCanvas [
 
-	golap updateGlobalImageAfter: [
-			golap model repeatsPolish: aBoolean.
-			golap announceGolapModelUpdated ]
+	polisher reset.
+	self golapModelDo: [ :golapModel |
+			polishToConvergeCheckBox state
+				ifTrue: [
+						polisher
+							fitToConverge: golapModel
+							fillerThreshold: fillerThresholdField number
+							burrThreshold: burrThresholdField number
+							minClusterSize: minClusterSizeField number ]
+				ifFalse: [
+						polisher
+							fit: golapModel
+							fillerThreshold: fillerThresholdField number
+							burrThreshold: burrThresholdField number
+							minClusterSize: minClusterSizeField number ] ].
+	super updateCanvas
 ]
 
 { #category : 'updating' }

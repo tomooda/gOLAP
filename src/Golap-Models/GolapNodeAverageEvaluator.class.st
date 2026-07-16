@@ -15,7 +15,7 @@ GolapNodeAverageEvaluator class >> subtag [
 { #category : 'evaluating' }
 GolapNodeAverageEvaluator >> aggregation [
 
-	^ #average
+	^ [ :collection | collection average asFloat ]
 ]
 
 { #category : 'accessing' }

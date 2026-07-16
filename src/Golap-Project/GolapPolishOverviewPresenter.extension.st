@@ -4,11 +4,10 @@ Extension { #name : 'GolapPolishOverviewPresenter' }
 GolapPolishOverviewPresenter >> asJSON [
 
 	^ super asJSON
-		  at: 'polishIteration' put: polishRepeatsCheckbox state;
-		  at: 'positivePolish' put: polishAdditionThresholdField number;
-		  at: 'negativePolish' put: polishRemovalThresholdField number;
-		  at: 'polishMinDenominator' put: polishMinClusterSize number;
-		  at: 'showsPolishEdges' put: showsPolishEdgesCheckbox state;
+		  at: 'polishToConverge' put: polishToConvergeCheckBox state;
+		  at: 'fillerThreshold' put: fillerThresholdField number;
+		  at: 'burrThreshold' put: burrThresholdField number;
+		  at: 'minClusterSize' put: minClusterSizeField number;
 		  yourself
 ]
 
@@ -17,15 +16,13 @@ GolapPolishOverviewPresenter >> fromJSON: aDictionary [
 
 	super fromJSON: aDictionary.
 	aDictionary
-		at: 'polishIteration'
-		ifPresent: [ :bool | polishRepeatsCheckbox state: bool ];
-		at: 'positivePolish'
-		ifPresent: [ :number | polishAdditionThresholdField number: number ];
-		at: 'negativePolish'
-		ifPresent: [ :number | polishRemovalThresholdField number: number ];
-		at: 'polishMinDenominator'
-		ifPresent: [ :integer | polishMinClusterSize number: integer ];
-		at: 'showsPolishEdges'
-		ifPresent: [ :bool | showsPolishEdgesCheckbox state: bool ].
+		at: 'polishToConverge'
+		ifPresent: [ :bool | polishToConvergeCheckBox state: bool ];
+		at: 'fillerThreshold'
+		ifPresent: [ :number | fillerThresholdField number: number ];
+		at: 'burrThreshold'
+		ifPresent: [ :number | burrThresholdField number: number ];
+		at: 'minClusterSize'
+		ifPresent: [ :integer | minClusterSizeField number: integer ].
 	self updateGraph
 ]

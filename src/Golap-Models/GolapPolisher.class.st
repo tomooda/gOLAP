@@ -14,7 +14,7 @@ Class {
 GolapPolisher >> applyTo: aGolapModel [
 
 	burrEdges do: [ :edge | edge remove ].
-	fillerEdges do: [ :edge | edge apply ]
+	fillerEdges do: [ :edge | edge attach ]
 ]
 
 { #category : 'enumerating' }
