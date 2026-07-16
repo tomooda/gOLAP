@@ -389,7 +389,7 @@ GolapModel >> initialize [
 	super initialize.
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
-	polisher := GolapPolisher new.
+	polisher := GolapOldPolisher new.
 	positivePolishEdges := IdentitySet new.
 	negativePolishEdges := IdentitySet new.
 	referenceNodes := OrderedCollection new

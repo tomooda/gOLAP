@@ -41,6 +41,6 @@ GolapModel >> fromJSON: aDictionary [
 				edgeAggregators := array collect: [ :json |
 						                   GolapDataAggregator fromJSON: json ] ].
 	baseGraph := GolapBaseGraph fromJSON: aDictionary.
-	polisher := GolapPolisher fromJSON: aDictionary.
+	polisher := GolapOldPolisher fromJSON: aDictionary.
 	self updateNodesAndEdges
 ]

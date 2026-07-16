@@ -42,6 +42,13 @@ GolapEdge >> at: aString put: anObject [
 ]
 
 { #category : 'operations' }
+GolapEdge >> attach [
+
+	node1 ifNotNil: [ :v | v addEdge: self ].
+	node2 ifNotNil: [ :v | v addEdge: self ]
+]
+
+{ #category : 'operations' }
 GolapEdge >> basicReplaceNode: aGolapNode1 with: aGolapNode2 [
 	node1 == aGolapNode1
 		ifTrue: [ node1 := aGolapNode2.
@@ -72,6 +79,13 @@ GolapEdge >> diff: aGolapEdge [
 GolapEdge >> hasNode: aGolapNode [
 
 	^ node1 == aGolapNode or: [ node2 == aGolapNode ]
+]
+
+{ #category : 'testing' }
+GolapEdge >> hasNode: aGolapNode and: anotherGolapNode [
+
+	^ (node1 == aGolapNode and: [ node2 == anotherGolapNode ]) or: [
+		  node1 == anotherGolapNode and: [ node2 == aGolapNode ] ]
 ]
 
 { #category : 'testing' }

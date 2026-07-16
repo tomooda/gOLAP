@@ -5,9 +5,9 @@ Class {
 		'data',
 		'name'
 	],
-	#category : 'Golap-Models-Graph',
+	#category : 'Golap-Models-Base-Graph',
 	#package : 'Golap-Models',
-	#tag : 'Graph'
+	#tag : 'Base-Graph'
 }
 
 { #category : 'instance creation' }

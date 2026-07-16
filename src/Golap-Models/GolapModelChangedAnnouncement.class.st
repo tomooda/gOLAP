@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'golapModel'
 	],
-	#category : 'Golap-Models-Graph',
+	#category : 'Golap-Models-Announcement',
 	#package : 'Golap-Models',
-	#tag : 'Graph'
+	#tag : 'Announcement'
 }
 
 { #category : 'instance creation' }

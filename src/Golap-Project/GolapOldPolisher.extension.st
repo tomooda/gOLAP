@@ -1,7 +1,7 @@
-Extension { #name : 'GolapPolisher' }
+Extension { #name : 'GolapOldPolisher' }
 
 { #category : '*Golap-Project' }
-GolapPolisher class >> fromJSON: aDictionary [
+GolapOldPolisher class >> fromJSON: aDictionary [
 
 	^ self new
 		  fromJSON: aDictionary;
@@ -9,7 +9,7 @@ GolapPolisher class >> fromJSON: aDictionary [
 ]
 
 { #category : '*Golap-Project' }
-GolapPolisher >> fromJSON: aDictionary [
+GolapOldPolisher >> fromJSON: aDictionary [
 
 	aDictionary
 		at: 'polish-repeats' ifPresent: [ :bool | repeats := bool ];
@@ -22,7 +22,7 @@ GolapPolisher >> fromJSON: aDictionary [
 ]
 
 { #category : '*Golap-Project' }
-GolapPolisher >> toJSON: aDictionary [
+GolapOldPolisher >> toJSON: aDictionary [
 
 	aDictionary
 		at: 'polish-repeats' put: repeats;

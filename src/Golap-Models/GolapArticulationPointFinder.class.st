@@ -8,9 +8,9 @@ Class {
 		'lows',
 		'articulationPointsAndOrders'
 	],
-	#category : 'Golap-Models-Graph',
+	#category : 'Golap-Models-Analysis',
 	#package : 'Golap-Models',
-	#tag : 'Graph'
+	#tag : 'Analysis'
 }
 
 { #category : 'examples' }

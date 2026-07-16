@@ -141,11 +141,17 @@ GolapNode >> diff: aGolapNode [
 ]
 
 { #category : 'accessing' }
-GolapNode >> edgeTo: aGolapNode ifAbsent: errorBlock [
+GolapNode >> edgeTo: aGolapNode [
 
 	self edgesAndNodeDo: [ :edge :node |
 		aGolapNode == node ifTrue: [ ^ edge ] ].
-	^ errorBlock value
+	^ nil
+]
+
+{ #category : 'accessing' }
+GolapNode >> edgeTo: aGolapNode ifAbsent: errorBlock [
+
+	^ (self edgeTo: aGolapNode) ifNil: errorBlock
 ]
 
 { #category : 'accessing' }
