@@ -2060,6 +2060,7 @@ Golap >> updateModel [
 	self isUpdateModelBlocked ifTrue: [ ^ self ].
 	itemList updateItemsList.
 	edgeList modelChanged.
+	edgesAppearancePresenter refreshEvaluatorList.
 	self
 		updatePhotoimages;
 		startPhotoimageRetrievingProcess.

@@ -5,18 +5,14 @@ Class {
 		'edgeEvaluators',
 		'edgeEvaluator',
 		'friend',
-		'positivePolishEdges',
-		'negativePolishEdges',
 		'edgeAggregators',
 		'nodeAggregators',
 		'nodeEvaluators',
 		'nodeEvaluator',
 		'nodes',
-		'edgeRanks',
 		'referenceNodes',
 		'baseGraph',
-		'merge',
-		'polisher'
+		'merge'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -62,32 +58,16 @@ GolapModel class >> stringColumns [
 { #category : 'arithmetics' }
 GolapModel >> - aGolapModel [
 
-	^ self copy diff: aGolapModel
-]
-
-{ #category : 'polishing' }
-GolapModel >> addNegativePolishEdge: aGolapEdge [
-
-	^ negativePolishEdges add: aGolapEdge
-]
-
-{ #category : 'polishing' }
-GolapModel >> addPositivePolishEdge: aGolapEdge [
-
-	^ positivePolishEdges add: aGolapEdge
+	| diff |
+	diff := self shallowCopy.
+	diff baseGraph: diff baseGraph - aGolapModel baseGraph.
+	^ diff
 ]
 
 { #category : 'accessing-reference nodes' }
 GolapModel >> addReferenceNode: aGolapNode [
 
 	referenceNodes addLast: aGolapNode id
-]
-
-{ #category : 'enumerating' }
-GolapModel >> allEdgesDo: aBlock [
-
-	self edgesDo: aBlock.
-	negativePolishEdges do: aBlock
 ]
 
 { #category : 'announcements' }
@@ -120,7 +100,7 @@ GolapModel >> applyFriend [
 			| edges friends |
 			edges := IdentitySet new.
 			friends := SortedCollection sortUsing: #value descending.
-			node allEdgesDo: [ :e |
+			node edgesDo: [ :e |
 					edges add: e.
 					friends add: e -> (self valueAtEdge: e).
 					friends size > friend ifTrue: [ friends removeLast ] ].
@@ -165,6 +145,18 @@ GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
 		          edges: aCollectionOfGolapEdge;
 		          yourself.
 	finder articulationPoints do: aBlock
+]
+
+{ #category : 'accessing' }
+GolapModel >> baseGraph [
+
+	^ baseGraph
+]
+
+{ #category : 'accessing' }
+GolapModel >> baseGraph: aGolapBaseGraph [
+
+	baseGraph := aGolapBaseGraph
 ]
 
 { #category : 'updating' }
@@ -216,8 +208,8 @@ GolapModel >> constructFromBaseGraph [
 			newNodes at: rootPair first ifPresent: [ :node1 |
 					newNodes at: rootPair second ifPresent: [ :node2 |
 							(data at: 'effective' ifAbsent: [ 1 ]) <= 0
-								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data ]
-								ifFalse: [ node1 createEdgeTo: node2 data: data ] ] ] ].
+								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data copy ]
+								ifFalse: [ node1 createEdgeTo: node2 data: data copy ] ] ] ].
 	nodes := newNodes
 ]
 
@@ -389,9 +381,6 @@ GolapModel >> initialize [
 	super initialize.
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
-	polisher := GolapOldPolisher new.
-	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new.
 	referenceNodes := OrderedCollection new
 ]
 
@@ -514,38 +503,16 @@ GolapModel >> nodesDo: aBlock [
 		aBlock cull: (nodes at: id) cull: id ]
 ]
 
-{ #category : 'polishing' }
-GolapModel >> polishAdditionThreshold: aNumber [
-
-	polisher additionThreshold: aNumber.
-	self updateNodesAndEdges
-]
-
-{ #category : 'polishing' }
-GolapModel >> polishMinClusterSize: anInteger [
-
-	polisher minClusterSize: anInteger.
-	self updateNodesAndEdges
-]
-
-{ #category : 'polishing' }
-GolapModel >> polishRemovalThreshold: aNumber [
-
-	polisher removalThreshold: aNumber.
-	self updateNodesAndEdges
-]
-
 { #category : 'copying' }
 GolapModel >> postCopy [
 
 	super postCopy.
+	baseGraph := baseGraph copy.
 	nodeEvaluator := nodeEvaluator ifNotNil: #copy.
 	edgeEvaluator := edgeEvaluator ifNotNil: #copy.
 	nodeAggregators := nodeAggregators ifNotNil: #copy.
 	edgeAggregators := edgeAggregators ifNotNil: #copy.
-	self updateNodesAndEdges.
-	positivePolishEdges := positivePolishEdges copy.
-	negativePolishEdges := negativePolishEdges copy
+	self updateNodesAndEdges
 ]
 
 { #category : 'private' }
@@ -605,54 +572,10 @@ GolapModel >> referenceNodesSize [
 	^ referenceNodes size
 ]
 
-{ #category : 'polishing' }
-GolapModel >> removeNegativePolishEdge: aGolapEdge [
-
-	^ negativePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
-]
-
-{ #category : 'polishing' }
-GolapModel >> removeNegativePolishEdgeBetween: aGolapNode1 and: aGolapNode2 [
-
-	^ (aGolapNode1 negativePolishEdgeWith: aGolapNode2) ifNotNil: [ :edge |
-		  aGolapNode1 removeNegativePolishEdge: edge.
-		  aGolapNode2 removeNegativePolishEdge: edge.
-		  self removeNegativePolishEdge: edge.
-		  edge ]
-]
-
-{ #category : 'polishing' }
-GolapModel >> removePositivePolishEdge: aGolapEdge [
-
-	^ positivePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
-]
-
-{ #category : 'polishing' }
-GolapModel >> removePositivePolishEdgeBetween: aGolapNode1 and: aGolapNode2 [
-
-	positivePolishEdges do: [ :edge |
-			((aGolapNode1 == edge node1 and: [ aGolapNode2 == edge node2 ])
-				 or: [
-				 aGolapNode1 == edge node2 and: [ aGolapNode2 == edge node1 ] ])
-				ifTrue: [
-						aGolapNode1 removePositivePolishEdge: edge.
-						aGolapNode2 removePositivePolishEdge: edge.
-						self removePositivePolishEdge: edge.
-						^ edge ] ].
-	^ nil
-]
-
 { #category : 'accessing-reference nodes' }
 GolapModel >> removeReferenceNode: aGolapNode [
 
 	referenceNodes remove: aGolapNode id ifAbsent: [ ]
-]
-
-{ #category : 'polishing' }
-GolapModel >> repeatsPolish: aBoolean [
-
-	polisher repeats: aBoolean.
-	self updateNodesAndEdges
 ]
 
 { #category : 'merging' }
@@ -686,7 +609,6 @@ GolapModel >> updateNodesAndEdges [
 	self applyEdgeEvaluators.
 	self applyNodeEvaluators.
 	self applyFriend.
-	polisher applyTo: self.
 	self announceGraphChanged
 ]
 

@@ -28,31 +28,6 @@ GolapCSVPairPresenter class >> defaultBasepath [
 	^ (FileLocator documents / 'gOLAP') asFileReference
 ]
 
-{ #category : 'layout' }
-GolapCSVPairPresenter class >> defaultLayout [
-
-	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   add: 'ベースフォルダ' expand: false;
-				   add: #basepathField expand: true;
-				   add: #changeBasepathButton expand: false)
-		  expand: false;
-		  add: (SpBoxLayout newHorizontal
-				   add: (SpBoxLayout newVertical
-						    add: 'アイテムCSV' expand: false;
-						    add: #nodeCSVList expand: true)
-				   expand: true;
-				   add: (SpBoxLayout newVertical
-						    add: '関連性CSV' expand: false;
-						    add: #edgeCSVList expand: true)
-				   expand: true)
-		  expand: true;
-		  add: (SpBoxLayout newHorizontal
-				   add: 'ディメンジョン名' expand: false;
-				   add: #nameField expand: true)
-		  expand: false
-]
-
 { #category : 'accessing' }
 GolapCSVPairPresenter class >> flushLastBasepath [
 
@@ -102,6 +77,31 @@ GolapCSVPairPresenter >> changeBasepath [
 			basepathField text: ref absolutePath pathString.
 			self basepathChanged ];
 		open
+]
+
+{ #category : 'layout' }
+GolapCSVPairPresenter >> defaultLayout [
+
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: 'ベースフォルダ' expand: false;
+				   add: basepathField expand: true;
+				   add: changeBasepathButton expand: false)
+		  expand: false;
+		  add: (SpBoxLayout newHorizontal
+				   add: (SpBoxLayout newVertical
+						    add: 'アイテムCSV' expand: false;
+						    add: nodeCSVList expand: true)
+				   expand: true;
+				   add: (SpBoxLayout newVertical
+						    add: '関連性CSV' expand: false;
+						    add: edgeCSVList expand: true)
+				   expand: true)
+		  expand: true;
+		  add: (SpBoxLayout newHorizontal
+				   add: 'ディメンジョン名' expand: false;
+				   add: nameField expand: true)
+		  expand: false
 ]
 
 { #category : 'accessing' }

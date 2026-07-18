@@ -21,6 +21,21 @@ GolapBaseEdge class >> node1: aString node2: anotherString data: aDictionary [
 		  yourself
 ]
 
+{ #category : 'arithmetics' }
+GolapBaseEdge >> - aGolapBaseEdge [
+
+	| diff |
+	diff := self copy.
+	diff data ifNotNil: [ :diffData |
+			aGolapBaseEdge data ifNotNil: [ :subtrahendData |
+					subtrahendData keysAndValuesDo: [ :key :subtrahend |
+							subtrahend isNumber ifTrue: [
+								diffData
+									at: key
+									put: (diffData at: key ifAbsent: [ 0 ]) - subtrahend ] ] ] ].
+	^ diff
+]
+
 { #category : 'accessing' }
 GolapBaseEdge >> data [
 
@@ -31,6 +46,30 @@ GolapBaseEdge >> data [
 GolapBaseEdge >> data: aDataSeries [
 
 	data := aDataSeries
+]
+
+{ #category : 'accessing' }
+GolapBaseEdge >> key [
+
+	^ node1 < node2
+		  ifTrue: [
+				  {
+					  node1.
+					  node2 } ]
+		  ifFalse: [
+				  {
+					  node2.
+					  node1 } ]
+]
+
+{ #category : 'arithmetics' }
+GolapBaseEdge >> negated [
+
+	| negative |
+	negative := self shallowCopy.
+	negative data: (negative data collect: [ :value |
+			 value isNumber ifTrue: [ value negated ] ]).
+	^ negative
 ]
 
 { #category : 'accessing' }
@@ -55,4 +94,11 @@ GolapBaseEdge >> node2 [
 GolapBaseEdge >> node2: aString [
 
 	node2 := aString asString
+]
+
+{ #category : 'copying' }
+GolapBaseEdge >> postCopy [
+
+	super postCopy.
+	data := data copy
 ]

@@ -2,7 +2,6 @@ Class {
 	#name : 'GolapCSVLauncher',
 	#superclass : 'SpPresenter',
 	#instVars : [
-		'pairPresenter',
 		'pairsTable',
 		'addPairButton',
 		'removePairButton',
@@ -76,6 +75,8 @@ GolapCSVLauncher class >> open [
 { #category : 'operations' }
 GolapCSVLauncher >> addPair [
 
+	| pairPresenter |
+	pairPresenter := GolapCSVPairPresenter new.
 	pairPresenter openDialog okAction: [
 			| nodeFile edgeFile selection |
 			nodeFile := pairPresenter nodeCSVFileReference.
@@ -138,7 +139,6 @@ GolapCSVLauncher >> golapModelsAndNamesDo: aBlock [
 GolapCSVLauncher >> initializePresenters [
 
 	super initializePresenters.
-	pairPresenter := GolapCSVPairPresenter new.
 	pairsTable := self newTable
 		              addColumn: (SpStringTableColumn
 				               title: 'アイテムCSV'

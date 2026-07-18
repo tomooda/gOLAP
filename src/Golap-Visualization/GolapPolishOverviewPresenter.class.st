@@ -186,8 +186,7 @@ GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 	super renderEdgesIn: aRSCanvas.
 	aRSCanvas lines do: [ :line |
 			line parent ifNotNil: [
-					line model ifNotNil: [ :edge |
-						edge isPositivePolishEdge ifTrue: [ line pushFront ] ] ] ]
+					line model ifNotNil: [ :edge |(polisher fillerEdges includes: edge) ifTrue: [ line pushFront ] ] ] ]
 ]
 
 { #category : 'updating' }

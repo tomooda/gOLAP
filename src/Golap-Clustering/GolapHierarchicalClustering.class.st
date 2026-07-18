@@ -73,18 +73,18 @@ GolapHierarchicalClustering >> initializeWith: aGolapModel [
 	edges := OrderedCollection new.
 	done := IdentitySet new: golapModel nodes size.
 	golapModel nodesDo: [ :node |
-		done add: node.
-		node basicEdgesAndNodesDo: [ :edge :peer |
-			(done includes: peer) ifFalse: [
-				edges add: edge -> (golapModel valueAtEdge: edge) ] ] ].
+			done add: node.
+			node edgesAndNodeDo: [ :edge :peer |
+					(done includes: peer) ifFalse: [
+						edges add: edge -> (golapModel valueAtEdge: edge) ] ] ].
 	edges := (edges sorted: #value descending) collect: #key.
 	rank := 1.
 	trees := golapModel nodes asArray
 		         reject: #isIsolated
 		         thenCollect: [ :node |
-			         GolapHierarchicalClusteringLeaf
-				         id: node id
-				         score: (golapModel valueAtNode: node) ]
+				         GolapHierarchicalClusteringLeaf
+					         id: node id
+					         score: (golapModel valueAtNode: node) ]
 ]
 
 { #category : 'accessing' }

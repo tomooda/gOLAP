@@ -12,48 +12,84 @@ Class {
 { #category : 'running' }
 GolapModelTest >> setUp [
 
-	| v1 v2 v3 v4 v5 v6 |
-	model := GolapModel new.
-	v1 := model nodes at: 1 put: (model
-			       createNode:
-			       (DataSeries withKeys: { 'value' } values: { 10 } name: 1)
-			       name: 'v1').
-	v2 := model nodes at: 2 put: (model
-			       createNode:
-			       (DataSeries withKeys: { 'value' } values: { 20 } name: 2)
-			       name: 'v2').
-	v3 := model nodes at: 3 put: (model
-			       createNode:
-			       (DataSeries withKeys: { 'value' } values: { 30 } name: 3)
-			       name: 'v3').
-	v4 := model nodes at: 4 put: (model
-			       createNode:
-			       (DataSeries withKeys: { 'value' } values: { 40 } name: 4)
-			       name: 'v4').
-	v5 := model nodes at: 5 put: (model
-			       createNode:
-			       (DataSeries withKeys: { 'value' } values: { 50 } name: 5)
-			       name: 'v5').
-	v6 := model nodes at: 6 put: (model
-			       createNode:
-			       (DataSeries withKeys: { 'value' } values: { 60 } name: 6)
-			       name: 'v6').
-	v1
-		createEdgeTo: v2
-		data:
-		(DataSeries withKeys: { 'name'. 'value' } values: { 'e12'. 12 }).
-	v2
-		createEdgeTo: v3
-		data:
-		(DataSeries withKeys: { 'name'. 'value' } values: { 'e23'. 23 }).
-	v3
-		createEdgeTo: v1
-		data:
-		(DataSeries withKeys: { 'name'. 'value' } values: { 'e31'. 31 }).
-	v4
-		createEdgeTo: v5
-		data:
-		(DataSeries withKeys: { 'name'. 'value' } values: { 'e45'. 45 })
+	model := GolapModel fromJSON: {
+			         ('nodes' -> {
+				          {
+					          ('id' -> 1).
+					          ('name' -> 'v1').
+					          ('data'
+					           -> (DataSeries withKeys: { 'value' } values: { 10 })) }
+					          asDictionary.
+				          {
+					          ('id' -> 2).
+					          ('name' -> 'v2').
+					          ('data'
+					           -> (DataSeries withKeys: { 'value' } values: { 20 })) }
+					          asDictionary.
+				          {
+					          ('id' -> 3).
+					          ('name' -> 'v3').
+					          ('data'
+					           -> (DataSeries withKeys: { 'value' } values: { 30 })) }
+					          asDictionary.
+				          {
+					          ('id' -> 4).
+					          ('name' -> 'v4').
+					          ('data'
+					           -> (DataSeries withKeys: { 'value' } values: { 40 })) }
+					          asDictionary.
+				          {
+					          ('id' -> 5).
+					          ('name' -> 'v5').
+					          ('data'
+					           -> (DataSeries withKeys: { 'value' } values: { 50 })) }
+					          asDictionary.
+				          {
+					          ('id' -> 6).
+					          ('name' -> 'v6').
+					          ('data'
+					           -> (DataSeries withKeys: { 'value' } values: { 60 })) }
+					          asDictionary }).
+			         ('edges' -> {
+				          {
+					          ('node1' -> 1).
+					          ('node2' -> 2).
+					          ('data'
+					           ->
+					           (DataSeries
+						            withKeys: { 'name'. 'value' }
+						            values: { 'e12'. 12 })) } asDictionary.
+				          {
+					          ('node1' -> 2).
+					          ('node2' -> 3).
+					          ('data'
+					           ->
+					           (DataSeries
+						            withKeys: { 'name'. 'value' }
+						            values: { 'e23'. 23 })) } asDictionary.
+				          {
+					          ('node1' -> 3).
+					          ('node2' -> 1).
+					          ('data'
+					           ->
+					           (DataSeries
+						            withKeys: { 'name'. 'value' }
+						            values: { 'e31'. 31 })) } asDictionary.
+				          {
+					          ('node1' -> 4).
+					          ('node2' -> 5).
+					          ('data'
+					           ->
+					           (DataSeries
+						            withKeys: { 'name'. 'value' }
+						            values: { 'e45'. 45 })) } asDictionary }).
+			         ('nodeEvaluator' -> { ('column' -> 'value') } asDictionary).
+			         ('nodeAggregators'
+			          -> { { ('aggregation' -> 'sum') } asDictionary }).
+			         ('edgeEvaluator' -> { ('column' -> 'value') } asDictionary).
+			         ('edgeAggregators'
+			          -> { { ('aggregation' -> 'sum') } asDictionary }) }
+			         asDictionary
 ]
 
 { #category : 'tests' }
@@ -134,39 +170,38 @@ GolapModelTest >> testPostCopy [
 
 	| copy |
 	copy := model copy.
-	1 to: 6 do: [ :id |
-		self assert: (copy nodeAt: id) id equals: id.
-		self deny: (copy nodeAt: id) identicalTo: (model nodeAt: id).
-		(model nodeAt: id) data at: 'value' put: 0.
-		self assert: ((copy nodeAt: id) at: 'value') equals: id * 10 ].
-	self assert: (copy nodeAt: 1) numberOfEdges equals: 2.
-	self assert: (copy nodeAt: 2) numberOfEdges equals: 2.
-	self assert: (copy nodeAt: 3) numberOfEdges equals: 2.
-	self assert: (copy nodeAt: 4) numberOfEdges equals: 1.
-	self assert: (copy nodeAt: 5) numberOfEdges equals: 1.
-	self assert: (copy nodeAt: 6) numberOfEdges equals: 0.
+	1 to: 6 do: [ :i |
+			| id |
+			id := i asString.
+			self assert: (copy nodeAt: id) id equals: id.
+			self deny: (copy nodeAt: id) identicalTo: (model nodeAt: id).
+			(model nodeAt: id) data at: 'value' put: 0.
+			self assert: ((copy nodeAt: id) at: 'value') equals: i * 10 ].
+	self assert: (copy nodeAt: '1') numberOfEdges equals: 2.
+	self assert: (copy nodeAt: '2') numberOfEdges equals: 2.
+	self assert: (copy nodeAt: '3') numberOfEdges equals: 2.
+	self assert: (copy nodeAt: '4') numberOfEdges equals: 1.
+	self assert: (copy nodeAt: '5') numberOfEdges equals: 1.
+	self assert: (copy nodeAt: '6') numberOfEdges equals: 0.
 	{
 		(1 -> 2).
 		(2 -> 3).
 		(3 -> 1).
 		(4 -> 5) } do: [ :assoc |
-		| id1 id2 edge |
-		id1 := assoc key.
-		id2 := assoc value.
-		edge := (copy nodeAt: id1)
-			        edgeTo: (copy nodeAt: id2)
-			        ifAbsent: [ nil ].
-		self
-			assert: (edge at: 'name')
-			equals: 'e' , id1 printString , id2 printString.
-		self
-			deny: edge
-			identicalTo:
-			((model nodeAt: id1)
-				 edgeTo: (model nodeAt: id2)
-				 ifAbsent: [ nil ]).
-		((model nodeAt: id1)
-			 edgeTo: (model nodeAt: id2)
-			 ifAbsent: [ nil ]) data at: 'value' put: 0.
-		self assert: (edge at: 'value') equals: id1 * 10 + id2 ]
+			| i1 i2 id1 id2 edge |
+			i1 := assoc key.
+			i2 := assoc value.
+			id1 := i1 asString.
+			id2 := i2 asString.
+			edge := (copy nodeAt: id1)
+				        edgeTo: (copy nodeAt: id2)
+				        ifAbsent: [ nil ].
+			self assert: (edge at: 'name') equals: 'e' , id1 , id2.
+			self
+				deny: edge
+				identicalTo:
+				((model nodeAt: id1) edgeTo: (model nodeAt: id2) ifAbsent: [ nil ]).
+			((model nodeAt: id1) edgeTo: (model nodeAt: id2) ifAbsent: [ nil ])
+				data at: 'value' put: 0.
+			self assert: (edge at: 'value') equals: i1 * 10 + i2 ]
 ]

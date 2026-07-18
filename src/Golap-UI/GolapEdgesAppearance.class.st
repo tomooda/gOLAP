@@ -335,6 +335,13 @@ GolapEdgesAppearance >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 		golapModel nodeEvaluators: aCollectionOfGolapNodeEvaluator ]
 ]
 
+{ #category : 'updating' }
+GolapEdgesAppearance >> refreshEvaluatorList [
+
+	edgeEvaluatorList refresh.
+	nodeEvaluatorList refresh
+]
+
 { #category : 'accessing' }
 GolapEdgesAppearance >> selectEdgeEvaluator: aGolapEdgeEvaluator [
 

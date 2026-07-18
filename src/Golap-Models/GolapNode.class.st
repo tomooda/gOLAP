@@ -6,8 +6,6 @@ Class {
 		'name',
 		'edges',
 		'hiddenEdges',
-		'positivePolishEdges',
-		'negativePolishEdges',
 		'scores',
 		'photoimage'
 	],
@@ -34,35 +32,9 @@ GolapNode >> addHiddenEdge: aGolapEdge [
 	^ hiddenEdges add: aGolapEdge
 ]
 
-{ #category : 'polishing' }
-GolapNode >> addNegativePolishEdge: aGolapEdge [
-
-	^ negativePolishEdges add: aGolapEdge
-]
-
-{ #category : 'polishing' }
-GolapNode >> addPositivePolishEdge: aGolapEdge [
-
-	^ positivePolishEdges add: aGolapEdge
-]
-
 { #category : 'adding-removing' }
 GolapNode >> addScore: aNumber node: aGolapNode [
 	^ scores at: aGolapNode put: aNumber
-]
-
-{ #category : 'enumerating' }
-GolapNode >> allEdgesAndNodesDo: aBlock [
-
-	self allEdgesDo: [ :edge |
-		aBlock value: edge value: (edge peerOf: self) ]
-]
-
-{ #category : 'enumerating' }
-GolapNode >> allEdgesDo: aBlock [
-
-	edges do: [ :edge | aBlock value: edge ].
-	positivePolishEdges do: [ :edge | aBlock value: edge ]
 ]
 
 { #category : 'accessing' }
@@ -77,12 +49,6 @@ GolapNode >> at: aString ifAbsent: errorBlock [
 	^ data at: aString ifAbsent: errorBlock
 ]
 
-{ #category : 'enumerating' }
-GolapNode >> basicEdgesAndNodesDo: aBlock [
-
-	edges do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
-]
-
 { #category : 'accessing' }
 GolapNode >> basicPhotoimage [
 
@@ -91,20 +57,8 @@ GolapNode >> basicPhotoimage [
 
 { #category : 'private' }
 GolapNode >> basicRemoveEdge: aGolapEdge [
-	edges remove: aGolapEdge ifAbsent: [  ].
-	positivePolishEdges remove: aGolapEdge ifAbsent: [  ].
-	negativePolishEdges remove: aGolapEdge ifAbsent: [  ]
-]
 
-{ #category : 'polishing' }
-GolapNode >> canHavePositivePolishEdge: aGolapNode [
-
-	self == aGolapNode ifTrue: [ ^ false ].
-	self edgesDo: [ :edge |
-			((edge node1 == self and: [ edge node2 == aGolapNode ]) or: [
-				 edge node1 == aGolapNode and: [ edge node2 == self ] ]) ifTrue: [
-				^ false ] ].
-	^ true
+	edges remove: aGolapEdge ifAbsent: [ ]
 ]
 
 { #category : 'adding-removing' }
@@ -164,25 +118,19 @@ GolapNode >> edges [
 { #category : 'accessing' }
 GolapNode >> edges: anOrderedCollection [
 
-	edges := anOrderedCollection.
-	positivePolishEdges removeAll.
-	negativePolishEdges removeAll
+	edges := anOrderedCollection
 ]
 
 { #category : 'enumerating' }
 GolapNode >> edgesAndNodeDo: aBlock [
 
-	self edgesDo: [ :edge |
-		aBlock value: edge value: (edge peerOf: self) ]
+	edges do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
 ]
 
 { #category : 'enumerating' }
 GolapNode >> edgesDo: aBlock [
-	edges
-		do: [ :edge | 
-			(negativePolishEdges includes: edge)
-				ifFalse: [ aBlock value: edge ] ].
-	positivePolishEdges do: aBlock
+
+	edges do: aBlock
 ]
 
 { #category : 'accessing' }
@@ -194,9 +142,7 @@ GolapNode >> flushPhotoimage [
 { #category : 'enumerating' }
 GolapNode >> hasEdge: aGolapEdge [
 
-	^ ((edges includes: aGolapEdge) and: [
-		   (negativePolishEdges includes: aGolapEdge) not ]) or: [
-		  positivePolishEdges includes: aGolapEdge ]
+	^ edges includes: aGolapEdge
 ]
 
 { #category : 'enumerating' }
@@ -205,17 +151,6 @@ GolapNode >> hasEdgeSuchThat: aBlock [
 		edgesDo: [ :edge | 
 			(aBlock value: edge)
 				ifTrue: [ ^ true ] ].
-	^ false
-]
-
-{ #category : 'polishing' }
-GolapNode >> hasNegativePolishEdgeWith: aGolapNode [
-
-	negativePolishEdges do: [ :edge |
-		self == edge node1 ifTrue: [
-			aGolapNode == edge node2 ifTrue: [ ^ true ] ].
-		self == edge node2 ifTrue: [
-			aGolapNode == edge node1 ifTrue: [ ^ true ] ] ].
 	^ false
 ]
 
@@ -285,8 +220,6 @@ GolapNode >> initialize [
 	super initialize.
 	edges := OrderedCollection new.
 	hiddenEdges := OrderedCollection new.
-	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new.
 	scores := Dictionary new
 ]
 
@@ -323,21 +256,6 @@ GolapNode >> negated [
 		value1 isNumber ifTrue: [ data at: key put: value1 negated ] ]
 ]
 
-{ #category : 'polishing' }
-GolapNode >> negativePolishEdgeWith: aGolapNode [
-
-	negativePolishEdges do: [ :edge |
-		((self == edge node1 and: [ aGolapNode == edge node2 ]) or: [
-			 self == edge node2 and: [ aGolapNode == edge node1 ] ]) ifTrue: [
-			^ edge ] ].
-	^ nil
-]
-
-{ #category : 'polishing' }
-GolapNode >> negativePolishEdgesDo: aBlock [
-	negativePolishEdges do: aBlock
-]
-
 { #category : 'enumerating' }
 GolapNode >> nodesAndScoresDo: aBlock [
 	scores keysAndValuesDo: aBlock
@@ -346,7 +264,7 @@ GolapNode >> nodesAndScoresDo: aBlock [
 { #category : 'accessing' }
 GolapNode >> numberOfEdges [
 
-	^ edges size + positivePolishEdges size - negativePolishEdges size
+	^ edges size
 ]
 
 { #category : 'accessing' }
@@ -368,11 +286,6 @@ GolapNode >> photoimage: aFormOrAny [
 	photoimage := aFormOrAny
 ]
 
-{ #category : 'polishing' }
-GolapNode >> positivePolishEdgesDo: aBlock [
-	positivePolishEdges do: aBlock
-]
-
 { #category : 'copying' }
 GolapNode >> postCopy [
 
@@ -380,8 +293,6 @@ GolapNode >> postCopy [
 	data := data copy.
 	edges := edges copy.
 	hiddenEdges := hiddenEdges copy.
-	positivePolishEdges := positivePolishEdges copy.
-	negativePolishEdges := negativePolishEdges copy.
 	scores := Dictionary new
 ]
 
@@ -418,22 +329,6 @@ GolapNode >> removeEdge: aGolapEdge [
 	^ aGolapEdge
 		remove;
 		yourself
-]
-
-{ #category : 'polishing' }
-GolapNode >> removeNegativePolishEdge: aGolapEdge [
-	^ negativePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
-]
-
-{ #category : 'polishing' }
-GolapNode >> removePositivePolishEdge: aGolapEdge [
-	^ positivePolishEdges remove: aGolapEdge ifAbsent: [ nil ]
-]
-
-{ #category : 'polishing' }
-GolapNode >> resetPolish [
-	positivePolishEdges := IdentitySet new.
-	negativePolishEdges := IdentitySet new
 ]
 
 { #category : 'accessing' }

@@ -10,10 +10,42 @@ Class {
 	#tag : 'Base-Graph'
 }
 
+{ #category : 'arithmetics' }
+GolapBaseGraph >> - aGolapBaseGraph [
+
+	| diffNodes diffEdges |
+	diffNodes := Dictionary new: nodes size * 2.
+	nodes do: [ :node | diffNodes at: node id put: node ].
+	aGolapBaseGraph nodesDo: [ :node |
+			diffNodes
+				at: node id
+				ifPresent: [ :n | diffNodes at: node id put: n - node ]
+				ifAbsentPut: [ node negated ] ].
+	diffEdges := Dictionary new: edges size * 2.
+	edges do: [ :edge | diffEdges at: edge key put: edge ].
+	aGolapBaseGraph edgesDo: [ :edge |
+			| key |
+			key := edge key.
+			diffEdges
+				at: key
+				ifPresent: [ :n | diffEdges at: key put: n - edge ]
+				ifAbsentPut: [ edge negated ] ].
+	^ self shallowCopy
+		  nodes: diffNodes values asArray;
+		  edges: diffEdges values asArray;
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapBaseGraph >> edges [
 
 	^ edges
+]
+
+{ #category : 'accessing' }
+GolapBaseGraph >> edges: anArrayOfGolapBaseEdge [
+
+	edges := anArrayOfGolapBaseEdge
 ]
 
 { #category : 'enumerating' }
@@ -36,6 +68,12 @@ GolapBaseGraph >> nodes [
 	^ nodes
 ]
 
+{ #category : 'accessing' }
+GolapBaseGraph >> nodes: anArrayOfGolapBaseNode [
+
+	nodes := anArrayOfGolapBaseNode
+]
+
 { #category : 'enumerating' }
 GolapBaseGraph >> nodesDo: aBlock [
 
@@ -52,6 +90,14 @@ GolapBaseGraph >> numberOfEdges [
 GolapBaseGraph >> numberOfNodes [
 
 	^ nodes size
+]
+
+{ #category : 'copying' }
+GolapBaseGraph >> postCopy [
+
+	super postCopy.
+	nodes := nodes collect: #copy.
+	edges := edges collect: #copy
 ]
 
 { #category : 'private' }
