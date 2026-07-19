@@ -51,9 +51,15 @@ BaselineOfGolap >> baseline: spec [
 
 	<baseline>
 	spec for: #common do: [
+			spec baseline: 'RoassalExporters' with: [
+					spec repository:
+						'github://pharo-graphics/RoassalExporters:pharo13/src' ].
 			spec
 				baseline: 'Phleeter'
 				with: [ spec repository: 'github://tomooda/Phleeter:main/src' ].
+			spec
+				baseline: 'Selphie'
+				with: [ spec repository: 'github://tomooda/Selphie/src' ].
 			spec
 				baseline: 'HiDeHo'
 				with: [ spec repository: 'github://tomooda/HiDeHo:main/src' ].
@@ -81,8 +87,9 @@ BaselineOfGolap >> baseline: spec [
 				with: [ spec requires: #( 'PetitParser2Core' 'Golap-UI' ) ];
 				package: 'Golap-UI' with: [
 						spec requires:
-								#( 'HiDeHo' 'DataFrame' 'Xenq' 'Golap-Models' 'Golap-Networking'
-								   'Golap-Project' 'Golap-Query' 'Golap-Visualization' ) ].
+								#( 'Selphie' 'RoassalExporters' 'HiDeHo' 'DataFrame'
+								   'Xenq' 'Golap-Models' 'Golap-Networking' 'Golap-Project'
+								   'Golap-Query' 'Golap-Visualization' ) ].
 			spec
 				package: 'Golap-Visualization'
 				with: [
