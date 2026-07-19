@@ -101,7 +101,9 @@ GolapColorsAppearance >> decliningColor [
 
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> decliningColor: aColor [
-	self updateGlobalImageAfter: [ decliningColor := aColor ]
+
+	decliningColor := aColor.
+	self updateGolap
 ]
 
 { #category : 'layout' }
@@ -124,7 +126,9 @@ GolapColorsAppearance >> freshColor [
 
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> freshColor: aColor [
-	self updateGlobalImageAfter: [ freshColor := aColor ]
+
+	freshColor := aColor.
+	self updateGolap
 ]
 
 { #category : 'accessing-colors' }
@@ -134,7 +138,9 @@ GolapColorsAppearance >> growingColor [
 
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> growingColor: aColor [
-	self updateGlobalImageAfter: [ growingColor := aColor ]
+
+	growingColor := aColor.
+	self updateGolap
 ]
 
 { #category : 'accessing' }
@@ -145,7 +151,7 @@ GolapColorsAppearance >> iconExtent [
 { #category : 'accessing' }
 GolapColorsAppearance >> iconFor: aSymbol [
 
-	^ self iconForColor: (golap ifNotNil: [ golap perform: aSymbol ])
+	^ self iconForColor: (self perform: aSymbol)
 ]
 
 { #category : 'accessing' }
@@ -187,6 +193,7 @@ GolapColorsAppearance >> initializePresenters [
 	nameList := self newList
 		            display: [ :item | self nameForColorSelector: item ];
 		            displayIcon: [ :item | self iconFor: item ];
+		            items: self colorSelectors;
 		            whenSelectionChangedDo: [ self updateSelectedName ];
 		            yourself.
 	colorList := self newList
@@ -194,11 +201,11 @@ GolapColorsAppearance >> initializePresenters [
 		             display: [ :item | '' ];
 		             whenSelectionChangedDo: [ self updateSelectedColor ];
 		             yourself.
-	self whenBuiltDo: [ :w | 
-		| f |
-		f := TextStyle defaultFont.
-		w widget allMorphsDo: [ :m | 
-			(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
+	self whenBuiltDo: [ :w |
+			| f |
+			f := TextStyle defaultFont.
+			w widget allMorphsDo: [ :m |
+				(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
 { #category : 'initialization' }
@@ -269,7 +276,9 @@ GolapColorsAppearance >> normalColor [
 
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> normalColor: aColor [
-	self updateGlobalImageAfter: [ normalColor := aColor ]
+
+	normalColor := aColor.
+	self updateGolap
 ]
 
 { #category : 'accessing-colors' }
@@ -285,7 +294,8 @@ GolapColorsAppearance >> positivePolishColor [
 
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> positivePolishColor: aColor [
-	self updateGlobalImageAfter: [ positivePolishColor := aColor ]
+
+	positivePolishColor := aColor
 ]
 
 { #category : 'accessing-colors' }
@@ -295,7 +305,9 @@ GolapColorsAppearance >> retreatingColor [
 
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> retreatingColor: aColor [
-	self updateGlobalImageAfter: [ retreatingColor := aColor ]
+
+	retreatingColor := aColor.
+	self updateGolap
 ]
 
 { #category : 'accessing-colors' }
@@ -305,52 +317,47 @@ GolapColorsAppearance >> selectionColor [
 
 { #category : 'accessing-colors' }
 GolapColorsAppearance >> selectionColor: aColor [
-	self updateGlobalImageAfter: [ selectionColor := aColor ]
+
+	selectionColor := aColor.
+	self updateGolap
 ]
 
 { #category : 'private' }
 GolapColorsAppearance >> setGolap: aGolap [
-	golap := aGolap.
-	self updateNameList
+
 ]
 
-{ #category : 'drawing' }
-GolapColorsAppearance >> updateGlobalImageAfter: aBlock [
-	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock ]
+{ #category : 'updating' }
+GolapColorsAppearance >> updateGolap [
+	Golap allInstancesDo: #updateModel
 ]
 
-{ #category : 'drawing' }
-GolapColorsAppearance >> updateGlobalImageAfter: aBlock layout: aBoolean [
-	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock layout: aBoolean ]
-]
-
-{ #category : 'private' }
+{ #category : 'updating' }
 GolapColorsAppearance >> updateNameList [
 	nameList items: self colorSelectors
 ]
 
-{ #category : 'private' }
+{ #category : 'updating' }
 GolapColorsAppearance >> updateSelectedColor [
 
-	nameList selection selectedItem ifNotNil: [ :item | 
-		self
-			perform: (item , ':') asSymbol
-			with: colorList selection selectedItem.
-		self updateNameList.
-		nameList selectItem: item.
-		golap updateGlobalImage ]
+	nameList selection selectedItem ifNotNil: [ :item |
+			self
+				perform: (item , ':') asSymbol
+				with: colorList selection selectedItem.
+			self updateNameList.
+			nameList selectItem: item.
+			self updateGolap ]
 ]
 
-{ #category : 'private' }
+{ #category : 'updating' }
 GolapColorsAppearance >> updateSelectedName [
 
 	nameList selection selectedItem
 		ifNil: [ colorList items: #(  ) ]
-		ifNotNil: [ :item | 
-			golap ifNotNil: [ 
+		ifNotNil: [ :item |
 				| color |
-				color := golap perform: item.
+				color := self perform: item.
 				colorList
 					items: self colors;
-					selectItem: color ] ]
+					selectItem: color ]
 ]

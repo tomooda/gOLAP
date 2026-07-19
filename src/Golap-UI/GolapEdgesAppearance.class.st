@@ -140,26 +140,6 @@ GolapEdgesAppearance >> iconExtent [
 	^ 30 @ 14
 ]
 
-{ #category : 'accessing' }
-GolapEdgesAppearance >> iconFor: aSymbol [
-
-	^ self iconForColor: (golap ifNotNil: [ golap perform: aSymbol ])
-]
-
-{ #category : 'accessing' }
-GolapEdgesAppearance >> iconForColor: aColor [
-	^ aColor
-		ifNotNil: [ | icon |
-			icon := Form extent: self iconExtent depth: 32.
-			icon getCanvas
-				fillColor: aColor;
-				frameRectangle: (0 @ 0 extent: icon extent - (1 @ 1))
-					width: 2
-					color: Color black.
-			icon ]
-		ifNil: [ self nilIcon ]
-]
-
 { #category : 'initialization' }
 GolapEdgesAppearance >> initialExtent [
 	^ 500@280
