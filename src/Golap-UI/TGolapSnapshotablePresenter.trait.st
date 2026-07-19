@@ -10,6 +10,49 @@ TGolapSnapshotablePresenter classSide >> fromJSON: aDictionary [
 	^ self new fromJSON: aDictionary
 ]
 
+{ #category : 'projects' }
+TGolapSnapshotablePresenter >> asJSON [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'projects' }
+TGolapSnapshotablePresenter >> basicAsJSON [
+
+	^ {
+		  ('class' -> self class name asString).
+		  ('window' -> self windowJSON).
+		  ('bounds' -> self boundsJSON) } asOrderedDictionary
+]
+
+{ #category : 'projects' }
+TGolapSnapshotablePresenter >> basicFromJSON: aDictionary [
+
+	| bounds |
+	aDictionary
+		at: 'bounds' ifPresent: [ :array |
+				bounds := array first @ array second corner:
+						          array third @ array fourth ];
+		at: 'window'
+		ifPresent: [ :string | self fromWindowJSON: string bounds: bounds ]
+]
+
+{ #category : 'projects' }
+TGolapSnapshotablePresenter >> boundsJSON [
+
+	self window ifNotNil: [ :window |
+			window withAdapterDo: [ :a |
+					a widgetDo: [ :w |
+							| bounds |
+							bounds := w fullBounds.
+							^ {
+								  bounds origin x.
+								  bounds origin y.
+								  bounds corner x.
+								  bounds corner y } ] ] ].
+	^ nil
+]
+
 { #category : 'initialization' }
 TGolapSnapshotablePresenter >> close [
 
@@ -38,6 +81,35 @@ TGolapSnapshotablePresenter >> forceClose [
 	self close
 ]
 
+{ #category : 'projects' }
+TGolapSnapshotablePresenter >> fromJSON: aDictionary [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'projects' }
+TGolapSnapshotablePresenter >> fromWindowJSON: aString bounds: aRectangle [
+
+	[
+		aString = 'open' ifTrue: [ ^ (self openBounds: aRectangle) open ].
+		aString = 'minimized' ifTrue: [
+				^ self asWindow
+					  open;
+					  minimize ].
+		aString = 'maximized' ifTrue: [
+				^ (self openBounds: aRectangle)
+					  maximize;
+					  open ].
+		aRectangle ifNotNil: [
+				^ self asWindow
+					  initialPosition: aRectangle origin;
+					  initialExtent: aRectangle extent ].
+		^ nil ] ensure: [
+			self currentWorld submorphs do: [ :morph |
+					(morph model isKindOf: SpModalWindowPresenter) ifTrue: [
+						morph comeToFront ] ] ]
+]
+
 { #category : 'ui requests' }
 TGolapSnapshotablePresenter >> isForceClosing [
 
@@ -60,4 +132,14 @@ TGolapSnapshotablePresenter >> openBounds: aRectangle [
 				initialPosition: aRectangle origin;
 				initialExtent: aRectangle extent ].
 	^ window
+]
+
+{ #category : 'projects' }
+TGolapSnapshotablePresenter >> windowJSON [
+
+	self window ifNotNil: [ :window |
+			window isMinimized ifTrue: [ ^ 'minimized' ].
+			window isMaximized ifTrue: [ ^ 'maximized' ].
+			window isOpen ifTrue: [ ^ 'open' ] ].
+	^ 'closed'
 ]
