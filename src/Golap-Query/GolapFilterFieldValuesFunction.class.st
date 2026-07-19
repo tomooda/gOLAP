@@ -18,18 +18,6 @@ GolapFilterFieldValuesFunction class >> field: aString values: anArray [
 		yourself
 ]
 
-{ #category : 'instance creation' }
-GolapFilterFieldValuesFunction class >> fromUserOn: aGolapNetworkClientPresenter [
-	GolapQueryFunctionFieldValuesPresenter
-		on: aGolapNetworkClientPresenter
-		functionName: self functionName
-		openDialogIfAccepted: [ :queryFunctionPresenter | 
-			^ self
-				field: queryFunctionPresenter field
-				values: queryFunctionPresenter selectedValues ].
-	^ nil
-]
-
 { #category : 'accessing' }
 GolapFilterFieldValuesFunction >> field [
 	^ field

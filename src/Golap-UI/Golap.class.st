@@ -20,7 +20,6 @@ Class {
 		'itemsAppearancePresenter',
 		'authenticateBlock',
 		'edgesAppearancePresenter',
-		'colorsAppearancePresenter',
 		'saveAsPngButton',
 		'itemList',
 		'itemNotebook',
@@ -87,21 +86,6 @@ Golap class >> deploy [
 	5 timesRepeat: [ Smalltalk garbageCollect ]
 ]
 
-{ #category : 'settings' }
-Golap class >> gOLAPSettingsOn: aBuilder [
-	<systemsettings>
-	(aBuilder group: #gOLAP)
-		label: 'gOLAP';
-		with: [ (aBuilder setting: #defaultFont)
-				order: 1;
-				description: 'The default text font';
-				label: 'Font'.
-			(aBuilder setting: #nameEndOfLineDelimiter)
-				order: 2;
-				description: 'The end of line delimiter for item names';
-				label: 'End-of-Line for item name' ]
-]
-
 { #category : 'accessing' }
 Golap class >> golapDirectory [
 
@@ -142,6 +126,21 @@ Golap class >> golapMenuOn: aBuilder [
 					target: self;
 					selector: #openAboutDialog;
 					help: 'gOLAPのロゴとバージョンを表示します' ]
+]
+
+{ #category : 'settings' }
+Golap class >> golapSettingsOn: aBuilder [
+	<systemsettings>
+	(aBuilder group: #gOLAP)
+		label: 'gOLAP';
+		with: [ (aBuilder setting: #defaultFont)
+				order: 1;
+				description: 'The default text font';
+				label: 'Font'.
+			(aBuilder setting: #nameEndOfLineDelimiter)
+				order: 2;
+				description: 'The end of line delimiter for item names';
+				label: 'End-of-Line for item name' ]
 ]
 
 { #category : 'class initialization' }
@@ -378,7 +377,6 @@ Golap >> asJSON [
 		  at: 'baseList' put: baseList selectedItem;
 		  at: 'frontList' put: frontList selectedItem;
 		  at: 'edgesAppearance' put: edgesAppearancePresenter asJSON;
-		  at: 'colorsAppearance' put: colorsAppearancePresenter asJSON;
 		  at: 'itemInfoRetriever' put: itemInfoRetriever asJSON;
 		  at: 'itemList' put: itemList asJSON;
 		  at: 'edgeList' put: edgeList asJSON;
@@ -512,6 +510,12 @@ Golap >> colorMarkersAndNodesDo: aBlock [
 	itemList colorMarkersAndNodesDo: aBlock
 ]
 
+{ #category : 'accessing-colors' }
+Golap >> colorPreferences [
+
+	^ GolapColorPreferences
+]
+
 { #category : 'accessing' }
 Golap >> comment [
 
@@ -563,7 +567,8 @@ Golap >> copyFromQueryViewTree [
 
 { #category : 'accessing-colors' }
 Golap >> decliningColor [
-	^ colorsAppearancePresenter decliningColor
+
+	^ self colorPreferences decliningColor
 ]
 
 { #category : 'layouts' }
@@ -636,7 +641,8 @@ Golap >> font: aFont [
 
 { #category : 'accessing-colors' }
 Golap >> freshColor [
-	^ colorsAppearancePresenter freshColor
+
+	^ self colorPreferences freshColor
 ]
 
 { #category : 'accessing' }
@@ -678,8 +684,6 @@ Golap >> fromJSON: aDictionary [
 				ifPresent: [ :array | selections := array asSet ];
 				at: 'edgesAppearance'
 				ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];
-				at: 'colorsAppearance'
-				ifPresent: [ :json | colorsAppearancePresenter fromJSON: json ];
 				at: 'itemInfoRetriever' ifPresent: [ :json |
 					itemInfoRetriever := GolapItemInfoRetriever fromJSON: json.
 					itemsAppearancePresenter updatePhotoimageRetrievers.
@@ -810,7 +814,8 @@ Golap >> golapDirectory [
 
 { #category : 'accessing-colors' }
 Golap >> growingColor [
-	^ colorsAppearancePresenter growingColor
+
+	^ self colorPreferences growingColor
 ]
 
 { #category : 'menu' }
@@ -912,7 +917,6 @@ Golap >> initializePresenters [
 		            yourself.
 	itemsAppearancePresenter := GolapItemsAppearance on: self.
 	edgesAppearancePresenter := GolapEdgesAppearance on: self.
-	colorsAppearancePresenter := GolapColorsAppearance on: self.
 	commentText := self newText
 		               whenTextChangedDo: [
 			               self window ifNotNil: [ :window |
@@ -1076,7 +1080,6 @@ Golap >> leftPaneLayout [
 		  height: self buttonHeight;
 		  add: edgesAppearancePresenter expand: true;
 		  add: itemsAppearancePresenter expand: false;
-		  add: colorsAppearancePresenter height: 200;
 		  add: 'コメント' expand: false;
 		  add: commentText;
 		  yourself
@@ -1233,7 +1236,8 @@ Golap >> model: aGolapModel forceUpdate: aBoolean [
 
 { #category : 'accessing-colors' }
 Golap >> negativePolishColor [
-	^ colorsAppearancePresenter negativePolishColor
+
+	^ self colorPreferences negativePolishColor
 ]
 
 { #category : 'instance creation' }
@@ -1297,12 +1301,14 @@ Golap >> nodesDo: aBlock [
 
 { #category : 'accessing-colors' }
 Golap >> normalColor [
-	^ colorsAppearancePresenter normalColor
+
+	^ self colorPreferences normalColor
 ]
 
 { #category : 'accessing-colors' }
 Golap >> normalColorFor: aGolapNode [
-	^ colorsAppearancePresenter normalColorFor: aGolapNode
+
+	^ self colorPreferences normalColorFor: aGolapNode
 ]
 
 { #category : 'accessing' }
@@ -1387,7 +1393,8 @@ Golap >> playIcon [
 
 { #category : 'accessing-colors' }
 Golap >> positivePolishColor [
-	^ colorsAppearancePresenter positivePolishColor
+
+	^ self colorPreferences positivePolishColor
 ]
 
 { #category : 'accessing-presets' }
@@ -1682,7 +1689,8 @@ Golap >> resendQuery [
 
 { #category : 'accessing-colors' }
 Golap >> retreatingColor [
-	^ colorsAppearancePresenter retreatingColor
+
+	^ self colorPreferences retreatingColor
 ]
 
 { #category : 'operations-photoimages' }
@@ -1891,7 +1899,8 @@ Golap >> selectedPageChanged [
 
 { #category : 'accessing-colors' }
 Golap >> selectionColor [
-	^ colorsAppearancePresenter selectionColor
+
+	^ self colorPreferences selectionColor
 ]
 
 { #category : 'accessing-selection' }

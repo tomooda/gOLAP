@@ -1,7 +1,8 @@
 Trait {
 	#name : 'TGolapSnapshotablePresenter',
-	#category : 'Golap-UI',
-	#package : 'Golap-UI'
+	#category : 'Golap-UI-Graph',
+	#package : 'Golap-UI',
+	#tag : 'Graph'
 }
 
 { #category : 'instance creation' }
