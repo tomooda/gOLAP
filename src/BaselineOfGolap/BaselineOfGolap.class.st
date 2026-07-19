@@ -76,31 +76,24 @@ BaselineOfGolap >> baseline: spec [
 				package: 'Golap-Application'
 				with: [ spec requires: #( 'Phleeter' ) ];
 				package: 'Golap-Clustering' with: [ spec requires: #(  ) ];
-				package: 'Golap-Models'
-				with: [ spec requires: #( 'DataFrame' 'Golap-Clustering' ) ];
-				package: 'Golap-Networking'
-				with: [ spec requires: #( 'Golap-UI' ) ];
-				package: 'Golap-Project' with: [
-						spec requires:
-								#( 'DataFrame' 'Golap-Query' 'Golap-UI' 'Golap-Visualization' ) ];
+				package: 'Golap-Models' with: [ spec requires: #( 'DataFrame' ) ];
+				package: 'Golap-Networking' with: [ spec requires: #(  ) ];
+				package: 'Golap-Project'
+				with: [ spec requires: #( 'DataFrame' 'Golap-Models'
+						   'Golap-UI' ) ];
 				package: 'Golap-Query'
-				with: [ spec requires: #( 'PetitParser2Core' 'Golap-UI' ) ];
+				with: [ spec requires: #( 'PetitParser2Core' ) ];
 				package: 'Golap-UI' with: [
 						spec requires:
 								#( 'Selphie' 'RoassalExporters' 'HiDeHo' 'DataFrame'
-								   'Xenq' 'Golap-Models' 'Golap-Networking' 'Golap-Project'
-								   'Golap-Query' 'Golap-Visualization' ) ].
-			spec
-				package: 'Golap-Visualization'
-				with: [
-				spec requires: #( 'Golap-Clustering' 'Golap-Models' 'Golap-UI' ) ].
+								   'Xenq' ) ].
+			spec package: 'Golap-Visualization' with: [ spec requires: #(  ) ].
 			spec postLoadDoIt: #postLoad.
 			spec
 				group: 'Core'
-				with:
-					#( 'Golap-Models' 'Golap-UI' 'Golap-Query' 'Golap-Networking'
-					   'Golap-Project' 'Golap-Visualization' 'Golap-Clustering'
-					   'Golap-Application' );
+				with: #( 'Golap-Application' 'Golap-Clustering' 'Golap-Models'
+					   'Golap-Networking' 'Golap-Project' 'Golap-Query' 'Golap-UI'
+					   'Golap-Visualization' );
 				group: 'default' with: #( 'Core' ) ]
 ]
 

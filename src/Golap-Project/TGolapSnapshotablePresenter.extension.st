@@ -1,8 +1,4 @@
-Trait {
-	#name : 'TGolapSnapshotablePresenter',
-	#category : 'Golap-Project',
-	#package : 'Golap-Project'
-}
+Extension { #name : 'TGolapSnapshotablePresenter' }
 
 { #category : '*Golap-Project' }
 TGolapSnapshotablePresenter >> asJSON [
