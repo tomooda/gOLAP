@@ -176,6 +176,14 @@ GolapPolisher >> numberOfEdgesAtNode: aGolapNode [
 	^ numEdges
 ]
 
+{ #category : 'copying' }
+GolapPolisher >> postCopy [
+
+	super postCopy.
+	burrEdgeKeys := burrEdgeKeys copy.
+	fillerEdgeKeys := fillerEdgeKeys copy
+]
+
 { #category : 'accessing' }
 GolapPolisher >> reset [
 

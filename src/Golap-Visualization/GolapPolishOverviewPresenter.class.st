@@ -4,6 +4,7 @@ Class {
 	#instVars : [
 		'layoutButton',
 		'applyButton',
+		'resetButton',
 		'fillerThresholdField',
 		'fillerThresholdSlider',
 		'minClusterSizeField',
@@ -21,7 +22,7 @@ Class {
 GolapPolishOverviewPresenter >> applyPolish [
 
 	self golapModelDo: [ :golapModel |
-			polisher applyTo: golapModel.
+			golapModel addPolisher: polisher copy.
 			polisher reset.
 			self updateCanvas ]
 ]
@@ -71,8 +72,10 @@ GolapPolishOverviewPresenter >> defaultLayout [
 				   width: 50;
 				   add: (SpBoxLayout newVertical
 						    add: '研磨実行' asPresenter expand: false;
-						    add: applyButton expand: false;
-						    yourself)
+						    add: (SpBoxLayout newHorizontal
+								     add: applyButton expand: false;
+								     add: resetButton expand: false)
+						    expand: false yourself)
 				   expand: false;
 				   add: (SpBoxLayout newVertical
 						    add: '更新' asPresenter expand: false;
@@ -154,6 +157,10 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		               label: '適用';
 		               action: [ self applyPolish ];
 		               yourself.
+	resetButton := self newButton
+		               label: 'クリア';
+		               action: [ self resetPolish ];
+		               yourself.
 	layoutButton := self newButton
 		                label: ' 再配置 ';
 		                action: [ self updateNodePositions ];
@@ -193,6 +200,15 @@ GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 			line parent ifNotNil: [
 					line model ifNotNil: [ :edge |
 						(polisher isFillerEdge: edge) ifTrue: [ line pushFront ] ] ] ]
+]
+
+{ #category : 'operations' }
+GolapPolishOverviewPresenter >> resetPolish [
+
+	self golapModelDo: [ :golapModel |
+			golapModel resetPolishers.
+			polisher reset.
+			self updateCanvas ]
 ]
 
 { #category : 'updating' }

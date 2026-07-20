@@ -12,7 +12,8 @@ Class {
 		'nodes',
 		'referenceNodes',
 		'baseGraph',
-		'merge'
+		'merge',
+		'polishers'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
@@ -62,6 +63,14 @@ GolapModel >> - aGolapModel [
 	diff := self shallowCopy.
 	diff baseGraph: diff baseGraph - aGolapModel baseGraph.
 	^ diff
+]
+
+{ #category : 'accessing' }
+GolapModel >> addPolisher: aGolapPolisher [
+
+	polishers add: aGolapPolisher.
+	self updateNodesAndEdges.
+	^ aGolapPolisher
 ]
 
 { #category : 'accessing-reference nodes' }
@@ -126,6 +135,12 @@ GolapModel >> applyNodeEvaluators [
 					nodesToRemove do: [ :node |
 							node remove.
 							nodes removeKey: node id ] ] ]
+]
+
+{ #category : 'updating' }
+GolapModel >> applyPolishers [
+
+	polishers do: [ :polisher | polisher applyTo: self ]
 ]
 
 { #category : 'algorithms-articulation points' }
@@ -420,7 +435,8 @@ GolapModel >> initialize [
 	super initialize.
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
-	referenceNodes := OrderedCollection new
+	referenceNodes := OrderedCollection new.
+	polishers := OrderedCollection new
 ]
 
 { #category : 'accessing-reference nodes' }
@@ -625,6 +641,13 @@ GolapModel >> resetMerges [
 	self updateNodesAndEdges
 ]
 
+{ #category : 'accessing' }
+GolapModel >> resetPolishers [
+
+	polishers removeAll.
+	self updateNodesAndEdges
+]
+
 { #category : 'merging' }
 GolapModel >> setMerges: anOrderedCollectionOfAssociations [
 
@@ -649,6 +672,7 @@ GolapModel >> updateNodesAndEdges [
 	self applyEdgeEvaluators.
 	self applyNodeEvaluators.
 	self applyFriend.
+	self applyPolishers.
 	self announceGraphChanged
 ]
 
