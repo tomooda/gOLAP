@@ -276,29 +276,68 @@ GolapModel >> edgeAggregators: aCollectionOfGolapDataAggregator [
 ]
 
 { #category : 'accessing' }
-GolapModel >> edgeBetween: data1 and: data2 ifAbsent: errorBlock [
+GolapModel >> edgeAt: anArray [
+
 	^ self
-		edgeBetween: data1
-		and: data2
-		ifPresent: [ :edge | edge ]
-		ifAbsent: errorBlock
+		  edgeBetween: anArray first
+		  and: anArray second
+		  ifAbsent: [ nil ]
 ]
 
 { #category : 'accessing' }
-GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock [
+GolapModel >> edgeAt: anArray ifAbsent: aBlock [
+
 	^ self
-		edgeBetween: data1
-		and: data2
+		  edgeBetween: anArray first
+		  and: anArray second
+		  ifAbsent: aBlock
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeAt: anArray ifPresent: aBlock [
+
+	^ self
+		  edgeBetween: anArray first
+		  and: anArray second
+		  ifPresent: aBlock
+		  ifAbsent: [ nil ]
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeAt: anArray ifPresent: aBlock ifAbsent: anotherBlock [
+
+	^ self
+		  edgeBetween: anArray first
+		  and: anArray second
+		  ifPresent: aBlock
+		  ifAbsent: anotherBlock
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeBetween: aString and: anotherString ifAbsent: errorBlock [
+
+	^ self
+		  edgeBetween: aString
+		  and: anotherString
+		  ifPresent: [ :edge | edge ]
+		  ifAbsent: errorBlock
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeBetween: aString and: anotherString ifPresent: aBlock [
+	^ self
+		edgeBetween: aString
+		and: anotherString
 		ifPresent: aBlock
 		ifAbsent: [  ]
 ]
 
 { #category : 'accessing' }
-GolapModel >> edgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlock [
+GolapModel >> edgeBetween: aString and: anotherString ifPresent: aBlock ifAbsent: errorBlock [
 
 	| node1 node2 edge |
-	node1 := self nodeAt: data1 ifAbsent: [ ^ errorBlock value ].
-	node2 := self nodeAt: data2 ifAbsent: [ ^ errorBlock value ].
+	node1 := self nodeAt: aString ifAbsent: [ ^ errorBlock value ].
+	node2 := self nodeAt: anotherString ifAbsent: [ ^ errorBlock value ].
 	edge := node1 edgeTo: node2 ifAbsent: [ ^ errorBlock value ].
 	^ aBlock value: edge
 ]
@@ -425,7 +464,8 @@ GolapModel >> nodeAggregators: aCollectionOfGolapDataAggregator [
 
 { #category : 'accessing-node' }
 GolapModel >> nodeAt: aString [
-	^ self nodes at: aString
+
+	^ self nodes at: aString ifAbsent: [ nil ]
 ]
 
 { #category : 'accessing-node' }

@@ -31,8 +31,12 @@ GolapPolishOverviewPresenter >> availableEdges [
 
 	^ Array streamContents: [ :stream |
 			  self golapModelDo: [ :golapModel |
-				  golapModel edgesDo: [ :edge | stream nextPut: edge ] ].
-			  stream nextPutAll: polisher fillerEdges ]
+					  golapModel edgesDo: [ :edge | stream nextPut: edge ].
+					  polisher fillerEdgeKeysDo: [ :edgeKey |
+							  stream nextPut: (GolapEdge
+									   on: nil
+									   between: (golapModel nodeAt: edgeKey first)
+									   and: (golapModel nodeAt: edgeKey second)) ] ] ]
 ]
 
 { #category : 'layout' }
@@ -158,13 +162,13 @@ GolapPolishOverviewPresenter >> initializePresenters [
 { #category : 'testing' }
 GolapPolishOverviewPresenter >> isBurrEdge: aGolapEdge [
 
-	^ polisher burrEdges includes: aGolapEdge
+	^ polisher isBurrEdge: aGolapEdge
 ]
 
 { #category : 'testing' }
 GolapPolishOverviewPresenter >> isFillerEdge: aGolapEdge [
 
-	^ polisher fillerEdges includes: aGolapEdge
+	^ polisher isFillerEdge: aGolapEdge
 ]
 
 { #category : 'instance creation' }
@@ -186,7 +190,8 @@ GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 	super renderEdgesIn: aRSCanvas.
 	aRSCanvas lines do: [ :line |
 			line parent ifNotNil: [
-					line model ifNotNil: [ :edge |(polisher fillerEdges includes: edge) ifTrue: [ line pushFront ] ] ] ]
+					line model ifNotNil: [ :edge |
+						(polisher isFillerEdge: edge) ifTrue: [ line pushFront ] ] ] ]
 ]
 
 { #category : 'updating' }

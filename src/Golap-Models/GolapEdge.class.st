@@ -11,6 +11,20 @@ Class {
 	#tag : 'Graph'
 }
 
+{ #category : 'utilities' }
+GolapEdge class >> keyFrom: aString1 and: aString2 [
+
+	^ aString1 < aString2
+		  ifTrue: [
+				  {
+					  aString1.
+					  aString2 } ]
+		  ifFalse: [
+				  {
+					  aString2.
+					  aString1 } ]
+]
+
 { #category : 'instance creation' }
 GolapEdge class >> on: aDataSeries between: aGolapNode1 and: aGolapNode2 [
 
@@ -86,6 +100,12 @@ GolapEdge >> hasNode: aGolapNode and: anotherGolapNode [
 
 	^ (node1 == aGolapNode and: [ node2 == anotherGolapNode ]) or: [
 		  node1 == anotherGolapNode and: [ node2 == aGolapNode ] ]
+]
+
+{ #category : 'accessing' }
+GolapEdge >> key [
+
+	^ self class keyFrom: node1 id and: node2 id
 ]
 
 { #category : 'arithmetics' }
