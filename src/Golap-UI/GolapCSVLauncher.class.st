@@ -121,17 +121,16 @@ GolapCSVLauncher >> golapModelsAndNamesDo: aBlock [
 			| golapModel |
 			golapModel := GolapModel new.
 			golapModel
+				nodeAggregators: nodeImporterPresenter createAggregators;
+				nodeEvaluator: nodeImporterPresenter evaluator;
+				edgeAggregators: edgeImporterPresenter createAggregators;
+				edgeEvaluator: edgeImporterPresenter evaluator;
 				readNodeDataframe: nodeDataframe
 				idColumn: nodeImporterPresenter idColumn
 				nameColumn: nodeImporterPresenter nameColumn;
-				nodeAggregators: nodeImporterPresenter createAggregators;
-				nodeEvaluator: nodeImporterPresenter evaluator.
-			golapModel
 				readEdgeDataframe: edgeDataframe
 				idColumn: edgeImporterPresenter idColumn1
-				and: edgeImporterPresenter idColumn2;
-				edgeAggregators: edgeImporterPresenter createAggregators;
-				edgeEvaluator: edgeImporterPresenter evaluator.
+				and: edgeImporterPresenter idColumn2.
 			aBlock value: golapModel value: name ]
 ]
 
