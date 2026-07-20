@@ -10,8 +10,8 @@ Class {
 		'minClusterSizeField',
 		'burrThresholdField',
 		'burrThresholdSlider',
-		'polisher',
-		'polishToConvergeCheckBox'
+		'polishToConvergeCheckBox',
+		'polish'
 	],
 	#category : 'Golap-Visualization-Polish',
 	#package : 'Golap-Visualization',
@@ -22,8 +22,8 @@ Class {
 GolapPolishOverviewPresenter >> applyPolish [
 
 	self golapModelDo: [ :golapModel |
-			golapModel addPolisher: polisher copy.
-			polisher reset.
+			golapModel addPolisher: self polisher.
+			polish reset.
 			self updateCanvas ]
 ]
 
@@ -33,7 +33,7 @@ GolapPolishOverviewPresenter >> availableEdges [
 	^ Array streamContents: [ :stream |
 			  self golapModelDo: [ :golapModel |
 					  golapModel edgesDo: [ :edge | stream nextPut: edge ].
-					  polisher fillerEdgeKeysDo: [ :edgeKey |
+					  polish fillerEdgeKeysDo: [ :edgeKey |
 							  stream nextPut: (GolapEdge
 									   on: nil
 									   between: (golapModel nodeAt: edgeKey first)
@@ -92,7 +92,7 @@ GolapPolishOverviewPresenter >> defaultLayout [
 GolapPolishOverviewPresenter >> initialize [
 
 	super initialize.
-	polisher := GolapPolisher new
+	polish := GolapPolish new
 ]
 
 { #category : 'initialization' }
@@ -170,13 +170,13 @@ GolapPolishOverviewPresenter >> initializePresenters [
 { #category : 'testing' }
 GolapPolishOverviewPresenter >> isBurrEdge: aGolapEdge [
 
-	^ polisher isBurrEdge: aGolapEdge
+	^ polish isBurrEdge: aGolapEdge
 ]
 
 { #category : 'testing' }
 GolapPolishOverviewPresenter >> isFillerEdge: aGolapEdge [
 
-	^ polisher isFillerEdge: aGolapEdge
+	^ polish isFillerEdge: aGolapEdge
 ]
 
 { #category : 'instance creation' }
@@ -192,6 +192,17 @@ GolapPolishOverviewPresenter >> newShapeForEdge: aGolapEdge [
 			  line ]
 ]
 
+{ #category : 'accessing' }
+GolapPolishOverviewPresenter >> polisher [
+
+	^ GolapPolisher new
+		  polishToConverge: polishToConvergeCheckBox state;
+		  fillerThreshold: fillerThresholdField number;
+		  burrThreshold: burrThresholdField number;
+		  minClusterSize: minClusterSizeField number;
+		  yourself
+]
+
 { #category : 'rendering' }
 GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 
@@ -199,7 +210,7 @@ GolapPolishOverviewPresenter >> renderEdgesIn: aRSCanvas [
 	aRSCanvas lines do: [ :line |
 			line parent ifNotNil: [
 					line model ifNotNil: [ :edge |
-						(polisher isFillerEdge: edge) ifTrue: [ line pushFront ] ] ] ]
+						(polish isFillerEdge: edge) ifTrue: [ line pushFront ] ] ] ]
 ]
 
 { #category : 'operations' }
@@ -207,29 +218,16 @@ GolapPolishOverviewPresenter >> resetPolish [
 
 	self golapModelDo: [ :golapModel |
 			golapModel resetPolishers.
-			polisher reset.
+			polish reset.
 			self updateCanvas ]
 ]
 
 { #category : 'updating' }
 GolapPolishOverviewPresenter >> updateCanvas [
 
-	polisher reset.
 	self golapModelDo: [ :golapModel |
-			polishToConvergeCheckBox state
-				ifTrue: [
-						polisher
-							fitToConverge: golapModel
-							fillerThreshold: fillerThresholdField number
-							burrThreshold: burrThresholdField number
-							minClusterSize: minClusterSizeField number ]
-				ifFalse: [
-						polisher
-							fit: golapModel
-							fillerThreshold: fillerThresholdField number
-							burrThreshold: burrThresholdField number
-							minClusterSize: minClusterSizeField number ] ].
-	super updateCanvas
+			polish := self polisher fit: golapModel.
+			super updateCanvas ]
 ]
 
 { #category : 'updating' }
