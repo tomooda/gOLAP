@@ -115,7 +115,7 @@ GolapArticulationPointOverviewPresenter >> initializePresenters [
 		                          minimum: 1;
 		                          number: 2;
 		                          autoAccept: true;
-		                          whenNumberChangedDo: [
+		                          whenNumberChangedDo: [ :num |
 			                          self minimumIslandSizeChanged ];
 		                          yourself.
 	layoutButton := self newButton

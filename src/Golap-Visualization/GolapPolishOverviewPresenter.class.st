@@ -97,10 +97,10 @@ GolapPolishOverviewPresenter >> initializePresenters [
 
 	super initializePresenters.
 	polishToConvergeCheckBox := self newCheckBox
-		                         label: '繰り返し';
-		                         state: false;
-		                         whenChangedDo: [ self updateCanvas ];
-		                         yourself.
+		                            label: '繰り返し';
+		                            state: false;
+		                            whenChangedDo: [ self updateCanvas ];
+		                            yourself.
 	fillerThresholdSlider := self newSlider
 		                         label: '+研磨';
 		                         min: 0.0;
@@ -118,7 +118,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                        minimum: 0.8;
 		                        maximum: 1.0;
 		                        number: 1.0;
-		                        whenNumberChangedDo: [
+		                        whenNumberChangedDo: [ :num |
 				                        fillerThresholdSlider value:
 						                        fillerThresholdField number.
 				                        self updateCanvas ].
@@ -139,7 +139,7 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                      minimum: 0.0;
 		                      maximum: 0.2;
 		                      number: 0.0;
-		                      whenNumberChangedDo: [
+		                      whenNumberChangedDo: [ :num |
 				                      burrThresholdSlider value:
 						                      burrThresholdField number.
 				                      self updateCanvas ].
@@ -148,7 +148,8 @@ GolapPolishOverviewPresenter >> initializePresenters [
 		                       placeholder: '最小関連数';
 		                       minimum: 1;
 		                       number: 3;
-		                       whenNumberChangedDo: [ self updateCanvas ].
+		                       whenNumberChangedDo: [ :num |
+			                       self updateCanvas ].
 	applyButton := self newButton
 		               label: '適用';
 		               action: [ self applyPolish ];

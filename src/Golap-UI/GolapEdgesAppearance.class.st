@@ -267,7 +267,7 @@ GolapEdgesAppearance >> initializePresenters [
 		                     climbRate: 1;
 		                     minimum: 1;
 		                     whenSubmitDo: [ self friendNumberFieldChanged ];
-		                     whenNumberChangedDo: [
+		                     whenNumberChangedDo: [ :num |
 			                     self friendNumberFieldChanged ];
 		                     disable;
 		                     yourself.
