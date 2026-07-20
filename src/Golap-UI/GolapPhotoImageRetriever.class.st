@@ -114,6 +114,12 @@ GolapPhotoImageRetriever >> configPresenter [
 	^ nil
 ]
 
+{ #category : 'initialization' }
+GolapPhotoImageRetriever >> defaultEnabled [
+
+	^ false
+]
+
 { #category : 'accessing' }
 GolapPhotoImageRetriever >> enabled [
 
@@ -142,7 +148,7 @@ GolapPhotoImageRetriever >> hasConfigPresenter [
 GolapPhotoImageRetriever >> initialize [
 
 	super initialize.
-	enabled := true
+	enabled := self defaultEnabled
 ]
 
 { #category : 'testing' }

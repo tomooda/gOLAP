@@ -56,6 +56,12 @@ GolapServerPhotoImageRetriever >> configPresenter [
 	^ GolapServerPhotoImageRetrieverPresenter on: self
 ]
 
+{ #category : 'initialization' }
+GolapServerPhotoImageRetriever >> defaultEnabled [
+
+	^ true
+]
+
 { #category : 'accessing' }
 GolapServerPhotoImageRetriever >> golapServerUrl [
 
