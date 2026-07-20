@@ -4,7 +4,6 @@ Extension { #name : 'GolapArticulationPointOverviewPresenter' }
 GolapArticulationPointOverviewPresenter >> asJSON [
 
 	^ super asJSON
-		  at: 'friendsRank' put: friendsRankField number;
 		  at: 'minimumIslandSize' put: minimumIslandSizeField number;
 		  at: 'articulationPoint'
 		  put: (articulationPointList selectedItem ifNotNil: #id);
@@ -16,8 +15,6 @@ GolapArticulationPointOverviewPresenter >> fromJSON: aDictionary [
 
 	super fromJSON: aDictionary.
 	aDictionary
-		at: 'friendsRank'
-		ifPresent: [ :integer | friendsRankField number: integer ];
 		at: 'minimumIslandSize'
 		ifPresent: [ :integer | minimumIslandSizeField number: integer ].
 	self updateGraph.

@@ -2,7 +2,6 @@ Class {
 	#name : 'GolapArticulationPointOverviewPresenter',
 	#superclass : 'GolapOverviewPresenter',
 	#instVars : [
-		'friendsRankField',
 		'minimumIslandSizeField',
 		'layoutButton',
 		'articulationPointList',
@@ -80,8 +79,6 @@ GolapArticulationPointOverviewPresenter >> defaultLayout [
 	^ SpBoxLayout newVertical
 		  add: (SpBoxLayout newHorizontal
 				   vAlignCenter;
-				   add: 'フレンドランク ' asPresenter expand: false;
-				   add: friendsRankField width: 50;
 				   add: '島の最小サイズ' asPresenter expand: false;
 				   add: minimumIslandSizeField width: 50;
 				   add: '    ' asPresenter expand: false;

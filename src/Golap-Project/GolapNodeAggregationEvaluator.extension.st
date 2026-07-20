@@ -6,8 +6,11 @@ GolapNodeAggregationEvaluator class >> fromJSON: aDictionary [
 	^ aDictionary
 		  at: self tag
 		  ifPresent: [ :subtag |
-			  subtag = self subtag
-				  ifTrue: [ self new ]
-				  ifFalse: [ nil ] ]
+				  subtag = self subtag
+					  ifTrue: [
+							  self new
+								  fromJSON: aDictionary;
+								  yourself ]
+					  ifFalse: [ nil ] ]
 		  ifAbsent: [ nil ]
 ]

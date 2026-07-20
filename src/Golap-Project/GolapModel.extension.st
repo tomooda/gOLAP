@@ -12,6 +12,9 @@ GolapModel >> asJSON [
 		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
 		  at: 'edgeAggregators' put: (edgeAggregators collect: #asJSON);
 		  at: 'referenceNodes' put: referenceNodes asArray;
+		  at: 'friend' put: friend;
+		  at: 'merge' put: merge asJSON;
+		  at: 'polishers' put: (polishers collect: #asJSON);
 		  yourself
 ]
 
@@ -38,7 +41,13 @@ GolapModel >> fromJSON: aDictionary [
 			edgeEvaluator := GolapEdgeEvaluator fromJSON: json ];
 		at: 'edgeAggregators' ifPresent: [ :array |
 				edgeAggregators := array collect: [ :json |
-						                   GolapDataAggregator fromJSON: json ] ].
+						                   GolapDataAggregator fromJSON: json ] ];
+		at: 'friend' ifPresent: [ :numOrNil | friend := numOrNil ];
+		at: 'merge' ifPresent: [ :json | merge fromJSON: json ];
+		at: 'polishers' ifPresent: [ :array |
+				polishers := (array collect: [ :json |
+						              GolapPolisher fromJSON: json ])
+					             asOrderedCollection ].
 	baseGraph := GolapBaseGraph fromJSON: aDictionary.
 	self updateNodesAndEdges
 ]

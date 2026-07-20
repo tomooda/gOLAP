@@ -229,7 +229,9 @@ Golap class >> resume [
 						json
 							at: 'session'
 							ifPresent: [ :session |
-							GolapPhantasmicProject fromJSON: session ] ] ] ]
+								GolapPhantasmicProject fromJSON: session ];
+							at: 'colors'
+							ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
 		on: Exception
 		do: [ :ex |  ]
 ]
@@ -272,6 +274,8 @@ Golap class >> suspend [
 		json := Dictionary new.
 		GolapPhantasmicProject asJSON ifNotNil: [ :project |
 			json at: 'session' put: project ].
+		GolapColorPreferences asJSON ifNotNil: [ :colors |
+			json at: 'colors' put: colors ].
 		self sessionFile
 			ensureDelete;
 			writeStreamDo: [ :stream |
