@@ -163,8 +163,8 @@ Golap class >> golapSettingsOn: aBuilder [
 				label: 'フォント'.
 			(aBuilder setting: #nameEndOfLineDelimiter)
 				order: 2;
-				description: '商品名の終端記号';
-				label: 'この記号までを商品名として読み込みます' ]
+				description: 'この記号までを商品名として読み込みます';
+				label: '商品名の終端記号' ]
 ]
 
 { #category : 'class initialization' }
