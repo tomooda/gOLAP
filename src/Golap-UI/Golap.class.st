@@ -10,7 +10,6 @@ Class {
 		'query',
 		'pins',
 		'selections',
-		'font',
 		'itemView',
 		'baseList',
 		'dimensions',
@@ -47,14 +46,39 @@ Class {
 	#tag : 'Graph'
 }
 
-{ #category : 'utilities' }
+{ #category : 'settings' }
 Golap class >> defaultFont [
 	^ StandardFonts defaultFont
 ]
 
-{ #category : 'utilities' }
+{ #category : 'settings' }
 Golap class >> defaultFont: aFont [
 	^ StandardFonts defaultFont: aFont
+]
+
+{ #category : 'settings' }
+Golap class >> defaultFontAsJSON [
+
+	| font |
+	font := self defaultFont.
+	^ Dictionary new
+		  at: 'family-name' put: font familyName;
+		  at: 'point-size' put: font pointSize;
+		  at: 'stretch' put: font stretchValue;
+		  at: 'weight' put: font weightValue;
+		  at: 'slant' put: font slantValue;
+		  yourself
+]
+
+{ #category : 'settings' }
+Golap class >> defaultFontFromJSON: aDictionary [
+
+	self defaultFont: (LogicalFont
+			 familyName: (aDictionary at: 'family-name' ifAbsent: [ ^ self ])
+			 pointSize: (aDictionary at: 'point-size' ifAbsent: [ ^ self ])
+			 stretchValue: (aDictionary at: 'stretch' ifAbsent: [ ^ self ])
+			 weightValue: (aDictionary at: 'weight' ifAbsent: [ ^ self ])
+			 slantValue: (aDictionary at: 'slant' ifAbsent: [ ^ self ]))
 ]
 
 { #category : 'utilities' }
@@ -135,12 +159,12 @@ Golap class >> golapSettingsOn: aBuilder [
 		label: 'gOLAP';
 		with: [ (aBuilder setting: #defaultFont)
 				order: 1;
-				description: 'The default text font';
-				label: 'Font'.
+				description: '表示に使うフォントを設定します';
+				label: 'フォント'.
 			(aBuilder setting: #nameEndOfLineDelimiter)
 				order: 2;
-				description: 'The end of line delimiter for item names';
-				label: 'End-of-Line for item name' ]
+				description: '商品名の終端記号';
+				label: 'この記号までを商品名として読み込みます' ]
 ]
 
 { #category : 'class initialization' }
@@ -149,12 +173,12 @@ Golap class >> initialize [
 	SessionManager default registerUserClassNamed: self name
 ]
 
-{ #category : 'accessing' }
+{ #category : 'settings' }
 Golap class >> nameEndOfLineDelimiter [
 	^ NameEndOfLineDelimiter ifNil: [ '||' ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'settings' }
 Golap class >> nameEndOfLineDelimiter: aString [
 	NameEndOfLineDelimiter := aString
 ]
@@ -230,6 +254,10 @@ Golap class >> resume [
 							at: 'session'
 							ifPresent: [ :session |
 								GolapPhantasmicProject fromJSON: session ];
+							at: 'default-font'
+							ifPresent: [ :font | Golap defaultFontFromJSON: font ];
+							at: 'name-delimiter'
+							ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
 							at: 'colors'
 							ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
 		on: Exception
@@ -276,6 +304,8 @@ Golap class >> suspend [
 			json at: 'session' put: project ].
 		GolapColorPreferences asJSON ifNotNil: [ :colors |
 			json at: 'colors' put: colors ].
+		Golap defaultFontAsJSON ifNotNil: [ :font |
+			json at: 'default-font' put: font ].
 		self sessionFile
 			ensureDelete;
 			writeStreamDo: [ :stream |
@@ -631,16 +661,6 @@ Golap >> ensurePhotoimageRetrievingProcess [
 	(photoImageRetrievingProcess isNil or: [ 
 		 photoImageRetrievingProcess isTerminating ]) ifTrue: [ 
 		self startPhotoimageRetrievingProcess ]
-]
-
-{ #category : 'accessing' }
-Golap >> font [
-	^ font ifNil: [ font := TextStyle defaultFont ]
-]
-
-{ #category : 'accessing' }
-Golap >> font: aFont [
-	self updateGlobalImageAfter: [ font := aFont ]
 ]
 
 { #category : 'accessing-colors' }
@@ -1610,7 +1630,6 @@ Golap >> release [
 	model := nil.
 	pins := nil.
 	selections := nil.
-	font := nil.
 	itemView := nil.
 	imageCache := nil.
 	super release
