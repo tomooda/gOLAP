@@ -10,6 +10,14 @@ Class {
 	#tag : 'Base-Graph'
 }
 
+{ #category : 'instance creation' }
+GolapBaseGraph class >> fromServerDataframe: aDataFrame [
+
+	^ self new
+		  readServerDataframe: aDataFrame;
+		  yourself
+]
+
 { #category : 'arithmetics' }
 GolapBaseGraph >> - aGolapBaseGraph [
 

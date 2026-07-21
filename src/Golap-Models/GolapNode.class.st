@@ -32,11 +32,6 @@ GolapNode >> addHiddenEdge: aGolapEdge [
 	^ hiddenEdges add: aGolapEdge
 ]
 
-{ #category : 'adding-removing' }
-GolapNode >> addScore: aNumber node: aGolapNode [
-	^ scores at: aGolapNode put: aNumber
-]
-
 { #category : 'accessing' }
 GolapNode >> at: aString [
 
@@ -219,8 +214,7 @@ GolapNode >> initialize [
 
 	super initialize.
 	edges := OrderedCollection new.
-	hiddenEdges := OrderedCollection new.
-	scores := Dictionary new
+	hiddenEdges := OrderedCollection new
 ]
 
 { #category : 'testing' }
@@ -256,21 +250,10 @@ GolapNode >> negated [
 		value1 isNumber ifTrue: [ data at: key put: value1 negated ] ]
 ]
 
-{ #category : 'enumerating' }
-GolapNode >> nodesAndScoresDo: aBlock [
-	scores keysAndValuesDo: aBlock
-]
-
 { #category : 'accessing' }
 GolapNode >> numberOfEdges [
 
 	^ edges size
-]
-
-{ #category : 'accessing' }
-GolapNode >> photoId [
-
-	^ self id
 ]
 
 { #category : 'accessing' }
@@ -292,8 +275,7 @@ GolapNode >> postCopy [
 	super postCopy.
 	data := data copy.
 	edges := edges copy.
-	hiddenEdges := hiddenEdges copy.
-	scores := Dictionary new
+	hiddenEdges := hiddenEdges copy
 ]
 
 { #category : 'printing' }
@@ -331,29 +313,9 @@ GolapNode >> removeEdge: aGolapEdge [
 		yourself
 ]
 
-{ #category : 'accessing' }
-GolapNode >> resetScores [
-	scores := Dictionary new
-]
-
-{ #category : 'accessing' }
-GolapNode >> scoreWith: aGolapNode [
-	^ scores at: aGolapNode ifAbsent: [ 0 ]
-]
-
-{ #category : 'enumerating' }
-GolapNode >> scoresDo: aBlock [
-	scores valuesDo: aBlock
-]
-
 { #category : 'private' }
 GolapNode >> setData: aDataSeries name: aString [
 
 	data := aDataSeries.
 	name := aString
-]
-
-{ #category : 'accessing' }
-GolapNode >> totalScore [
-	^ scores ifEmpty: [ 0 ] ifNotEmpty: #sum
 ]

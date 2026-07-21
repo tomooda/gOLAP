@@ -12,6 +12,8 @@ Class {
 		'nodes',
 		'referenceNodes',
 		'baseGraph',
+		'frontNodes',
+		'baseNodes',
 		'merge',
 		'polishers'
 	],
@@ -20,49 +22,12 @@ Class {
 	#tag : 'Graph'
 }
 
-{ #category : 'storage' }
-GolapModel class >> chooseCoocurrenceDataDo: aBlock [
-	^ (UIManager default
-		chooseExistingFileReference: 'サーバからダウンロードしたファイルを選んでください'
-		extensions: #('csv')
-		path: self coocurrenceDataDirectory) ifNotNil: aBlock
-]
-
-{ #category : 'storage' }
-GolapModel class >> coocurrenceDataDirectory [
-	^ self localDirectory
-]
-
 { #category : 'instance creation' }
 GolapModel class >> fromServerDataframe: aDataFrame [
 
 	^ self new
 		  readServerDataframe: aDataFrame;
 		  yourself
-]
-
-{ #category : 'storage' }
-GolapModel class >> itemsDataDirectory [
-	^ self localDirectory
-]
-
-{ #category : 'storage' }
-GolapModel class >> localDirectory [
-	^ (FileLocator documents / 'gOLAP') ensureCreateDirectory
-]
-
-{ #category : 'defaults' }
-GolapModel class >> stringColumns [
-	^ #('node1' 'node2' 'node1n' 'node2n') asSet
-]
-
-{ #category : 'arithmetics' }
-GolapModel >> - aGolapModel [
-
-	| diff |
-	diff := self shallowCopy.
-	diff baseGraph: diff baseGraph - aGolapModel baseGraph.
-	^ diff
 ]
 
 { #category : 'accessing' }
@@ -162,30 +127,77 @@ GolapModel >> articulationNodesInEdges: aCollectionOfGolapEdge do: aBlock [
 	finder articulationPoints do: aBlock
 ]
 
+{ #category : 'accessing-edge' }
+GolapModel >> baseEdgeAt: anArray [
+
+	^ self baseEdgeAt: anArray ifPresent: #yourself ifAbsent: [ nil ]
+]
+
+{ #category : 'accessing-edge' }
+GolapModel >> baseEdgeAt: anArray ifAbsent: aBlock [
+
+	^ self baseEdgeAt: anArray ifPresent: #yourself ifAbsent: aBlock
+]
+
+{ #category : 'accessing-edge' }
+GolapModel >> baseEdgeAt: anArray ifPresent: aBlock [
+
+	^ self baseEdgeAt: anArray ifPresent: aBlock ifAbsent: [ nil ]
+]
+
+{ #category : 'accessing-edge' }
+GolapModel >> baseEdgeAt: anArray ifPresent: aBlock ifAbsent: anotherBlock [
+
+	| node1 node2 edge |
+	node1 := self
+		         baseNodeAt: anArray first
+		         ifAbsent: [ ^ anotherBlock value ].
+	node2 := self
+		         baseNodeAt: anArray second
+		         ifAbsent: [ ^ anotherBlock value ].
+	edge := node1 edgeTo: node2 ifAbsent: [ ^ anotherBlock value ].
+	^ aBlock value: edge
+]
+
 { #category : 'accessing' }
 GolapModel >> baseGraph [
 
 	^ baseGraph
 ]
 
-{ #category : 'accessing' }
-GolapModel >> baseGraph: aGolapBaseGraph [
+{ #category : 'accessing-node' }
+GolapModel >> baseNodeAt: aString ifAbsent: aBlock [
 
-	baseGraph := aGolapBaseGraph
+	^ self baseNodeAt: aString ifPresent: #yourself ifAbsent: aBlock
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> baseNodeAt: aString ifPresent: aBlock ifAbsent: anotherBlock [
+
+	^ baseNodes
+		  ifNotNil: [
+		  baseNodes at: aString ifPresent: aBlock ifAbsent: anotherBlock ]
+		  ifNil: anotherBlock
 ]
 
 { #category : 'updating' }
 GolapModel >> constructFromBaseGraph [
 
-	| baseNodes newRoots newNodes newRootEdges |
-	baseNodes := Dictionary new: baseGraph numberOfNodes.
+	nodes := self constructNodesFromBaseGraph: baseGraph
+]
+
+{ #category : 'updating' }
+GolapModel >> constructNodesFromBaseGraph: aGolapBaseGraph [
+
+	| baseGraphNodes newRoots newNodes newRootEdges |
+	baseGraphNodes := Dictionary new: aGolapBaseGraph numberOfNodes.
 	newRoots := Set new.
-	baseGraph nodesDo: [ :baseNode |
-			baseNodes at: baseNode id put: baseNode.
+	aGolapBaseGraph nodesDo: [ :baseNode |
+			baseGraphNodes at: baseNode id put: baseNode.
 			merge rootsAt: baseNode id do: [ :id | newRoots add: id ] ].
 	newNodes := Dictionary new.
 	newRoots do: [ :root |
-			((merge leavesAt: root) collect: [ :leaf | baseNodes at: leaf ])
+			((merge leavesAt: root) collect: [ :leaf | baseGraphNodes at: leaf ])
 				ifNotEmpty: [ :leafBaseNodes |
 						newNodes at: root put: (leafBaseNodes size = 1
 								 ifTrue: [ leafBaseNodes first asGolapNode ]
@@ -201,7 +213,7 @@ GolapModel >> constructFromBaseGraph [
 											 name: root asString
 											 ids: (leafBaseNodes collect: [ :n | n id asString ]) ]) ] ].
 	newRootEdges := Dictionary new.
-	baseGraph edgesDo: [ :baseEdge |
+	aGolapBaseGraph edgesDo: [ :baseEdge |
 			merge rootsAt: baseEdge node1 do: [ :root1 |
 					merge rootsAt: baseEdge node2 do: [ :root2 |
 							root1 = root2 ifFalse: [
@@ -225,7 +237,7 @@ GolapModel >> constructFromBaseGraph [
 							(data at: 'effective' ifAbsent: [ 1 ]) <= 0
 								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data copy ]
 								ifFalse: [ node1 createEdgeTo: node2 data: data copy ] ] ] ].
-	nodes := newNodes
+	^ newNodes
 ]
 
 { #category : 'private' }
@@ -290,7 +302,7 @@ GolapModel >> edgeAggregators: aCollectionOfGolapDataAggregator [
 	edgeAggregators := aCollectionOfGolapDataAggregator
 ]
 
-{ #category : 'accessing' }
+{ #category : 'accessing-edge' }
 GolapModel >> edgeAt: anArray [
 
 	^ self
@@ -299,7 +311,7 @@ GolapModel >> edgeAt: anArray [
 		  ifAbsent: [ nil ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'accessing-edge' }
 GolapModel >> edgeAt: anArray ifAbsent: aBlock [
 
 	^ self
@@ -308,7 +320,7 @@ GolapModel >> edgeAt: anArray ifAbsent: aBlock [
 		  ifAbsent: aBlock
 ]
 
-{ #category : 'accessing' }
+{ #category : 'accessing-edge' }
 GolapModel >> edgeAt: anArray ifPresent: aBlock [
 
 	^ self
@@ -318,7 +330,7 @@ GolapModel >> edgeAt: anArray ifPresent: aBlock [
 		  ifAbsent: [ nil ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'accessing-edge' }
 GolapModel >> edgeAt: anArray ifPresent: aBlock ifAbsent: anotherBlock [
 
 	^ self
@@ -328,7 +340,7 @@ GolapModel >> edgeAt: anArray ifPresent: aBlock ifAbsent: anotherBlock [
 		  ifAbsent: anotherBlock
 ]
 
-{ #category : 'accessing' }
+{ #category : 'accessing-edge' }
 GolapModel >> edgeBetween: aString and: anotherString ifAbsent: errorBlock [
 
 	^ self
@@ -338,7 +350,7 @@ GolapModel >> edgeBetween: aString and: anotherString ifAbsent: errorBlock [
 		  ifAbsent: errorBlock
 ]
 
-{ #category : 'accessing' }
+{ #category : 'accessing-edge' }
 GolapModel >> edgeBetween: aString and: anotherString ifPresent: aBlock [
 	^ self
 		edgeBetween: aString
@@ -347,7 +359,7 @@ GolapModel >> edgeBetween: aString and: anotherString ifPresent: aBlock [
 		ifAbsent: [  ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'accessing-edge' }
 GolapModel >> edgeBetween: aString and: anotherString ifPresent: aBlock ifAbsent: errorBlock [
 
 	| node1 node2 edge |
@@ -395,6 +407,75 @@ GolapModel >> friend: anIntegerOrNil [
 	self updateNodesAndEdges
 ]
 
+{ #category : 'accessing-edge' }
+GolapModel >> frontEdgeAt: anArray [
+
+	^ self frontEdgeAt: anArray ifPresent: #yourself ifAbsent: [ nil ]
+]
+
+{ #category : 'accessing-edge' }
+GolapModel >> frontEdgeAt: anArray ifAbsent: aBlock [
+
+	^ self frontEdgeAt: anArray ifPresent: #yourself ifAbsent: aBlock
+]
+
+{ #category : 'accessing-edge' }
+GolapModel >> frontEdgeAt: anArray ifPresent: aBlock [
+
+	^ self frontEdgeAt: anArray ifPresent: aBlock ifAbsent: [ nil ]
+]
+
+{ #category : 'accessing-edge' }
+GolapModel >> frontEdgeAt: anArray ifPresent: aBlock ifAbsent: anotherBlock [
+
+	| node1 node2 edge |
+	node1 := self
+		         frontNodeAt: anArray first
+		         ifAbsent: [ ^ anotherBlock value ].
+	node2 := self
+		         frontNodeAt: anArray second
+		         ifAbsent: [ ^ anotherBlock value ].
+	edge := node1 edgeTo: node2 ifAbsent: [ ^ anotherBlock value ].
+	^ aBlock value: edge
+]
+
+{ #category : 'accessing' }
+GolapModel >> frontGraph: aGolapBaseGraph base: anotherGolapBaseGraph [
+
+	aGolapBaseGraph
+		ifNotNil: [
+				anotherGolapBaseGraph
+					ifNotNil: [
+							baseGraph := aGolapBaseGraph - anotherGolapBaseGraph.
+							frontNodes := self constructNodesFromBaseGraph: aGolapBaseGraph.
+							baseNodes := self constructNodesFromBaseGraph:
+								             anotherGolapBaseGraph ]
+					ifNil: [
+							baseGraph := aGolapBaseGraph.
+							frontNodes := self constructNodesFromBaseGraph: aGolapBaseGraph.
+							baseNodes := Dictionary new ] ]
+		ifNil: [
+				baseGraph := GolapBaseGraph new.
+				frontNodes := Dictionary new.
+				baseNodes := Dictionary new ].
+	self updateNodesAndEdges
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> frontNodeAt: aString ifAbsent: aBlock [
+
+	^ self frontNodeAt: aString ifPresent: #yourself ifAbsent: aBlock
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> frontNodeAt: aString ifPresent: aBlock ifAbsent: anotherBlock [
+
+	^ frontNodes
+		  ifNotNil: [
+		  frontNodes at: aString ifPresent: aBlock ifAbsent: anotherBlock ]
+		  ifNil: anotherBlock
+]
+
 { #category : 'accessing' }
 GolapModel >> hiddenEdgeBetween: data1 and: data2 ifAbsent: errorBlock [
 	^ self
@@ -433,6 +514,24 @@ GolapModel >> indexAtReferenceNode: aGolapNode [
 GolapModel >> initialize [
 
 	super initialize.
+	nodeEvaluator := GolapNodeColumnEvaluator column: 'frequency'.
+	edgeEvaluator := GolapEdgeColumnEvaluator column: 'jaccard'.
+	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
+	edgeAggregators := {
+		                   (GolapSumDataAggregator column: 'frequency').
+		                   (GolapSumDataAggregator column: 'total').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'supoort'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'jaccard'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'lift'
+			                    weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator
+			                    column: 'PMI'
+			                    weightColumn: 'frequency') }.
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
 	referenceNodes := OrderedCollection new.

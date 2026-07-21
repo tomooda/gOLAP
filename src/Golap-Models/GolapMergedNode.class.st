@@ -54,12 +54,6 @@ GolapMergedNode >> isMergedNode [
 ]
 
 { #category : 'accessing' }
-GolapMergedNode >> photoId [
-
-	^ ids ifNotEmpty: #first ifEmpty: [ self id ]
-]
-
-{ #category : 'accessing' }
 GolapMergedNode >> photoimage: aFormOrAny [
 
 	aFormOrAny isForm
