@@ -22,14 +22,6 @@ Class {
 	#tag : 'Graph'
 }
 
-{ #category : 'instance creation' }
-GolapModel class >> fromServerDataframe: aDataFrame [
-
-	^ self new
-		  readServerDataframe: aDataFrame;
-		  yourself
-]
-
 { #category : 'accessing' }
 GolapModel >> addPolisher: aGolapPolisher [
 
@@ -234,60 +226,9 @@ GolapModel >> constructNodesFromBaseGraph: aGolapBaseGraph [
 	newRootEdges keysAndValuesDo: [ :rootPair :data |
 			newNodes at: rootPair first ifPresent: [ :node1 |
 					newNodes at: rootPair second ifPresent: [ :node2 |
-							(data at: 'effective' ifAbsent: [ 1 ]) <= 0
-								ifTrue: [ node1 createHiddenEdgeTo: node2 data: data copy ]
-								ifFalse: [ node1 createEdgeTo: node2 data: data copy ] ] ] ].
+							(data at: 'effective' ifAbsent: [ 1 ]) > 0
+								ifTrue: [ node1 createEdgeTo: node2 data: data copy ] ] ] ].
 	^ newNodes
-]
-
-{ #category : 'private' }
-GolapModel >> createMergedNodeFrom: aCollectionOfGolapNode named: aString [
-
-	^ aCollectionOfGolapNode
-		  ifNotEmpty: [
-				  | oldData newData |
-				  oldData := aCollectionOfGolapNode collect: #data.
-				  newData := DataSeries newFrom:
-					             (nodeAggregators collect: [ :aggregation |
-						              aggregation value: oldData ]).
-				  newData name: aString.
-				  GolapMergedNode
-					  on: (DataSeries
-							   withKeys: newData keys
-							   values: newData values
-							   name: aString asString)
-					  name: aString ]
-		  ifEmpty: [ nil ]
-]
-
-{ #category : 'accessing-node' }
-GolapModel >> createNode: aDataSeries name: aString [
-
-	^ GolapNode on: aDataSeries name: aString
-]
-
-{ #category : 'arithmetics' }
-GolapModel >> diff: aGolapModel [
-
-	| doneEdges |
-	doneEdges := IdentitySet new: 1024.
-	aGolapModel nodesDo: [ :node |
-			self nodes
-				at: node id
-				ifPresent: [ :myNode | myNode diff: node ]
-				ifAbsentPut: [ (GolapNode on: node data name: node name) negated ] ].
-
-	aGolapModel nodesDo: [ :node |
-			node edgesDo: [ :edge |
-					(doneEdges includes: edge) ifFalse: [
-							| myNode1 myNode2 |
-							doneEdges add: edge.
-							myNode1 := self nodes at: edge node1 id.
-							myNode2 := self nodes at: edge node2 id.
-							(myNode1 edgeTo: myNode2 ifAbsent: [ nil ])
-								ifNotNil: [ :myEdge | myEdge diff: edge ]
-								ifNil: [
-								(myNode1 createEdgeTo: myNode2 data: edge data) negated ] ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -476,34 +417,6 @@ GolapModel >> frontNodeAt: aString ifPresent: aBlock ifAbsent: anotherBlock [
 		  ifNil: anotherBlock
 ]
 
-{ #category : 'accessing' }
-GolapModel >> hiddenEdgeBetween: data1 and: data2 ifAbsent: errorBlock [
-	^ self
-		hiddenEdgeBetween: data1
-		and: data2
-		ifPresent: [ :edge | edge ]
-		ifAbsent: errorBlock
-]
-
-{ #category : 'accessing' }
-GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock [
-	^ self
-		hiddenEdgeBetween: data1
-		and: data2
-		ifPresent: aBlock
-		ifAbsent: [  ]
-]
-
-{ #category : 'accessing' }
-GolapModel >> hiddenEdgeBetween: data1 and: data2 ifPresent: aBlock ifAbsent: errorBlock [
-
-	| node1 node2 edge |
-	node1 := self nodeAt: data1 ifAbsent: [ ^ errorBlock value ].
-	node2 := self nodeAt: data2 ifAbsent: [ ^ errorBlock value ].
-	edge := node1 hiddenEdgeTo: node2 ifAbsent: [ ^ errorBlock value ].
-	^ aBlock value: edge
-]
-
 { #category : 'accessing-reference nodes' }
 GolapModel >> indexAtReferenceNode: aGolapNode [
 
@@ -619,30 +532,6 @@ GolapModel >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 	self updateNodesAndEdges
 ]
 
-{ #category : 'accessing' }
-GolapModel >> nodeListWithKeyword: aString [
-
-	| list column |
-	list := DataFrame new: 0 @ 3.
-	self nodesDo: [ :node :id |
-		| name |
-		name := node name.
-		(aString isEmpty or: [ (name findString: aString) > 0 ]) ifTrue: [
-			list
-				addRow: (DataSeries newFrom: {
-							 name.
-							 (self valueAtNode: node).
-							 id })
-				named: id printString ] ].
-	column := nodeEvaluator name.
-	list columnNames: {
-			'product'.
-			column.
-			'id' }.
-	list sortDescendingBy: column.
-	^ list
-]
-
 { #category : 'accessing-node' }
 GolapModel >> nodes [
 
@@ -667,51 +556,6 @@ GolapModel >> postCopy [
 	edgeEvaluator := edgeEvaluator ifNotNil: #copy.
 	nodeAggregators := nodeAggregators ifNotNil: #copy.
 	edgeAggregators := edgeAggregators ifNotNil: #copy.
-	self updateNodesAndEdges
-]
-
-{ #category : 'private' }
-GolapModel >> readEdgeDataframe: edgeDataframe idColumn: aString and: anotherString [
-
-	baseGraph
-		readEdgeDataframe: edgeDataframe
-		idColumn: aString
-		and: anotherString.
-	self updateNodesAndEdges
-]
-
-{ #category : 'private' }
-GolapModel >> readNodeDataframe: nodeDataframe idColumn: aString nameColumn: anotherString [
-
-	baseGraph
-		readNodeDataframe: nodeDataframe
-		idColumn: aString
-		nameColumn: anotherString.
-	self updateNodesAndEdges
-]
-
-{ #category : 'private' }
-GolapModel >> readServerDataframe: aDataFrame [
-
-	nodeEvaluator := GolapNodeColumnEvaluator column: 'frequency'.
-	edgeEvaluator := GolapEdgeColumnEvaluator column: 'jaccard'.
-	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
-	edgeAggregators := {
-		                   (GolapSumDataAggregator column: 'frequency').
-		                   (GolapSumDataAggregator column: 'total').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'supoort'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'jaccard'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'lift'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'PMI'
-			                    weightColumn: 'frequency') }.
-	baseGraph readServerDataframe: aDataFrame.
 	self updateNodesAndEdges
 ]
 

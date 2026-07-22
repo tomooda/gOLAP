@@ -5,8 +5,6 @@ Class {
 		'data',
 		'name',
 		'edges',
-		'hiddenEdges',
-		'scores',
 		'photoimage'
 	],
 	#category : 'Golap-Models-Graph',
@@ -25,11 +23,6 @@ GolapNode class >> on: aDataSeries name: aString [
 { #category : 'adding-removing' }
 GolapNode >> addEdge: aGolapEdge [
 	^ edges add: aGolapEdge
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> addHiddenEdge: aGolapEdge [
-	^ hiddenEdges add: aGolapEdge
 ]
 
 { #category : 'accessing' }
@@ -62,14 +55,6 @@ GolapNode >> createEdgeTo: aGolapNode data: aDataSeries [
 	edge := GolapEdge on: aDataSeries between: self and: aGolapNode.
 	self addEdge: edge.
 	^ aGolapNode addEdge: edge
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> createHiddenEdgeTo: aGolapNode data: aDataSeries [
-	| edge |
-	edge := GolapEdge on: aDataSeries between: self and: aGolapNode.
-	self addHiddenEdge: edge.
-	^ aGolapNode addHiddenEdge: edge
 ]
 
 { #category : 'accessing' }
@@ -140,15 +125,6 @@ GolapNode >> hasEdge: aGolapEdge [
 	^ edges includes: aGolapEdge
 ]
 
-{ #category : 'enumerating' }
-GolapNode >> hasEdgeSuchThat: aBlock [
-	self
-		edgesDo: [ :edge | 
-			(aBlock value: edge)
-				ifTrue: [ ^ true ] ].
-	^ false
-]
-
 { #category : 'testing' }
 GolapNode >> hasNode: aGolapNode [
 	^ self == aGolapNode
@@ -169,20 +145,6 @@ GolapNode >> hasPeerSuchThat: aBlock [
 	self edgesDo: [ :edge |
 		(aBlock value: (edge peerOf: self)) ifTrue: [ ^ true ] ].
 	^ false
-]
-
-{ #category : 'accessing' }
-GolapNode >> hiddenEdgeTo: aGolapNode ifAbsent: errorBlock [
-
-	self hiddenEdgesAndNodeDo: [ :edge :node |
-		aGolapNode == node ifTrue: [ ^ edge ] ].
-	^ errorBlock value
-]
-
-{ #category : 'enumerating' }
-GolapNode >> hiddenEdgesAndNodeDo: aBlock [
-	hiddenEdges
-		do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
 ]
 
 { #category : 'accessing' }
@@ -213,8 +175,7 @@ GolapNode >> includesId: anObject [
 GolapNode >> initialize [
 
 	super initialize.
-	edges := OrderedCollection new.
-	hiddenEdges := OrderedCollection new
+	edges := OrderedCollection new
 ]
 
 { #category : 'testing' }
@@ -274,8 +235,7 @@ GolapNode >> postCopy [
 
 	super postCopy.
 	data := data copy.
-	edges := edges copy.
-	hiddenEdges := hiddenEdges copy
+	edges := edges copy
 ]
 
 { #category : 'printing' }
@@ -302,8 +262,7 @@ GolapNode >> rankOf: aGolapEdge in: aGolapModel [
 { #category : 'adding-removing' }
 GolapNode >> remove [
 
-	edges copy do: #remove.
-	hiddenEdges copy do: #remove
+	edges copy do: #remove
 ]
 
 { #category : 'adding-removing' }

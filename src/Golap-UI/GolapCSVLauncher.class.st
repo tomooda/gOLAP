@@ -118,36 +118,16 @@ GolapCSVLauncher >> dataframePairsAndNamesDo: aBlock [
 GolapCSVLauncher >> golapBaseGraphsAndNamesDo: aBlock [
 
 	self dataframePairsAndNamesDo: [ :nodeDataframe :edgeDataframe :name |
-			| golapModel |
-			golapModel := GolapBaseGraph new.
-			golapModel
+			| baseGraph |
+			baseGraph := GolapBaseGraph new.
+			baseGraph
 				readNodeDataframe: nodeDataframe
 				idColumn: nodeImporterPresenter idColumn
 				nameColumn: nodeImporterPresenter nameColumn;
 				readEdgeDataframe: edgeDataframe
 				idColumn: edgeImporterPresenter idColumn1
 				and: edgeImporterPresenter idColumn2.
-			aBlock value: golapModel value: name ]
-]
-
-{ #category : 'enumerating' }
-GolapCSVLauncher >> golapModelsAndNamesDo: aBlock [
-
-	self dataframePairsAndNamesDo: [ :nodeDataframe :edgeDataframe :name |
-			| golapModel |
-			golapModel := GolapModel new.
-			golapModel
-				nodeAggregators: nodeImporterPresenter createAggregators;
-				nodeEvaluator: nodeImporterPresenter evaluator;
-				edgeAggregators: edgeImporterPresenter createAggregators;
-				edgeEvaluator: edgeImporterPresenter evaluator;
-				readNodeDataframe: nodeDataframe
-				idColumn: nodeImporterPresenter idColumn
-				nameColumn: nodeImporterPresenter nameColumn;
-				readEdgeDataframe: edgeDataframe
-				idColumn: edgeImporterPresenter idColumn1
-				and: edgeImporterPresenter idColumn2.
-			aBlock value: golapModel value: name ]
+			aBlock value: baseGraph value: name ]
 ]
 
 { #category : 'initialization' }
