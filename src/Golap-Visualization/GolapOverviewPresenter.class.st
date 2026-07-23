@@ -291,40 +291,23 @@ GolapOverviewPresenter >> newLabelForEdge: aGolapEdge [
 										            stream nextPutAll:
 											            (golap simpleStringFor:
 												             (golapModel valueAtEdge: aGolapEdge)).
-										            golap selectedFrontDimension ifNotNil: [
-												            :frontModel |
-												            golap selectedBaseDimension ifNotNil: [
-														            :baseModel |
-														            stream
-															            nextPutAll: '=';
-															            nextPutAll: ((frontModel
-																	              edgeBetween: aGolapEdge node1 id
-																	              and: aGolapEdge node2 id
-																	              ifAbsent: [
-																			              frontModel
-																				              hiddenEdgeBetween:
-																					              aGolapEdge node1 id
-																				              and: aGolapEdge node2 id
-																				              ifAbsent: [ nil ] ])
-																	             ifNotNil: [ :e |
-																		             golap simpleStringFor:
-																				             (frontModel valueAtEdge: e) ]
-																	             ifNil: [ '0' ]);
-															            nextPutAll: '-';
-															            nextPutAll: ((baseModel
-																	              edgeBetween: aGolapEdge node1 id
-																	              and: aGolapEdge node2 id
-																	              ifAbsent: [
-																			              baseModel
-																				              hiddenEdgeBetween:
-																					              aGolapEdge node1 id
-																				              and: aGolapEdge node2 id
-																				              ifAbsent: [ nil ] ])
-																	             ifNotNil: [ :e |
-																		             golap simpleStringFor:
-																				             (baseModel valueAtEdge: e) ]
-																	             ifNil: [ '0' ]);
-															            space ] ] ].
+										            golap selectedBaseDimension ifNotNil: [
+												            stream
+													            nextPutAll: '=';
+													            nextPutAll: (golapModel
+															             frontEdgeAt: aGolapEdge key
+															             ifPresent: [ :e |
+																             golap simpleStringFor:
+																		             (golapModel valueAtEdge: e) ]
+															             ifAbsent: [ '0' ]);
+													            nextPutAll: '-';
+													            nextPutAll: (golapModel
+															             baseEdgeAt: aGolapEdge key
+															             ifPresent: [ :e |
+																             golap simpleStringFor:
+																		             (golapModel valueAtEdge: e) ]
+															             ifAbsent: [ '0' ]);
+													            space ] ].
 								  label := RSLabel new
 									           text: string;
 									           color: color.
@@ -353,29 +336,23 @@ GolapOverviewPresenter >> newLabelForNode: aGolapNode [
 										             stream nextPutAll:
 											             (golap simpleStringFor:
 												              (model valueAtNode: aGolapNode)).
-										             golap selectedFrontDimension ifNotNil: [
-												             :frontModel |
-												             golap selectedBaseDimension ifNotNil: [
-														             :baseModel |
-														             stream
-															             nextPutAll: '=';
-															             nextPutAll:
-																             ((frontModel
-																	               nodeAt: aGolapNode id
-																	               ifAbsent: [ nil ])
-																	              ifNotNil: [ :v |
-																		              golap simpleStringFor:
-																				              (frontModel valueAtNode: v) ]
-																	              ifNil: [ '0' ]);
-															             nextPutAll: '-';
-															             nextPutAll:
-																             ((baseModel
-																	               nodeAt: aGolapNode id
-																	               ifAbsent: [ nil ])
-																	              ifNotNil: [ :v |
-																		              golap simpleStringFor:
-																				              (baseModel valueAtNode: v) ]
-																	              ifNil: [ '0' ]) ] ] ]))
+
+										             golap selectedBaseDimension ifNotNil: [
+												             stream
+													             nextPutAll: '=';
+													             nextPutAll: (model
+															              frontNodeAt: aGolapNode id
+															              ifPresent: [ :v |
+																              golap simpleStringFor:
+																		              (model valueAtNode: v) ]
+															              ifAbsent: [ '0' ]);
+													             nextPutAll: '-';
+													             nextPutAll: (model
+															              baseNodeAt: aGolapNode id
+															              ifPresent: [ :v |
+																              golap simpleStringFor:
+																		              (model valueAtNode: v) ]
+															              ifAbsent: [ '0' ]) ] ]))
 						           color: color.
 					  (golap includesSelection: aGolapNode) ifTrue: [
 							  label := {

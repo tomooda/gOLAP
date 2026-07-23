@@ -5,8 +5,6 @@ Class {
 		'data',
 		'name',
 		'edges',
-		'hiddenEdges',
-		'scores',
 		'photoimage'
 	],
 	#category : 'Golap-Models-Graph',
@@ -25,16 +23,6 @@ GolapNode class >> on: aDataSeries name: aString [
 { #category : 'adding-removing' }
 GolapNode >> addEdge: aGolapEdge [
 	^ edges add: aGolapEdge
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> addHiddenEdge: aGolapEdge [
-	^ hiddenEdges add: aGolapEdge
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> addScore: aNumber node: aGolapNode [
-	^ scores at: aGolapNode put: aNumber
 ]
 
 { #category : 'accessing' }
@@ -67,14 +55,6 @@ GolapNode >> createEdgeTo: aGolapNode data: aDataSeries [
 	edge := GolapEdge on: aDataSeries between: self and: aGolapNode.
 	self addEdge: edge.
 	^ aGolapNode addEdge: edge
-]
-
-{ #category : 'adding-removing' }
-GolapNode >> createHiddenEdgeTo: aGolapNode data: aDataSeries [
-	| edge |
-	edge := GolapEdge on: aDataSeries between: self and: aGolapNode.
-	self addHiddenEdge: edge.
-	^ aGolapNode addHiddenEdge: edge
 ]
 
 { #category : 'accessing' }
@@ -145,15 +125,6 @@ GolapNode >> hasEdge: aGolapEdge [
 	^ edges includes: aGolapEdge
 ]
 
-{ #category : 'enumerating' }
-GolapNode >> hasEdgeSuchThat: aBlock [
-	self
-		edgesDo: [ :edge | 
-			(aBlock value: edge)
-				ifTrue: [ ^ true ] ].
-	^ false
-]
-
 { #category : 'testing' }
 GolapNode >> hasNode: aGolapNode [
 	^ self == aGolapNode
@@ -174,20 +145,6 @@ GolapNode >> hasPeerSuchThat: aBlock [
 	self edgesDo: [ :edge |
 		(aBlock value: (edge peerOf: self)) ifTrue: [ ^ true ] ].
 	^ false
-]
-
-{ #category : 'accessing' }
-GolapNode >> hiddenEdgeTo: aGolapNode ifAbsent: errorBlock [
-
-	self hiddenEdgesAndNodeDo: [ :edge :node |
-		aGolapNode == node ifTrue: [ ^ edge ] ].
-	^ errorBlock value
-]
-
-{ #category : 'enumerating' }
-GolapNode >> hiddenEdgesAndNodeDo: aBlock [
-	hiddenEdges
-		do: [ :edge | aBlock value: edge value: (edge peerOf: self) ]
 ]
 
 { #category : 'accessing' }
@@ -218,9 +175,7 @@ GolapNode >> includesId: anObject [
 GolapNode >> initialize [
 
 	super initialize.
-	edges := OrderedCollection new.
-	hiddenEdges := OrderedCollection new.
-	scores := Dictionary new
+	edges := OrderedCollection new
 ]
 
 { #category : 'testing' }
@@ -256,21 +211,10 @@ GolapNode >> negated [
 		value1 isNumber ifTrue: [ data at: key put: value1 negated ] ]
 ]
 
-{ #category : 'enumerating' }
-GolapNode >> nodesAndScoresDo: aBlock [
-	scores keysAndValuesDo: aBlock
-]
-
 { #category : 'accessing' }
 GolapNode >> numberOfEdges [
 
 	^ edges size
-]
-
-{ #category : 'accessing' }
-GolapNode >> photoId [
-
-	^ self id
 ]
 
 { #category : 'accessing' }
@@ -291,9 +235,7 @@ GolapNode >> postCopy [
 
 	super postCopy.
 	data := data copy.
-	edges := edges copy.
-	hiddenEdges := hiddenEdges copy.
-	scores := Dictionary new
+	edges := edges copy
 ]
 
 { #category : 'printing' }
@@ -320,8 +262,7 @@ GolapNode >> rankOf: aGolapEdge in: aGolapModel [
 { #category : 'adding-removing' }
 GolapNode >> remove [
 
-	edges copy do: #remove.
-	hiddenEdges copy do: #remove
+	edges copy do: #remove
 ]
 
 { #category : 'adding-removing' }
@@ -331,29 +272,9 @@ GolapNode >> removeEdge: aGolapEdge [
 		yourself
 ]
 
-{ #category : 'accessing' }
-GolapNode >> resetScores [
-	scores := Dictionary new
-]
-
-{ #category : 'accessing' }
-GolapNode >> scoreWith: aGolapNode [
-	^ scores at: aGolapNode ifAbsent: [ 0 ]
-]
-
-{ #category : 'enumerating' }
-GolapNode >> scoresDo: aBlock [
-	scores valuesDo: aBlock
-]
-
 { #category : 'private' }
 GolapNode >> setData: aDataSeries name: aString [
 
 	data := aDataSeries.
 	name := aString
-]
-
-{ #category : 'accessing' }
-GolapNode >> totalScore [
-	^ scores ifEmpty: [ 0 ] ifNotEmpty: #sum
 ]

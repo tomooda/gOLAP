@@ -46,13 +46,3 @@ GolapEdgeTest >> testCopy [
 	edge12 data at: 'value' put: 0.
 	self assert: (copy at: 'value') equals: 12
 ]
-
-{ #category : 'tests' }
-GolapEdgeTest >> testDiff [
-
-	self assert: (edge12 at: 'value') equals: 12.
-	self assert: (edge23 at: 'value') equals: 23.
-	edge12 diff: edge23.
-	self assert: (edge12 at: 'value') equals: -11.
-	self assert: (edge23 at: 'value') equals: 23
-]

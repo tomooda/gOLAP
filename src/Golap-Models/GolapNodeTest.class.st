@@ -40,13 +40,3 @@ GolapNodeTest >> testCopy [
 	node1 data at: 'value' put: 0.
 	self assert: (copy at: 'value') equals: 10
 ]
-
-{ #category : 'tests' }
-GolapNodeTest >> testDiff [
-
-	self assert: (node1 at: 'value') equals: 10.
-	self assert: (node2 at: 'value') equals: 20.
-	node1 diff: node2.
-	self assert: (node1 at: 'value') equals: -10.
-	self assert: (node2 at: 'value') equals: 20
-]

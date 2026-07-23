@@ -36,22 +36,11 @@ GolapItemsAppearance >> buttonHeight [
 	^ self class buttonHeight
 ]
 
-{ #category : 'private' }
-GolapItemsAppearance >> chooseFont [
-
-	golap ifNotNil: [
-			FontChooser
-				openModalWithTitle: 'Font for Golap'
-				initialFont: Golap defaultFont
-				onAcceptDo: [ :font | Golap defaultFont: font ] ]
-]
-
 { #category : 'layouts' }
 GolapItemsAppearance >> defaultLayout [
 
 	<spec>
 	^ SpBoxLayout newHorizontal add: (SpBoxLayout newVertical
-			   add: fontButton expand: false;
 			   add: '商品画像取得' expand: false;
 			   add: photoimageRetrievers expand: true;
 			   add: (SpBoxLayout newHorizontal
@@ -65,10 +54,6 @@ GolapItemsAppearance >> defaultLayout [
 { #category : 'initialization' }
 GolapItemsAppearance >> initializePresenters [
 
-	fontButton := self newButton
-		              label: 'フォント';
-		              action: [ self chooseFont ];
-		              yourself.
 	photoimageRetrievers := self instantiate:
 		                        GolapPhotoImageRetrieversPresenter.
 	photoimageRetrievalProgressBar := self newProgressBar

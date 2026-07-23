@@ -16,17 +16,16 @@ Class {
 { #category : 'examples' }
 GolapArticulationPointFinder class >> example [
 
-	| graph a b c d e f g h i edges finder |
-	graph := GolapModel new.
-	a := graph createNode: ({  } asDataSeries name: 'A') name: 'A'.
-	b := graph createNode: ({  } asDataSeries name: 'B') name: 'B'.
-	c := graph createNode: ({  } asDataSeries name: 'C') name: 'C'.
-	d := graph createNode: ({  } asDataSeries name: 'D') name: 'D'.
-	e := graph createNode: ({  } asDataSeries name: 'E') name: 'E'.
-	f := graph createNode: ({  } asDataSeries name: 'F') name: 'F'.
-	g := graph createNode: ({  } asDataSeries name: 'G') name: 'G'.
-	h := graph createNode: ({  } asDataSeries name: 'H') name: 'H'.
-	i := graph createNode: ({  } asDataSeries name: 'I') name: 'I'.
+	| a b c d e f g h i edges finder |
+	a := GolapNode on: ({  } asDataSeries name: 'A') name: 'A'.
+	b := GolapNode on: ({  } asDataSeries name: 'B') name: 'B'.
+	c := GolapNode on: ({  } asDataSeries name: 'C') name: 'C'.
+	d := GolapNode on: ({  } asDataSeries name: 'D') name: 'D'.
+	e := GolapNode on: ({  } asDataSeries name: 'E') name: 'E'.
+	f := GolapNode on: ({  } asDataSeries name: 'F') name: 'F'.
+	g := GolapNode on: ({  } asDataSeries name: 'G') name: 'G'.
+	h := GolapNode on: ({  } asDataSeries name: 'H') name: 'H'.
+	i := GolapNode on: ({  } asDataSeries name: 'I') name: 'I'.
 	edges := Array streamContents: [ :stream |
 			         stream nextPut:
 				         (a createEdgeTo: b data: {  } asDataSeries).

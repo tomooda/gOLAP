@@ -10,7 +10,6 @@ Class {
 		'query',
 		'pins',
 		'selections',
-		'font',
 		'itemView',
 		'baseList',
 		'dimensions',
@@ -47,14 +46,39 @@ Class {
 	#tag : 'Graph'
 }
 
-{ #category : 'utilities' }
+{ #category : 'settings' }
 Golap class >> defaultFont [
 	^ StandardFonts defaultFont
 ]
 
-{ #category : 'utilities' }
+{ #category : 'settings' }
 Golap class >> defaultFont: aFont [
 	^ StandardFonts defaultFont: aFont
+]
+
+{ #category : 'settings' }
+Golap class >> defaultFontAsJSON [
+
+	| font |
+	font := self defaultFont.
+	^ Dictionary new
+		  at: 'family-name' put: font familyName;
+		  at: 'point-size' put: font pointSize;
+		  at: 'stretch' put: font stretchValue;
+		  at: 'weight' put: font weightValue;
+		  at: 'slant' put: font slantValue;
+		  yourself
+]
+
+{ #category : 'settings' }
+Golap class >> defaultFontFromJSON: aDictionary [
+
+	self defaultFont: (LogicalFont
+			 familyName: (aDictionary at: 'family-name' ifAbsent: [ ^ self ])
+			 pointSize: (aDictionary at: 'point-size' ifAbsent: [ ^ self ])
+			 stretchValue: (aDictionary at: 'stretch' ifAbsent: [ ^ self ])
+			 weightValue: (aDictionary at: 'weight' ifAbsent: [ ^ self ])
+			 slantValue: (aDictionary at: 'slant' ifAbsent: [ ^ self ]))
 ]
 
 { #category : 'utilities' }
@@ -135,12 +159,12 @@ Golap class >> golapSettingsOn: aBuilder [
 		label: 'gOLAP';
 		with: [ (aBuilder setting: #defaultFont)
 				order: 1;
-				description: 'The default text font';
-				label: 'Font'.
+				description: '表示に使うフォントを設定します';
+				label: 'フォント'.
 			(aBuilder setting: #nameEndOfLineDelimiter)
 				order: 2;
-				description: 'The end of line delimiter for item names';
-				label: 'End-of-Line for item name' ]
+				description: 'この記号までを商品名として読み込みます';
+				label: '商品名の終端記号' ]
 ]
 
 { #category : 'class initialization' }
@@ -149,26 +173,14 @@ Golap class >> initialize [
 	SessionManager default registerUserClassNamed: self name
 ]
 
-{ #category : 'accessing' }
+{ #category : 'settings' }
 Golap class >> nameEndOfLineDelimiter [
 	^ NameEndOfLineDelimiter ifNil: [ '||' ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'settings' }
 Golap class >> nameEndOfLineDelimiter: aString [
 	NameEndOfLineDelimiter := aString
-]
-
-{ #category : 'utilities' }
-Golap class >> open [
-
-	<script: 'GolapOverview open'>
-	| overview |
-	overview := Golap new.
-	overview open maximize.
-	^ overview
-		  updateGlobalImageAfter: [ overview model: nil ] layout: true;
-		  yourself
 ]
 
 { #category : 'utilities' }
@@ -230,6 +242,10 @@ Golap class >> resume [
 							at: 'session'
 							ifPresent: [ :session |
 								GolapPhantasmicProject fromJSON: session ];
+							at: 'default-font'
+							ifPresent: [ :font | Golap defaultFontFromJSON: font ];
+							at: 'name-delimiter'
+							ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
 							at: 'colors'
 							ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
 		on: Exception
@@ -276,6 +292,8 @@ Golap class >> suspend [
 			json at: 'session' put: project ].
 		GolapColorPreferences asJSON ifNotNil: [ :colors |
 			json at: 'colors' put: colors ].
+		Golap defaultFontAsJSON ifNotNil: [ :font |
+			json at: 'default-font' put: font ].
 		self sessionFile
 			ensureDelete;
 			writeStreamDo: [ :stream |
@@ -292,17 +310,15 @@ Golap >> activeVisualizationDo: aBlock [
 ]
 
 { #category : 'accessing-dimensions' }
-Golap >> addDimension: aGolapOverviewModel named: aString [
-	dimensions at: aString put: aGolapOverviewModel.
+Golap >> addDimension: aGolapBaseGraph named: aString [
+
+	dimensions at: aString put: aGolapBaseGraph.
 	frontList items: dimensions keys.
-	baseList
-		items:
-			(dimensions keys
-				collect: [ :base | 
-					frontList selectedItem = base
-						ifTrue: [ String new ]
-						ifFalse: [ base ] ]).
-	^ aGolapOverviewModel
+	baseList items: (dimensions keys collect: [ :base |
+				 frontList selectedItem = base
+					 ifTrue: [ String new ]
+					 ifFalse: [ base ] ]).
+	^ aGolapBaseGraph
 ]
 
 { #category : 'accessing-reference nodes' }
@@ -461,44 +477,34 @@ Golap >> colorForEdge: aGolapEdge [
 		 self includesSelection: aGolapEdge node2 ]) ifTrue: [
 		^ self selectionColor ].
 	self selectedBaseDimension ifNotNil: [
-		| frontEdge baseEdge v |
-		frontEdge := self selectedFrontDimension
-			             edgeBetween: aGolapEdge node1 id
-			             and: aGolapEdge node2 id
-			             ifAbsent: [  ].
-		baseEdge := self selectedBaseDimension
-			            edgeBetween: aGolapEdge node1 id
-			            and: aGolapEdge node2 id
-			            ifAbsent: [  ].
-		(frontEdge isNil and: [ baseEdge notNil ]) ifTrue: [
-			^ self retreatingColor ].
-		(frontEdge notNil and: [ baseEdge isNil ]) ifTrue: [
-			^ self freshColor ].
-		v := model valueAtEdge: aGolapEdge.
-		v < 0 ifTrue: [ ^ self decliningColor ].
-		v > 0 ifTrue: [ ^ self growingColor ] ].
+			| frontEdge baseEdge v |
+			frontEdge := model frontEdgeAt: aGolapEdge key.
+			baseEdge := model baseEdgeAt: aGolapEdge key.
+			(frontEdge isNil and: [ baseEdge notNil ]) ifTrue: [
+				^ self retreatingColor ].
+			(frontEdge notNil and: [ baseEdge isNil ]) ifTrue: [
+				^ self freshColor ].
+			v := model valueAtEdge: aGolapEdge.
+			v < 0 ifTrue: [ ^ self decliningColor ].
+			v > 0 ifTrue: [ ^ self growingColor ] ].
 	^ self normalColor
 ]
 
 { #category : 'accessing-colors' }
 Golap >> colorForNode: aGolapNode [
 
-	(self includesSelection: aGolapNode) ifTrue: [
-		^ self selectionColor ].
+	(self includesSelection: aGolapNode) ifTrue: [ ^ self selectionColor ].
 	self selectedBaseDimension ifNotNil: [
-		| frontNode baseNode |
-		frontNode := self selectedFrontDimension ifNotNil: [ :dimension |
-			               dimension nodeAt: aGolapNode id ifAbsent: [  ] ].
-		baseNode := self selectedBaseDimension ifNotNil: [ :dimension |
-			              dimension nodeAt: aGolapNode id ifAbsent: [  ] ].
-		(frontNode isNil and: [ baseNode notNil ]) ifTrue: [
-			^ self retreatingColor ].
-		(frontNode notNil and: [ baseNode isNil ]) ifTrue: [
-			^ self freshColor ].
-		(model valueAtNode: aGolapNode) < 0 ifTrue: [
-			^ self decliningColor ].
-		(model valueAtNode: aGolapNode) > 0 ifTrue: [
-			^ self growingColor ] ].
+			| frontNode baseNode |
+			frontNode := model frontNodeAt: aGolapNode id ifAbsent: [ nil ].
+			baseNode := model baseNodeAt: aGolapNode id ifAbsent: [ nil ].
+			(frontNode isNil and: [ baseNode notNil ]) ifTrue: [
+				^ self retreatingColor ].
+			(frontNode notNil and: [ baseNode isNil ]) ifTrue: [
+				^ self freshColor ].
+			(model valueAtNode: aGolapNode) < 0 ifTrue: [
+				^ self decliningColor ].
+			(model valueAtNode: aGolapNode) > 0 ifTrue: [ ^ self growingColor ] ].
 	^ self normalColorFor: aGolapNode
 ]
 
@@ -590,16 +596,6 @@ Golap >> defaultLayout [
 		  yourself
 ]
 
-{ #category : 'accessing-dimensions' }
-Golap >> dimensionAt: aString [
-	^ dimensions at: aString ifAbsent: [ nil ]
-]
-
-{ #category : 'accessing-dimensions' }
-Golap >> dimensionsDo: aBlock [
-	dimensions do: aBlock
-]
-
 { #category : 'accessing' }
 Golap >> edgeEvaluator [
 
@@ -633,16 +629,6 @@ Golap >> ensurePhotoimageRetrievingProcess [
 		self startPhotoimageRetrievingProcess ]
 ]
 
-{ #category : 'accessing' }
-Golap >> font [
-	^ font ifNil: [ font := TextStyle defaultFont ]
-]
-
-{ #category : 'accessing' }
-Golap >> font: aFont [
-	self updateGlobalImageAfter: [ font := aFont ]
-]
-
 { #category : 'accessing-colors' }
 Golap >> freshColor [
 
@@ -665,23 +651,21 @@ Golap >> fromJSON: aDictionary [
 				at: 'dimensions' ifPresent: [ :array |
 						array do: [ :pair |
 									self
-										addDimension: (GolapModel new
-												 fromJSON: pair second;
-												 yourself)
+										addDimension: (GolapBaseGraph fromJSON: pair second)
 										named: pair first ] ];
 				at: 'baseList' ifPresent: [ :string |
-					string ifNotNil: [
-							(baseList items includes: string) ifTrue: [
-								baseList selectItem: string ] ] ];
+						string ifNotNil: [
+									(baseList items includes: string) ifTrue: [
+											baseList selectItem: string ] ] ];
 				at: 'frontList' ifPresent: [ :string |
-					string ifNotNil: [
-							(frontList items includes: string) ifTrue: [
-								frontList selectItem: string ] ] ];
+						string ifNotNil: [
+									(frontList items includes: string) ifTrue: [
+											frontList selectItem: string ] ] ];
 				at: 'merges' ifPresent: [ :array |
-					model ifNotNil: [
-							merges := (array collect: [ :pair | pair first -> pair second ])
-								          asOrderedCollection.
-							model setMerges: merges ] ];
+						model ifNotNil: [
+									merges := (array collect: [ :pair |
+											           pair first -> pair second ]) asOrderedCollection.
+									model setMerges: merges ] ];
 				at: 'pins'
 				ifPresent: [ :array | pins := array asOrderedCollection ];
 				at: 'selections'
@@ -689,9 +673,9 @@ Golap >> fromJSON: aDictionary [
 				at: 'edgesAppearance'
 				ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];
 				at: 'itemInfoRetriever' ifPresent: [ :json |
-					itemInfoRetriever := GolapItemInfoRetriever fromJSON: json.
-					itemsAppearancePresenter updatePhotoimageRetrievers.
-					self startPhotoimageRetrievingProcess ];
+						itemInfoRetriever := GolapItemInfoRetriever fromJSON: json.
+						itemsAppearancePresenter updatePhotoimageRetrievers.
+						self startPhotoimageRetrievingProcess ];
 				at: 'itemList' ifPresent: [ :json | itemList fromJSON: json ];
 				at: 'edgeList' ifPresent: [ :json | edgeList fromJSON: json ];
 				at: 'comment' ifPresent: [ :text | commentText text: text ];
@@ -699,7 +683,7 @@ Golap >> fromJSON: aDictionary [
 				ifPresent: [ :json | polishOverviewPresenter fromJSON: json ];
 				at: 'articulationPointOverview'
 				ifPresent: [ :json |
-				articulationPointOverviewPresenter fromJSON: json ];
+					articulationPointOverviewPresenter fromJSON: json ];
 				at: 'elaboration'
 				ifPresent: [ :json | elaborationPresenter fromJSON: json ];
 				at: 'dandelion'
@@ -709,7 +693,7 @@ Golap >> fromJSON: aDictionary [
 				ifPresent: [ :json | heatmapPresenter fromJSON: json ];
 				at: 'visualizationNotebook-selectedPageIndex'
 				ifPresent: [ :integer |
-				visualizationNotebook selectPageIndex: integer ];
+					visualizationNotebook selectPageIndex: integer ];
 				at: 'showsPhotoimages'
 				ifPresent: [ :bool | self basicShowsPhotoimages: bool ].
 			self basicFromJSON: aDictionary.
@@ -884,6 +868,11 @@ Golap >> includesSelection: aGolapNode [
 Golap >> initialize [
 
 	super initialize.
+	model := GolapModel new.
+	model announcer
+		when: GolapModelChangedAnnouncement
+		send: #updatePhotoimages
+		to: self.
 	pins := Set new.
 	selections := Set new.
 	dimensions := OrderedDictionary new.
@@ -1199,43 +1188,6 @@ Golap >> minFrequency [
 { #category : 'accessing' }
 Golap >> model [
 	^ model
-]
-
-{ #category : 'accessing' }
-Golap >> model: aGolapModel [
-
-	self model: aGolapModel forceUpdate: true.
-"	polishOverviewPresenter
-		updateCanvas;
-		zoomToFit.
-	friendOverviewPresenter
-		updateCanvas;
-		zoomToFit.
-	articulationPointOverviewPresenter
-		updateCanvas;
-		zoomToFit.
-	elaborationPresenter
-		updateCanvas;
-		zoomToFit"
-]
-
-{ #category : 'accessing' }
-Golap >> model: aGolapModel forceUpdate: aBoolean [
-
-	(aBoolean == false and: [ aGolapModel == model ]) ifTrue: [ ^ self ].
-	model := aGolapModel.
-	model ifNotNil: [
-			self
-				updateGlobalImageAfter: [
-						model announcer
-							when: GolapModelChangedAnnouncement
-							send: #updatePhotoimages
-							to: self.
-						self unselectAll.
-						edgesAppearancePresenter updateModel: model.
-						itemList updateItemsList ]
-				layout: aBoolean ].
-	self announceGolapModelUpdated
 ]
 
 { #category : 'accessing-colors' }
@@ -1570,7 +1522,7 @@ Golap >> readDimensionFrom: aReadStream [
 				column := dataframe column: key.
 				newColumn := column collect: [ :value | value ifNaN: [ 0.0 ] ].
 				dataframe column: key put: newColumn ].
-		dimension := GolapModel fromServerDataframe: dataframe.
+		dimension := GolapBaseGraph fromServerDataframe: dataframe.
 		edgesAppearancePresenter updateModel: dimension.
 		self silentAddDimension: dimension named: name.
 		[ aReadStream peekFor: Character lf ] whileTrue ]
@@ -1610,7 +1562,6 @@ Golap >> release [
 	model := nil.
 	pins := nil.
 	selections := nil.
-	font := nil.
 	itemView := nil.
 	imageCache := nil.
 	super release
@@ -1872,17 +1823,6 @@ Golap >> selectedFrontDimension [
 	^ dimensions at: frontList selectedItem ifAbsent: [ nil ]
 ]
 
-{ #category : 'accessing-dimensions' }
-Golap >> selectedModel [
-
-	^ (self selectedFrontDimension ifNil: [ nil ] ifNotNil: [ :front |
-			   self selectedBaseDimension ifNil: [ front ] ifNotNil: [ :base |
-					   self
-						   applyMergesToModel: front;
-						   applyMergesToModel: base.
-					   front - base ] ]) ifNotNil: [ :m | self applyMergesToModel: m ]
-]
-
 { #category : 'enumerating' }
 Golap >> selectedNodesDo: aBlock [
 
@@ -1987,9 +1927,10 @@ Golap >> showsPhotoimagesChanged [
 ]
 
 { #category : 'accessing-dimensions' }
-Golap >> silentAddDimension: aGolapOverviewModel named: aString [
-	dimensions at: aString put: aGolapOverviewModel.
-	^ aGolapOverviewModel
+Golap >> silentAddDimension: aGolapBaseGraph named: aString [
+
+	dimensions at: aString put: aGolapBaseGraph.
+	^ aGolapBaseGraph
 ]
 
 { #category : 'accessing-selection' }
@@ -2167,23 +2108,31 @@ Golap >> updateLeftPaneOpenCloseButton [
 { #category : 'updating' }
 Golap >> updateModel [
 
-	self model: self selectedModel.
-	self model edgeEvaluators: self edgeEvaluators.
-	self model nodeEvaluators: self nodeEvaluators.
-	self model friend: self friend.
+	self model
+		frontGraph: self selectedFrontDimension
+		base: self selectedBaseDimension.
 	self isUpdateModelBlocked ifTrue: [ ^ self ].
+	self updateGlobalImage.
 	itemList updateItemsList.
 	edgeList modelChanged.
 	edgesAppearancePresenter refreshEvaluatorList.
 	self
 		updatePhotoimages;
 		startPhotoimageRetrievingProcess.
-	self visualizationsDo: [ :presenter |
-			(presenter respondsTo: #updateCanvas) ifTrue: [
-				presenter updateCanvas ] ].
 	self activeVisualizationDo: [ :presenter |
 			(presenter respondsTo: #ensureNodePositions) ifTrue: [
-				presenter ensureNodePositions ] ]
+				presenter ensureNodePositions ] ].
+	self visualizationsDo: [ :presenter |
+			(presenter respondsTo: #updateCanvas) ifTrue: [
+				presenter updateCanvas ] ]
+]
+
+{ #category : 'updating' }
+Golap >> updateNodePositions [
+
+	self visualizationsDo: [ :presenter |
+			(presenter respondsTo: #updateNodePositions) ifTrue: [
+				presenter updateNodePositions ] ]
 ]
 
 { #category : 'updating' }

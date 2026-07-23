@@ -132,8 +132,8 @@ GolapOverviewGridLayouter >> improveEveryNodeFrom: aCollectionOfGolapNode interi
 GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollectionOfGolapEdge [
 
 	| positions reps |
-	aCollectionOfGolapNode ifEmpty: [ ^ self ].
-	aCollectionOfGolapEdge ifEmpty: [ ^ self ].
+	aCollectionOfGolapNode ifEmpty: [ ^ Dictionary new ].
+	aCollectionOfGolapEdge ifEmpty: [ ^ Dictionary new ].
 	SpProgressDialog new
 		title: 'グラフ再配置中…';
 		informUserDuring: [ :progress |

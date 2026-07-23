@@ -115,24 +115,19 @@ GolapCSVLauncher >> dataframePairsAndNamesDo: aBlock [
 ]
 
 { #category : 'enumerating' }
-GolapCSVLauncher >> golapModelsAndNamesDo: aBlock [
+GolapCSVLauncher >> golapBaseGraphsAndNamesDo: aBlock [
 
 	self dataframePairsAndNamesDo: [ :nodeDataframe :edgeDataframe :name |
-			| golapModel |
-			golapModel := GolapModel new.
-			golapModel
+			| baseGraph |
+			baseGraph := GolapBaseGraph new.
+			baseGraph
 				readNodeDataframe: nodeDataframe
 				idColumn: nodeImporterPresenter idColumn
 				nameColumn: nodeImporterPresenter nameColumn;
-				nodeAggregators: nodeImporterPresenter createAggregators;
-				nodeEvaluator: nodeImporterPresenter evaluator.
-			golapModel
 				readEdgeDataframe: edgeDataframe
 				idColumn: edgeImporterPresenter idColumn1
-				and: edgeImporterPresenter idColumn2;
-				edgeAggregators: edgeImporterPresenter createAggregators;
-				edgeEvaluator: edgeImporterPresenter evaluator.
-			aBlock value: golapModel value: name ]
+				and: edgeImporterPresenter idColumn2.
+			aBlock value: baseGraph value: name ]
 ]
 
 { #category : 'initialization' }
@@ -191,13 +186,15 @@ GolapCSVLauncher >> launch [
 		itemInfoRetriever: (GolapNodeProductInfoRetriever
 				 photoUrlColumn: nodeImporterPresenter photoUrlColumn
 				 availableColumns: nodeImporterPresenter availableColumns).
-	self golapModelsAndNamesDo: [ :golapModel :name |
-		golap silentAddDimension: golapModel named: name ].
+	self golapBaseGraphsAndNamesDo: [ :baseGraph :name |
+		golap silentAddDimension: baseGraph named: name ].
 	golap updateDimensions.
 	[
 		golap confirmOpen.
 		golap open maximize.
-		golap updateModel ]
+		golap
+			updateModel;
+			updateNodePositions ]
 		on: GolapAborted
 		do: [ :ex |  ].
 	self window ifNotNil: #close
