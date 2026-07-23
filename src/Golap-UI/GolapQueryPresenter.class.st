@@ -39,6 +39,12 @@ GolapQueryPresenter >> authenticateBlock [
 	^ networkClient ifNotNil: #authenticateBlock
 ]
 
+{ #category : 'layout' }
+GolapQueryPresenter >> buttonHeight [
+
+	^ self class buttonHeight
+]
+
 { #category : 'operations' }
 GolapQueryPresenter >> clearPreviewFilterField [
 
@@ -193,6 +199,12 @@ GolapQueryPresenter >> initializePresenters [
 				allMorphsDo: [ :m | 
 					(m respondsTo: #font:)
 						ifTrue: [ m font: font ] ] ]
+]
+
+{ #category : 'layout' }
+GolapQueryPresenter >> inputTextHeight [
+
+	^ self class inputTextHeight
 ]
 
 { #category : 'accessing-query' }

@@ -120,7 +120,7 @@ GolapNetworkClientPresenter >> defaultLayout [
 		  add: (SpBoxLayout newHorizontal
 				   add: urlInput;
 				   add: presetUrlButton width: 20)
-		  height: self class inputTextHeight;
+		  height: self inputTextHeight;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.8;
 				   add: queryNotebook;
@@ -128,7 +128,7 @@ GolapNetworkClientPresenter >> defaultLayout [
 						    add: 'サーバパラメータ' expand: false;
 						    add: serverConfigTree;
 						    add: 'コメント' expand: false;
-						    add: commentText height: self class inputTextHeight * 4;
+						    add: commentText height: self inputTextHeight * 4;
 						    yourself));
 		  add: (SpBoxLayout newHorizontal
 				   hAlignEnd;
@@ -343,6 +343,12 @@ GolapNetworkClientPresenter >> initializeWindow: aWindowPresenter [
 	aWindowPresenter
 		title: 'サーバクエリ';
 		initialExtent: self initialExtent
+]
+
+{ #category : 'layout' }
+GolapNetworkClientPresenter >> inputTextHeight [
+
+	^ self class inputTextHeight
 ]
 
 { #category : 'accessing' }
