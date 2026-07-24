@@ -70,6 +70,12 @@ GolapAttributePhotoImageRetriever >> initialize [
 ]
 
 { #category : 'testing' }
+GolapAttributePhotoImageRetriever >> isAttributePhotoImageRetriever [
+
+	^ true
+]
+
+{ #category : 'testing' }
 GolapAttributePhotoImageRetriever >> isAvailable [
 
 	^ (availableColumns includes: photoColumn) and: [ self enabled ]
@@ -81,6 +87,12 @@ GolapAttributePhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 	aGolapNode data
 		at: photoColumn
 		ifPresent: [ :name | name isString ifTrue: [ aBlock value: name ] ]
+]
+
+{ #category : 'testing' }
+GolapAttributePhotoImageRetriever >> needsCache [
+
+	^ false
 ]
 
 { #category : 'accessing' }
@@ -99,6 +111,7 @@ GolapAttributePhotoImageRetriever >> photoColumn [
 GolapAttributePhotoImageRetriever >> photoColumn: aString [
 
 	photoColumn := aString.
+	self enabled: photoColumn notNil.
 	(photoColumn notNil and: [
 		 (availableColumns includes: photoColumn) not ]) ifTrue: [
 		availableColumns := availableColumns copyWith: photoColumn ]
@@ -107,11 +120,13 @@ GolapAttributePhotoImageRetriever >> photoColumn: aString [
 { #category : 'accessing' }
 GolapAttributePhotoImageRetriever >> retrieveImageNamed: aString [
 
-	^ [
-	  ImageReadWriter formFromStream:
-		  aString asUrl retrieveBinaryContents readStream ]
-		  on: Exception
-		  do: [ :ex | ex return: nil ]
+	| ref |
+	ref := aString asFileReference.
+	ref isAbsolute ifFalse: [ ref := Golap golapDirectory / aString ].
+	ref isFile ifTrue: [
+			ref binaryReadStreamDo: [ :stream |
+				^ ImageReadWriter formFromStream: stream ] ].
+	^ nil
 ]
 
 { #category : 'accessing' }

@@ -31,6 +31,12 @@ GolapServerPhotoImageRetriever class >> tag [
 ]
 
 { #category : 'accessing' }
+GolapServerPhotoImageRetriever >> accessInterval [
+
+	^ 100 milliSeconds
+]
+
+{ #category : 'accessing' }
 GolapServerPhotoImageRetriever >> authenticateBlock [
 
 	^ authenticateBlock
@@ -112,6 +118,12 @@ GolapServerPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 		 lines allButFirst: 2 ]
 		 on: Error
 		 do: [ :ex | ^ self ]) do: aBlock
+]
+
+{ #category : 'testing' }
+GolapServerPhotoImageRetriever >> needsCache [
+
+	^ true
 ]
 
 { #category : 'accessing' }

@@ -171,6 +171,12 @@ GolapCSVPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 		   urls asSortedCollection asArray ]) do: aBlock
 ]
 
+{ #category : 'testing' }
+GolapCSVPhotoImageRetriever >> needsCache [
+
+	^ false
+]
+
 { #category : 'accessing' }
 GolapCSVPhotoImageRetriever >> order [
 

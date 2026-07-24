@@ -14,8 +14,8 @@ Class {
 GolapNodeProductInfoRetriever class >> photoUrlColumn: aString availableColumns: anArrayOfString [
 
 	^ self new
-		  photoUrlColumn: aString;
 		  availableColumns: anArrayOfString;
+		  photoUrlColumn: aString;
 		  yourself
 ]
 

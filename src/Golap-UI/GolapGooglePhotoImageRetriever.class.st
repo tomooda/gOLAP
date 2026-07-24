@@ -24,6 +24,12 @@ GolapGooglePhotoImageRetriever class >> tag [
 ]
 
 { #category : 'accessing' }
+GolapGooglePhotoImageRetriever >> accessInterval [
+
+	^ 1 second
+]
+
+{ #category : 'accessing' }
 GolapGooglePhotoImageRetriever >> apikey [
 
 	^ apikey
@@ -58,18 +64,6 @@ GolapGooglePhotoImageRetriever >> cseid [
 GolapGooglePhotoImageRetriever >> cseid: aString [
 
 	cseid := aString
-]
-
-{ #category : 'accessing' }
-GolapGooglePhotoImageRetriever >> disable [
-
-	^ self enabled: false
-]
-
-{ #category : 'accessing' }
-GolapGooglePhotoImageRetriever >> enable [
-
-	^ self enabled: true
 ]
 
 { #category : 'accessing' }
@@ -115,6 +109,12 @@ GolapGooglePhotoImageRetriever >> isAvailable [
 GolapGooglePhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
 	aBlock value: aGolapNode name
+]
+
+{ #category : 'testing' }
+GolapGooglePhotoImageRetriever >> needsCache [
+
+	^ true
 ]
 
 { #category : 'accessing' }

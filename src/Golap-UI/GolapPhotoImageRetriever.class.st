@@ -58,6 +58,12 @@ GolapPhotoImageRetriever class >> tag [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'accessing' }
+GolapPhotoImageRetriever >> accessInterval [
+
+	^ 0 second
+]
+
 { #category : 'accessing-cache' }
 GolapPhotoImageRetriever >> cacheAt: aString ifAbsent: errorBlock [
 
@@ -120,6 +126,16 @@ GolapPhotoImageRetriever >> defaultEnabled [
 	^ false
 ]
 
+{ #category : 'protocol' }
+GolapPhotoImageRetriever >> disable [
+	self enabled: false.
+]
+
+{ #category : 'protocol' }
+GolapPhotoImageRetriever >> enable [
+	self enabled: true.
+]
+
 { #category : 'accessing' }
 GolapPhotoImageRetriever >> enabled [
 
@@ -152,6 +168,12 @@ GolapPhotoImageRetriever >> initialize [
 ]
 
 { #category : 'testing' }
+GolapPhotoImageRetriever >> isAttributePhotoImageRetriever [
+
+	^ false
+]
+
+{ #category : 'testing' }
 GolapPhotoImageRetriever >> isAvailable [
 
 	^ self subclassResponsibility
@@ -159,6 +181,12 @@ GolapPhotoImageRetriever >> isAvailable [
 
 { #category : 'enumerating' }
 GolapPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'testing' }
+GolapPhotoImageRetriever >> needsCache [
 
 	^ self subclassResponsibility
 ]
@@ -173,9 +201,14 @@ GolapPhotoImageRetriever >> order [
 GolapPhotoImageRetriever >> photoimageFor: aGolapNode [
 
 	self isAvailable ifTrue: [
-		self namesFor: aGolapNode do: [ :name |
-			(self cacheAt: name ifAbsentPut: [ self retrieveImageNamed: name ])
-				ifNotNil: [ :form | ^ form ] ] ].
+			self namesFor: aGolapNode do: [ :name |
+					(self needsCache
+						 ifTrue: [
+						 self
+							 cacheAt: name
+							 ifAbsentPut: [ self retrieveImageNamed: name ] ]
+						 ifFalse: [ self retrieveImageNamed: name ]) ifNotNil: [ :form |
+						^ form ] ] ].
 	^ nil
 ]
 
@@ -183,12 +216,15 @@ GolapPhotoImageRetriever >> photoimageFor: aGolapNode [
 GolapPhotoImageRetriever >> photoimagesFor: aGolapNode [
 
 	^ Array streamContents: [ :stream |
-		  self isAvailable ifTrue: [
-			  self namesFor: aGolapNode do: [ :name |
-				  (self
-					   cacheAt: name
-					   ifAbsentPut: [ self retrieveImageNamed: name ]) ifNotNil: [
-					  :form | stream nextPut: form ] ] ] ]
+			  self isAvailable ifTrue: [
+					  self namesFor: aGolapNode do: [ :name |
+							  (self needsCache
+								   ifTrue: [
+								   self
+									   cacheAt: name
+									   ifAbsentPut: [ self retrieveImageNamed: name ] ]
+								   ifFalse: [ self retrieveImageNamed: name ]) ifNotNil: [
+								  :form | stream nextPut: form ] ] ] ]
 ]
 
 { #category : 'accessing' }
