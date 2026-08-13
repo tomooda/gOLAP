@@ -12,23 +12,107 @@ Class {
 { #category : 'examples' }
 RSHierarchicalEdgeBundleBuilder class >> example [
 
+	| builder interaction |
+	builder := self new.
+	builder
+		from: Collection subclasses using: [ :class | class subclasses ];
+		build.
+	interaction := RSPluggableLeftClickInteraction new action: [
+			               :event
+			               :shape |
+			               ((SystemNavigation default allGlobalRefsOn:
+				                 shape model name)
+				                collect: [ :m | m methodClass ]
+				                thenSelect: [ :class |
+				                class inheritsFrom: Collection ]) asBag
+				               doWithOccurrences: [ :class :weight |
+						               builder
+							               addEdgeFrom: class
+							               to: shape model
+							               do: [ :bspline |
+									               bspline
+										               markerEnd: (RSPolygon new points: {
+														                (-3 @ 3 * weight).
+														                (0 @ -3 * weight).
+														                (3 @ 3 * weight) }) asMarker;
+										               color: (shape color darker alpha: 0.8);
+										               width: weight * 2;
+										               yourself ] ].
+			               event canvas signalUpdate ].
+	builder canvas shapes do: [ :shape |
+			(shape model isKindOf: Class) ifTrue: [
+					shape @ interaction.
+					builder canvas addShape: (RSLabel new
+							 text: shape model name asString;
+							 position: (shape centroid: 0.0)) ] ].
+	builder canvas
+		@ RSCanvasController;
+		open
+]
+
+{ #category : 'examples' }
+RSHierarchicalEdgeBundleBuilder class >> example1 [
+
 	| builder |
 	builder := self new.
 	builder
 		from: Collection subclasses using: [ :class | class subclasses ];
 		build.
-	((SystemNavigation default allGlobalRefsOn: #Array)
-		 collect: [ :m | m methodClass ]
-		 thenSelect: [ :class | class inheritsFrom: Collection ]) asBag
-		doWithOccurrences: [ :class :weight |
-				builder
-					addEdgeFrom: Array
-					to: class
-					do: [ :bspline |
-							bspline
-								color: Color red;
-								width: weight ] ].
-	builder canvas open
+	builder canvas shapes do: [ :shape |
+			(shape model isKindOf: Class) ifTrue: [
+					builder canvas addShape: (RSLabel new
+							 text: shape model name asString;
+							 position: (shape centroid: 0.0)) ] ].
+	SpJobPresenter new
+		model: (Job block: [ :job |
+						 | index |
+						 index := 0.
+						 job
+							 min: index;
+							 max: Collection allSubclasses size.
+						 Collection allSubclassesDo: [ :dstClass |
+								 | color |
+								 color := (builder canvas shapes detect: [ :shape |
+									           shape model == dstClass ]) color darker alpha: 0.8.
+								 job value: (index := index + 1).
+								 ((SystemNavigation default allGlobalRefsOn: dstClass name)
+									  collect: [ :m | m methodClass ]
+									  thenSelect: [ :srcClass |
+									  srcClass inheritsFrom: Collection ]) asBag
+									 doWithOccurrences: [ :srcClass :weight |
+											 builder
+												 addEdgeFrom: srcClass
+												 to: dstClass
+												 do: [ :bspline |
+														 bspline
+															 markerEnd: (RSPolygon new points: {
+																			  (-3 @ 3 * weight).
+																			  (0 @ -3 * weight).
+																			  (3 @ 3 * weight) }) asMarker;
+															 color: color;
+															 width: weight * 2;
+															 yourself ] ] ] ]);
+		run.
+	builder canvas
+		@ RSCanvasController;
+		open
+]
+
+{ #category : 'adding' }
+RSHierarchicalEdgeBundleBuilder >> addEdgeBetween: anObject and: anotherObject do: aBlock [
+
+	| controlPoints edge |
+	controlPoints := self
+		                 mergeControlPoints:
+		                 (self controlPointsFor: anObject)
+		                 and: (self controlPointsFor: anotherObject).
+	controlPoints size < 4 ifTrue: [ ^ nil ].
+	edge := RSUniformCubicBSpline new
+		        controlPoints: controlPoints;
+		        capRound;
+		        yourself.
+	aBlock value: edge.
+	self canvas add: edge
 ]
 
 { #category : 'adding' }
@@ -40,7 +124,16 @@ RSHierarchicalEdgeBundleBuilder >> addEdgeFrom: anObject to: anotherObject do: a
 		                 (self controlPointsFor: anObject)
 		                 and: (self controlPointsFor: anotherObject).
 	controlPoints size < 4 ifTrue: [ ^ nil ].
-	edge := RSHEBSpline new controlPoints: controlPoints.
+	edge := RSUniformCubicBSpline new
+		        controlPoints: controlPoints;
+		        capRound;
+		        markerEnd: (RSPolygon new
+				         points: {
+						         (-10 @ 10).
+						         (0 @ -10).
+						         (10 @ 10) };
+				         asMarker);
+		        yourself.
 	aBlock value: edge.
 	self canvas add: edge
 ]
