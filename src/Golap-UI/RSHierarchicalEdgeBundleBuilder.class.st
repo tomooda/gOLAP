@@ -10,48 +10,7 @@ Class {
 }
 
 { #category : 'examples' }
-RSHierarchicalEdgeBundleBuilder class >> example [
-
-	| builder interaction |
-	builder := self new.
-	builder
-		from: Collection subclasses using: [ :class | class subclasses ];
-		build.
-	interaction := RSPluggableLeftClickInteraction new action: [
-			               :event
-			               :shape |
-			               ((SystemNavigation default allGlobalRefsOn:
-				                 shape model name)
-				                collect: [ :m | m methodClass ]
-				                thenSelect: [ :class |
-				                class inheritsFrom: Collection ]) asBag
-				               doWithOccurrences: [ :class :weight |
-						               builder
-							               addEdgeFrom: class
-							               to: shape model
-							               do: [ :bspline |
-									               bspline
-										               markerEnd: (RSPolygon new points: {
-														                (-3 @ 3 * weight).
-														                (0 @ -3 * weight).
-														                (3 @ 3 * weight) }) asMarker;
-										               color: (shape color darker alpha: 0.8);
-										               width: weight * 2;
-										               yourself ] ].
-			               event canvas signalUpdate ].
-	builder canvas shapes do: [ :shape |
-			(shape model isKindOf: Class) ifTrue: [
-					shape @ interaction.
-					builder canvas addShape: (RSLabel new
-							 text: shape model name asString;
-							 position: (shape centroid: 0.0)) ] ].
-	builder canvas
-		@ RSCanvasController;
-		open
-]
-
-{ #category : 'examples' }
-RSHierarchicalEdgeBundleBuilder class >> example1 [
+RSHierarchicalEdgeBundleBuilder class >> exampleClassReferences [
 
 	| builder |
 	builder := self new.
@@ -93,9 +52,83 @@ RSHierarchicalEdgeBundleBuilder class >> example1 [
 															 width: weight * 2;
 															 yourself ] ] ] ]);
 		run.
-	builder canvas
-		@ RSCanvasController;
-		open
+	(builder canvas
+		 @ RSCanvasController;
+		 open) maximize
+]
+
+{ #category : 'examples' }
+RSHierarchicalEdgeBundleBuilder class >> exampleHEB [
+
+	| builder |
+	builder := self new.
+	builder
+		from: Collection subclasses using: [ :class | class subclasses ];
+		build.
+	builder canvas shapes do: [ :shape |
+			(shape model isKindOf: Class) ifTrue: [
+					builder canvas addShape: (RSLabel new
+							 text: shape model name asString;
+							 position: (shape centroid: 0.0)) ] ].
+
+	Collection allSubclassesDo: [ :dstClass |
+			(dstClass ~~ WideSymbol and: [ dstClass subclasses isEmpty ])
+				ifTrue: [
+						| color |
+						color := (builder canvas shapes detect: [ :shape |
+							          shape model == dstClass ]) color darker alpha: 0.8.
+						builder
+							addEdgeBetween: WideSymbol
+							and: dstClass
+							do: [ :bspline |
+									bspline
+										color: color;
+										width: 4;
+										yourself ] ] ].
+	(builder canvas
+		 @ RSCanvasController;
+		 open) maximize
+]
+
+{ #category : 'examples' }
+RSHierarchicalEdgeBundleBuilder class >> exampleInteraction [
+
+	| builder interaction |
+	builder := self new.
+	builder
+		from: Collection subclasses using: [ :class | class subclasses ];
+		build.
+	interaction := RSPluggableLeftClickInteraction new action: [
+			               :event
+			               :shape |
+			               ((SystemNavigation default allGlobalRefsOn:
+				                 shape model name)
+				                collect: [ :m | m methodClass ]
+				                thenSelect: [ :class |
+				                class inheritsFrom: Collection ]) asBag
+				               doWithOccurrences: [ :class :weight |
+						               builder
+							               addEdgeFrom: class
+							               to: shape model
+							               do: [ :bspline |
+									               bspline
+										               markerEnd: (RSPolygon new points: {
+														                (-3 @ 3 * weight).
+														                (0 @ -3 * weight).
+														                (3 @ 3 * weight) }) asMarker;
+										               color: (shape color darker alpha: 0.8);
+										               width: weight * 2;
+										               yourself ] ].
+			               event canvas signalUpdate ].
+	builder canvas shapes do: [ :shape |
+			(shape model isKindOf: Class) ifTrue: [
+					shape @ interaction.
+					builder canvas addShape: (RSLabel new
+							 text: shape model name asString;
+							 position: (shape centroid: 0.0)) ] ].
+	(builder canvas
+		 @ RSCanvasController;
+		 open) maximize
 ]
 
 { #category : 'adding' }
