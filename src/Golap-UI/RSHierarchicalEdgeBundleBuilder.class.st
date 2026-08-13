@@ -32,7 +32,7 @@ RSHierarchicalEdgeBundleBuilder class >> exampleClassReferences [
 						 Collection allSubclassesDo: [ :dstClass |
 								 | color |
 								 color := (builder canvas shapes detect: [ :shape |
-									           shape model == dstClass ]) color darker alpha: 0.8.
+									           shape model == dstClass ]) color muchLighter.
 								 job value: (index := index + 1).
 								 ((SystemNavigation default allGlobalRefsOn: dstClass name)
 									  collect: [ :m | m methodClass ]
@@ -40,16 +40,16 @@ RSHierarchicalEdgeBundleBuilder class >> exampleClassReferences [
 									  srcClass inheritsFrom: Collection ]) asBag
 									 doWithOccurrences: [ :srcClass :weight |
 											 builder
-												 addEdgeFrom: srcClass
-												 to: dstClass
+												 addEdgeBetween: srcClass
+												 and: dstClass
 												 do: [ :bspline |
 														 bspline
-															 markerEnd: (RSPolygon new points: {
-																			  (-3 @ 3 * weight).
-																			  (0 @ -3 * weight).
-																			  (3 @ 3 * weight) }) asMarker;
-															 color: color;
 															 width: weight * 2;
+															 markerEnd: (RSPolygon new points: {
+																			  (-3 @ 0 * weight).
+																			  (0 @ -5 * weight).
+																			  (3 @ 0 * weight) }) asMarker;
+															 color: color;
 															 yourself ] ] ] ]);
 		run.
 	(builder canvas
@@ -82,7 +82,7 @@ RSHierarchicalEdgeBundleBuilder class >> exampleHEB [
 							and: dstClass
 							do: [ :bspline |
 									builder canvas addShape: (bspline copy
-											 color: (Color black alpha: 0.8);
+											 color: Color black;
 											 width: 8;
 											 yourself).
 									bspline
@@ -112,17 +112,16 @@ RSHierarchicalEdgeBundleBuilder class >> exampleInteraction [
 				                class inheritsFrom: Collection ]) asBag
 				               doWithOccurrences: [ :class :weight |
 						               builder
-							               addEdgeFrom: class
-							               to: shape model
+							               addEdgeBetween: class
+							               and: shape model
 							               do: [ :bspline |
 									               bspline
 										               markerEnd: (RSPolygon new points: {
-														                (-3 @ 3 * weight).
-														                (0 @ -3 * weight).
-														                (3 @ 3 * weight) }) asMarker;
-										               color: (shape color darker alpha: 0.8);
-										               width: weight * 2;
-										               yourself ] ].
+														                (-3 @ 0 * weight).
+														                (0 @ -5 * weight).
+														                (3 @ 0 * weight) }) asMarker;
+										               color: shape color muchLighter;
+										               width: weight * 2 ] ].
 			               event canvas signalUpdate ].
 	builder canvas shapes do: [ :shape |
 			(shape model isKindOf: Class) ifTrue: [
