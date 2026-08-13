@@ -63,7 +63,7 @@ RSHierarchicalEdgeBundleBuilder class >> exampleHEB [
 	| builder |
 	builder := self new.
 	builder
-		from: Collection subclasses using: [ :class | class subclasses ];
+		from: { Collection } using: [ :class | class subclasses ];
 		build.
 	builder canvas shapes do: [ :shape |
 			(shape model isKindOf: Class) ifTrue: [
@@ -76,14 +76,18 @@ RSHierarchicalEdgeBundleBuilder class >> exampleHEB [
 				ifTrue: [
 						| color |
 						color := (builder canvas shapes detect: [ :shape |
-							          shape model == dstClass ]) color darker alpha: 0.8.
+							          shape model == dstClass ]) color lighter.
 						builder
 							addEdgeBetween: WideSymbol
 							and: dstClass
 							do: [ :bspline |
+									builder canvas addShape: (bspline copy
+											 color: (Color black alpha: 0.8);
+											 width: 8;
+											 yourself).
 									bspline
 										color: color;
-										width: 4;
+										width: 7;
 										yourself ] ] ].
 	(builder canvas
 		 @ RSCanvasController;
