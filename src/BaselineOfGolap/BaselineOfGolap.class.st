@@ -59,7 +59,7 @@ BaselineOfGolap >> baseline: spec [
 				with: [ spec repository: 'github://tomooda/Phleeter:main/src' ].
 			spec
 				baseline: 'Selphie'
-				with: [ spec repository: 'github://tomooda/Selphie/src' ].
+				with: [ spec repository: 'github://tomooda/Selphie:main/src' ].
 			spec
 				baseline: 'HiDeHo'
 				with: [ spec repository: 'github://tomooda/HiDeHo:main/src' ].
