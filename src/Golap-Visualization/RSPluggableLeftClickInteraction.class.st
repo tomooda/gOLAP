@@ -4,8 +4,8 @@ Class {
 	#instVars : [
 		'action'
 	],
-	#category : 'Golap-UI-Roassal3',
-	#package : 'Golap-UI',
+	#category : 'Golap-Visualization-Roassal3',
+	#package : 'Golap-Visualization',
 	#tag : 'Roassal3'
 }
 

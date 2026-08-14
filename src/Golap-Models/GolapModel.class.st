@@ -547,6 +547,18 @@ GolapModel >> nodesDo: aBlock [
 		aBlock cull: (nodes at: id) cull: id ]
 ]
 
+{ #category : 'accessing' }
+GolapModel >> normalizedValueAtEdge: aGolapEdge [
+
+	^ edgeEvaluator normalize: (edgeEvaluator evaluate: aGolapEdge graph: self)
+]
+
+{ #category : 'accessing' }
+GolapModel >> normalizedValueAtNode: aGolapNode [
+
+	^ nodeEvaluator normalize: (nodeEvaluator evaluate: aGolapNode graph: self)
+]
+
 { #category : 'copying' }
 GolapModel >> postCopy [
 

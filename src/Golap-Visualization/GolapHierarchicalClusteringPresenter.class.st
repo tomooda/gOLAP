@@ -89,6 +89,12 @@ GolapHierarchicalClusteringPresenter >> golapChanged [
 	golap model ifNotNil: [ self updateTree ]
 ]
 
+{ #category : 'accessing' }
+GolapHierarchicalClusteringPresenter >> golapModelDo: aBlock [
+
+	^ (golap ifNotNil: #model) ifNotNil: aBlock
+]
+
 { #category : 'initialization' }
 GolapHierarchicalClusteringPresenter >> initialize [
 

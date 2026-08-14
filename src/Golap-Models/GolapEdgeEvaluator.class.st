@@ -111,6 +111,14 @@ GolapEdgeEvaluator >> name [
 ]
 
 { #category : 'accessing' }
+GolapEdgeEvaluator >> normalize: aNumber [
+
+	^ (aNumber isNil or: [ min isNil or: [ max isNil ] ])
+		  ifTrue: [ nil ]
+		  ifFalse: [ (aNumber - min) asFloat / (max - min) asFloat ]
+]
+
+{ #category : 'accessing' }
 GolapEdgeEvaluator >> subtag [
 
 	^ self subclassResponsibility

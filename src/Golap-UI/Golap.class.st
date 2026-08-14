@@ -36,7 +36,8 @@ Class {
 		'resendQueryButton',
 		'visualizationNotebook',
 		'imageCache',
-		'leftPaneOpenCloseButton'
+		'leftPaneOpenCloseButton',
+		'hebPresenter'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -405,6 +406,7 @@ Golap >> asJSON [
 		  at: 'articulationPointOverview'
 		  put: articulationPointOverviewPresenter asJSON;
 		  at: 'elaboration' put: elaborationPresenter asJSON;
+		  at: 'heb' put: hebPresenter asJSON;
 		  at: 'dandelion' put: dandelionPresenter asJSON;
 		  at: 'hedge' put: hedgePresenter asJSON;
 		  at: 'heatmap' put: heatmapPresenter asJSON;
@@ -686,6 +688,8 @@ Golap >> fromJSON: aDictionary [
 					articulationPointOverviewPresenter fromJSON: json ];
 				at: 'elaboration'
 				ifPresent: [ :json | elaborationPresenter fromJSON: json ];
+				at: 'heb'
+				ifPresent: [ :json | hebPresenter fromJSON: json ];
 				at: 'dandelion'
 				ifPresent: [ :json | dandelionPresenter fromJSON: json ];
 				at: 'hedge' ifPresent: [ :json | hedgePresenter fromJSON: json ];
@@ -971,6 +975,8 @@ Golap >> initializePresenters [
 		                        (GolapElaborationPresenter new golap: self).
 	dandelionPresenter := self instantiate:
 		                      (GolapDandelionChartPresenter new golap: self).
+	hebPresenter := self instantiate:
+		                      (GolapHEBChartPresenter new golap: self).
 	hedgePresenter := self instantiate:
 		                  (GolapHedgeChartPresenter new golap: self).
 	heatmapPresenter := self instantiate:
@@ -983,6 +989,8 @@ Golap >> initializePresenters [
 			                         articulationPointOverviewPresenter ];
 		                         addPageTitle: '特化グラフ'
 		                         provider: [ elaborationPresenter ];
+		                         addPageTitle: 'バンドル図'
+		                         provider: [ hebPresenter ];
 		                         addPageTitle: 'たんぽぽ図'
 		                         provider: [ dandelionPresenter ];
 		                         addPageTitle: '生垣図'

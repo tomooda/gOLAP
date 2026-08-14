@@ -4,8 +4,8 @@ Class {
 	#instVars : [
 		'edges'
 	],
-	#category : 'Golap-UI-Roassal3',
-	#package : 'Golap-UI',
+	#category : 'Golap-Visualization-Roassal3',
+	#package : 'Golap-Visualization',
 	#tag : 'Roassal3'
 }
 
@@ -142,7 +142,7 @@ RSHierarchicalEdgeBundleBuilder >> addEdgeBetween: anObject and: anotherObject d
 		                 mergeControlPoints:
 		                 (self controlPointsFor: anObject)
 		                 and: (self controlPointsFor: anotherObject).
-	controlPoints size < 4 ifTrue: [ ^ nil ].
+	controlPoints size < 2 ifTrue: [ ^ nil ].
 	edge := RSUniformCubicBSpline new
 		        controlPoints: controlPoints;
 		        capRound;
@@ -159,7 +159,7 @@ RSHierarchicalEdgeBundleBuilder >> addEdgeFrom: anObject to: anotherObject do: a
 		                 mergeControlPoints:
 		                 (self controlPointsFor: anObject)
 		                 and: (self controlPointsFor: anotherObject).
-	controlPoints size < 4 ifTrue: [ ^ nil ].
+	controlPoints size < 2 ifTrue: [ ^ nil ].
 	edge := RSUniformCubicBSpline new
 		        controlPoints: controlPoints;
 		        capRound;
@@ -183,7 +183,7 @@ RSHierarchicalEdgeBundleBuilder >> controlPointsFor: anObject [
 				            detect: [ :s | s model == anObject ]
 				            ifNone: [ nil ].
 			   [ shape notNil ] whileTrue: [
-					   stream nextPut: (shape centroid: 0.0).
+					   stream nextPut: (shape centroid: -10.0).
 					   shape := shape sparent ] ]) reversed
 ]
 
