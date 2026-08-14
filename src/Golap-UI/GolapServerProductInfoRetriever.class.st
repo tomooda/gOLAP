@@ -49,7 +49,7 @@ GolapServerProductInfoRetriever >> golapServerUrl [
 { #category : 'accessing' }
 GolapServerProductInfoRetriever >> golapServerUrl: aString [
 
-	golapServerUrl := aString asUrl
+	golapServerUrl := aString asZnUrl
 ]
 
 { #category : 'accessing' }

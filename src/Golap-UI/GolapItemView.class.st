@@ -61,7 +61,7 @@ GolapItemView >> initializePresenters [
 					             assoc value asString ]);
 		            yourself.
 	itemImage := self newImage
-		             switchAutoscale;
+		             autoScale: true;
 		             yourself
 ]
 

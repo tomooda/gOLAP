@@ -65,7 +65,7 @@ TGolapSnapshotablePresenter >> confirm: queryString label: titleString [
 
 	^ self application newConfirm
 		  title: titleString;
-		  label: queryString;
+		  message: queryString;
 		  openModal
 ]
 

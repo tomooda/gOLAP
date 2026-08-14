@@ -214,5 +214,6 @@ GolapApiClient >> url [
 
 { #category : 'accessing' }
 GolapApiClient >> url: aStringOrZnUrl [
-	url := aStringOrZnUrl asUrl
+
+	url := aStringOrZnUrl asZnUrl
 ]

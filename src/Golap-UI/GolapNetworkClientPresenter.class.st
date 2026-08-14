@@ -425,8 +425,7 @@ GolapNetworkClientPresenter >> openGolap [
 					queryHistoryPresenter historyRecord ifNotNil: [ :record |
 							| golap |
 							golap := Golap new.
-							golap blockUpdateModelWhile: [
-								golap loadFromQueryRecord: record hideDuplicate ].
+							golap blockUpdateModelWhile: [ golap loadFromQueryRecord: record hideDuplicate ].
 							golap confirmOpen.
 							golap open maximize.
 							golap updateModel ] ]
@@ -441,11 +440,15 @@ GolapNetworkClientPresenter >> openGolap [
 						       itemFieldQuerySpec: self itemFieldQuerySpec
 						       authenticateBlock: self authenticateBlock.
 					golap := Golap new.
+					golap
+						nodeEvaluators: golap nodeEvaluators;
+						edgeEvaluators: golap edgeEvaluators;
+						nodeEvaluator: golap nodeEvaluator;
+						edgeEvaluator: golap edgeEvaluator.
 					[
 						golap
 							queryRecord: queryRecord;
-							itemInfoRetriever:
-								(GolapServerProductInfoRetriever fromApiClient: api);
+							itemInfoRetriever: (GolapServerProductInfoRetriever fromApiClient: api);
 							authenticateBlock: api authenticateBlock;
 							query: (GolapJSON fromString: api query);
 							url: api url;
@@ -454,8 +457,7 @@ GolapNetworkClientPresenter >> openGolap [
 							itemFieldQuerySpec: api itemFieldQuerySpec;
 							itemViewUrl: api url ]
 						on: Error
-						do: [ :ex |
-						UIManager default alert: 'クエリ送信失敗' , api url asString ].
+						do: [ :ex | UIManager default alert: 'クエリ送信失敗' , api url asString ].
 					api readStream ifNotNil: [ :readStream |
 							readStream ifNil: [ golap delete ] ifNotNil: [
 									readStream isString
@@ -472,15 +474,16 @@ GolapNetworkClientPresenter >> openGolap [
 																		[
 																			bar value: readStream position.
 																			readStream atEnd ] whileFalse: [
-																				bar label:
-																					'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
+																				bar label: 'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
 
 																				golap readDimensionFrom: readStream ].
 																		bar label: 'グラフ更新中'.
 																		golap updateDimensions ].
 																golap confirmOpen.
 																golap open maximize.
-																golap updateModel ] ] ] ] ] ] ]
+																golap
+																	updateModel;
+																	updateNodePositions ] ] ] ] ] ] ]
 		on: GolapAborted
 		do: [ :ex |  ].
 	closeCheckBox state = true ifTrue: [ self close ]
@@ -601,28 +604,24 @@ GolapNetworkClientPresenter >> serverConfig [
 	^ serverConfig ifNil: [
 			  openButton ifNotNil: #disable.
 			  saveButton ifNotNil: #disable.
-			  self url asUrl authority ifNotNil: [
+			  self url asZnUrl authority ifNotNil: [
 					  [
 						  serverConfig := (GolapHttpClient
 							                   post: self url
-							                   data:
-							                   (ZnEntity json: '{"control":"config"}')
+							                   data: (ZnEntity json: '{"control":"config"}')
 							                   timeout: self timeout
-							                   authenticateBlock: self authenticateBlock)
-							                  in: [ :response |
-									                  response code = 200 ifFalse: [ ^ nil ].
-									                  response entity readStream in: [ :stream |
-											                  | status |
-											                  status := (stream upTo: Character lf)
-												                            substrings: ':'.
-											                  status size = 2 ifFalse: [ ^ nil ].
-											                  status second trim = '0' ifFalse: [
-												                  ^ nil ].
-											                  openButton ifNotNil: #enable.
-											                  saveButton ifNotNil: #enable.
-											                  (NeoJSONReader on: stream)
-												                  mapClass: OrderedDictionary;
-												                  next ] ] ]
+							                   authenticateBlock: self authenticateBlock) in: [ :response |
+								                  response code = 200 ifFalse: [ ^ nil ].
+								                  response entity readStream in: [ :stream |
+										                  | status |
+										                  status := (stream upTo: Character lf) substrings: ':'.
+										                  status size = 2 ifFalse: [ ^ nil ].
+										                  status second trim = '0' ifFalse: [ ^ nil ].
+										                  openButton ifNotNil: #enable.
+										                  saveButton ifNotNil: #enable.
+										                  (NeoJSONReader on: stream)
+											                  mapClass: OrderedDictionary;
+											                  next ] ] ]
 						  on: NetworkError , ZnParseError
 						  do: [ :ex | ^ nil ] ] ]
 ]

@@ -2166,7 +2166,7 @@ Golap >> url [
 { #category : 'accessing' }
 Golap >> url: aZnUrl [
 
-	url := aZnUrl asUrl
+	url := aZnUrl asZnUrl
 ]
 
 { #category : 'accessing' }

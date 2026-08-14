@@ -143,11 +143,10 @@ GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollect
 				0 to: reps - 1 do: [ :rep |
 							self
 								makeSpace;
-								improveEveryNodeFrom: aCollectionOfGolapNode interim: [ :v |
-										progress progressPercent:
-												v / reps asFloat + (rep asFloat / reps asFloat) * 100.0 ] ].
+								improveEveryNodeFrom: aCollectionOfGolapNode
+								interim: [ :v | progress progressPercent: v / reps asFloat + (rep asFloat / reps asFloat) * 100.0 ] ].
 				progress
-					label: '完了';
+					message: '完了';
 					progressPercent: 100.
 				positions := Dictionary new: aCollectionOfGolapNode size.
 				aCollectionOfGolapNode do: [ :node |
