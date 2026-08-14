@@ -115,14 +115,13 @@ BaselineOfGolap >> installDesktopLogo [
 BaselineOfGolap >> installFonts [
 
 	<script: 'BaselineOfGolap new installFonts'>
-	(IceRepository repositoryNamed: 'gOLAP') location / 'resources'
-	/ 'Fonts' copyAllTo:
+	(IceRepository repositoryNamed: 'gOLAP') location / 'resources' / 'Fonts' copyAllTo:
 		(FileLocator workingDirectory / 'Fonts') ensureCreateDirectory.
 	Smalltalk at: #PlemolJPRegular ifPresent: [ :fontClass |
-		EmbeddedFreeTypeFontInstaller registerFont: fontClass.
-		FreeTypeFontProvider current buildFamilies.
-		StandardFonts setAllStandardFontsTo:
-			(LogicalFont familyName: 'PlemolJP' pointSize: 10) ]
+			EmbeddedFreeTypeFontInstaller registerFont: fontClass.
+			FreeTypeFontProvider current buildFamilies.
+			StandardFonts setAllStandardFontsTo: (LogicalFont familyName: 'PlemolJP' pointSize: 10).
+			MenubarMorph reset ]
 ]
 
 { #category : 'utilities' }
