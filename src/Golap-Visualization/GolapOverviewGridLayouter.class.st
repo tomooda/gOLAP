@@ -134,7 +134,7 @@ GolapOverviewGridLayouter >> layoutNodes: aCollectionOfGolapNode edges: aCollect
 	| positions reps |
 	aCollectionOfGolapNode ifEmpty: [ ^ Dictionary new ].
 	aCollectionOfGolapEdge ifEmpty: [ ^ Dictionary new ].
-	SpProgressDialog new
+	GolapProgressDialog new
 		title: 'グラフ再配置中…';
 		informUserDuring: [ :progress |
 				reps := 10.

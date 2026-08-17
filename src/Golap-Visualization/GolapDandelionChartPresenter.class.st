@@ -23,7 +23,7 @@ GolapDandelionChartPresenter >> updateCanvas [
 					colorMarkers := golap colorMarkers.
 					sunburstBuilder := RSSunburstBuilder new.
 					self canvas shapes copy do: #remove.
-					SpProgressDialog new
+					GolapProgressDialog new
 						title: '描画中…';
 						informUserDuring: [ :progress |
 								| due sofar |

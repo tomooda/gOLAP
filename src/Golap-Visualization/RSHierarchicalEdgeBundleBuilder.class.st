@@ -22,36 +22,28 @@ RSHierarchicalEdgeBundleBuilder class >> exampleClassReferences [
 					builder canvas addShape: (RSLabel new
 							 text: shape model name asString;
 							 position: (shape centroid: 0.0)) ] ].
-	SpJobPresenter new
-		model: (Job block: [ :job |
-						 | index |
-						 index := 0.
-						 job
-							 min: index;
-							 max: Collection allSubclasses size.
-						 Collection allSubclassesDo: [ :dstClass |
-								 | color |
-								 color := (builder canvas shapes detect: [ :shape |
-									           shape model == dstClass ]) color muchLighter.
-								 job value: (index := index + 1).
-								 ((SystemNavigation default allGlobalRefsOn: dstClass name)
-									  collect: [ :m | m methodClass ]
-									  thenSelect: [ :srcClass |
-									  srcClass inheritsFrom: Collection ]) asBag
-									 doWithOccurrences: [ :srcClass :weight |
-											 builder
-												 addEdgeBetween: srcClass
-												 and: dstClass
-												 do: [ :bspline |
-														 bspline
-															 width: weight * 2;
-															 markerEnd: (RSPolygon new points: {
-																			  (-3 @ 0 * weight).
-																			  (0 @ -5 * weight).
-																			  (3 @ 0 * weight) }) asMarker;
-															 color: color;
-															 yourself ] ] ] ]);
-		run.
+	GolapProgressDialog new
+		title: 'Analyzing class references';
+		informUserDuring: [ :progress |
+				| index max |
+				index := 0.
+				max := Collection allSubclasses size.
+				Collection allSubclassesDo: [ :dstClass |
+							| color |
+							color := (builder canvas shapes detect: [ :shape | shape model == dstClass ]) color muchLighter.
+							progress progress: (index := index + 1) asFloat / max asFloat.
+							((SystemNavigation default allGlobalRefsOn: dstClass name)
+								 collect: [ :m | m methodClass ]
+								 thenSelect: [ :srcClass | srcClass inheritsFrom: Collection ]) asBag doWithOccurrences: [ :srcClass :weight |
+										builder addEdgeBetween: srcClass and: dstClass do: [ :bspline |
+													bspline
+														width: weight * 2;
+														markerEnd: (RSPolygon new points: {
+																		 (-3 @ 0 * weight).
+																		 (0 @ -5 * weight).
+																		 (3 @ 0 * weight) }) asMarker;
+														color: color;
+														yourself ] ] ] ].
 	(builder canvas
 		 @ RSCanvasController;
 		 open) maximize

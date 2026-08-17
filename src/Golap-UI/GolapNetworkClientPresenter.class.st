@@ -310,7 +310,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 	commentText := self newText.
 	closeCheckBox := self newCheckBox
 		                 label: '送信後閉じる';
-		                 state: false;
+		                 state: true;
 		                 yourself.
 	resetButton := self newButton
 		               label: 'リセット';
@@ -418,7 +418,7 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 { #category : 'operations' }
 GolapNetworkClientPresenter >> openGolap [
 
-	self clearPreviewFilterField.
+	[self clearPreviewFilterField.
 	[
 		usesQueryHistory
 			ifTrue: [
@@ -464,6 +464,7 @@ GolapNetworkClientPresenter >> openGolap [
 										ifTrue: [ UIManager default alert: readStream ]
 										ifFalse: [
 												Cursor wait showWhile: [
+											
 														UIManager default informUserDuring: [ :bar |
 																bar
 																	min: 0;
@@ -486,7 +487,7 @@ GolapNetworkClientPresenter >> openGolap [
 																	updateNodePositions ] ] ] ] ] ] ]
 		on: GolapAborted
 		do: [ :ex |  ].
-	closeCheckBox state = true ifTrue: [ self close ]
+	closeCheckBox state = true ifTrue: [ self close ]] forkAt: Processor userBackgroundPriority
 ]
 
 { #category : 'operations' }

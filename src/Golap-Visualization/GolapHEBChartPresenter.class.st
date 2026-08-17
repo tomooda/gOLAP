@@ -24,7 +24,7 @@ GolapHEBChartPresenter >> updateCanvas [
 					hebBuilder := RSHierarchicalEdgeBundleBuilder new.
 					self canvas shapes copy do: #remove.
 					modelMap := IdentityDictionary new.
-					SpProgressDialog new
+					GolapProgressDialog new
 						title: '描画中…';
 						informUserDuring: [ :progress |
 								| due sofar |

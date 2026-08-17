@@ -285,7 +285,7 @@ GolapClusteredHeatmapPresenter >> updateCanvas [
 										valueScale := (maxValue - minValue) abs > 1.0e-8
 											              ifTrue: [ 1.0 / (maxValue - minValue) ]
 											              ifFalse: [ 0.0 ].
-										SpProgressDialog new
+										GolapProgressDialog new
 											title: '描画中…';
 											informUserDuring: [ :progress |
 													| due sofar |

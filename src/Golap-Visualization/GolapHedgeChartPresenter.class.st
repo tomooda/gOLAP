@@ -42,7 +42,7 @@ GolapHedgeChartPresenter >> updateCanvas [
 			canvas := self canvas.
 			self canvas shapes copy do: #remove.
 			colorMarkers := golap colorMarkers.
-			SpProgressDialog new
+			GolapProgressDialog new
 				title: '描画中…';
 				informUserDuring: [ :progress |
 						terminals := OrderedCollection new: golap model nodes size.

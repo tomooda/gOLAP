@@ -110,7 +110,7 @@ GolapAbstractProject >> golapWindowsDo: aBlock [
 GolapAbstractProject >> restoreQuery: aDictionary [
 
 	| dialog |
-	dialog := SpProgressDialog new.
+	dialog := GolapProgressDialog new.
 	dialog
 		title: 'クエリ復元中...';
 		informUserDuring: [ :progress |
@@ -121,7 +121,7 @@ GolapAbstractProject >> restoreQuery: aDictionary [
 GolapAbstractProject >> restoreWindows: anArray [
 
 	| dialog |
-	dialog := SpProgressDialog new.
+	dialog := GolapProgressDialog new.
 	dialog
 		title: '復元中...';
 		informUserDuring: [ :progress |
