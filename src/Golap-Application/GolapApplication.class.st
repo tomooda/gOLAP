@@ -1,18 +1,23 @@
 Class {
-	#name : 'GolapCommandLineHandler',
-	#superclass : 'CommandLineHandler',
+	#name : 'GolapApplication',
+	#superclass : 'ClapApplication',
 	#category : 'Golap-Application',
 	#package : 'Golap-Application'
 }
 
-{ #category : 'accessing' }
-GolapCommandLineHandler class >> commandName [
+{ #category : 'commandline' }
+GolapApplication class >> gOLAP [
 
-	^ 'gOLAP'
+	<commandline>
+	^ (ClapCommandSpec id: #gOLAP)
+		  description: 'Graph-based OLAP client';
+		  commandClass: self;
+		  addHelp;
+		  yourself
 ]
 
-{ #category : 'activation' }
-GolapCommandLineHandler >> activateCommand [
+{ #category : 'execution' }
+GolapApplication >> execute [
 
 	self
 		installMenu;
@@ -21,7 +26,7 @@ GolapCommandLineHandler >> activateCommand [
 ]
 
 { #category : 'installing' }
-GolapCommandLineHandler >> installIcon [
+GolapApplication >> installIcon [
 
 	| icon r logo |
 	icon := Form extent: 128 @ 128 depth: 32.
@@ -45,11 +50,11 @@ GolapCommandLineHandler >> installIcon [
 ]
 
 { #category : 'installing' }
-GolapCommandLineHandler >> installMenu [
+GolapApplication >> installMenu [
 
 	GolapMenubar reset.
 	OSWindowDriver current startUp: true.
-	OSPlatform current isMacOSX ifTrue: [
+	"OSPlatform current isMacOSX ifTrue: [
 			| main |
 			main := CocoaMenu new.
 			main
@@ -69,11 +74,12 @@ GolapCommandLineHandler >> installMenu [
 						addItemWithTitle: 'ヘルプを表示'
 						action: [ self inform: 'Help' ]
 						shortcut: '' ].
-			main setAsMainMenu ]
+			main setAsMainMenu.
+			MenubarMorph showMenubar: false]"
 ]
 
 { #category : 'installing' }
-GolapCommandLineHandler >> installQuitSession [
+GolapApplication >> installQuitSession [
 
 	Smalltalk
 		at: #WorldState

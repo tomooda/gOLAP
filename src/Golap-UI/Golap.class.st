@@ -105,7 +105,6 @@ Golap class >> deploy [
 	SessionManager default registerSystemClassNamed: #FreeTypeFileInfo.
 	Golap allInstancesDo: [ :g | g becomeForward: Object new ].
 	PasteUpMorph shouldShowWorldMenu: false.
-	MenubarMorph showMenubar: false.
 	5 timesRepeat: [ Smalltalk garbageCollect ]
 ]
 
