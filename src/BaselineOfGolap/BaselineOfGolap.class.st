@@ -51,48 +51,29 @@ BaselineOfGolap >> baseline: spec [
 
 	<baseline>
 	spec for: #common do: [
-			spec baseline: 'RoassalExporters' with: [
-					spec repository:
-						'github://pharo-graphics/RoassalExporters:pharo13/src' ].
 			spec
-				baseline: 'Phleeter'
-				with: [ spec repository: 'github://tomooda/Phleeter:main/src' ].
+				baseline: 'RoassalExporters' with: [ spec repository: 'github://pharo-graphics/RoassalExporters:pharo13/src' ];
+				baseline: 'ObjCBridge' with: [ spec repository: 'github://tesonep/objcbridge/src' ];
+				baseline: 'Selphie' with: [ spec repository: 'github://tomooda/Selphie:main/src' ];
+				baseline: 'HiDeHo' with: [ spec repository: 'github://tomooda/HiDeHo:main/src' ];
+				baseline: 'DataFrame' with: [ spec repository: 'github://PolyMathOrg/DataFrame/src' ];
+				baseline: 'PetitParser2Core' with: [ spec repository: 'github://kursjan/petitparser2/' ].
+			spec baseline: 'Xenq' with: [ spec repository: 'github://tomooda/Xenq:main/src' ].
 			spec
-				baseline: 'Selphie'
-				with: [ spec repository: 'github://tomooda/Selphie:main/src' ].
-			spec
-				baseline: 'HiDeHo'
-				with: [ spec repository: 'github://tomooda/HiDeHo:main/src' ].
-			spec
-				baseline: 'DataFrame'
-				with: [ spec repository: 'github://PolyMathOrg/DataFrame/src' ].
-			spec
-				baseline: 'PetitParser2Core'
-				with: [ spec repository: 'github://kursjan/petitparser2/' ].
-			spec
-				baseline: 'Xenq'
-				with: [ spec repository: 'github://tomooda/Xenq:main/src' ].
-			spec
-				package: 'Golap-Application'
-				with: [ spec requires: #( 'Phleeter' ) ];
+				package: 'Golap-Application' with: [ spec requires: #( 'ObjCBridge' ) ];
 				package: 'Golap-Clustering' with: [ spec requires: #(  ) ];
 				package: 'Golap-Models' with: [ spec requires: #( 'DataFrame' ) ];
 				package: 'Golap-Networking' with: [ spec requires: #(  ) ];
 				package: 'Golap-Project'
-				with: [ spec requires: #( 'DataFrame' 'Golap-Models'
-						   'Golap-UI' 'Golap-Models' 'Golap-Query' 'Golap-Visualization') ];
-				package: 'Golap-Query'
-				with: [ spec requires: #( 'PetitParser2Core' ) ];
-				package: 'Golap-UI' with: [
-						spec requires:
-								#( 'Selphie' 'RoassalExporters' 'HiDeHo' 'DataFrame'
-								   'Xenq' ) ].
+				with: [ spec requires: #( 'DataFrame' 'Golap-Models' 'Golap-UI' 'Golap-Models' 'Golap-Query' 'Golap-Visualization' ) ];
+				package: 'Golap-Query' with: [ spec requires: #( 'PetitParser2Core' ) ];
+				package: 'Golap-UI' with: [ spec requires: #( 'Selphie' 'RoassalExporters' 'HiDeHo' 'DataFrame' 'Xenq' ) ].
 			spec package: 'Golap-Visualization' with: [ spec requires: #(  ) ].
 			spec postLoadDoIt: #postLoad.
 			spec
 				group: 'Core'
-				with: #( 'Golap-Application' 'Golap-Clustering' 'Golap-Models'
-					   'Golap-Networking' 'Golap-Project' 'Golap-Query' 'Golap-UI'
+				with:
+					#( 'Golap-Application' 'Golap-Clustering' 'Golap-Models' 'Golap-Networking' 'Golap-Project' 'Golap-Query' 'Golap-UI'
 					   'Golap-Visualization' );
 				group: 'default' with: #( 'Core' ) ]
 ]
