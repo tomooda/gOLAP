@@ -89,18 +89,16 @@ Golap class >> deploy [
 	GolapMenubar reset.
 	GolapNamedProject flushCurrent.
 	GolapNetworkClientPresenter flushCurrent.
-	MCRepositoryGroup allSubInstancesDo: [ :group |
-		group repositories do: [ :repo | group removeRepository: repo ] ].
+	MCRepositoryGroup allSubInstancesDo: [ :group | group repositories do: [ :repo | group removeRepository: repo ] ].
 	IceRepository registry removeAll.
-	IceCredentialStore current in: [ :store |
-		store allCredentials do: [ :each | each removeFrom: store ] ].
+	IceCredentialStore current in: [ :store | store allCredentials do: [ :each | each removeFrom: store ] ].
 	self currentWorld closeAllWindowsDiscardingChanges.
 	Deprecation
 		raiseWarning: false;
 		showWarning: false.
-	NoChangesLog install.
+	NoSourcesManager beCurrent.
 	"NoPharoFilesOpener install."
-	FFICompilerPlugin install.
+	"FFICompilerPlugin install."
 	Stdio useNullStreams.
 	MCCacheRepository uniqueInstance disable.
 	EpMonitor reset.
