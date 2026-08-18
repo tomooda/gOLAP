@@ -17,5 +17,5 @@ CocoaMenu >> fromMenuSpec: aMenuSpec [
 
 	self title: (aMenuSpec label ifNil: [ '' ]).
 	aMenuSpec items do: [ :menuSpec |
-		self add: (self class fromMenuSpec: menuSpec) ]
+		items add: (self class fromMenuSpec: menuSpec) ]
 ]
