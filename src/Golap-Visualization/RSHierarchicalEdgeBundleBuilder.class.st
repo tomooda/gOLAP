@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'edges'
 	],
-	#category : 'Golap-Visualization-Roassal3',
+	#category : 'Golap-Visualization-HEB',
 	#package : 'Golap-Visualization',
-	#tag : 'Roassal3'
+	#tag : 'HEB'
 }
 
 { #category : 'examples' }
@@ -171,11 +171,9 @@ RSHierarchicalEdgeBundleBuilder >> controlPointsFor: anObject [
 
 	^ (Array streamContents: [ :stream |
 			   | shape |
-			   shape := shapes
-				            detect: [ :s | s model == anObject ]
-				            ifNone: [ nil ].
+			   shape := shapes detect: [ :s | s model == anObject ] ifNone: [ nil ].
 			   [ shape notNil ] whileTrue: [
-					   stream nextPut: (shape centroid: -10.0).
+					   stream nextPut: (shape centroid: strategy arcWidth * -0.5).
 					   shape := shape sparent ] ]) reversed
 ]
 

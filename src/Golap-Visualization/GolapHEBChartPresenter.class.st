@@ -18,10 +18,14 @@ GolapHEBChartPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
 			lock critical: [
-					| colorMarkers hebBuilder modelMap |
+					|  arcWidth colorMarkers hebBuilder modelMap |
 					self updateTree.
+					arcWidth := golap model nodes size.
 					colorMarkers := golap colorMarkers.
 					hebBuilder := RSHierarchicalEdgeBundleBuilder new.
+					hebBuilder constantWidthStrategy
+						centerWidth: arcWidth;
+						arcWidth: arcWidth.
 					self canvas shapes copy do: #remove.
 					modelMap := IdentityDictionary new.
 					GolapProgressDialog new
@@ -51,9 +55,29 @@ GolapHEBChartPresenter >> updateCanvas [
 																		modelMap at: edge node2 id ifPresent: [ :node2 |
 																				hebBuilder addEdgeBetween: node1 and: node2 do: [ :bspline |
 																						bspline
+																							model: edge;
 																							width: edgeValue * 50 + 1;
 																							color: (color alpha: 0.2);
-																							capRound ] ] ] ] ] ] ] ].
+																							capRound ] ] ] ] ] ] ].
+								self canvas shapes do: [ :shape |
+										((shape model isKindOf: GolapHierarchicalClusteringTree) and: [ shape model isLeaf ]) ifTrue: [
+												| color position gap label |
+												color := self colorForNode: (golap model nodeAt: shape model id).
+												position := shape centroid: arcWidth * 0.5 + 4.
+												gap := shape externalRadius * (shape alphaAngle - shape betaAngle) abs * Float pi / 180.0.
+												label := RSLabel new text: (golap model nodeAt: shape model id) name.
+												label
+													position: label width / 2.0 @ 0;
+													color: shape color;
+													scaleBy: gap / label height;
+													position: position + (position * (label width * 0.5 / position r));
+													rotateByRadians: position theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0).
+												self canvas addShape: label ].
+										(shape model isKindOf: GolapEdge) ifTrue: [
+												((golap includesSelection: shape model node1) or: [ golap includesSelection: shape model node2 ]) ifTrue: [
+														shape
+															color: (shape color alpha: 1.0);
+															pushFront ] ] ] ].
 					self zoomToFit ] ]
 ]
 

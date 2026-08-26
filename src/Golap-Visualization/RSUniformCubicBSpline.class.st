@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'segments'
 	],
-	#category : 'Golap-Visualization-Roassal3',
+	#category : 'Golap-Visualization-HEB',
 	#package : 'Golap-Visualization',
-	#tag : 'Roassal3'
+	#tag : 'HEB'
 }
 
 { #category : 'examples' }
