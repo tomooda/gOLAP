@@ -9,7 +9,9 @@ Class {
 		'imageRepositoryUrl',
 		'golapServerUrl',
 		'itemFieldQuerySpec',
-		'serverConfig'
+		'serverConfig',
+		'idAttributeName',
+		'attributeNames'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -28,6 +30,22 @@ GolapServerProductInfoRetriever class >> fromApiClient: aGolapApiClient [
 GolapServerProductInfoRetriever class >> tag [
 
 	^ 'server'
+]
+
+{ #category : 'accessing' }
+GolapServerProductInfoRetriever >> attributeNames [
+
+	^ attributeNames ifNil: [
+			  serverConfig ifNotNil: [
+					  serverConfig at: 'itemAttFile' ifPresent: [ :itemAttFile |
+							  attributeNames := (itemAttFile
+								                     at: 'strFields'
+								                     ifPresent: [ :strFields | (strFields substrings: ',') collect: #trim thenSelect: #notEmpty ]
+								                     ifAbsent: [ #(  ) ]) , (itemAttFile
+								                     at: 'numFields'
+								                     ifPresent: [ :strFields | (strFields substrings: ',') collect: #trim thenSelect: #notEmpty ]
+								                     ifAbsent: [ #(  ) ]) ] ].
+			  attributeNames ]
 ]
 
 { #category : 'accessing' }
@@ -50,6 +68,15 @@ GolapServerProductInfoRetriever >> golapServerUrl [
 GolapServerProductInfoRetriever >> golapServerUrl: aString [
 
 	golapServerUrl := aString asZnUrl
+]
+
+{ #category : 'accessing' }
+GolapServerProductInfoRetriever >> idAttributeName [
+
+	^ idAttributeName ifNil: [
+			  serverConfig ifNotNil: [
+				  serverConfig at: 'traFile' ifPresent: [ :traFile | traFile at: 'itemFld' ifPresent: [ :attr | idAttributeName := attr ] ] ].
+			  idAttributeName ]
 ]
 
 { #category : 'accessing' }
@@ -168,26 +195,43 @@ GolapServerProductInfoRetriever >> retrieveImagesFor: aString [
 ]
 
 { #category : 'http' }
+GolapServerProductInfoRetriever >> retrieveItemAttribute: attributeString for: aString [
+
+	self idAttributeName ifNotNil: [ :idAttr |
+			| response |
+			response := GolapHttpClient new
+				            url: golapServerUrl;
+				            entity:
+					            (ZnEntity json:
+							             '{"retrieve":"GetItmAtt,' , attributeString , '","itemFilter":"isin(' , idAttr , ',' , aString , ')"}');
+				            authenticateBlock: self authenticateBlock;
+				            post;
+				            response.
+			response isSuccess ifTrue: [ response contents lines ifNotEmpty: [ :lines | lines size >= 2 ifTrue: [ ^ lines second trim ] ] ] ].
+	^ nil
+]
+
+{ #category : 'http' }
 GolapServerProductInfoRetriever >> retrieveItemInfoFor: aString [
 
 	| itemInfo response stream header reader |
 	itemInfo := OrderedCollection new.
 	(golapServerUrl isNil or: [ aString isNil ]) ifTrue: [ ^ itemInfo ].
 	[
-	response := GolapHttpClient
-		            post: golapServerUrl
-		            data:
-		            (ZnEntity json: (self itemInfoRequestJsonFor: aString))
-		            authenticateBlock: self authenticateBlock ]
+		response := GolapHttpClient
+			            post: golapServerUrl
+			            data: (ZnEntity json: (self itemInfoRequestJsonFor: aString))
+			            authenticateBlock: self authenticateBlock ]
 		on: Error
 		do: [ :ex | ^ itemInfo ].
 	response isSuccess ifFalse: [ ^ itemInfo ].
 	stream := response entity contents readStream.
 	header := (stream upTo: Character lf) trim.
 	reader := NeoCSVReader on: stream.
-	reader next
-		with: reader next
-		do: [ :key :value | itemInfo add: key -> value ].
+	reader next with: reader next do: [ :key :value | itemInfo add: key -> value ].
+	self attributeNames do: [ :attr |
+			attr ~= self idAttributeName ifTrue: [
+				(self retrieveItemAttribute: attr for: aString) ifNotNil: [ :val | itemInfo add: attr -> val asString ] ] ].
 	^ itemInfo
 ]
 

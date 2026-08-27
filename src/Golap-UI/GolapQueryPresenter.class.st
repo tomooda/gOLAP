@@ -209,9 +209,14 @@ GolapQueryPresenter >> inputTextHeight [
 
 { #category : 'accessing-query' }
 GolapQueryPresenter >> itemFieldQuerySpec [
+
 	^ self serverConfig
-		ifNotNil: [ :config | config at: 'statsFunc' ifAbsent: [ Dictionary new ] ]
-		ifNil: [ Dictionary new ]
+		  ifNotNil: [ :config |
+				  | querySpec |
+				  querySpec := Dictionary new.
+				  config at: 'statsFunc' ifPresent: [ :statsFunc | statsFunc keysAndValuesDo: [ :key :value | querySpec at: key put: value ] ].
+				  querySpec ]
+		  ifNil: [ Dictionary new ]
 ]
 
 { #category : 'accessing-query' }

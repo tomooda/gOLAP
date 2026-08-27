@@ -91,13 +91,14 @@ GolapApiClient >> imageUrl [
 { #category : 'accessing' }
 GolapApiClient >> itemFieldQuerySpec [
 
-	^ itemFieldQuerySpec ifNil: [ 
-		  itemFieldQuerySpec := serverConfig
-			                        ifNotNil: [ :config | 
-			                        config
-				                        at: 'statsFunc'
-				                        ifAbsent: [ Dictionary new ] ]
-			                        ifNil: [ Dictionary new ] ]
+	^ itemFieldQuerySpec ifNil: [
+			  itemFieldQuerySpec := serverConfig ifNotNil: [ :config |
+					                        | querySpec |
+					                        querySpec := Dictionary new.
+					                        config
+						                        at: 'statsFunc'
+						                        ifPresent: [ :statsFunc | statsFunc keysAndValuesDo: [ :key :value | querySpec at: key put: value ] ].
+					                        querySpec ] ]
 ]
 
 { #category : 'accessing' }
