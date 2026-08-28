@@ -104,7 +104,12 @@ GolapEdgesAppearance >> edgeEvaluators [
 { #category : 'accessing' }
 GolapEdgesAppearance >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 
+	| selection |
+	selection := edgeEvaluatorList selectedItem.
 	edgeEvaluatorList items: aCollectionOfGolapEdgeEvaluator.
+	(aCollectionOfGolapEdgeEvaluator includes: selection)
+		ifTrue: [ edgeEvaluatorList selectItem: selection ]
+		ifFalse: [ edgeEvaluatorList selectFirst ].
 	self golapModelDo: [ :golapModel |
 		golapModel edgeEvaluators: aCollectionOfGolapEdgeEvaluator ]
 ]
@@ -311,9 +316,13 @@ GolapEdgesAppearance >> nodeEvaluators [
 { #category : 'accessing' }
 GolapEdgesAppearance >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 
+	| selection |
+	selection := nodeEvaluatorList selectedItem.
 	nodeEvaluatorList items: aCollectionOfGolapNodeEvaluator.
-	self golapModelDo: [ :golapModel |
-		golapModel nodeEvaluators: aCollectionOfGolapNodeEvaluator ]
+	(aCollectionOfGolapNodeEvaluator includes: selection)
+		ifTrue: [ nodeEvaluatorList selectItem: selection ]
+		ifFalse: [ nodeEvaluatorList selectFirst ].
+	self golapModelDo: [ :golapModel | golapModel nodeEvaluators: aCollectionOfGolapNodeEvaluator ]
 ]
 
 { #category : 'updating' }
