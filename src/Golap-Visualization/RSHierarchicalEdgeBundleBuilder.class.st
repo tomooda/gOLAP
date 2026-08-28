@@ -173,7 +173,7 @@ RSHierarchicalEdgeBundleBuilder >> controlPointsFor: anObject [
 			   | shape |
 			   shape := shapes detect: [ :s | s model == anObject ] ifNone: [ nil ].
 			   [ shape notNil ] whileTrue: [
-					   stream nextPut: (shape centroid: strategy arcWidth * -0.5).
+					   stream nextPut: (shape centroid: shape externalRadius - shape innerRadius * -0.5).
 					   shape := shape sparent ] ]) reversed
 ]
 
