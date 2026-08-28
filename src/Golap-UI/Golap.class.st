@@ -1667,44 +1667,33 @@ Golap >> retrievePhotoimages [
 			| agenda total tried done |
 			agenda := IdentitySet new.
 			model edgesDo: [ :edge |
-					edge node1 photoimage ifNil: [
-						self
-							imageCacheAt: edge node1
-							ifAbsent: [ agenda add: edge node1 ] ].
-					edge node2 photoimage ifNil: [
-						self
-							imageCacheAt: edge node2
-							ifAbsent: [ agenda add: edge node2 ] ] ].
+					edge node1 photoimage ifNil: [ self imageCacheAt: edge node1 ifAbsent: [ agenda add: edge node1 ] ].
+					edge node2 photoimage ifNil: [ self imageCacheAt: edge node2 ifAbsent: [ agenda add: edge node2 ] ] ].
 			agenda := agenda asArray.
 			total := agenda size.
 			done := 0.
 			tried := 0.
+			itemsAppearancePresenter showsPhotoimageRetrievalLog ifTrue: [ itemInfoRetriever ifNotNil: #flushImageRetrieversLog ].
 			agenda := agenda reject: [ :node |
 					          tried := tried + 1.
 					          self photoimageRetrievalProgressBar
 						          value: tried asFloat / total asFloat
-						          message:
-							          '画像取得中 (' , done asString , ') ' , tried asString
-							          , ' / ' , total asString , ')'.
+						          message: '画像取得中 (' , done asString , ') ' , tried asString , ' / ' , total asString , ')'.
 					          self ifNotActive: [
 							          photoImageRetrievingProcess := nil.
 							          Processor activeProcess terminate ].
 					          (itemInfoRetriever photoimageFor: node)
 						          ifNotNil: [ :photoimage |
-								          node photoimage:
-									          (photoimage scaledToSize:
-										           self photoimageSize asPoint).
+								          node photoimage: (photoimage scaledToSize: self photoimageSize asPoint).
 								          self imageCacheAt: node put: node photoimage.
 								          done := done + 1.
 								          done \\ 10 = 0 ifTrue: [
-										          self activeVisualizationDo: [ :presenter |
-												          (presenter respondsTo: #updateNodeShapes)
-													          ifTrue: [ presenter updateNodeShapes ] ] ].
+									          self activeVisualizationDo: [ :presenter |
+										          (presenter respondsTo: #updateNodeShapes) ifTrue: [ presenter updateNodeShapes ] ] ].
 								          true ]
 						          ifNil: [ false ] ].
-			self photoimageRetrievalProgressBar
-				value: 1
-				message: '画像取得完了 (' , agenda size asString , '個取得不可)'.
+			self photoimageRetrievalProgressBar value: 1 message: '画像取得完了 (' , agenda size asString , '個取得不可)'.
+			itemsAppearancePresenter showsPhotoimageRetrievalLog ifTrue: [ itemInfoRetriever ifNotNil: #openImageRetrieversLog ].
 			self updateGlobalImage ]
 ]
 

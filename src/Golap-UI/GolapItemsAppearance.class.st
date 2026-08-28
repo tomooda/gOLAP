@@ -7,7 +7,8 @@ Class {
 		'photoimageRetrievers',
 		'photoimageRetrievalProgressBar',
 		'startPhotoimageRetrievalButton',
-		'showPhotoImagesCheckbox'
+		'showPhotoImagesCheckbox',
+		'showsPhotoimageRetrievalLogCheckbox'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -48,29 +49,30 @@ GolapItemsAppearance >> defaultLayout [
 					    add: startPhotoimageRetrievalButton width: self buttonHeight)
 			   expand: false;
 			   add: showPhotoImagesCheckbox expand: false;
+			   add: showsPhotoimageRetrievalLogCheckbox expand: false;
 			   yourself)
 ]
 
 { #category : 'initialization' }
 GolapItemsAppearance >> initializePresenters [
 
-	photoimageRetrievers := self instantiate:
-		                        GolapPhotoImageRetrieversPresenter.
+	photoimageRetrievers := self instantiate: GolapPhotoImageRetrieversPresenter.
 	photoimageRetrievalProgressBar := self newProgressBar
 		                                  color: Color red;
 		                                  value: 0 message: ''.
 	startPhotoimageRetrievalButton := self newButton
 		                                  icon: (self iconNamed: #restart);
-		                                  action: [
-			                                  golap ifNotNil:
-					                                  #startPhotoimageRetrievingProcess ];
+		                                  action: [ golap ifNotNil: #startPhotoimageRetrievingProcess ];
 		                                  yourself.
 	showPhotoImagesCheckbox := self newCheckBox
 		                           label: '商品画像を表示する';
 		                           state: true;
-		                           whenChangedDo: [
-			                           self showsPhotoimagesChanged ];
-		                           yourself
+		                           whenChangedDo: [ self showsPhotoimagesChanged ];
+		                           yourself.
+	showsPhotoimageRetrievalLogCheckbox := self newCheckBox
+		                                       label: '画像取得後にログを開く';
+		                                       state: false;
+		                                       yourself
 ]
 
 { #category : 'initialization' }
@@ -91,6 +93,12 @@ GolapItemsAppearance >> setGolap: aGolap [
 	golap := aGolap.
 	photoimageRetrievers golap: aGolap.
 	self updatePhotoimageRetrievers
+]
+
+{ #category : 'testing' }
+GolapItemsAppearance >> showsPhotoimageRetrievalLog [
+
+	^ showsPhotoimageRetrievalLogCheckbox state = true
 ]
 
 { #category : 'testing' }

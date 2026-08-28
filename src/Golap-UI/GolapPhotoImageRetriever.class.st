@@ -2,7 +2,8 @@ Class {
 	#name : 'GolapPhotoImageRetriever',
 	#superclass : 'Object',
 	#instVars : [
-		'enabled'
+		'enabled',
+		'log'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -148,6 +149,12 @@ GolapPhotoImageRetriever >> enabled: aBoolean [
 	enabled := aBoolean = true
 ]
 
+{ #category : 'logging' }
+GolapPhotoImageRetriever >> flushLog [
+
+	log := String new writeStream
+]
+
 { #category : 'accessing' }
 GolapPhotoImageRetriever >> golapDirectory [
 
@@ -179,6 +186,22 @@ GolapPhotoImageRetriever >> isAvailable [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'logging' }
+GolapPhotoImageRetriever >> log [
+
+	^ log contents
+]
+
+{ #category : 'logging' }
+GolapPhotoImageRetriever >> log: aString [
+
+	(log ifNil: [ log := String new writeStream ])
+		nextPutAll: DateAndTime now asString;
+		space;
+		nextPutAll: aString;
+		cr
+]
+
 { #category : 'enumerating' }
 GolapPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
@@ -203,12 +226,8 @@ GolapPhotoImageRetriever >> photoimageFor: aGolapNode [
 	self isAvailable ifTrue: [
 			self namesFor: aGolapNode do: [ :name |
 					(self needsCache
-						 ifTrue: [
-						 self
-							 cacheAt: name
-							 ifAbsentPut: [ self retrieveImageNamed: name ] ]
-						 ifFalse: [ self retrieveImageNamed: name ]) ifNotNil: [ :form |
-						^ form ] ] ].
+						 ifTrue: [ self cacheAt: name ifAbsentPut: [ self retrieveImageNamed: name ] ]
+						 ifFalse: [ self retrieveImageNamed: name ]) ifNotNil: [ :form | ^ form ] ] ].
 	^ nil
 ]
 

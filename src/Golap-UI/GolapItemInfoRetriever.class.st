@@ -49,10 +49,26 @@ GolapItemInfoRetriever >> defaultPhotoimageRetrievers [
 	^ self availablePhotoimageRetrievers
 ]
 
+{ #category : 'logging' }
+GolapItemInfoRetriever >> flushImageRetrieversLog [
+
+	self photoimageRetrievers select: #isAvailable thenDo: #flushLog
+]
+
 { #category : 'testing' }
 GolapItemInfoRetriever >> hasPhotoImage [
 
 	^ self photoimageRetrievers anySatisfy: #isAvailable
+]
+
+{ #category : 'logging' }
+GolapItemInfoRetriever >> openImageRetrieversLog [
+
+	self photoimageRetrievers select: #isAvailable thenDo: [ :retriever |
+			retriever log ifNotEmpty: [ :log |
+					(SpTextPresenter new
+						 text: log;
+						 open) title: 'log' ] ]
 ]
 
 { #category : 'accessing' }

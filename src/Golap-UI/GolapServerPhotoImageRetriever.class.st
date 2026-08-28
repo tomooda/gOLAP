@@ -109,13 +109,13 @@ GolapServerPhotoImageRetriever >> isAvailable [
 GolapServerPhotoImageRetriever >> namesFor: aGolapNode do: aBlock [
 
 	([
-	 (GolapHttpClient
-		  post: golapServerUrl
-		  data: (ZnEntity json:
-				   '{"nodeimage": {"itemVal": "' , aGolapNode id asString
-				   , '"},"deadlineTimer":0}')
-		  authenticateBlock: self authenticateBlock) entity contents trim
-		 lines allButFirst: 2 ]
+		 | response |
+		 response := GolapHttpClient
+			             post: golapServerUrl
+			             data: (ZnEntity json: '{"nodeimage": {"itemVal": "' , aGolapNode id asString , '"},"deadlineTimer":0}')
+			             authenticateBlock: self authenticateBlock.
+		 self log: 'nodeimage ' , aGolapNode id asString , ' ' , response statusLine asString trim.
+		 response entity contents trim lines allButFirst: 2 ]
 		 on: Error
 		 do: [ :ex | ^ self ]) do: aBlock
 ]
@@ -136,12 +136,12 @@ GolapServerPhotoImageRetriever >> order [
 GolapServerPhotoImageRetriever >> retrieveImageNamed: aString [
 
 	[
-	| response |
-	response := GolapHttpClient get: imageServerUrl / aString.
-	response isSuccess ifTrue: [
-		^ ImageReadWriter formFromStream: response entity readStream ] ]
+		| response |
+		response := GolapHttpClient get: imageServerUrl / aString.
+		self log: 'get ' , (imageServerUrl / aString) asString , ' ' , response statusLine asString.
+		response isSuccess ifTrue: [ ^ ImageReadWriter formFromStream: response entity readStream ] ]
 		on: Exception
-		do: [ :ex |  ].
+		do: [ :ex | self log: ex messageText asString ].
 	^ nil
 ]
 
