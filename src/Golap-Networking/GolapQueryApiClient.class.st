@@ -1,5 +1,5 @@
 Class {
-	#name : 'GolapApiClient',
+	#name : 'GolapQueryApiClient',
 	#superclass : 'Object',
 	#instVars : [
 		'url',
@@ -17,12 +17,12 @@ Class {
 }
 
 { #category : 'utilities' }
-GolapApiClient class >> random [
+GolapQueryApiClient class >> random [
 	^ random ifNil: [ random := Random new ]
 ]
 
 { #category : 'instance cretion' }
-GolapApiClient class >> url: aStringOrUrl query: aString authenticateBlock: aBlock [
+GolapQueryApiClient class >> url: aStringOrUrl query: aString authenticateBlock: aBlock [
 
 	^ self new
 		  url: aStringOrUrl;
@@ -32,7 +32,7 @@ GolapApiClient class >> url: aStringOrUrl query: aString authenticateBlock: aBlo
 ]
 
 { #category : 'instance cretion' }
-GolapApiClient class >> url: aStringOrUrl query: aString comment: anotherString serverConfig: configDictionary itemFieldQuerySpec: aDictionary authenticateBlock: aBlock [
+GolapQueryApiClient class >> url: aStringOrUrl query: aString comment: anotherString serverConfig: configDictionary itemFieldQuerySpec: aDictionary authenticateBlock: aBlock [
 
 	^ self new
 		  url: aStringOrUrl;
@@ -45,17 +45,17 @@ GolapApiClient class >> url: aStringOrUrl query: aString comment: anotherString 
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> authenticateBlock [
+GolapQueryApiClient >> authenticateBlock [
 	^ authenticateBlock
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> authenticateBlock: aBlock [
+GolapQueryApiClient >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
 { #category : 'private' }
-GolapApiClient >> cancel: aString [
+GolapQueryApiClient >> cancel: aString [
 	| response |
 	response := GolapHttpClient
 		get: self url / 'cancel' / aString
@@ -64,19 +64,19 @@ GolapApiClient >> cancel: aString [
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> comment [
+GolapQueryApiClient >> comment [
 
 	^ comment
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> comment: aString [
+GolapQueryApiClient >> comment: aString [
 
 	comment := aString
 ]
 
 { #category : 'private' }
-GolapApiClient >> createRunId [
+GolapQueryApiClient >> createRunId [
 
 	<script: 'GolapApiClient new createRunId inspect'>
 	^ String streamContents: [ :stream | 
@@ -84,12 +84,12 @@ GolapApiClient >> createRunId [
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> imageUrl [
+GolapQueryApiClient >> imageUrl [
 	^ self serverConfig at: 'imageUrl' ifAbsent: [ nil ]
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> itemFieldQuerySpec [
+GolapQueryApiClient >> itemFieldQuerySpec [
 
 	^ itemFieldQuerySpec ifNil: [
 			  itemFieldQuerySpec := serverConfig ifNotNil: [ :config |
@@ -102,32 +102,32 @@ GolapApiClient >> itemFieldQuerySpec [
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> itemFieldQuerySpec: aDictionary [
+GolapQueryApiClient >> itemFieldQuerySpec: aDictionary [
 	itemFieldQuerySpec := aDictionary
 ]
 
 { #category : 'private' }
-GolapApiClient >> jobProgressBar [
+GolapQueryApiClient >> jobProgressBar [
 	^ (World findDeeplyA: JobProgressBarMorph) findA: ImageMorph
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> query [
+GolapQueryApiClient >> query [
 	^ query
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> query: aString [
+GolapQueryApiClient >> query: aString [
 	query := aString withUnixLineEndings
 ]
 
 { #category : 'private' }
-GolapApiClient >> random [
+GolapQueryApiClient >> random [
 	^ self class random
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> readStream [
+GolapQueryApiClient >> readStream [
 	"GolapApiClient new entity"
 
 	[
@@ -174,7 +174,7 @@ GolapApiClient >> readStream [
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> serverConfig [
+GolapQueryApiClient >> serverConfig [
 
 	^ serverConfig ifNil: [ 
 		  [ 
@@ -199,22 +199,22 @@ GolapApiClient >> serverConfig [
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> serverConfig: aDictionary [
+GolapQueryApiClient >> serverConfig: aDictionary [
 	serverConfig := aDictionary
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> timeout [
+GolapQueryApiClient >> timeout [
 	^ 0
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> url [
+GolapQueryApiClient >> url [
 	^ url
 ]
 
 { #category : 'accessing' }
-GolapApiClient >> url: aStringOrZnUrl [
+GolapQueryApiClient >> url: aStringOrZnUrl [
 
 	url := aStringOrZnUrl asZnUrl
 ]

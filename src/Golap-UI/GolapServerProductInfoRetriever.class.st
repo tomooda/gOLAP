@@ -2,7 +2,6 @@ Class {
 	#name : 'GolapServerProductInfoRetriever',
 	#superclass : 'GolapItemInfoRetriever',
 	#instVars : [
-		'cachedImages',
 		'cachedItemInfos',
 		'query',
 		'authenticateBlock',
@@ -10,8 +9,7 @@ Class {
 		'golapServerUrl',
 		'itemFieldQuerySpec',
 		'serverConfig',
-		'idAttributeName',
-		'attributeNames'
+		'retrieveApiClient'
 	],
 	#category : 'Golap-UI-Retriever',
 	#package : 'Golap-UI',
@@ -30,22 +28,6 @@ GolapServerProductInfoRetriever class >> fromApiClient: aGolapApiClient [
 GolapServerProductInfoRetriever class >> tag [
 
 	^ 'server'
-]
-
-{ #category : 'accessing' }
-GolapServerProductInfoRetriever >> attributeNames [
-
-	^ attributeNames ifNil: [
-			  serverConfig ifNotNil: [
-					  serverConfig at: 'itemAttFile' ifPresent: [ :itemAttFile |
-							  attributeNames := (itemAttFile
-								                     at: 'strFields'
-								                     ifPresent: [ :strFields | (strFields substrings: ',') collect: #trim thenSelect: #notEmpty ]
-								                     ifAbsent: [ #(  ) ]) , (itemAttFile
-								                     at: 'numFields'
-								                     ifPresent: [ :strFields | (strFields substrings: ',') collect: #trim thenSelect: #notEmpty ]
-								                     ifAbsent: [ #(  ) ]) ] ].
-			  attributeNames ]
 ]
 
 { #category : 'accessing' }
@@ -71,15 +53,6 @@ GolapServerProductInfoRetriever >> golapServerUrl: aString [
 ]
 
 { #category : 'accessing' }
-GolapServerProductInfoRetriever >> idAttributeName [
-
-	^ idAttributeName ifNil: [
-			  serverConfig ifNotNil: [
-				  serverConfig at: 'traFile' ifPresent: [ :traFile | traFile at: 'itemFld' ifPresent: [ :attr | idAttributeName := attr ] ] ].
-			  idAttributeName ]
-]
-
-{ #category : 'accessing' }
 GolapServerProductInfoRetriever >> imageRepositoryUrl [
 
 	^ imageRepositoryUrl
@@ -99,7 +72,6 @@ GolapServerProductInfoRetriever >> imageRequestJsonFor: aString [
 { #category : 'initialization' }
 GolapServerProductInfoRetriever >> initialize [
 	super initialize.
-	cachedImages := Dictionary new.
 	cachedItemInfos := Dictionary new.
 
 ]
@@ -163,6 +135,16 @@ GolapServerProductInfoRetriever >> query: aDictionary [
 	query := aDictionary
 ]
 
+{ #category : 'accessing' }
+GolapServerProductInfoRetriever >> retrieveApiClient [
+
+	^ retrieveApiClient ifNil: [
+		  retrieveApiClient := GolapRetrieveApiClient
+			                       url: golapServerUrl
+			                       authenticateBlock: authenticateBlock
+			                       serverConfig: serverConfig ]
+]
+
 { #category : 'http' }
 GolapServerProductInfoRetriever >> retrieveImagesFor: aString [
 
@@ -195,23 +177,6 @@ GolapServerProductInfoRetriever >> retrieveImagesFor: aString [
 ]
 
 { #category : 'http' }
-GolapServerProductInfoRetriever >> retrieveItemAttribute: attributeString for: aString [
-
-	self idAttributeName ifNotNil: [ :idAttr |
-			| response |
-			response := GolapHttpClient new
-				            url: golapServerUrl;
-				            entity:
-					            (ZnEntity json:
-							             '{"retrieve":"GetItmAtt,' , attributeString , '","itemFilter":"isin(' , idAttr , ',' , aString , ')"}');
-				            authenticateBlock: self authenticateBlock;
-				            post;
-				            response.
-			response isSuccess ifTrue: [ response contents lines ifNotEmpty: [ :lines | lines size >= 2 ifTrue: [ ^ lines second trim ] ] ] ].
-	^ nil
-]
-
-{ #category : 'http' }
 GolapServerProductInfoRetriever >> retrieveItemInfoFor: aString [
 
 	| itemInfo response stream header reader |
@@ -229,9 +194,7 @@ GolapServerProductInfoRetriever >> retrieveItemInfoFor: aString [
 	header := (stream upTo: Character lf) trim.
 	reader := NeoCSVReader on: stream.
 	reader next with: reader next do: [ :key :value | itemInfo add: key -> value ].
-	self attributeNames do: [ :attr |
-			attr ~= self idAttributeName ifTrue: [
-				(self retrieveItemAttribute: attr for: aString) ifNotNil: [ :val | itemInfo add: attr -> val asString ] ] ].
+	self retrieveApiClient attributesAndValuesAt: aString do: [ :attr :val | itemInfo add: attr -> val asString ].
 	^ itemInfo
 ]
 

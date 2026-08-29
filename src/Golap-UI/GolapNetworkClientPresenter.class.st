@@ -176,7 +176,7 @@ GolapNetworkClientPresenter >> dumpToFile [
 
 	UIManager default informUserDuring: [ :progress |
 			| readStream |
-			readStream := (GolapApiClient
+			readStream := (GolapQueryApiClient
 				               url: self url
 				               query: self query
 				               comment: self comment
@@ -404,7 +404,7 @@ GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherB
 					| queryRecord |
 					queryRecord := self recordHiDeHo.
 					aBlock
-						cull: (GolapApiClient
+						cull: (GolapQueryApiClient
 								 url: self url
 								 query: self query
 								 comment: self comment
@@ -433,7 +433,7 @@ GolapNetworkClientPresenter >> openGolap [
 				ifFalse: [
 						| queryRecord api golap |
 						queryRecord := self recordHiDeHo.
-						api := GolapApiClient
+						api := GolapQueryApiClient
 							       url: self url
 							       query: self query
 							       comment: self comment

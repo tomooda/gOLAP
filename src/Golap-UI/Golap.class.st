@@ -1599,7 +1599,7 @@ Golap >> resendQuery [
 
 	| api golap |
 	(self url isNil or: [ self query isNil ]) ifTrue: [ ^ self ].
-	api := GolapApiClient
+	api := GolapQueryApiClient
 		       url: self url
 		       query: (GolapJSON toString: self query)
 		       comment: self comment
