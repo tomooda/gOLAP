@@ -134,7 +134,9 @@ GolapRetrieveApiClient >> valuesAt: aString do: aBlock [
 GolapRetrieveApiClient >> valuesAt: aString filters: aCollection do: aBlock [
 
 	| predicates json |
-	predicates := aCollection collect: [ :assoc |
+	predicates := (aCollection isDictionary
+		               ifTrue: [ aCollection associations ]
+		               ifFalse: [ aCollection ]) collect: [ :assoc |
 			              String streamContents: [ :stream |
 					              stream
 						              nextPutAll: 'isin(';

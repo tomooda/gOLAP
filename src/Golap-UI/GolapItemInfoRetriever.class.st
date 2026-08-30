@@ -33,6 +33,12 @@ GolapItemInfoRetriever class >> tag [
 ]
 
 { #category : 'accessing' }
+GolapItemInfoRetriever >> attributeNames [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
 GolapItemInfoRetriever >> availablePhotoimageRetrievers [
 
 	^ ((Array streamContents: [ :stream |
@@ -61,6 +67,12 @@ GolapItemInfoRetriever >> hasPhotoImage [
 	^ self photoimageRetrievers anySatisfy: #isAvailable
 ]
 
+{ #category : 'instance creation' }
+GolapItemInfoRetriever >> newRetrieveApiClient [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'logging' }
 GolapItemInfoRetriever >> openImageRetrieversLog [
 
@@ -71,7 +83,7 @@ GolapItemInfoRetriever >> openImageRetrieversLog [
 						 open) title: 'log' ] ]
 ]
 
-{ #category : 'accessing' }
+{ #category : 'operations' }
 GolapItemInfoRetriever >> photoimageFor: aGolapNode [
 
 	self photoimageRetrievers do: [ :retriever |
@@ -98,8 +110,26 @@ GolapItemInfoRetriever >> photoimageRetrieversConfigPresenter [
 	^ GolapPhotoImageRetrieversPresenter on: self
 ]
 
-{ #category : 'accessing' }
+{ #category : 'operations' }
+GolapItemInfoRetriever >> productDataAt: aString forAll: aCollectionOfGolapNode [
+
+	^ self productDataAt: aString forAll: aCollectionOfGolapNode interimBlock: nil
+]
+
+{ #category : 'operations' }
+GolapItemInfoRetriever >> productDataAt: aString forAll: aCollectionOfGolapNode interim: aBlock [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'operations' }
 GolapItemInfoRetriever >> productDataFor: aGolapNode [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapItemInfoRetriever >> serverConfig [
+
+	^ nil
 ]

@@ -115,7 +115,12 @@ GolapEdgeEvaluator >> normalize: aNumber [
 
 	^ (aNumber isNil or: [ min isNil or: [ max isNil ] ])
 		  ifTrue: [ nil ]
-		  ifFalse: [ (aNumber - min) asFloat / (max - min) asFloat ]
+		  ifFalse: [
+				  | d |
+				  d := (max - min) asFloat.
+				  d abs < 1.0e-8
+					  ifTrue: [ 0.5 ]
+					  ifFalse: [ (aNumber - min) asFloat / d ] ]
 ]
 
 { #category : 'accessing' }

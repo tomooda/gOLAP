@@ -1,17 +1,14 @@
 Class {
 	#name : 'GolapOverviewPresenter',
-	#superclass : 'SpPresenter',
+	#superclass : 'GolapVisualizationPresenter',
 	#instVars : [
-		'roassal',
 		'scale',
 		'offset',
-		'golap',
 		'nodePositions',
 		'reallyVisibleEdges',
 		'reallyVisibleNodes',
 		'freqScale',
 		'lineScale',
-		'lock',
 		'nodeShapes'
 	],
 	#category : 'Golap-Visualization-Overview',
@@ -81,32 +78,6 @@ GolapOverviewPresenter >> cameraScale: aNumber [
 	self camera scale: aNumber
 ]
 
-{ #category : 'accessing' }
-GolapOverviewPresenter >> canvas [
-
-	^ roassal canvas
-]
-
-{ #category : 'accessing' }
-GolapOverviewPresenter >> colorForEdge: aGolapEdge [
-
-	^ golap colorForEdge: aGolapEdge
-]
-
-{ #category : 'accessing' }
-GolapOverviewPresenter >> colorForNode: aGolapNode [
-
-	^ golap colorForNode: aGolapNode
-]
-
-{ #category : 'layout' }
-GolapOverviewPresenter >> defaultLayout [
-
-	^ SpBoxLayout newVertical
-		  add: roassal expand: true;
-		  yourself
-]
-
 { #category : 'operations' }
 GolapOverviewPresenter >> drag: aGolapNode by: event [
 
@@ -118,7 +89,7 @@ GolapOverviewPresenter >> drag: aGolapNode by: event [
 				put: event step / self scale + point ]
 		ifAbsentPut: [ event step / self scale + event position ].
 	self updateNodeShapePositions.
-	lock critical: [ self canvas signalUpdate ]
+	self critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'private' }
@@ -203,7 +174,7 @@ GolapOverviewPresenter >> forceZoomToFit [
 					ext := w extent.
 					self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
 	self updateNodeShapePositions.
-	lock critical: [ self canvas signalUpdate ]
+	self critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'private' }
@@ -219,28 +190,10 @@ GolapOverviewPresenter >> fourDirectionFrom: aPoint [
 		  ifFalse: [ x sign @ 0 ]
 ]
 
-{ #category : 'accessing' }
-GolapOverviewPresenter >> golap: aGolap [
-	golap := aGolap.
-	self golapChanged
-]
-
 { #category : 'updating' }
 GolapOverviewPresenter >> golapChanged [
 
 	self ensureNodePositions
-]
-
-{ #category : 'enumerating' }
-GolapOverviewPresenter >> golapDo: aBlock [
-
-	^ golap ifNotNil: aBlock
-]
-
-{ #category : 'enumerating' }
-GolapOverviewPresenter >> golapModelDo: aBlock [
-
-	^ golap ifNotNil: [ golap model ifNotNil: aBlock ]
 ]
 
 { #category : 'initialization' }
@@ -249,7 +202,6 @@ GolapOverviewPresenter >> initialize [
 	super initialize.
 	scale := 100.0.
 	offset := 0.0 @ 0.0.
-	lock := Mutex new.
 	nodePositions := Dictionary new
 ]
 
@@ -257,9 +209,7 @@ GolapOverviewPresenter >> initialize [
 GolapOverviewPresenter >> initializePresenters [
 
 	super initializePresenters.
-	roassal := self newRoassal
-		           canvas: RSCanvas new @ self newCanvasController;
-		           yourself
+	roassal canvas @ self newCanvasController
 ]
 
 { #category : 'operations' }
@@ -267,7 +217,7 @@ GolapOverviewPresenter >> move: aPoint [
 
 	self offset: aPoint / scale + offset.
 	self updateNodeShapePositions.
-	lock critical: [ self canvas signalUpdate ]
+	self critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'instance creation' }
@@ -623,11 +573,10 @@ GolapOverviewPresenter >> updateFreqScale [
 { #category : 'updating' }
 GolapOverviewPresenter >> updateGraph [
 
-	lock critical: [
+	self critical: [
 			self golapModelDo: [ :model |
 					| visibleEdges connectedNodes |
-					visibleEdges := self availableEdges select: [ :edge |
-						                (model valueAtEdge: edge) notNil ].
+					visibleEdges := self availableEdges select: [ :edge | (model valueAtEdge: edge) notNil ].
 					reallyVisibleEdges := visibleEdges.
 					connectedNodes := IdentitySet new: reallyVisibleEdges size.
 					reallyVisibleEdges do: [ :edge |
@@ -668,7 +617,7 @@ GolapOverviewPresenter >> updateNodePositions [
 { #category : 'updating' }
 GolapOverviewPresenter >> updateNodeShapePositions [
 
-	lock critical: [
+	self critical: [
 			self golapModelDo: [ :golapModel |
 					self canvas shapes do: [ :shape |
 							(shape model isKindOf: GolapNode) ifTrue: [
@@ -681,23 +630,16 @@ GolapOverviewPresenter >> updateNodeShapePositions [
 												index > 0 ifTrue: [
 														| t |
 														t := golapModel referenceNodesSize > 1
-															     ifTrue: [
-															     (index - 1) asFloat
-															     / (golapModel referenceNodesSize - 1) asFloat ]
+															     ifTrue: [ (index - 1) asFloat / (golapModel referenceNodesSize - 1) asFloat ]
 															     ifFalse: [ 0.5 ].
-														shape translateTo:
-															self canvas extent * (t - 0.5 * 0.9 @ 0.45) ] ]
-										ifFalse: [
-												nodePositions
-													at: shape model id
-													ifPresent: [ :point |
-													shape translateTo: point + offset * scale ] ] ] ] ] ]
+														shape translateTo: self canvas extent * (t - 0.5 * 0.9 @ 0.45) ] ]
+										ifFalse: [ nodePositions at: shape model id ifPresent: [ :point | shape translateTo: point + offset * scale ] ] ] ] ] ]
 ]
 
 { #category : 'updating' }
 GolapOverviewPresenter >> updateNodeShapes [
 
-	lock critical: [
+	self critical: [
 			self
 				ensureNodePositions;
 				updateFreqScale;
@@ -716,7 +658,7 @@ GolapOverviewPresenter >> zoomInAt: aPoint [
 
 	self scale: self scale * 1.1 at: aPoint.
 	self updateNodeShapePositions.
-	lock critical: [ self canvas signalUpdate ]
+	self critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'operations' }
@@ -724,7 +666,7 @@ GolapOverviewPresenter >> zoomOutAt: aPoint [
 
 	self scale: self scale / 1.1 at: aPoint.
 	self updateNodeShapePositions.
-	lock critical: [ self canvas signalUpdate ]
+	self critical: [ self canvas signalUpdate ]
 ]
 
 { #category : 'operations' }

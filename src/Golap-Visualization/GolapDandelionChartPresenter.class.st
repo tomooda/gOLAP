@@ -17,7 +17,7 @@ GolapDandelionChartPresenter >> fromJSON: aDictionary [
 GolapDandelionChartPresenter >> updateCanvas [
 
 	self isDisplayed ifTrue: [
-			lock critical: [
+			self critical: [
 					| colorMarkers sunburstBuilder bezierBuilder |
 					self ensureTree.
 					colorMarkers := golap colorMarkers.
@@ -33,8 +33,7 @@ GolapDandelionChartPresenter >> updateCanvas [
 									container: self canvas;
 									sliceColor: [ :slice |
 											slice model isLeaf
-												ifTrue: [
-													self colorForNode: (golap model nodeAt: slice model id) ]
+												ifTrue: [ self colorForNode: (golap model nodeAt: slice model id) ]
 												ifFalse: [ Color transparent ] ];
 									explore: tree using: [ :t |
 											sofar := sofar + 100.
@@ -54,10 +53,7 @@ GolapDandelionChartPresenter >> updateCanvas [
 													 color: ((marker includesNodeId: shape model id)
 															  ifTrue: [ c ]
 															  ifFalse: [ Color transparent ]);
-													 model: (self
-															  markerModelForNode:
-																  (golap model nodeAt: shape model id)
-															  marker: marker)) ] ] ].
+													 model: (self markerModelForNode: (golap model nodeAt: shape model id) marker: marker)) ] ] ].
 					sunburstBuilder shapes @ (GolapNodeInteraction on: self).
 					bezierBuilder := RSLineBuilder sunburstBezier.
 					bezierBuilder
@@ -66,15 +62,8 @@ GolapDandelionChartPresenter >> updateCanvas [
 					(bezierBuilder connectFrom: #parent)
 						do: [ :bezier |
 								bezier
-									width:
-										(self edgeWidthForScore: bezier model value score) ceiling;
+									width: (self edgeWidthForScore: bezier model value score) ceiling;
 									color: (self edgeColorForScore: bezier model value score) ];
 						@ (GolapEdgeInteraction on: self).
 					self zoomToFit ] ]
-]
-
-{ #category : 'accessing' }
-GolapDandelionChartPresenter >> windowTitle [
-
-	^ 'Dandelion Chart'
 ]

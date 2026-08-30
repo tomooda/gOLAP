@@ -26,6 +26,12 @@ GolapNodeProductInfoRetriever class >> tag [
 ]
 
 { #category : 'accessing' }
+GolapNodeProductInfoRetriever >> attributeNames [
+
+	^ self availableColumns
+]
+
+{ #category : 'accessing' }
 GolapNodeProductInfoRetriever >> availableColumns [
 
 	^ availableColumns
@@ -35,6 +41,12 @@ GolapNodeProductInfoRetriever >> availableColumns [
 GolapNodeProductInfoRetriever >> availableColumns: anArrayOfString [
 
 	availableColumns := anArrayOfString
+]
+
+{ #category : 'instance creation' }
+GolapNodeProductInfoRetriever >> newRetrieveApiClient [
+
+	^ nil
 ]
 
 { #category : 'accessing' }
@@ -49,7 +61,16 @@ GolapNodeProductInfoRetriever >> photoUrlColumn: aString [
 	photoUrlColumn := aString
 ]
 
-{ #category : 'accessing' }
+{ #category : 'operations' }
+GolapNodeProductInfoRetriever >> productDataAt: aString forAll: aCollectionOfGolapNode interim: aBlock [
+
+	| values |
+	values := Dictionary new: aCollectionOfGolapNode size.
+	aCollectionOfGolapNode do: [ :node | values at: node id put: (node at: aString ifAbsent: [ nil ]) ].
+	^ values
+]
+
+{ #category : 'operations' }
 GolapNodeProductInfoRetriever >> productDataFor: aGolapNode [
 
 	^ aGolapNode data associations

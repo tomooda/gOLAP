@@ -1,12 +1,10 @@
 Class {
 	#name : 'GolapElaborationPresenter',
-	#superclass : 'SpPresenter',
+	#superclass : 'GolapVisualizationPresenter',
 	#instVars : [
 		'gapSlider',
-		'roassal',
 		'scale',
 		'offset',
-		'golap',
 		'rootNodes',
 		'associateNodes',
 		'nodes',
@@ -43,12 +41,6 @@ GolapElaborationPresenter >> cameraScale: aNumber [
 	self camera scale: aNumber
 ]
 
-{ #category : 'accessing' }
-GolapElaborationPresenter >> canvas [
-
-	^ roassal canvas
-]
-
 { #category : 'layout' }
 GolapElaborationPresenter >> defaultLayout [
 
@@ -70,28 +62,10 @@ GolapElaborationPresenter >> gapSliderChanged [
 	self canvas signalUpdate
 ]
 
-{ #category : 'accessing' }
-GolapElaborationPresenter >> golap: aGolap [
-	golap := aGolap.
-	self golapChanged
-]
-
 { #category : 'updating' }
 GolapElaborationPresenter >> golapChanged [
 
 	
-]
-
-{ #category : 'enumerating' }
-GolapElaborationPresenter >> golapDo: aBlock [
-
-	^ golap ifNotNil: aBlock
-]
-
-{ #category : 'enumerating' }
-GolapElaborationPresenter >> golapModelDo: aBlock [
-
-	^ golap ifNotNil: [ golap model ifNotNil: aBlock ]
 ]
 
 { #category : 'initialization' }

@@ -1,31 +1,22 @@
 Class {
 	#name : 'GolapHierarchicalClusteringPresenter',
-	#superclass : 'SpPresenter',
+	#superclass : 'GolapVisualizationPresenter',
 	#instVars : [
-		'golap',
-		'tree',
-		'roassal',
-		'lock'
+		'tree'
 	],
 	#category : 'Golap-Visualization-Clustering',
 	#package : 'Golap-Visualization',
 	#tag : 'Clustering'
 }
 
+{ #category : 'testing' }
+GolapHierarchicalClusteringPresenter class >> isAbstract [
+
+	^ self == GolapHierarchicalClusteringPresenter
+]
+
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> activateOnNotebookPage [
-]
-
-{ #category : 'accessing' }
-GolapHierarchicalClusteringPresenter >> canvas [
-
-	^ roassal canvas
-]
-
-{ #category : 'accessing-colors' }
-GolapHierarchicalClusteringPresenter >> colorForNode: aGolapNode [
-
-	^ golap colorForNode: aGolapNode
 ]
 
 { #category : 'ui requests' }
@@ -35,14 +26,6 @@ GolapHierarchicalClusteringPresenter >> confirm: aString title: anotherString [
 		  label: aString;
 		  title: anotherString;
 		  openModal
-]
-
-{ #category : 'layout' }
-GolapHierarchicalClusteringPresenter >> defaultLayout [
-
-	^ SpBoxLayout newVertical
-		  add: roassal;
-		  yourself
 ]
 
 { #category : 'private' }
@@ -71,35 +54,9 @@ GolapHierarchicalClusteringPresenter >> ensureTree [
 ]
 
 { #category : 'accessing' }
-GolapHierarchicalClusteringPresenter >> golap [
-
-	^ golap
-]
-
-{ #category : 'accessing' }
-GolapHierarchicalClusteringPresenter >> golap: aGolap [
-
-	golap := aGolap.
-	self golapChanged
-]
-
-{ #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> golapChanged [
 
 	golap model ifNotNil: [ self updateTree ]
-]
-
-{ #category : 'accessing' }
-GolapHierarchicalClusteringPresenter >> golapModelDo: aBlock [
-
-	^ (golap ifNotNil: #model) ifNotNil: aBlock
-]
-
-{ #category : 'initialization' }
-GolapHierarchicalClusteringPresenter >> initialize [
-
-	super initialize.
-	lock := Mutex new
 ]
 
 { #category : 'initialization' }
@@ -145,21 +102,6 @@ GolapHierarchicalClusteringPresenter >> showsPhotoimages [
 	^ golap showsPhotoimages
 ]
 
-{ #category : 'operations' }
-GolapHierarchicalClusteringPresenter >> toggleSelection: aGolapNode [
-
-	golap toggleSelection: aGolapNode
-]
-
-{ #category : 'operations' }
-GolapHierarchicalClusteringPresenter >> toggleSelectionsAll: aCollectionOfGolapNode [
-
-	(aCollectionOfGolapNode anySatisfy: [ :node |
-		 (golap includesSelection: node) not ])
-		ifTrue: [ golap selectAll: aCollectionOfGolapNode ]
-		ifFalse: [ golap unselectAll: aCollectionOfGolapNode ]
-]
-
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> tree [
 
@@ -180,29 +122,20 @@ GolapHierarchicalClusteringPresenter >> treeChanged [
 ]
 
 { #category : 'updating' }
-GolapHierarchicalClusteringPresenter >> updateCanvas [
-
-	^ self subclassResponsibility
-]
-
-{ #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updateNode [
 
 	self isDisplayed ifTrue: [
-			lock critical: [
+			self critical: [
 					self canvas shapes do: [ :shape |
-							(shape model isKindOf: GolapHierarchicalClusteringLeaf)
-								ifTrue: [
-									shape color:
-										(self colorForNode: (golap model nodeAt: shape model id)) ].
-							(shape model isArray and: [ shape model first = #marker ])
-								ifTrue: [
-										| node marker |
-										node := shape model second.
-										marker := shape model third.
-										shape color: ((marker includesNode: node)
-												 ifTrue: [ marker color ]
-												 ifFalse: [ Color transparent ]) ] ].
+							(shape model isKindOf: GolapHierarchicalClusteringLeaf) ifTrue: [
+								shape color: (self colorForNode: (golap model nodeAt: shape model id)) ].
+							(shape model isArray and: [ shape model first = #marker ]) ifTrue: [
+									| node marker |
+									node := shape model second.
+									marker := shape model third.
+									shape color: ((marker includesNode: node)
+											 ifTrue: [ marker color ]
+											 ifFalse: [ Color transparent ]) ] ].
 					self canvas signalUpdate ] ]
 ]
 
@@ -210,42 +143,33 @@ GolapHierarchicalClusteringPresenter >> updateNode [
 GolapHierarchicalClusteringPresenter >> updateNode: aGolapNode [
 
 	self isDisplayed ifTrue: [
-			lock critical: [
+			self critical: [
 					self canvas shapes do: [ :shape |
-							((shape model isKindOf: GolapHierarchicalClusteringLeaf) and: [
-								 shape model id = aGolapNode id ]) ifTrue: [
-								shape color:
-									(self colorForNode: (golap model nodeAt: shape model id)) ].
-							(shape model isArray and: [ shape model first = #marker ])
-								ifTrue: [
-										| node marker |
-										node := shape model second.
-										marker := shape model third.
-										shape color: ((marker includesNode: node)
-												 ifTrue: [ marker color ]
-												 ifFalse: [ Color transparent ]) ] ].
+							((shape model isKindOf: GolapHierarchicalClusteringLeaf) and: [ shape model id = aGolapNode id ]) ifTrue: [
+								shape color: (self colorForNode: (golap model nodeAt: shape model id)) ].
+							(shape model isArray and: [ shape model first = #marker ]) ifTrue: [
+									| node marker |
+									node := shape model second.
+									marker := shape model third.
+									shape color: ((marker includesNode: node)
+											 ifTrue: [ marker color ]
+											 ifFalse: [ Color transparent ]) ] ].
 					self canvas signalUpdate ] ]
 ]
 
 { #category : 'updating' }
 GolapHierarchicalClusteringPresenter >> updatePhotoimage: shape [
 
-	lock critical: [
+	self critical: [
 			self showsPhotoimages ifTrue: [
-					(golap model nodeAt: shape model id) photoimage ifNotNil: [
-							:photoimage |
-							(shape schildren contains: [ :child |
-								 child model = #photoimage ]) ifFalse: [
+					(golap model nodeAt: shape model id) photoimage ifNotNil: [ :photoimage |
+							(shape schildren contains: [ :child | child model = #photoimage ]) ifFalse: [
 									shape canvas addShape: ((RSBitmap newFrom: photoimage)
 											 model: #photoimage;
-											 position:
-												 (shape centroid:
-														  shape externalRadius - shape innerRadius / 2
-														  + (golap allMarkerColors size * 10 + 20));
-											 extent: (shape externalRadius
-												  *
-													  ((shape alphaAngle - shape betaAngle) abs / 90.0 * 3.14)
-													  min: shape externalRadius - shape innerRadius) asPoint;
+											 position: (shape centroid: shape externalRadius - shape innerRadius / 2 + (golap allMarkerColors size * 10 + 20));
+											 extent:
+												 (shape externalRadius * ((shape alphaAngle - shape betaAngle) abs / 90.0 * 3.14) min:
+														  shape externalRadius - shape innerRadius) asPoint;
 											 yourself) ] ] ] ]
 ]
 
@@ -262,20 +186,4 @@ GolapHierarchicalClusteringPresenter >> updateTree [
 			  rank: 128;
 			  rank: 256;
 			  tree) removeAllBut: golap ids asSet)
-]
-
-{ #category : 'accessing' }
-GolapHierarchicalClusteringPresenter >> windowTitle [
-
-	^ self subclassResponsibility
-]
-
-{ #category : 'updating' }
-GolapHierarchicalClusteringPresenter >> zoomToFit [
-
-	self isDisplayed ifTrue: [
-			lock critical: [
-					self canvas camera privExtent: roassal extent.
-					self canvas camera zoomToFit: roassal extent.
-					self canvas signalUpdate ] ]
 ]

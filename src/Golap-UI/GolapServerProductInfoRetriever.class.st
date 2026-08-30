@@ -31,6 +31,12 @@ GolapServerProductInfoRetriever class >> tag [
 ]
 
 { #category : 'accessing' }
+GolapServerProductInfoRetriever >> attributeNames [
+
+	^ self retrieveApiClient attributeNames
+]
+
+{ #category : 'accessing' }
 GolapServerProductInfoRetriever >> authenticateBlock [
 	^ authenticateBlock
 ]
@@ -115,7 +121,38 @@ GolapServerProductInfoRetriever >> itemInfoRequestJsonFor: aString [
 	^ NeoJSONWriter toString: q
 ]
 
-{ #category : 'accessing' }
+{ #category : 'instance creation' }
+GolapServerProductInfoRetriever >> newRetrieveApiClient [
+
+	^ GolapRetrieveApiClient url: golapServerUrl authenticateBlock: authenticateBlock serverConfig: serverConfig
+]
+
+{ #category : 'operations' }
+GolapServerProductInfoRetriever >> productDataAt: aString forAll: aCollectionOfGolapNode interim: aBlock [
+
+	| idField ids values due sofar |
+	idField := self retrieveApiClient idField.
+	ids := aCollectionOfGolapNode collect: [ :node | node id asString ].
+	values := Dictionary new: aCollectionOfGolapNode size.
+	due := 0.
+	sofar := 0.
+	(Array streamContents: [ :stream |
+			 self retrieveApiClient valuesAt: aString fromIds: ids do: [ :value |
+					 stream nextPut: value.
+					 due := due + 1 ].
+			 due := due asFloat ]) do: [ :value |
+			self retrieveApiClient
+				valuesAt: idField
+				filters: {
+						(idField -> ids).
+						(aString -> { value }) }
+				do: [ :id | values at: id put: value ].
+			sofar := sofar + 1.
+			aBlock ifNotNil: [ aBlock cull: sofar asFloat / due ] ].
+	^ values
+]
+
+{ #category : 'operations' }
 GolapServerProductInfoRetriever >> productDataFor: aGolapNode [
 
 	^ cachedItemInfos
@@ -138,11 +175,7 @@ GolapServerProductInfoRetriever >> query: aDictionary [
 { #category : 'accessing' }
 GolapServerProductInfoRetriever >> retrieveApiClient [
 
-	^ retrieveApiClient ifNil: [
-		  retrieveApiClient := GolapRetrieveApiClient
-			                       url: golapServerUrl
-			                       authenticateBlock: authenticateBlock
-			                       serverConfig: serverConfig ]
+	^ retrieveApiClient ifNil: [ retrieveApiClient := self newRetrieveApiClient ]
 ]
 
 { #category : 'http' }

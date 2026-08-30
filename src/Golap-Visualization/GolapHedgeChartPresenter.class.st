@@ -120,9 +120,3 @@ GolapHedgeChartPresenter >> updateCanvas [
 										terminals add: parent -> parentPosition ] ] ].
 			self zoomToFit ]
 ]
-
-{ #category : 'accessing' }
-GolapHedgeChartPresenter >> windowTitle [
-
-	^ 'Hedge Chart'
-]

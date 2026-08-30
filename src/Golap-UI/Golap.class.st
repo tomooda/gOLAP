@@ -1225,6 +1225,12 @@ Golap >> newGolapItemView [
 		  yourself
 ]
 
+{ #category : 'instance creation' }
+Golap >> newRetrieveApiClient [
+
+	^ itemInfoRetriever newRetrieveApiClient
+]
+
 { #category : 'accessing' }
 Golap >> nodeEvaluator [
 
