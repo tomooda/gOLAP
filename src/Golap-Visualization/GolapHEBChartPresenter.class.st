@@ -84,6 +84,33 @@ GolapHEBChartPresenter >> initializePresenters [
 ]
 
 { #category : 'instance creation' }
+GolapHEBChartPresenter >> newLabelForNode: nodeId [
+
+	^ self golapModelDo: [ :golapModel |
+			  golapModel nodeAt: nodeId ifPresent: [ :node |
+					  RSLabel new
+						  text: node name;
+						  color: (self colorForNode: node);
+						  yourself ] ]
+]
+
+{ #category : 'instance creation' }
+GolapHEBChartPresenter >> newPieWithRadiusBetween: rad1 and: rad2 radius: radius [
+
+	| alpha beta |
+	alpha := rad2 negated * 180.0 / Float pi % 360.0.
+	beta := rad1 negated * 180.0 / Float pi % 360.0.
+	beta < alpha ifTrue: [ beta := beta + 360.0 ].
+	^ RSPieSlice new
+		  alphaAngle: alpha;
+		  betaAngle: beta;
+		  innerRadius: 10;
+		  externalRadius: radius;
+		  color: (Color h: alpha + beta * 0.5 % 360.0 s: 0.05 v: 1.0);
+		  yourself
+]
+
+{ #category : 'instance creation' }
 GolapHEBChartPresenter >> newShapeForCategory: aString [
 
 	^ RSLabel new
@@ -145,12 +172,20 @@ GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 category: category1 and:
 ]
 
 { #category : 'instance creation' }
-GolapHEBChartPresenter >> newShapeForNode: node [
+GolapHEBChartPresenter >> newShapeForNode: nodeId [
 
-	^ RSBox new
-		  extent: 10 @ 10;
-		  color: (self colorForNode: node);
-		  yourself
+	^ self golapModelDo: [ :golapModel |
+			  RSBox new
+				  extent: self nodeSize asPoint;
+				  color: (self colorForNode: nodeId);
+				  model: (golapModel nodeAt: nodeId);
+				  yourself ]
+]
+
+{ #category : 'accessing' }
+GolapHEBChartPresenter >> nodeSize [
+
+	^ 64
 ]
 
 { #category : 'private' }
@@ -170,7 +205,9 @@ GolapHEBChartPresenter >> peakCentered: aDescendingCollection [
 { #category : 'rendering' }
 GolapHEBChartPresenter >> renderEdgesIn: aCanvas [
 
+	| pulls |
 	self ensureCategories.
+	pulls := OrderedCollection new.
 	self golapModelDo: [ :golapModel |
 			golapModel edgesDo: [ :edge |
 					(self colorForEdge: edge) ifNotNil: [ :color |
@@ -178,7 +215,9 @@ GolapHEBChartPresenter >> renderEdgesIn: aCanvas [
 									shape
 										color: (color alpha: 0.5);
 										width: (golapModel normalizedValueAtEdge: edge) * 10.
-									aCanvas add: shape ] ] ] ]
+									aCanvas add: shape.
+									((golap includesSelection: edge node1) or: [ golap includesSelection: edge node2 ]) ifTrue: [ pulls add: shape ] ] ] ].
+			pulls do: [ :shape | shape pushFront ] ]
 ]
 
 { #category : 'rendering' }
@@ -186,7 +225,7 @@ GolapHEBChartPresenter >> renderNodesIn: aCanvas [
 
 	| radius theta delta newNodePositions newCategoryPositions |
 	self ensureCategories.
-	radius := 300.0.
+	radius := visibleNodes size * self nodeSize / Float pi * 0.7.
 	theta := 0.0.
 	delta := Float pi * 2.0 / (visibleNodes size + categoryNodes size) asFloat.
 	newNodePositions := Dictionary new.
@@ -198,23 +237,36 @@ GolapHEBChartPresenter >> renderNodesIn: aCanvas [
 			self category: category nodesDo: [ :node |
 					(self newShapeForNode: node) ifNotNil: [ :shape |
 							| position |
-							position := Point r: radius theta: theta.
+							newNodePositions at: node put: (Point r: radius theta: theta).
+							position := Point r: radius + (self nodeSize * 0.5) theta: theta.
 							shape
 								rotateByRadians: position theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
 								position: position.
-							aCanvas add: shape.
-							newNodePositions at: node put: position ].
+							aCanvas add: shape ].
+					(self newLabelForNode: node) ifNotNil: [ :shape |
+							| position |
+							position := Point r: shape width * 0.5 + radius + self nodeSize + 5 theta: theta.
+							shape
+								rotateByRadians: position theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
+								position: position.
+							aCanvas add: shape ].
 					maxTheta := theta := theta + delta ].
 			category
 				ifNotNil: [
+						(self newPieWithRadiusBetween: minTheta - delta and: maxTheta radius: radius - self nodeSize - 5) ifNotNil: [ :shape |
+							aCanvas add: shape ].
 						(self newShapeForCategory: category) ifNotNil: [ :shape |
 								| position |
-								position := Point r: radius * 0.5 theta: minTheta + maxTheta * 0.5.
+								position := Point r: radius * 0.5 theta: minTheta + maxTheta - delta * 0.5.
 								shape
 									rotateByRadians: position theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
 									position: position.
 								aCanvas add: shape.
-								newCategoryPositions at: category put: position ] ]
+								newCategoryPositions at: category put: position ].
+						aCanvas add: ((RSLine newFrom: 0.0 @ 0.0 to: (Point r: radius theta: theta))
+								 color: (Color gray: 0.9);
+								 dashed;
+								 yourself) ]
 				ifNil: [ newCategoryPositions at: nil put: 0.0 @ 0.0 ].
 			theta := theta + delta ].
 	nodePositions := newNodePositions.
@@ -232,6 +284,12 @@ GolapHEBChartPresenter >> selectedAttributeChanged [
 
 	self flushCategories.
 	self updateCanvas
+]
+
+{ #category : 'testing' }
+GolapHEBChartPresenter >> showsNode: aGolapNode [
+
+	^ aGolapNode isIsolated not
 ]
 
 { #category : 'updating' }
@@ -253,7 +311,8 @@ GolapHEBChartPresenter >> updateCanvas [
 					self canvas shapes copy do: #remove.
 					self
 						renderNodesIn: self canvas;
-						renderEdgesIn: self canvas ] ]
+						renderEdgesIn: self canvas.
+					self canvas signalUpdate ] ]
 ]
 
 { #category : 'updating' }
@@ -278,13 +337,15 @@ GolapHEBChartPresenter >> updateCategories [
 												newNodeCategories at: id put: category.
 												(newCategoryNodes at: category ifAbsentPut: [ OrderedCollection new ]) add: id ] ] ]
 				ifNil: [
-						newCategoryNodes at: nil put: visibleNodes asOrderedCollection.
-						visibleNodes do: [ :node | newNodeCategories at: node put: nil ] ].
+						newCategoryNodes at: nil put: (visibleNodes asOrderedCollection collect: #id).
+						visibleNodes do: [ :node | newNodeCategories at: node id put: nil ] ].
 			nodeCategories := newNodeCategories.
-			categoryNodes := (((newCategoryNodes associations collect: [ :assoc |
-					                    assoc key -> (assoc value sorted: [ :node | nodeValues at: node ifAbsent: [ 0.0 ] ] descending) asArray
-					                    -> (assoc value collect: [ :node | nodeValues at: node ifAbsent: [ 0.0 ] ]) sum ]) sorted:
-				                   #value descending) collect: #key) asOrderedDictionary ]
+			categoryNodes := (self peakCentered: (((newCategoryNodes associations collect: [ :assoc |
+						                     assoc key
+						                     ->
+						                     (self peakCentered: (assoc value sorted: [ :node | nodeValues at: node ifAbsent: [ 0.0 ] ] descending))
+						                     -> (assoc value collect: [ :node | nodeValues at: node ifAbsent: [ 0.0 ] ]) sum ]) sorted:
+					                    #value descending) collect: #key)) asOrderedDictionary ]
 ]
 
 { #category : 'updating' }

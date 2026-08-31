@@ -49,6 +49,12 @@ GolapItemInfoRetriever >> availablePhotoimageRetrievers [
 		   #order ascending) asArray
 ]
 
+{ #category : 'operations' }
+GolapItemInfoRetriever >> canFlushProductDataCache [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'defaults' }
 GolapItemInfoRetriever >> defaultPhotoimageRetrievers [
 
@@ -59,6 +65,12 @@ GolapItemInfoRetriever >> defaultPhotoimageRetrievers [
 GolapItemInfoRetriever >> flushImageRetrieversLog [
 
 	self photoimageRetrievers select: #isAvailable thenDo: #flushLog
+]
+
+{ #category : 'operations' }
+GolapItemInfoRetriever >> flushProductDataCache [
+
+	^ self subclassResponsibility
 ]
 
 { #category : 'testing' }

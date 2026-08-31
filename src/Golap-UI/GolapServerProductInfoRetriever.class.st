@@ -46,6 +46,18 @@ GolapServerProductInfoRetriever >> authenticateBlock: aBlock [
 	authenticateBlock := aBlock
 ]
 
+{ #category : 'operations' }
+GolapServerProductInfoRetriever >> canFlushProductDataCache [
+
+	^ true
+]
+
+{ #category : 'operations' }
+GolapServerProductInfoRetriever >> flushProductDataCache [
+
+	cachedItemInfos removeAll
+]
+
 { #category : 'accessing' }
 GolapServerProductInfoRetriever >> golapServerUrl [
 

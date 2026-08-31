@@ -43,6 +43,18 @@ GolapNodeProductInfoRetriever >> availableColumns: anArrayOfString [
 	availableColumns := anArrayOfString
 ]
 
+{ #category : 'operations' }
+GolapNodeProductInfoRetriever >> canFlushProductDataCache [
+
+	^ false
+]
+
+{ #category : 'operations' }
+GolapNodeProductInfoRetriever >> flushProductDataCache [
+
+	
+]
+
 { #category : 'instance creation' }
 GolapNodeProductInfoRetriever >> newRetrieveApiClient [
 

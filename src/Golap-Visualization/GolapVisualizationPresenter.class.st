@@ -98,6 +98,12 @@ GolapVisualizationPresenter >> initializePresenters [
 		           yourself
 ]
 
+{ #category : 'testing' }
+GolapVisualizationPresenter >> showsNode: aGolapNode [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'operations' }
 GolapVisualizationPresenter >> toggleSelection: aGolapNode [
 
