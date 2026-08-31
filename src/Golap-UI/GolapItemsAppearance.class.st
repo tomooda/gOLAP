@@ -8,7 +8,8 @@ Class {
 		'photoimageRetrievalProgressBar',
 		'startPhotoimageRetrievalButton',
 		'showPhotoImagesCheckbox',
-		'showsPhotoimageRetrievalLogCheckbox'
+		'showsPhotoimageRetrievalLogCheckbox',
+		'clearItemInfoCache'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -37,25 +38,38 @@ GolapItemsAppearance >> buttonHeight [
 	^ self class buttonHeight
 ]
 
+{ #category : 'operations' }
+GolapItemsAppearance >> clearItemInfoCache [
+
+	(golap ifNotNil: #itemInfoRetriever) ifNotNil: #flushProductDataCache
+]
+
 { #category : 'layouts' }
 GolapItemsAppearance >> defaultLayout [
 
 	<spec>
-	^ SpBoxLayout newHorizontal add: (SpBoxLayout newVertical
-			   add: '商品画像取得' expand: false;
-			   add: photoimageRetrievers expand: true;
-			   add: (SpBoxLayout newHorizontal
-					    add: photoimageRetrievalProgressBar;
-					    add: startPhotoimageRetrievalButton width: self buttonHeight)
-			   expand: false;
-			   add: showPhotoImagesCheckbox expand: false;
-			   add: showsPhotoimageRetrievalLogCheckbox expand: false;
-			   yourself)
+	^ SpBoxLayout newVertical
+		  add: '商品情報取得' asPresenter expand: false;
+		  add: clearItemInfoCache expand: false;
+		  add: '商品画像取得' asPresenter expand: false;
+		  add: photoimageRetrievers expand: true;
+		  add: (SpBoxLayout newHorizontal
+				   add: photoimageRetrievalProgressBar;
+				   add: startPhotoimageRetrievalButton width: self buttonHeight)
+		  expand: false;
+		  add: showPhotoImagesCheckbox expand: false;
+		  add: showsPhotoimageRetrievalLogCheckbox expand: false;
+		  yourself
 ]
 
 { #category : 'initialization' }
 GolapItemsAppearance >> initializePresenters [
 
+	clearItemInfoCache := self newButton
+		                      icon: (self iconNamed: #refreshCircling);
+		                      label: '商品情報をクリア';
+		                      action: [ self clearItemInfoCache ];
+		                      yourself.
 	photoimageRetrievers := self instantiate: GolapPhotoImageRetrieversPresenter.
 	photoimageRetrievalProgressBar := self newProgressBar
 		                                  color: Color red;
@@ -122,5 +136,6 @@ GolapItemsAppearance >> showsPhotoimagesChanged [
 { #category : 'updating' }
 GolapItemsAppearance >> updatePhotoimageRetrievers [
 
-	photoimageRetrievers itemInfoRetriever: golap itemInfoRetriever
+	photoimageRetrievers itemInfoRetriever: golap itemInfoRetriever.
+	clearItemInfoCache enabled: (golap itemInfoRetriever notNil and: [ golap itemInfoRetriever canFlushProductDataCache ])
 ]

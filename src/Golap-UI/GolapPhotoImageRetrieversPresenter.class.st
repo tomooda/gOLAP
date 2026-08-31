@@ -72,6 +72,7 @@ GolapPhotoImageRetrieversPresenter >> clearCache [
 GolapPhotoImageRetrieversPresenter >> defaultLayout [
 
 	^ SpBoxLayout newVertical
+		  add: clearImageCacheButton expand: false;
 		  add: retrieverList height: self buttonHeight * 4;
 		  add: (SpBoxLayout newHorizontal
 				   add: addRetrieverButton width: self buttonHeight;
@@ -81,7 +82,6 @@ GolapPhotoImageRetrieversPresenter >> defaultLayout [
 				   add: moveDownRetrieverButton width: self buttonHeight;
 				   yourself)
 		  expand: false;
-		  add: clearImageCacheButton expand: false;
 		  yourself
 ]
 
