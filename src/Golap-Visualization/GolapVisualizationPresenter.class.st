@@ -32,7 +32,9 @@ GolapVisualizationPresenter >> colorForEdge: aGolapEdge [
 { #category : 'accessing-colors' }
 GolapVisualizationPresenter >> colorForNode: aGolapNode [
 
-	^ golap colorForNode: aGolapNode
+	^ ((aGolapNode isKindOf: GolapNode)
+		   ifTrue: [ aGolapNode ]
+		   ifFalse: [ golap model nodeAt: aGolapNode ifAbsent: [ nil ] ]) ifNotNil: [ :node | golap colorForNode: node ]
 ]
 
 { #category : 'controlling' }
