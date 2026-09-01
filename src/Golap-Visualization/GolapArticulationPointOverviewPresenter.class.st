@@ -1,6 +1,6 @@
 Class {
 	#name : 'GolapArticulationPointOverviewPresenter',
-	#superclass : 'GolapOverviewPresenter',
+	#superclass : 'GolapGraphOverviewPresenter',
 	#instVars : [
 		'minimumIslandSizeField',
 		'layoutButton',

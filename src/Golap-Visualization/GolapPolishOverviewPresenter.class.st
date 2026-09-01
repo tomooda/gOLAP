@@ -1,6 +1,6 @@
 Class {
 	#name : 'GolapPolishOverviewPresenter',
-	#superclass : 'GolapOverviewPresenter',
+	#superclass : 'GolapGraphOverviewPresenter',
 	#instVars : [
 		'layoutButton',
 		'applyButton',

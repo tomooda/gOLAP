@@ -61,7 +61,6 @@ GolapOverviewNodeInteraction >> onShape: aCanvas [
 	aCanvas
 		when: RSMouseLeftClick send: #processMouseLeftClick: to: self;
 		when: RSMouseRightClick send: #processMouseRightClick: to: self;
-		when: RSMouseDragging send: #processMouseDragging: to: self;
 		when: RSMouseEnter send: #popupItemInfo: to: self;
 		when: RSMouseLeave send: #retractItemInfo: to: self
 ]
@@ -89,15 +88,6 @@ GolapOverviewNodeInteraction >> presenter: aGolapOverviewPresenter [
 ]
 
 { #category : 'event processing' }
-GolapOverviewNodeInteraction >> processMouseDragging: evt [
-
-	self retractItemInfo: evt.
-	evt shiftKeyPressed ifTrue: [
-			presenter drag: evt shape model by: evt.
-			evt canvas signalUpdate ]
-]
-
-{ #category : 'event processing' }
 GolapOverviewNodeInteraction >> processMouseLeftClick: evt [
 
 	self retractItemInfo: evt.
@@ -119,7 +109,6 @@ GolapOverviewNodeInteraction >> processMouseRightClick: evt [
 GolapOverviewNodeInteraction >> renderLegendOn: legend [
 
 	legend
-		text: 'アイテム上でシフト+ドラッグ' description: 'アイテムを一時移動する';
 		text: 'アイテムをクリック' description: 'アイテムを選択/選択解除する';
 		text: 'アイテム上で右クリック' description: '商品メニュー'
 ]

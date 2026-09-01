@@ -8,10 +8,6 @@ GolapOverviewPresenter >> asJSON [
 		  at: 'offset' put: {
 				  offset x.
 				  offset y };
-		  at: 'nodePositions' put: (nodePositions associations collect: [ :assoc |
-						   assoc key -> {
-								   assoc value x.
-								   assoc value y } ]) asDictionary;
 		  yourself
 ]
 
@@ -21,7 +17,5 @@ GolapOverviewPresenter >> fromJSON: aDictionary [
 	super fromJSON: aDictionary.
 	aDictionary
 		at: 'scale' ifPresent: [ :num | scale := num ];
-		at: 'offset' ifPresent: [ :array | offset := array first @ array second ];
-		at: 'nodePositions' ifPresent: [ :dict |
-			nodePositions := (dict associations collect: [ :assoc | assoc key -> (assoc value first @ assoc value second) ]) asDictionary ]
+		at: 'offset' ifPresent: [ :array | offset := array first @ array second ]
 ]

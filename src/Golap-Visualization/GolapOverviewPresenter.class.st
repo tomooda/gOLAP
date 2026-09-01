@@ -3,13 +3,7 @@ Class {
 	#superclass : 'GolapVisualizationPresenter',
 	#instVars : [
 		'scale',
-		'offset',
-		'nodePositions',
-		'reallyVisibleEdges',
-		'reallyVisibleNodes',
-		'freqScale',
-		'lineScale',
-		'nodeShapes'
+		'offset'
 	],
 	#category : 'Golap-Visualization-Overview',
 	#package : 'Golap-Visualization',
@@ -20,50 +14,6 @@ Class {
 GolapOverviewPresenter class >> isAbstract [
 
 	^ self = GolapOverviewPresenter
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> activateOnNotebookPage [
-
-	nodePositions ifEmpty: [ self updateNodePositions ]
-]
-
-{ #category : 'accessing' }
-GolapOverviewPresenter >> availableEdges [
-
-	^ self subclassResponsibility
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> basicUpdateNodePositions [
-
-	(reallyVisibleNodes notNil and: [ reallyVisibleEdges notNil ])
-		ifTrue: [
-				self golapModelDo: [ :golapModel |
-						| rootPositions newNodePositions |
-						rootPositions := GolapOverviewGridLayouter
-							                 layoutNodes:
-								                 (reallyVisibleNodes select: [ :node |
-									                  (golapModel isReferenceNode: node) not ])
-							                 edges: (reallyVisibleEdges select: [ :edge |
-									                  (golapModel isReferenceEdge: edge) not ]).
-						newNodePositions := Dictionary new: rootPositions size * 3 // 2.
-						rootPositions keysAndValuesDo: [ :root :position |
-								newNodePositions at: root put: position.
-								golapModel merge
-									leavesAt: root
-									do: [ :id |
-									root = id ifFalse: [ newNodePositions at: id put: position ] ] ].
-						nodePositions := newNodePositions ].
-				self
-					updateNodeShapes;
-					forceZoomToFit ]
-]
-
-{ #category : 'accessing' }
-GolapOverviewPresenter >> camera [
-
-	^ self canvas camera
 ]
 
 { #category : 'accessing' }
@@ -79,121 +29,9 @@ GolapOverviewPresenter >> cameraScale: aNumber [
 ]
 
 { #category : 'operations' }
-GolapOverviewPresenter >> drag: aGolapNode by: event [
+GolapOverviewPresenter >> doZoomToFit [
 
-	nodePositions
-		at: aGolapNode id
-		ifPresent: [ :point |
-			nodePositions
-				at: aGolapNode id
-				put: event step / self scale + point ]
-		ifAbsentPut: [ event step / self scale + event position ].
-	self updateNodeShapePositions.
-	self critical: [ self canvas signalUpdate ]
-]
-
-{ #category : 'private' }
-GolapOverviewPresenter >> edgeVectorOf: aGolapNode [
-
-	| v |
-	v := 0 @ 0.
-	nodePositions at: aGolapNode id ifPresent: [ :p0 |
-			aGolapNode edgesAndNodeDo: [ :edge :node |
-					(reallyVisibleEdges includes: edge) ifTrue: [
-							nodePositions at: node id ifPresent: [ :p1 |
-									| v1 |
-									v1 := p1 - p0.
-									v1 isZero ifFalse: [ v := v + v1 normalized ] ] ] ] ].
-	^ v isZero
-		  ifTrue: [ v ]
-		  ifFalse: [ v normalized ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> ensureNodePositionAt: aString ifFailed: errorBlock [
-
-	nodePositions at: aString ifAbsentPut: [
-			golap model
-				nodeAt: aString
-				ifPresent: [ :node |
-						| ps |
-						ps := OrderedCollection new.
-						node idsDo: [ :id |
-							nodePositions at: id ifPresent: [ :p | ps add: p ] ].
-						ps ifEmpty: [
-								node edgesDo: [ :edge |
-									nodePositions
-										at: (edge peerOf: node) id
-										ifPresent: [ :p | ps add: p ] ] ].
-						ps ifEmpty: [
-								node edgesDo: [ :edge |
-										(edge peerOf: node) idsDo: [ :id |
-											nodePositions at: id ifPresent: [ :p | ps add: p ] ] ] ].
-						ps ifNotEmpty: #average ifEmpty: errorBlock ]
-				ifAbsent: errorBlock ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> ensureNodePositions [
-
-	self isDisplayed ifTrue: [
-			nodePositions
-				ifEmpty: [ self basicUpdateNodePositions ]
-				ifNotEmpty: [
-						self golapModelDo: [ :golapModel |
-								self availableEdges do: [ :edge |
-										(golapModel valueAtEdge: edge) notNil ifTrue: [
-												self
-													ensureNodePositionAt: edge node1 id
-													ifFailed: [ 0 @ 0 ].
-												self
-													ensureNodePositionAt: edge node2 id
-													ifFailed: [ 0 @ 0 ] ] ] ] ] ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> ensureVisibleEdges [
-
-	reallyVisibleEdges ifNil: [ self updateGraph ]
-]
-
-{ #category : 'operations' }
-GolapOverviewPresenter >> forceZoomToFit [
-
-	| rect ext |
-	rect := (Array streamContents: [ :stream |
-			         reallyVisibleNodes do: [ :node |
-					         nodePositions
-						         at: node id
-						         ifPresent: [ :point | stream nextPut: point ] ] ])
-		        ifEmpty: [ ^ self ]
-		        ifNotEmpty: [ :points | Rectangle encompassing: points ].
-	self offset: rect floatCenter negated.
-	roassal withAdapterDo: [ :a |
-			a widgetDo: [ :w |
-					ext := w extent.
-					self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
-	self updateNodeShapePositions.
-	self critical: [ self canvas signalUpdate ]
-]
-
-{ #category : 'private' }
-GolapOverviewPresenter >> fourDirectionFrom: aPoint [
-
-	| norm x y |
-	aPoint isZero ifTrue: [ ^ 0 @ 1 ].
-	norm := aPoint normalized.
-	x := norm x.
-	y := norm y.
-	^ x abs <= y abs
-		  ifTrue: [ 0 @ y sign ]
-		  ifFalse: [ x sign @ 0 ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> golapChanged [
-
-	self ensureNodePositions
+	^ self subclassResponsibility
 ]
 
 { #category : 'initialization' }
@@ -201,8 +39,7 @@ GolapOverviewPresenter >> initialize [
 
 	super initialize.
 	scale := 100.0.
-	offset := 0.0 @ 0.0.
-	nodePositions := Dictionary new
+	offset := 0.0 @ 0.0
 ]
 
 { #category : 'initialization' }
@@ -216,8 +53,7 @@ GolapOverviewPresenter >> initializePresenters [
 GolapOverviewPresenter >> move: aPoint [
 
 	self offset: aPoint / scale + offset.
-	self updateNodeShapePositions.
-	self critical: [ self canvas signalUpdate ]
+	self scaleAndOffsetChanged
 ]
 
 { #category : 'instance creation' }
@@ -226,249 +62,6 @@ GolapOverviewPresenter >> newCanvasController [
 	^ GolapOverviewController new
 		  presenter: self;
 		  yourself
-]
-
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newLabelForEdge: aGolapEdge [
-
-	^ self golapModelDo: [ :golapModel |
-			  (self colorForEdge: aGolapEdge) ifNotNil: [ :color |
-					  ((golap includesSelection: aGolapEdge node1) or: [
-						   golap includesSelection: aGolapEdge node2 ])
-						  ifTrue: [
-								  | string label |
-								  string := String streamContents: [ :stream |
-										            stream nextPutAll:
-											            (golap simpleStringFor:
-												             (golapModel valueAtEdge: aGolapEdge)).
-										            golap selectedBaseDimension ifNotNil: [
-												            stream
-													            nextPutAll: '=';
-													            nextPutAll: (golapModel
-															             frontEdgeAt: aGolapEdge key
-															             ifPresent: [ :e |
-																             golap simpleStringFor:
-																		             (golapModel valueAtEdge: e) ]
-															             ifAbsent: [ '0' ]);
-													            nextPutAll: '-';
-													            nextPutAll: (golapModel
-															             baseEdgeAt: aGolapEdge key
-															             ifPresent: [ :e |
-																             golap simpleStringFor:
-																		             (golapModel valueAtEdge: e) ]
-															             ifAbsent: [ '0' ]);
-													            space ] ].
-								  label := RSLabel new
-									           text: string;
-									           color: color.
-								  {
-									  (RSBox new
-										   extent: label extent + 4 asPoint;
-										   color: Color white;
-										   borderColor: color;
-										   borderWidth: 1;
-										   yourself).
-									  label } asShape ]
-						  ifFalse: [ nil ] ] ]
-]
-
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newLabelForNode: aGolapNode [
-
-	^ self golapModelDo: [ :model |
-			  (self colorForNode: aGolapNode) ifNotNil: [ :color |
-					  | label |
-					  label := self
-						           newLabelFromLines:
-							           ((aGolapNode name substrings:
-								             golap class nameEndOfLineDelimiter) copyWith:
-								            (String streamContents: [ :stream |
-										             stream nextPutAll:
-											             (golap simpleStringFor:
-												              (model valueAtNode: aGolapNode)).
-
-										             golap selectedBaseDimension ifNotNil: [
-												             stream
-													             nextPutAll: '=';
-													             nextPutAll: (model
-															              frontNodeAt: aGolapNode id
-															              ifPresent: [ :v |
-																              golap simpleStringFor:
-																		              (model valueAtNode: v) ]
-															              ifAbsent: [ '0' ]);
-													             nextPutAll: '-';
-													             nextPutAll: (model
-															              baseNodeAt: aGolapNode id
-															              ifPresent: [ :v |
-																              golap simpleStringFor:
-																		              (model valueAtNode: v) ]
-															              ifAbsent: [ '0' ]) ] ]))
-						           color: color.
-					  (golap includesSelection: aGolapNode) ifTrue: [
-							  label := {
-								           (RSBox new
-									            extent: label extent;
-									            position: label position;
-									            color: Color white;
-									            borderColor: color;
-									            borderWidth: 1;
-									            yourself).
-								           label } asShape ].
-					  label ] ]
-]
-
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newLabelFromLines: anArrayOfString color: aColor [
-
-	| y |
-	y := 0.
-	^ (anArrayOfString collect: [ :string |
-			   | label |
-			   label := RSLabel new
-				            text: string;
-				            color: aColor;
-				            yourself.
-			   label position:
-				   label extent x * 0.5 @ (label extent y * 0.5 + y).
-			   y := y + label extent y.
-			   label ]) asShape
-]
-
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newPinShape [
-
-	^ {
-		  (RSPolygon new
-			   points: {
-					   (-7 @ -12).
-					   (7 @ -12).
-					   (0 @ 0) };
-			   color: Color red;
-			   yourself).
-		  (RSCircle new
-			   extent: 16 @ 16;
-			   position: 0 @ -16;
-			   color: Color red;
-			   yourself).
-		  (RSCircle new
-			   extent: 6 @ 6;
-			   position: 0 @ -16;
-			   color: Color white;
-			   yourself) } asShape
-]
-
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newShapeForEdge: aGolapEdge [
-
-	self golapModelDo: [ :golapModel |
-			((golapModel isReferenceEdge: aGolapEdge)
-				 ifTrue: [
-						 ((golap includesSelection: aGolapEdge node1) or: [
-							  golap includesSelection: aGolapEdge node2 ])
-							 ifTrue: [
-									 | refIndex |
-									 refIndex := (golapModel indexAtReferenceNode:
-										              aGolapEdge node1) max:
-										             (golapModel indexAtReferenceNode:
-											              aGolapEdge node2).
-									 refIndex > 0
-										 ifTrue: [
-												 Color
-													 h:
-													 (refIndex - 1) asFloat * 360.0
-													 / golapModel referenceNodesSize asFloat
-													 s: 1.0
-													 v: 1.0 ]
-										 ifFalse: [ nil ] ]
-							 ifFalse: [ nil ] ]
-				 ifFalse: [ self colorForEdge: aGolapEdge ]) ifNotNil: [ :color |
-					| fromShape toShape v line |
-					fromShape := nodeShapes at: aGolapEdge node1 ifAbsent: [ ^ nil ].
-					toShape := nodeShapes at: aGolapEdge node2 ifAbsent: [ ^ nil ].
-					v := golapModel valueAtEdge: aGolapEdge.
-					(v notNil and: [ v asFloat isFinite ]) ifFalse: [ ^ nil ].
-					line := RSLine new
-						        model: aGolapEdge;
-						        withCenteredAttachPoint;
-						        from: fromShape;
-						        to: toShape;
-						        width: v asFloat abs * lineScale + 2.0;
-						        color: color.
-					(self newLabelForEdge: aGolapEdge) ifNotNil: [ :label |
-							line
-								when: RSExtentChangedEvent
-								do: [ label position: line position ]
-								for: label.
-							label position: line position.
-							self canvas add: label ].
-					^ line ] ].
-	^ nil
-]
-
-{ #category : 'instance creation' }
-GolapOverviewPresenter >> newShapeForNode: aGolapNode [
-
-	self golapModelDo: [ :golapModel |
-			| photoimage shapes color |
-			shapes := RSGroup new.
-			photoimage := self showsPhotoimages
-				              ifTrue: [ aGolapNode photoimage ]
-				              ifFalse: [ nil ].
-			(self colorForNode: aGolapNode) ifNotNil: [ :c |
-					| v r shape |
-					color := c.
-					v := golapModel valueAtNode: aGolapNode.
-					r := (v abs + 0.1) log - 1.0 log * freqScale max: 10.
-					shape := photoimage
-						         ifNotNil: [
-								         RSBitmap new
-									         form: photoimage;
-									         model: #photoimage ]
-						         ifNil: [
-								         RSCircle new
-									         extent: r asPoint;
-									         color: color;
-									         model: #photoimage ].
-					self canvas addNode: shape.
-					nodeShapes at: aGolapNode put: shape.
-					shapes add: shape.
-					golap markersAtNode: aGolapNode do: [ :marker |
-							shape := RSEllipse new
-								         extent:
-									         (shape extent x max: shape extent y) + 4 asPoint;
-								         borderWidth: 4;
-								         borderColor: marker color;
-								         color: Color transparent;
-								         yourself.
-							shapes add: shape ].
-					golap selectedBaseDimension ifNotNil: [
-							| p |
-							p := shape extent x * 0.5 + 4.0 @ 0.
-							shapes add: (RSArrowedLine new
-									 startPoint: p;
-									 endPoint: p + (0 @ (r * v sign negated));
-									 color: color;
-									 width: 2;
-									 yourself) ].
-					(golap includesPin: aGolapNode) ifTrue: [
-						shapes add: self newPinShape ] ].
-			shapes ifEmpty: [ ^ nil ].
-			shapes := shapes asShapeFor: aGolapNode.
-			(photoimage isNil or: [ golap includesSelection: aGolapNode ])
-				ifTrue: [
-						(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
-								| labelOffset |
-								labelOffset := (self fourDirectionFrom:
-									                (self edgeVectorOf: aGolapNode)) negated
-								               * (shapes extent + label extent * 0.5 + 4).
-								shapes
-									when: RSPositionChangedEvent
-									do: [ label position: shapes position + labelOffset ]
-									for: label.
-								label position: shapes position + labelOffset.
-								self canvas add: label ] ].
-			^ shapes ].
-	^ nil
 ]
 
 { #category : 'accessing' }
@@ -481,38 +74,6 @@ GolapOverviewPresenter >> offset [
 GolapOverviewPresenter >> offset: aPoint [
 
 	offset := aPoint
-]
-
-{ #category : 'rendering' }
-GolapOverviewPresenter >> renderEdgesIn: aRSCanvas [
-
-	| edgeInteraction |
-	edgeInteraction := GolapOverviewEdgeInteraction new
-		                   presenter: self;
-		                   yourself.
-	reallyVisibleEdges do: [ :edge |
-			(self newShapeForEdge: edge) ifNotNil: [ :line |
-					line @ edgeInteraction.
-					aRSCanvas
-						add: line;
-						addLine: line.
-					line pushBack ] ]
-]
-
-{ #category : 'rendering' }
-GolapOverviewPresenter >> renderNodesIn: aRSCanvas [
-
-	| interaction |
-	interaction := GolapOverviewNodeInteraction new
-		               presenter: self;
-		               yourself.
-	nodeShapes := IdentityDictionary new: reallyVisibleNodes size.
-	reallyVisibleNodes do: [ :node |
-			(self newShapeForNode: node) ifNotNil: [ :shape |
-					shape translateTo:
-						(nodePositions at: node id ifAbsent: [ 0 @ 0 ]) + offset * scale.
-					shape @ interaction.
-					self canvas add: shape ] ]
 ]
 
 { #category : 'accessing' }
@@ -537,140 +98,28 @@ GolapOverviewPresenter >> scale: aNumber at: aPoint [
 	self offset: offset - oldFocus + newFocus
 ]
 
-{ #category : 'testing' }
-GolapOverviewPresenter >> showsNode: aGolapNode [
-
-	^ reallyVisibleNodes notNil and: [
-		  reallyVisibleNodes anySatisfy: [ :n | n id = aGolapNode id ] ]
-]
-
-{ #category : 'testing' }
-GolapOverviewPresenter >> showsPhotoimages [
-
-	^ golap showsPhotoimages
-]
-
 { #category : 'updating' }
-GolapOverviewPresenter >> updateCanvas [
+GolapOverviewPresenter >> scaleAndOffsetChanged [
 
-	self isDisplayed
-		ifTrue: [
-				self
-					updateGraph;
-					updateNodeShapes ]
-		ifFalse: [ self updateGraph ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateFreqScale [
-
-	self golapModelDo: [ :golapModel |
-			freqScale := 30.0 / ((golap nodes collect: [ :node |
-				               ((golapModel valueAtNode: node) abs + 0.1) log
-				               - 1.0 log ]) ifEmpty: [ 1 ] ifNotEmpty: #max) ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateGraph [
-
-	self critical: [
-			self golapModelDo: [ :model |
-					| visibleEdges connectedNodes |
-					visibleEdges := self availableEdges select: [ :edge | (model valueAtEdge: edge) notNil ].
-					reallyVisibleEdges := visibleEdges.
-					connectedNodes := IdentitySet new: reallyVisibleEdges size.
-					reallyVisibleEdges do: [ :edge |
-							connectedNodes
-								add: edge node1;
-								add: edge node2 ].
-					reallyVisibleNodes := connectedNodes asArray.
-					self ensureNodePositions.
-					golap updateItemsList ] ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateLineScale [
-
-	| maxValue |
-	self ensureVisibleEdges.
-	reallyVisibleEdges ifEmpty: [ ^ self ].
-	maxValue := (reallyVisibleEdges
-		             collect: [ :e |
-		             (golap model valueAtEdge: e) ifNotNil: #abs ]
-		             thenSelect: [ :v |
-		             v notNil and: [ v isNaN not and: [ v isInfinite not ] ] ])
-		            ifEmpty: [ 0 ]
-		            ifNotEmpty: #max.
-	lineScale := maxValue >= 1.0e-8
-		             ifTrue: [ 5.0 / maxValue ]
-		             ifFalse: [ 2.0 ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateNodePositions [
-
-	self isDisplayed ifTrue: [
-			self updateGraph.
-			self basicUpdateNodePositions ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateNodeShapePositions [
-
-	self critical: [
-			self golapModelDo: [ :golapModel |
-					self canvas shapes do: [ :shape |
-							(shape model isKindOf: GolapNode) ifTrue: [
-									| node |
-									node := shape model.
-									(golap model isReferenceNode: node)
-										ifTrue: [
-												| index |
-												index := golapModel indexAtReferenceNode: node.
-												index > 0 ifTrue: [
-														| t |
-														t := golapModel referenceNodesSize > 1
-															     ifTrue: [ (index - 1) asFloat / (golapModel referenceNodesSize - 1) asFloat ]
-															     ifFalse: [ 0.5 ].
-														shape translateTo: self canvas extent * (t - 0.5 * 0.9 @ 0.45) ] ]
-										ifFalse: [ nodePositions at: shape model id ifPresent: [ :point | shape translateTo: point + offset * scale ] ] ] ] ] ]
-]
-
-{ #category : 'updating' }
-GolapOverviewPresenter >> updateNodeShapes [
-
-	self critical: [
-			self
-				ensureNodePositions;
-				updateFreqScale;
-				updateLineScale.
-			self canvas shapes copy do: #remove.
-			self canvas color: Color white.
-			self
-				renderNodesIn: self canvas;
-				renderEdgesIn: self canvas.
-			self updateNodeShapePositions.
-			self canvas signalUpdate ]
+	^ self subclassResponsibility
 ]
 
 { #category : 'operations' }
 GolapOverviewPresenter >> zoomInAt: aPoint [
 
 	self scale: self scale * 1.1 at: aPoint.
-	self updateNodeShapePositions.
-	self critical: [ self canvas signalUpdate ]
+	self scaleAndOffsetChanged
 ]
 
 { #category : 'operations' }
 GolapOverviewPresenter >> zoomOutAt: aPoint [
 
 	self scale: self scale / 1.1 at: aPoint.
-	self updateNodeShapePositions.
-	self critical: [ self canvas signalUpdate ]
+	self scaleAndOffsetChanged
 ]
 
 { #category : 'operations' }
 GolapOverviewPresenter >> zoomToFit [
 
-	self isDisplayed ifTrue: [ self forceZoomToFit ]
+	self isDisplayed ifTrue: [ self doZoomToFit ]
 ]

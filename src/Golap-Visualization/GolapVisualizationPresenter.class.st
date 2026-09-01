@@ -18,6 +18,12 @@ GolapVisualizationPresenter class >> isAbstract [
 ]
 
 { #category : 'accessing' }
+GolapVisualizationPresenter >> camera [
+
+	^ self canvas camera
+]
+
+{ #category : 'accessing' }
 GolapVisualizationPresenter >> canvas [
 
 	^ roassal canvas
@@ -98,10 +104,39 @@ GolapVisualizationPresenter >> initializePresenters [
 		           yourself
 ]
 
+{ #category : 'instance creation' }
+GolapVisualizationPresenter >> newPinShape [
+
+	^ {
+		  (RSPolygon new
+			   points: {
+					   (-7 @ -12).
+					   (7 @ -12).
+					   (0 @ 0) };
+			   color: Color red;
+			   yourself).
+		  (RSCircle new
+			   extent: 16 @ 16;
+			   position: 0 @ -16;
+			   color: Color red;
+			   yourself).
+		  (RSCircle new
+			   extent: 6 @ 6;
+			   position: 0 @ -16;
+			   color: Color white;
+			   yourself) } asShape
+]
+
 { #category : 'testing' }
 GolapVisualizationPresenter >> showsNode: aGolapNode [
 
 	^ self subclassResponsibility
+]
+
+{ #category : 'testing' }
+GolapVisualizationPresenter >> showsPhotoimages [
+
+	^ golap showsPhotoimages
 ]
 
 { #category : 'operations' }

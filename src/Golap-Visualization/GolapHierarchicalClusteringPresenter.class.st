@@ -96,12 +96,6 @@ GolapHierarchicalClusteringPresenter >> showsNode: aGolapNode [
 	^ false
 ]
 
-{ #category : 'testing' }
-GolapHierarchicalClusteringPresenter >> showsPhotoimages [
-
-	^ golap showsPhotoimages
-]
-
 { #category : 'accessing' }
 GolapHierarchicalClusteringPresenter >> tree [
 

@@ -1,6 +1,6 @@
 Class {
 	#name : 'GolapHEBChartPresenter',
-	#superclass : 'GolapHierarchicalClusteringPresenter',
+	#superclass : 'GolapVisualizationPresenter',
 	#instVars : [
 		'attributeDropList',
 		'nodeCategories',
@@ -74,13 +74,21 @@ GolapHEBChartPresenter >> golapChanged [
 { #category : 'initialization' }
 GolapHEBChartPresenter >> initializePresenters [
 
+	| controller |
 	super initializePresenters.
 	attributeDropList := self newDropList
-		                 display: [ :item | item ifNil: '-- なし --' ];
-		                 items: { nil };
-		                 selectFirst;
-		                 whenSelectedItemChangedDo: [ self selectedAttributeChanged ];
-		                 yourself
+		                     display: [ :item | item ifNil: '-- なし --' ];
+		                     items: { nil };
+		                     selectFirst;
+		                     whenSelectedItemChangedDo: [ self selectedAttributeChanged ];
+		                     yourself.
+	controller := RSCanvasController new.
+	controller configuration
+		shouldAnimateZoom: false;
+		useBasicZoom.
+	roassal := self newRoassal
+		           canvas: RSCanvas new @ controller;
+		           yourself
 ]
 
 { #category : 'instance creation' }
@@ -312,6 +320,7 @@ GolapHEBChartPresenter >> updateCanvas [
 					self
 						renderNodesIn: self canvas;
 						renderEdgesIn: self canvas.
+					self canvas zoomToFit.
 					self canvas signalUpdate ] ]
 ]
 

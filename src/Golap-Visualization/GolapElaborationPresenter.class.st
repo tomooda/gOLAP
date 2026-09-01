@@ -24,12 +24,6 @@ GolapElaborationPresenter >> activateOnNotebookPage [
 ]
 
 { #category : 'accessing' }
-GolapElaborationPresenter >> camera [
-
-	^ self canvas camera
-]
-
-{ #category : 'accessing' }
 GolapElaborationPresenter >> cameraScale [
 
 	^ self camera scale
@@ -496,12 +490,6 @@ GolapElaborationPresenter >> showsNode: aGolapNode [
 	^ true
 	"^ (rootNodes anySatisfy: [ :n | n id = aGolapNode id ]) or: [
 		  associateNodes anySatisfy: [ :n | n id = aGolapNode id ] ]"
-]
-
-{ #category : 'testing' }
-GolapElaborationPresenter >> showsPhotoimages [
-
-	^ golap showsPhotoimages
 ]
 
 { #category : 'updating' }
