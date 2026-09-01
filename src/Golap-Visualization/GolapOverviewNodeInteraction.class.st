@@ -49,10 +49,26 @@ GolapOverviewNodeInteraction >> createLabelFor: aCollectionOfAssociations [
 GolapOverviewNodeInteraction >> createPopup: event [
 
 	presenter golapDo: [ :golap |
-			(event shape ifNotNil: #model) ifNotNil: [ :node |
-					(golap retrieveItemInfoFor: node) ifNotNil: [ :itemInfo |
-						(self createLabelFor: itemInfo) ifNotNil: [ :label | ^ label ] ] ] ].
+		(event shape ifNotNil: #model) ifNotNil: [ :node | ^ self createTemporaryLabelFor: node in: event canvas ] ].
 	^ nil
+]
+
+{ #category : 'private' }
+GolapOverviewNodeInteraction >> createTemporaryLabelFor: node in: aCanvas [
+
+	| text label |
+	text := RSLabel new
+		        text: 'サーバから取得中';
+		        yourself.
+	label := {
+		         (RSBox new
+			          extent: text extent + (10 @ 10);
+			          color: (Color fromHexString: 'E6F2F7')).
+		         text } asShape.
+	[
+		self updatePopup: label for: node.
+		aCanvas signalUpdate ] forkAt: Processor userBackgroundPriority.
+	^ label
 ]
 
 { #category : 'hooks' }
@@ -68,11 +84,12 @@ GolapOverviewNodeInteraction >> onShape: aCanvas [
 { #category : 'event processing' }
 GolapOverviewNodeInteraction >> popupItemInfo: event [
 
-	popup ifNil: [ popup := self createPopup: event ].
-	popup position: event shape encompassingRectangle rightCenter
-		+ (popup encompassingRectangle width // 2 @ 0).
-	event canvas addShape: popup.
-	event canvas signalUpdate
+	[
+		Cursor wait showWhile: [
+				popup ifNil: [ popup := self createPopup: event ].
+				popup position: event shape encompassingRectangle rightCenter + (popup encompassingRectangle width // 2 @ 0).
+				event canvas addShape: popup.
+				event canvas signalUpdate ] ] forkAt: Processor userBackgroundPriority
 ]
 
 { #category : 'accessing' }
@@ -113,6 +130,15 @@ GolapOverviewNodeInteraction >> renderLegendOn: legend [
 		text: 'アイテム上で右クリック' description: '商品メニュー'
 ]
 
+{ #category : 'private' }
+GolapOverviewNodeInteraction >> replaceLabel: aRSComposite with: anotherRSComposite [
+
+	popup := anotherRSComposite.
+	popup position: aRSComposite position.
+	aRSComposite canvas ifNotNil: [ :canvas | canvas add: popup ].
+	aRSComposite remove
+]
+
 { #category : 'event processing' }
 GolapOverviewNodeInteraction >> retractItemInfo: event [
 
@@ -120,4 +146,13 @@ GolapOverviewNodeInteraction >> retractItemInfo: event [
 			popup remove.
 			event canvas signalUpdate.
 			popup := nil ]
+]
+
+{ #category : 'private' }
+GolapOverviewNodeInteraction >> updatePopup: label for: node [
+
+	presenter golapDo: [ :golap |
+			(golap retrieveItemInfoFor: node) ifNotNil: [ :itemInfo |
+				(self createLabelFor: itemInfo) ifNotNil: [ :newLabel | self replaceLabel: label with: newLabel ] ].
+			label remove ]
 ]

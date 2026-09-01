@@ -2184,12 +2184,10 @@ Golap >> visualizationsDo: aBlock [
 { #category : 'accessing' }
 Golap >> windowTitle [
 
-	^ 'グラフ (' , (commentText
-		   ifNotNil: [
-				   (commentText text asString lines
-					    ifNotEmpty: #first
-					    ifEmpty: [ '' ]) trim ]
-		   ifNil: [ '' ]) , ')'
+	(commentText ifNotNil: #text) ifNotNil: [ :text |
+		text asString trim ifNotEmpty: [ :string |
+			string lines ifNotEmpty: [ :lines | lines first trim ifNotEmpty: [ :line | ^ line ] ] ] ].
+	^ 'グラフ'
 ]
 
 { #category : 'accessing-presets' }
