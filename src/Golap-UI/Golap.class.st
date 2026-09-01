@@ -1898,6 +1898,12 @@ Golap >> showItemView: aGolapNode [
 ]
 
 { #category : 'testing' }
+Golap >> showsItemInfoPopup [
+
+	^ itemsAppearancePresenter isNil or: [ itemsAppearancePresenter showsItemInfoPopup ]
+]
+
+{ #category : 'testing' }
 Golap >> showsNode: aGolapNode [
 
 	self activeVisualizationDo: [ :visualizationPresenter |

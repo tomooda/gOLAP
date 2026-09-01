@@ -9,7 +9,8 @@ Class {
 		'startPhotoimageRetrievalButton',
 		'showPhotoImagesCheckbox',
 		'showsPhotoimageRetrievalLogCheckbox',
-		'clearItemInfoCache'
+		'clearItemInfoCache',
+		'showsItemInfoPopup'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -51,6 +52,7 @@ GolapItemsAppearance >> defaultLayout [
 	^ SpBoxLayout newVertical
 		  add: '商品情報取得' asPresenter expand: false;
 		  add: clearItemInfoCache expand: false;
+		  add: showsItemInfoPopup expand: false;
 		  add: '商品画像取得' asPresenter expand: false;
 		  add: photoimageRetrievers expand: true;
 		  add: (SpBoxLayout newHorizontal
@@ -69,6 +71,10 @@ GolapItemsAppearance >> initializePresenters [
 		                      icon: (self iconNamed: #refreshCircling);
 		                      label: '商品情報をクリア';
 		                      action: [ self clearItemInfoCache ];
+		                      yourself.
+	showsItemInfoPopup := self newCheckBox
+		                      label: '商品情報をポップアップする';
+		                      state: true;
 		                      yourself.
 	photoimageRetrievers := self instantiate: GolapPhotoImageRetrieversPresenter.
 	photoimageRetrievalProgressBar := self newProgressBar
@@ -107,6 +113,12 @@ GolapItemsAppearance >> setGolap: aGolap [
 	golap := aGolap.
 	photoimageRetrievers golap: aGolap.
 	self updatePhotoimageRetrievers
+]
+
+{ #category : 'testing' }
+GolapItemsAppearance >> showsItemInfoPopup [
+
+	^ showsItemInfoPopup isNil or: [ showsItemInfoPopup state = true ]
 ]
 
 { #category : 'testing' }

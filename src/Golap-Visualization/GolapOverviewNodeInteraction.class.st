@@ -78,18 +78,20 @@ GolapOverviewNodeInteraction >> onShape: aCanvas [
 	aCanvas
 		when: RSMouseLeftClick send: #processMouseLeftClick: to: self;
 		when: RSMouseRightClick send: #processMouseRightClick: to: self;
-		when: RSMouseEnter send: #popupItemInfo: to: self
+		when: RSMouseEnter send: #popupItemInfo: to: self;
+		when: RSMouseLeave send: #retractItemInfo: to: self
 ]
 
 { #category : 'event processing' }
 GolapOverviewNodeInteraction >> popupItemInfo: event [
 
-	[
-		Cursor wait showWhile: [
-				popup ifNil: [ popup := self createPopup: event ].
-				popup position: event shape encompassingRectangle rightCenter + (popup encompassingRectangle width // 2 @ 0).
-				event canvas addShape: popup.
-				event canvas signalUpdate ] ] forkAt: Processor userBackgroundPriority
+	presenter golapDo: [ :golap |
+			golap showsItemInfoPopup ifTrue: [
+					[
+						popup ifNil: [ popup := self createPopup: event ].
+						popup position: event shape encompassingRectangle rightCenter + (popup encompassingRectangle width // 2 @ 0).
+						event canvas addShape: popup.
+						event canvas signalUpdate ] forkAt: Processor userBackgroundPriority ] ]
 ]
 
 { #category : 'accessing' }
@@ -137,7 +139,7 @@ GolapOverviewNodeInteraction >> replaceLabel: aRSComposite with: anotherRSCompos
 			popup ifNotNil: [
 					popup remove.
 					popup := nil ].
-			anotherRSComposite position: aRSComposite position.
+			anotherRSComposite position: aRSComposite encompassingRectangle origin + (anotherRSComposite extent * 0.5).
 			anotherRSComposite when: RSMouseLeave do: [ self retractPopup: anotherRSComposite ] for: anotherRSComposite.
 			aRSComposite remove.
 			canvas add: anotherRSComposite.
