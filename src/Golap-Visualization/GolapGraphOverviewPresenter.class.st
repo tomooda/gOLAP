@@ -415,14 +415,13 @@ GolapGraphOverviewPresenter >> renderEdgesIn: aRSCanvas [
 GolapGraphOverviewPresenter >> renderNodesIn: aRSCanvas [
 
 	| interaction |
-	interaction := GolapOverviewNodeInteraction new
+	interaction := GolapGraphOverviewNodeInteraction new
 		               presenter: self;
 		               yourself.
 	nodeShapes := IdentityDictionary new: reallyVisibleNodes size.
 	reallyVisibleNodes do: [ :node |
 			(self newShapeForNode: node) ifNotNil: [ :shape |
-					shape translateTo:
-						(nodePositions at: node id ifAbsent: [ 0 @ 0 ]) + offset * scale.
+					shape translateTo: (nodePositions at: node id ifAbsent: [ 0 @ 0 ]) + offset * scale.
 					shape @ interaction.
 					self canvas add: shape ] ]
 ]

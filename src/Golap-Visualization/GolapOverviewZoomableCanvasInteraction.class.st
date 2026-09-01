@@ -87,6 +87,6 @@ GolapOverviewZoomableCanvasInteraction >> renderLegendOn: legend [
 		text: 'マウスホイール, I, O' description: 'ズームイン/ズームアウト';
 		text: 'マウスドラッグ, ←, →, ↑ or ↓' description: '視点移動';
 		text: 'スペース' description: '視点・ズームをリセット'.
-	GolapOverviewNodeInteraction new renderLegendOn: legend.
+	GolapGraphOverviewNodeInteraction new renderLegendOn: legend.
 	GolapOverviewEdgeInteraction new renderLegendOn: legend
 ]
