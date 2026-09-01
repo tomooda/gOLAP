@@ -68,6 +68,7 @@ GolapOverviewNodeInteraction >> createTemporaryLabelFor: node in: aCanvas [
 	[
 		self updatePopup: label for: node.
 		aCanvas signalUpdate ] forkAt: Processor userBackgroundPriority.
+	label when: RSMouseLeave do: [ self retractPopup: label ] for: label.
 	^ label
 ]
 
@@ -77,8 +78,7 @@ GolapOverviewNodeInteraction >> onShape: aCanvas [
 	aCanvas
 		when: RSMouseLeftClick send: #processMouseLeftClick: to: self;
 		when: RSMouseRightClick send: #processMouseRightClick: to: self;
-		when: RSMouseEnter send: #popupItemInfo: to: self;
-		when: RSMouseLeave send: #retractItemInfo: to: self
+		when: RSMouseEnter send: #popupItemInfo: to: self
 ]
 
 { #category : 'event processing' }
@@ -133,10 +133,15 @@ GolapOverviewNodeInteraction >> renderLegendOn: legend [
 { #category : 'private' }
 GolapOverviewNodeInteraction >> replaceLabel: aRSComposite with: anotherRSComposite [
 
-	popup := anotherRSComposite.
-	popup position: aRSComposite position.
-	aRSComposite canvas ifNotNil: [ :canvas | canvas add: popup ].
-	aRSComposite remove
+	aRSComposite canvas ifNotNil: [ :canvas |
+			popup ifNotNil: [
+					popup remove.
+					popup := nil ].
+			anotherRSComposite position: aRSComposite position.
+			anotherRSComposite when: RSMouseLeave do: [ self retractPopup: anotherRSComposite ] for: anotherRSComposite.
+			aRSComposite remove.
+			canvas add: anotherRSComposite.
+			popup := anotherRSComposite ]
 ]
 
 { #category : 'event processing' }
@@ -146,6 +151,15 @@ GolapOverviewNodeInteraction >> retractItemInfo: event [
 			popup remove.
 			event canvas signalUpdate.
 			popup := nil ]
+]
+
+{ #category : 'event processing' }
+GolapOverviewNodeInteraction >> retractPopup: aShape [
+
+	aShape canvas ifNotNil: [ :canvas |
+			aShape remove.
+			aShape == popup ifTrue: [ popup := nil ].
+			canvas signalUpdate ]
 ]
 
 { #category : 'private' }
