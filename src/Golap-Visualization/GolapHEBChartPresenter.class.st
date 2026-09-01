@@ -391,6 +391,7 @@ GolapHEBChartPresenter >> updateCanvas [
 { #category : 'updating' }
 GolapHEBChartPresenter >> updateCategories [
 
+	self ensureAttributes.
 	self golapModelDo: [ :golapModel |
 			| nodeValues newCategoryNodes newNodeCategories |
 			visibleNodes := golap nodes reject: #isIsolated.

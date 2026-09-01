@@ -4,5 +4,5 @@ Extension { #name : 'GolapHEBChartPresenter' }
 GolapHEBChartPresenter >> fromJSON: aDictionary [
 
 	super fromJSON: aDictionary.
-	self updateTree
+	self updateAngles
 ]
