@@ -28,6 +28,18 @@ GolapOverviewPresenter >> cameraScale: aNumber [
 	self camera scale: aNumber
 ]
 
+{ #category : 'initialization' }
+GolapOverviewPresenter >> defaultOffset [
+
+	^ 0.0 @ 0.0
+]
+
+{ #category : 'initialization' }
+GolapOverviewPresenter >> defaultScale [
+
+	^ 100.0
+]
+
 { #category : 'operations' }
 GolapOverviewPresenter >> doZoomToFit [
 
@@ -38,8 +50,8 @@ GolapOverviewPresenter >> doZoomToFit [
 GolapOverviewPresenter >> initialize [
 
 	super initialize.
-	scale := 100.0.
-	offset := 0.0 @ 0.0
+	scale := self defaultScale.
+	offset := self defaultOffset
 ]
 
 { #category : 'initialization' }

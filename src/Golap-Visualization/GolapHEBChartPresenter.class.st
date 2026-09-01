@@ -1,13 +1,13 @@
 Class {
 	#name : 'GolapHEBChartPresenter',
-	#superclass : 'GolapVisualizationPresenter',
+	#superclass : 'GolapOverviewPresenter',
 	#instVars : [
 		'attributeDropList',
 		'nodeCategories',
 		'categoryNodes',
 		'visibleNodes',
-		'nodePositions',
-		'categoryPositions'
+		'nodeAngles',
+		'categoryAngles'
 	],
 	#category : 'Golap-Visualization-HEB',
 	#package : 'Golap-Visualization',
@@ -28,6 +28,14 @@ GolapHEBChartPresenter >> category: aString nodesDo: aBlock [
 	categoryNodes at: aString ifPresent: [ :nodes | nodes do: aBlock ]
 ]
 
+{ #category : 'accessing' }
+GolapHEBChartPresenter >> categoryPositionAt: aString [
+
+	^ aString
+		  ifNotNil: [ categoryAngles at: aString ifPresent: [ :angles | self pointAtRadius: self radius * 0.5 theta: angles average ] ]
+		  ifNil: [ self pointAtRadius: 0.0 theta: 0.0 ]
+]
+
 { #category : 'layout' }
 GolapHEBChartPresenter >> defaultLayout [
 
@@ -38,6 +46,24 @@ GolapHEBChartPresenter >> defaultLayout [
 				   add: attributeDropList expand: false)
 		  expand: false;
 		  add: roassal
+]
+
+{ #category : 'initialization' }
+GolapHEBChartPresenter >> defaultScale [
+
+	^ 1.0
+]
+
+{ #category : 'operations' }
+GolapHEBChartPresenter >> doZoomToFit [
+
+	^ self canvas zoomToFit
+]
+
+{ #category : 'updating' }
+GolapHEBChartPresenter >> ensureAngles [
+
+	(nodeAngles isNil or: [ categoryAngles isNil ]) ifTrue: [ self updateAngles ]
 ]
 
 { #category : 'updating' }
@@ -59,9 +85,16 @@ GolapHEBChartPresenter >> evens: aSequenceableCollection [
 ]
 
 { #category : 'updating' }
+GolapHEBChartPresenter >> flushAngles [
+
+	nodeAngles := categoryAngles := nil
+]
+
+{ #category : 'updating' }
 GolapHEBChartPresenter >> flushCategories [
 
-	nodeCategories := categoryNodes := visibleNodes := nodePositions := categoryPositions := nil
+	nodeCategories := categoryNodes := visibleNodes := nil.
+	self flushAngles
 ]
 
 { #category : 'updating' }
@@ -74,21 +107,19 @@ GolapHEBChartPresenter >> golapChanged [
 { #category : 'initialization' }
 GolapHEBChartPresenter >> initializePresenters [
 
-	| controller |
 	super initializePresenters.
 	attributeDropList := self newDropList
 		                     display: [ :item | item ifNil: '-- なし --' ];
 		                     items: { nil };
 		                     selectFirst;
 		                     whenSelectedItemChangedDo: [ self selectedAttributeChanged ];
-		                     yourself.
-	controller := RSCanvasController new.
-	controller configuration
-		shouldAnimateZoom: false;
-		useBasicZoom.
-	roassal := self newRoassal
-		           canvas: RSCanvas new @ controller;
-		           yourself
+		                     yourself
+]
+
+{ #category : 'accessing' }
+GolapHEBChartPresenter >> innerRadius [
+
+	^ 50
 ]
 
 { #category : 'instance creation' }
@@ -96,35 +127,46 @@ GolapHEBChartPresenter >> newLabelForNode: nodeId [
 
 	^ self golapModelDo: [ :golapModel |
 			  golapModel nodeAt: nodeId ifPresent: [ :node |
-					  RSLabel new
-						  text: node name;
-						  color: (self colorForNode: node);
-						  yourself ] ]
+					  nodeAngles at: nodeId ifPresent: [ :theta |
+							  | label delta |
+							  label := RSLabel new
+								           text: node name;
+								           yourself.
+							  delta := label width + self nodeSize * 0.5 + 10.0.
+							  label
+								  color: (self colorForNode: node);
+								  rotateByRadians: theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
+								  position: (self nodePositionAt: nodeId offset: delta);
+								  yourself ] ] ]
 ]
 
 { #category : 'instance creation' }
-GolapHEBChartPresenter >> newPieWithRadiusBetween: rad1 and: rad2 radius: radius [
+GolapHEBChartPresenter >> newPieForCategory: aString [
 
-	| alpha beta |
-	alpha := rad2 negated * 180.0 / Float pi % 360.0.
-	beta := rad1 negated * 180.0 / Float pi % 360.0.
-	beta < alpha ifTrue: [ beta := beta + 360.0 ].
-	^ RSPieSlice new
-		  alphaAngle: alpha;
-		  betaAngle: beta;
-		  innerRadius: 10;
-		  externalRadius: radius;
-		  color: (Color h: alpha + beta * 0.5 % 360.0 s: 0.05 v: 1.0);
-		  yourself
+	^ categoryAngles at: aString ifPresent: [ :angles |
+			  | alpha beta |
+			  alpha := angles max negated * 180.0 / Float pi % 360.0.
+			  beta := angles min negated * 180.0 / Float pi % 360.0.
+			  beta < alpha ifTrue: [ beta := beta + 360.0 ].
+			  RSPieSlice new
+				  alphaAngle: alpha;
+				  betaAngle: beta;
+				  innerRadius: self innerRadius * scale;
+				  externalRadius: self radius - self innerRadius * scale;
+				  color: (Color h: angles average * 180.0 / Float pi % 360.0 s: 0.05 v: 1.0);
+				  position: (self pointAtRadius: 0.0 theta: 0.0);
+				  yourself ]
 ]
 
 { #category : 'instance creation' }
 GolapHEBChartPresenter >> newShapeForCategory: aString [
 
-	^ RSLabel new
-		  text: aString;
-		  color: Color gray;
-		  yourself
+	^ (self categoryPositionAt: aString) ifNotNil: [ :position |
+			  RSLabel new
+				  text: aString;
+				  color: Color gray;
+				  position: position;
+				  yourself ]
 ]
 
 { #category : 'instance creation' }
@@ -149,9 +191,9 @@ GolapHEBChartPresenter >> newShapeForEdge: pair [
 GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 and: node2 category: category [
 
 	| p1 p2 p3 |
-	p1 := nodePositions at: node1 ifAbsent: [ ^ nil ].
-	p2 := categoryPositions at: category ifAbsent: [ ^ nil ].
-	p3 := nodePositions at: node2 ifAbsent: [ ^ nil ].
+	p1 := (self nodePositionAt: node1) ifNil: [ ^ nil ].
+	p2 := (self categoryPositionAt: category) ifNil: [ ^ nil ].
+	p3 := (self nodePositionAt: node2) ifNil: [ ^ nil ].
 	^ RSUniformCubicBSpline new
 		  controlPoints: {
 				  p1.
@@ -165,10 +207,10 @@ GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 and: node2 category: cat
 GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 category: category1 and: node2 category: category2 [
 
 	| p1 p2 p3 p4 |
-	p1 := nodePositions at: node1 ifAbsent: [ ^ nil ].
-	p2 := categoryPositions at: category1 ifAbsent: [ ^ nil ].
-	p3 := categoryPositions at: category2 ifAbsent: [ ^ nil ].
-	p4 := nodePositions at: node2 ifAbsent: [ ^ nil ].
+	p1 := (self nodePositionAt: node1) ifNil: [ ^ nil ].
+	p2 := (self categoryPositionAt: category1) ifNil: [ ^ nil ].
+	p3 := (self categoryPositionAt: category2) ifNil: [ ^ nil ].
+	p4 := (self nodePositionAt: node2) ifNil: [ ^ nil ].
 	^ RSUniformCubicBSpline new
 		  controlPoints: {
 				  p1.
@@ -183,17 +225,32 @@ GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 category: category1 and:
 GolapHEBChartPresenter >> newShapeForNode: nodeId [
 
 	^ self golapModelDo: [ :golapModel |
-			  RSBox new
-				  extent: self nodeSize asPoint;
-				  color: (self colorForNode: nodeId);
-				  model: (golapModel nodeAt: nodeId);
-				  yourself ]
+			  nodeAngles at: nodeId ifPresent: [ :theta |
+					  RSBox new
+						  extent: self nodeSize asPoint;
+						  color: (self colorForNode: nodeId);
+						  model: (golapModel nodeAt: nodeId);
+						  rotateByRadians: theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
+						  position: (self nodePositionAt: nodeId offset: self nodeSize * 0.5);
+						  yourself ] ]
+]
+
+{ #category : 'accessing' }
+GolapHEBChartPresenter >> nodePositionAt: aString [
+
+	^ self nodePositionAt: aString offset: 0.0
+]
+
+{ #category : 'accessing' }
+GolapHEBChartPresenter >> nodePositionAt: aString offset: aNumber [
+
+	^ nodeAngles at: aString ifPresent: [ :theta | self pointAtRadius: aNumber / scale + self radius theta: theta ]
 ]
 
 { #category : 'accessing' }
 GolapHEBChartPresenter >> nodeSize [
 
-	^ 64
+	^ 10
 ]
 
 { #category : 'private' }
@@ -208,6 +265,27 @@ GolapHEBChartPresenter >> peakCentered: aDescendingCollection [
 	"self new peakCentered: #(9 8 7 6 5 4 3 2 1)"
 
 	^ (self evens: aDescendingCollection) reversed , (self odds: aDescendingCollection)
+]
+
+{ #category : 'accessing' }
+GolapHEBChartPresenter >> pointAtRadius: radius theta: theta [
+
+	^ (Point r: radius theta: theta) + offset * scale
+]
+
+{ #category : 'accessing' }
+GolapHEBChartPresenter >> radius [
+
+	^ 400
+]
+
+{ #category : 'rendering' }
+GolapHEBChartPresenter >> renderCategoriesIn: aCanvas [
+
+	self ensureAngles.
+	categoryAngles keysDo: [ :category |
+			(self newPieForCategory: category) ifNotNil: [ :shape | aCanvas add: shape ].
+			(self newShapeForCategory: category) ifNotNil: [ :shape | aCanvas add: shape ] ]
 ]
 
 { #category : 'rendering' }
@@ -231,54 +309,16 @@ GolapHEBChartPresenter >> renderEdgesIn: aCanvas [
 { #category : 'rendering' }
 GolapHEBChartPresenter >> renderNodesIn: aCanvas [
 
-	| radius theta delta newNodePositions newCategoryPositions |
-	self ensureCategories.
-	radius := visibleNodes size * self nodeSize / Float pi * 0.7.
-	theta := 0.0.
-	delta := Float pi * 2.0 / (visibleNodes size + categoryNodes size) asFloat.
-	newNodePositions := Dictionary new.
-	newCategoryPositions := Dictionary new.
-	newCategoryPositions at: nil put: 0.0 @ 0.0.
-	self categoriesDo: [ :category |
-			| minTheta maxTheta |
-			minTheta := maxTheta := theta.
-			self category: category nodesDo: [ :node |
-					(self newShapeForNode: node) ifNotNil: [ :shape |
-							| position |
-							newNodePositions at: node put: (Point r: radius theta: theta).
-							position := Point r: radius + (self nodeSize * 0.5) theta: theta.
-							shape
-								rotateByRadians: position theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
-								position: position.
-							aCanvas add: shape ].
-					(self newLabelForNode: node) ifNotNil: [ :shape |
-							| position |
-							position := Point r: shape width * 0.5 + radius + self nodeSize + 5 theta: theta.
-							shape
-								rotateByRadians: position theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
-								position: position.
-							aCanvas add: shape ].
-					maxTheta := theta := theta + delta ].
-			category
-				ifNotNil: [
-						(self newPieWithRadiusBetween: minTheta - delta and: maxTheta radius: radius - self nodeSize - 5) ifNotNil: [ :shape |
-							aCanvas add: shape ].
-						(self newShapeForCategory: category) ifNotNil: [ :shape |
-								| position |
-								position := Point r: radius * 0.5 theta: minTheta + maxTheta - delta * 0.5.
-								shape
-									rotateByRadians: position theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
-									position: position.
-								aCanvas add: shape.
-								newCategoryPositions at: category put: position ].
-						aCanvas add: ((RSLine newFrom: 0.0 @ 0.0 to: (Point r: radius theta: theta))
-								 color: (Color gray: 0.9);
-								 dashed;
-								 yourself) ]
-				ifNil: [ newCategoryPositions at: nil put: 0.0 @ 0.0 ].
-			theta := theta + delta ].
-	nodePositions := newNodePositions.
-	categoryPositions := newCategoryPositions
+	self ensureAngles.
+	nodeAngles keysDo: [ :nodeId |
+			(self newShapeForNode: nodeId) ifNotNil: [ :shape | aCanvas add: shape ].
+			(self newLabelForNode: nodeId) ifNotNil: [ :shape | aCanvas add: shape ] ]
+]
+
+{ #category : 'updating' }
+GolapHEBChartPresenter >> scaleAndOffsetChanged [
+
+	self updateCanvas
 ]
 
 { #category : 'accessing' }
@@ -301,6 +341,30 @@ GolapHEBChartPresenter >> showsNode: aGolapNode [
 ]
 
 { #category : 'updating' }
+GolapHEBChartPresenter >> updateAngles [
+
+	| theta delta newNodeAngles newCategoryAngles |
+	self ensureCategories.
+	theta := 0.0.
+	delta := Float pi * 2.0 / (visibleNodes size + categoryNodes size) asFloat.
+	newNodeAngles := Dictionary new.
+	newCategoryAngles := Dictionary new.
+	self categoriesDo: [ :category |
+			| minTheta maxTheta |
+			minTheta := maxTheta := theta.
+			self category: category nodesDo: [ :node |
+					newNodeAngles at: node put: theta.
+					maxTheta := theta := theta + delta ].
+			category ifNotNil: [
+					newCategoryAngles at: category put: {
+							(minTheta - delta).
+							maxTheta }.
+					theta := theta + delta ] ].
+	nodeAngles := newNodeAngles.
+	categoryAngles := newCategoryAngles
+]
+
+{ #category : 'updating' }
 GolapHEBChartPresenter >> updateAttributeDropList [
 
 	(golap itemInfoRetriever ifNotNil: #attributeNames) ifNotNil: [ :names |
@@ -318,9 +382,9 @@ GolapHEBChartPresenter >> updateCanvas [
 					self ensureAttributes.
 					self canvas shapes copy do: #remove.
 					self
+						renderCategoriesIn: self canvas;
 						renderNodesIn: self canvas;
 						renderEdgesIn: self canvas.
-					self canvas zoomToFit.
 					self canvas signalUpdate ] ]
 ]
 
@@ -355,13 +419,6 @@ GolapHEBChartPresenter >> updateCategories [
 						                     (self peakCentered: (assoc value sorted: [ :node | nodeValues at: node ifAbsent: [ 0.0 ] ] descending))
 						                     -> (assoc value collect: [ :node | nodeValues at: node ifAbsent: [ 0.0 ] ]) sum ]) sorted:
 					                    #value descending) collect: #key)) asOrderedDictionary ]
-]
-
-{ #category : 'updating' }
-GolapHEBChartPresenter >> updateTree [
-
-	self flushCategories.
-	self updateCanvas
 ]
 
 { #category : 'accessing' }
