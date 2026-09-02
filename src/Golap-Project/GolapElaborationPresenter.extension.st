@@ -10,7 +10,7 @@ GolapElaborationPresenter >> asJSON [
 				  scale y };
 		  at: 'offset' put: {
 				  offset x.
-				  offset y } asDictionary;
+				  offset y } ;
 		  yourself
 ]
 
