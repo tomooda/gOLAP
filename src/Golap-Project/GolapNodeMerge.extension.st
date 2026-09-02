@@ -14,14 +14,9 @@ GolapNodeMerge >> fromJSON: aDictionary [
 
 	merges := aDictionary
 		          at: 'merges'
-		          ifPresent: [ :json |
-				          (json associations collect: [ :assoc |
-					           assoc key -> assoc value asSet ]) asDictionary ]
+		          ifPresent: [ :dict | (dict associations collect: [ :assoc | assoc key -> assoc value asSet ]) asDictionary ]
 		          ifAbsent: [ Dictionary new ].
-	roots := aDictionary
-		         at: 'merges-roots'
-		         ifPresent: #asSet
-		         ifAbsent: [ Set new ]
+	roots := aDictionary at: 'merges-roots' ifPresent: #asSet ifAbsent: [ Set new ]
 ]
 
 { #category : '*Golap-Project' }

@@ -157,7 +157,7 @@ GolapRetrieveApiClient >> valuesAt: aString filters: aCollection do: aBlock [
 		| response |
 		response := GolapHttpClient new
 			            url: url;
-			            entity: (ZnEntity json: (STONJSON toString: json));
+			            entity: (ZnEntity json: (GolapJSON toString: json));
 			            authenticateBlock: self authenticateBlock;
 			            post;
 			            response.
