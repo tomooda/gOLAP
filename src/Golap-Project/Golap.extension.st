@@ -46,30 +46,20 @@ Golap >> fromJSON: aDictionary [
 			aDictionary
 				at: 'url' ifPresent: [ :string | url := string asZnUrl ];
 				at: 'query' ifPresent: [ :dict | query := dict ];
-				at: 'dimensions' ifPresent: [ :array |
-						array do: [ :pair |
-									self
-										addDimension: (GolapBaseGraph fromJSON: pair second)
-										named: pair first ] ];
-				at: 'baseList' ifPresent: [ :string |
-						string ifNotNil: [
-									(baseList items includes: string) ifTrue: [
-											baseList selectItem: string ] ] ];
-				at: 'frontList' ifPresent: [ :string |
-						string ifNotNil: [
-									(frontList items includes: string) ifTrue: [
-											frontList selectItem: string ] ] ];
+				at: 'dimensions'
+				ifPresent: [ :array | array do: [ :pair | self addDimension: (GolapBaseGraph fromJSON: pair second) named: pair first ] ];
+				at: 'baseList'
+				ifPresent: [ :string | string ifNotNil: [ (baseList items includes: string) ifTrue: [ baseList selectItem: string ] ] ];
+				at: 'frontList'
+				ifPresent: [ :string | string ifNotNil: [ (frontList items includes: string) ifTrue: [ frontList selectItem: string ] ] ];
 				at: 'merges' ifPresent: [ :array |
 						model ifNotNil: [
-									merges := (array collect: [ :pair |
-											           pair first -> pair second ]) asOrderedCollection.
+									merges := (array collect: [ :pair | pair first -> pair second ]) asOrderedCollection.
 									model setMerges: merges ] ];
-				at: 'pins'
-				ifPresent: [ :array | pins := array asOrderedCollection ];
-				at: 'selections'
-				ifPresent: [ :array | selections := array asSet ];
-				at: 'edgesAppearance'
-				ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];
+				at: 'pins' ifPresent: [ :array | pins := array asOrderedCollection ];
+				at: 'selections' ifPresent: [ :array | selections := array asSet ];
+				at: 'edgesAppearance' ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];
+				at: 'itemsAppearance' ifPresent: [ :json | itemsAppearancePresenter fromJSON: json ];
 				at: 'itemInfoRetriever' ifPresent: [ :json |
 						itemInfoRetriever := GolapItemInfoRetriever fromJSON: json.
 						itemsAppearancePresenter updatePhotoimageRetrievers.
@@ -77,25 +67,15 @@ Golap >> fromJSON: aDictionary [
 				at: 'itemList' ifPresent: [ :json | itemList fromJSON: json ];
 				at: 'edgeList' ifPresent: [ :json | edgeList fromJSON: json ];
 				at: 'comment' ifPresent: [ :text | commentText text: text ];
-				at: 'polishOverview'
-				ifPresent: [ :json | polishOverviewPresenter fromJSON: json ];
-				at: 'articulationPointOverview'
-				ifPresent: [ :json |
-					articulationPointOverviewPresenter fromJSON: json ];
-				at: 'elaboration'
-				ifPresent: [ :json | elaborationPresenter fromJSON: json ];
-				at: 'heb'
-				ifPresent: [ :json | hebPresenter fromJSON: json ];
-				at: 'dandelion'
-				ifPresent: [ :json | dandelionPresenter fromJSON: json ];
+				at: 'polishOverview' ifPresent: [ :json | polishOverviewPresenter fromJSON: json ];
+				at: 'articulationPointOverview' ifPresent: [ :json | articulationPointOverviewPresenter fromJSON: json ];
+				at: 'elaboration' ifPresent: [ :json | elaborationPresenter fromJSON: json ];
+				at: 'heb' ifPresent: [ :json | hebPresenter fromJSON: json ];
+				at: 'dandelion' ifPresent: [ :json | dandelionPresenter fromJSON: json ];
 				at: 'hedge' ifPresent: [ :json | hedgePresenter fromJSON: json ];
-				at: 'heatmap'
-				ifPresent: [ :json | heatmapPresenter fromJSON: json ];
-				at: 'visualizationNotebook-selectedPageIndex'
-				ifPresent: [ :integer |
-					visualizationNotebook selectPageIndex: integer ];
-				at: 'showsPhotoimages'
-				ifPresent: [ :bool | self basicShowsPhotoimages: bool ].
+				at: 'heatmap' ifPresent: [ :json | heatmapPresenter fromJSON: json ];
+				at: 'visualizationNotebook-selectedPageIndex' ifPresent: [ :integer | visualizationNotebook selectPageIndex: integer ];
+				at: 'showsPhotoimages' ifPresent: [ :bool | self basicShowsPhotoimages: bool ].
 			self basicFromJSON: aDictionary.
 			self selectedPageChanged ]
 ]
