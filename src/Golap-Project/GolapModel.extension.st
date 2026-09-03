@@ -7,8 +7,10 @@ GolapModel >> asJSON [
 	json := OrderedDictionary new.
 	baseGraph toJSON: json.
 	^ json
+		  at: 'nodeEvaluators' put: (nodeEvaluators collect: #asJSON);
 		  at: 'nodeEvaluator' put: nodeEvaluator asJSON;
 		  at: 'nodeAggregators' put: (nodeAggregators collect: #asJSON);
+		  at: 'edgeEvaluators' put: (edgeEvaluators collect: #asJSON);
 		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
 		  at: 'edgeAggregators' put: (edgeAggregators collect: #asJSON);
 		  at: 'referenceNodes' put: referenceNodes asArray;
@@ -30,24 +32,16 @@ GolapModel class >> fromJSON: aDictionary [
 GolapModel >> fromJSON: aDictionary [
 
 	aDictionary
-		at: 'nodeEvaluator'
-		ifPresent: [ :json |
-			nodeEvaluator := GolapNodeEvaluator fromJSON: json ];
-		at: 'nodeAggregators' ifPresent: [ :array |
-				nodeAggregators := array collect: [ :json |
-						                   GolapDataAggregator fromJSON: json ] ];
-		at: 'edgeEvaluator'
-		ifPresent: [ :json |
-			edgeEvaluator := GolapEdgeEvaluator fromJSON: json ];
-		at: 'edgeAggregators' ifPresent: [ :array |
-				edgeAggregators := array collect: [ :json |
-						                   GolapDataAggregator fromJSON: json ] ];
+		at: 'nodeEvaluators' ifPresent: [ :array | nodeEvaluators := array collect: [ :dict | GolapNodeEvaluator fromJSON: dict ] ];
+		at: 'nodeEvaluatorIndex' ifPresent: [ :int | nodeEvaluator := nodeEvaluators at: int ];
+		at: 'nodeAggregators' ifPresent: [ :array | nodeAggregators := array collect: [ :json | GolapDataAggregator fromJSON: json ] ];
+		at: 'edgeEvaluators' ifPresent: [ :array | edgeEvaluators := array collect: [ :dict | GolapEdgeEvaluator fromJSON: dict ] ];
+		at: 'edgeEvaluatorIndex' ifPresent: [ :int | edgeEvaluator := edgeEvaluators at: int ];
+		at: 'edgeAggregators' ifPresent: [ :array | edgeAggregators := array collect: [ :json | GolapDataAggregator fromJSON: json ] ];
 		at: 'friend' ifPresent: [ :numOrNil | friend := numOrNil ];
 		at: 'merge' ifPresent: [ :json | merge fromJSON: json ];
-		at: 'polishers' ifPresent: [ :array |
-				polishers := (array collect: [ :json |
-						              GolapPolisher fromJSON: json ])
-					             asOrderedCollection ].
+		at: 'polishers'
+		ifPresent: [ :array | polishers := (array collect: [ :json | GolapPolisher fromJSON: json ]) asOrderedCollection ].
 	baseGraph := GolapBaseGraph fromJSON: aDictionary.
 	self updateNodesAndEdges
 ]
