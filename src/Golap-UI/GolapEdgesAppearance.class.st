@@ -270,6 +270,12 @@ GolapEdgesAppearance >> updateEvaluators [
 		updateNodeEvaluators
 ]
 
+{ #category : 'updating' }
+GolapEdgesAppearance >> updateFriend [
+
+	self golapModelDo: [ :golapModel | friendNumberField number: golapModel friend ]
+]
+
 { #category : 'drawing' }
 GolapEdgesAppearance >> updateGlobalImageAfter: aBlock [
 	^ golap ifNotNil: [ golap updateGlobalImageAfter: aBlock ]

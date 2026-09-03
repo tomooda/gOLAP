@@ -352,6 +352,12 @@ GolapModel >> edgesDo: aBlock [
 ]
 
 { #category : 'accessing' }
+GolapModel >> friend [
+
+	^ friend
+]
+
+{ #category : 'accessing' }
 GolapModel >> friend: anIntegerOrNil [
 
 	friend := anIntegerOrNil.

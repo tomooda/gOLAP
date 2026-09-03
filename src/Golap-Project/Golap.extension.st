@@ -6,11 +6,11 @@ Golap >> asJSON [
 	^ self basicAsJSON
 		  at: 'url' put: url asString;
 		  at: 'query' put: query;
-		  at: 'dimensions'
-		  put: (dimensions associations collect: [ :assoc |
+		  at: 'dimensions' put: (dimensions associations collect: [ :assoc |
 						   {
 							   assoc key.
 							   assoc value asJSON } ]);
+		  at: 'model' put: model asJSON;
 		  at: 'merges' put: (merges collect: [ :assoc |
 						   {
 							   assoc key.
@@ -26,15 +26,13 @@ Golap >> asJSON [
 		  at: 'edgeList' put: edgeList asJSON;
 		  at: 'comment' put: commentText text;
 		  at: 'polishOverview' put: polishOverviewPresenter asJSON;
-		  at: 'articulationPointOverview'
-		  put: articulationPointOverviewPresenter asJSON;
+		  at: 'articulationPointOverview' put: articulationPointOverviewPresenter asJSON;
 		  at: 'elaboration' put: elaborationPresenter asJSON;
 		  at: 'heb' put: hebPresenter asJSON;
 		  at: 'dandelion' put: dandelionPresenter asJSON;
 		  at: 'hedge' put: hedgePresenter asJSON;
 		  at: 'heatmap' put: heatmapPresenter asJSON;
-		  at: 'visualizationNotebook-selectedPageIndex'
-		  put: visualizationNotebook selectedPageIndex;
+		  at: 'visualizationNotebook-selectedPageIndex' put: visualizationNotebook selectedPageIndex;
 		  at: 'showsPhotoimages' put: self showsPhotoimages;
 		  yourself
 ]
@@ -46,6 +44,7 @@ Golap >> fromJSON: aDictionary [
 			aDictionary
 				at: 'url' ifPresent: [ :string | url := string asZnUrl ];
 				at: 'query' ifPresent: [ :dict | query := dict ];
+				at: 'model' ifPresent: [ :json | model fromJSON: json ];
 				at: 'dimensions'
 				ifPresent: [ :array | array do: [ :pair | self addDimension: (GolapBaseGraph fromJSON: pair second) named: pair first ] ];
 				at: 'baseList'

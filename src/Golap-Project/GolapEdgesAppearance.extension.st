@@ -11,5 +11,6 @@ GolapEdgesAppearance >> asJSON [
 { #category : '*Golap-Project' }
 GolapEdgesAppearance >> fromJSON: aDictionary [
 
-	
+	self updateEvaluators.
+	self updateFriend
 ]
