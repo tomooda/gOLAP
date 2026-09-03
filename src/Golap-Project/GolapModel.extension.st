@@ -8,10 +8,10 @@ GolapModel >> asJSON [
 	baseGraph toJSON: json.
 	^ json
 		  at: 'nodeEvaluators' put: (nodeEvaluators collect: #asJSON);
-		  at: 'nodeEvaluator' put: nodeEvaluator asJSON;
+		  at: 'nodeEvaluatorIndex' put: (nodeEvaluators indexOf: nodeEvaluator ifAbsent: [ 1 ]);
 		  at: 'nodeAggregators' put: (nodeAggregators collect: #asJSON);
 		  at: 'edgeEvaluators' put: (edgeEvaluators collect: #asJSON);
-		  at: 'edgeEvaluator' put: edgeEvaluator asJSON;
+		  at: 'edgeEvaluatorIndex' put: (edgeEvaluators indexOf: edgeEvaluator ifAbsent: [ 1 ]);
 		  at: 'edgeAggregators' put: (edgeAggregators collect: #asJSON);
 		  at: 'referenceNodes' put: referenceNodes asArray;
 		  at: 'friend' put: friend;
