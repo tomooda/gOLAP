@@ -140,12 +140,12 @@ GolapQueryPresenter >> defaultLayout [
 								     add: granularityNode)
 						    atPoint: 2 @ 1;
 						    add: isolatedNodesCheckBox atPoint: 1 @ 2 span: 2 @ 1;
-						    add: 'タイムアウト' at: 1 @ 3;
-						    add: deadlineTimer at: 2 @ 3;
-						    add: '最大取得件数' at: 1 @ 4;
-						    add: sendMax at: 2 @ 4;
-						    add: 'ソートキー' at: 1 @ 5;
-						    add: sortKey at: 2 @ 5);
+						    add: 'タイムアウト' atPoint: 1 @ 3;
+						    add: deadlineTimer atPoint: 2 @ 3;
+						    add: '最大取得件数' atPoint: 1 @ 4;
+						    add: sendMax atPoint: 2 @ 4;
+						    add: 'ソートキー' atPoint: 1 @ 5;
+						    add: sortKey atPoint: 2 @ 5);
 				   add: (SpPanedLayout newHorizontal
 						    positionOfSlider: 0.5;
 						    add: (SpBoxLayout newVertical
