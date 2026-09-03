@@ -560,26 +560,37 @@ Golap >> defaultLayout [
 { #category : 'accessing' }
 Golap >> edgeEvaluator [
 
-	^ edgesAppearancePresenter edgeEvaluator
+	^ self golapModelDo: #edgeEvaluator
 ]
 
 { #category : 'accessing' }
 Golap >> edgeEvaluator: aGolapEdgeEvaluator [
 
-	edgesAppearancePresenter selectEdgeEvaluator: aGolapEdgeEvaluator
+	aGolapEdgeEvaluator ifNotNil: [
+			self golapModelDo: [ :golapModel |
+					golapModel edgeEvaluator ~= aGolapEdgeEvaluator ifTrue: [
+							golapModel edgeEvaluator: aGolapEdgeEvaluator.
+							self
+								updateQuery;
+								updateModel.
+							edgesAppearancePresenter updateEdgeEvaluators.
+							self updateGlobalImage ] ] ]
 ]
 
 { #category : 'accessing' }
 Golap >> edgeEvaluators [
 
-	^ edgesAppearancePresenter edgeEvaluators
+	^ self golapModelDo: #edgeEvaluators
 ]
 
 { #category : 'accessing' }
 Golap >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 
-	edgesAppearancePresenter edgeEvaluators:
-		aCollectionOfGolapEdgeEvaluator
+	aCollectionOfGolapEdgeEvaluator ifNotNil: [
+			self golapModelDo: [ :golapModel |
+					golapModel edgeEvaluators ~= aCollectionOfGolapEdgeEvaluator ifTrue: [
+							golapModel edgeEvaluators: aCollectionOfGolapEdgeEvaluator.
+							edgesAppearancePresenter updateEdgeEvaluators ] ] ]
 ]
 
 { #category : 'operations-photoimages' }
@@ -700,6 +711,12 @@ Golap >> globalImageMenu: aGolapNode [
 Golap >> golapDirectory [
 
 	^ self class golapDirectory
+]
+
+{ #category : 'accessing' }
+Golap >> golapModelDo: aBlock [
+
+	^ model ifNotNil: aBlock
 ]
 
 { #category : 'accessing-colors' }
@@ -1135,26 +1152,37 @@ Golap >> newRetrieveApiClient [
 { #category : 'accessing' }
 Golap >> nodeEvaluator [
 
-	^ edgesAppearancePresenter nodeEvaluator
+	^ self golapModelDo: #nodeEvaluator
 ]
 
 { #category : 'accessing' }
 Golap >> nodeEvaluator: aGolapNodeEvaluator [
 
-	edgesAppearancePresenter selectNodeEvaluator: aGolapNodeEvaluator
+	aGolapNodeEvaluator ifNotNil: [
+			self golapModelDo: [ :golapModel |
+					golapModel nodeEvaluator ~= aGolapNodeEvaluator ifTrue: [
+							golapModel nodeEvaluator: aGolapNodeEvaluator.
+							self
+								updateQuery;
+								updateModel.
+							edgesAppearancePresenter updateNodeEvaluators.
+							self updateGlobalImage ] ] ]
 ]
 
 { #category : 'accessing' }
 Golap >> nodeEvaluators [
 
-	^ edgesAppearancePresenter nodeEvaluators
+	^ self golapModelDo: #nodeEvaluators
 ]
 
 { #category : 'accessing' }
 Golap >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 
-	edgesAppearancePresenter nodeEvaluators:
-		aCollectionOfGolapNodeEvaluator
+	aCollectionOfGolapNodeEvaluator ifNotNil: [
+			self golapModelDo: [ :golapModel |
+					golapModel nodeEvaluators ~= aCollectionOfGolapNodeEvaluator ifTrue: [
+							golapModel nodeEvaluators: aCollectionOfGolapNodeEvaluator.
+							edgesAppearancePresenter updateNodeEvaluators ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -1336,9 +1364,7 @@ Golap >> readDimensionFrom: aReadStream [
 		line := aReadStream upTo: Character lf.
 		index := line indexOf: $:.
 		index = 0 ifTrue: [ ^ nil ].
-		('status:'
-			 ifEmpty: [ true ]
-			 ifNotEmpty: [ line beginsWith: 'status:' caseSensitive: false ])
+		('status:' ifEmpty: [ true ] ifNotEmpty: [ line beginsWith: 'status:' caseSensitive: false ])
 			ifTrue: [ name := 'no dimensions' ]
 			ifFalse: [
 					name := line.
@@ -1372,22 +1398,16 @@ Golap >> readDimensionFrom: aReadStream [
 			to: numItems + numHiddenItems
 			during: [ :progress |
 					dataframe := DataFrame
-						             readFromCsv: (String lf join:
-								              { ((aReadStream upTo: Character lf)
-								               , ',effective') }
-								              , ((1 to: numItems) collect: [ :i |
-											               progress current: i.
-											               (aReadStream upTo: Character lf) , ',1' ])
-								              , ((1 to: numHiddenItems) collect: [ :i |
-											               progress current: i + numItems.
-											               (aReadStream upTo: Character lf) , ',0' ]))
-						             forceStringColumns:
-						             #( 'node1' 'node2' 'node1n' 'node2n' ) asSet ].
-		dataframe columnNames:
-			(columnNames := dataframe columnNames collect: [ :string |
+						             readFromCsv:
+							             (String lf join: { ((aReadStream upTo: Character lf) , ',effective') } , ((1 to: numItems) collect: [ :i |
+										               progress current: i.
+										               (aReadStream upTo: Character lf) , ',1' ]) , ((1 to: numHiddenItems) collect: [ :i |
+										               progress current: i + numItems.
+										               (aReadStream upTo: Character lf) , ',0' ]))
+						             forceStringColumns: #( 'node1' 'node2' 'node1n' 'node2n' ) asSet ].
+		dataframe columnNames: (columnNames := dataframe columnNames collect: [ :string |
 					                (string includes: $%)
-						                ifTrue: [
-						                string copyFrom: 1 to: (string indexOf: $%) - 1 ]
+						                ifTrue: [ string copyFrom: 1 to: (string indexOf: $%) - 1 ]
 						                ifFalse: [ string ] ]).
 		isolatedNodesHeader := String streamContents: [ :stream |
 				                       stream
@@ -1402,15 +1422,10 @@ Golap >> readDimensionFrom: aReadStream [
 					numNodes := (aReadStream upTo: Character lf) trim asNumber.
 					rows := Array streamContents: [ :stream |
 							        (DataFrame
-								         readFromCsv: (String lf join:
-										          ((0 to: numNodes) collect: [ :i |
-											           aReadStream upTo: Character lf ]))
-								         forceStringColumns: #( 'node' 'noden' ) asSet) do: [
-									        :row |
-									        stream nextPut: ((DataSeries
-											          withKeys: dataframe columnNames
-											          values:
-												          (dataframe columnNames collect: [ :n | 0 ]))
+								         readFromCsv: (String lf join: ((0 to: numNodes) collect: [ :i | aReadStream upTo: Character lf ]))
+								         forceStringColumns: #( 'node' 'noden' ) asSet) do: [ :row |
+									        stream nextPut:
+										        ((DataSeries withKeys: dataframe columnNames values: (dataframe columnNames collect: [ :n | 0 ]))
 											         at: 'node1' put: (row at: 'node');
 											         at: 'node1n' put: (row at: 'noden');
 											         at: 'node2' put: nil;
@@ -1420,9 +1435,7 @@ Golap >> readDimensionFrom: aReadStream [
 													         (row at: 'node').
 													         nil };
 											         yourself) ] ].
-					dataframe := DataFrame
-						             withRows: dataframe asArrayOfRows , rows
-						             columnNames: columnNames ]
+					dataframe := DataFrame withRows: dataframe asArrayOfRows , rows columnNames: columnNames ]
 			ifFalse: [ aReadStream position: position ].
 		{ 'frequency'. 'total' } do: [ :key |
 				| column newColumn |
@@ -1435,7 +1448,6 @@ Golap >> readDimensionFrom: aReadStream [
 				newColumn := column collect: [ :value | value ifNaN: [ 0.0 ] ].
 				dataframe column: key put: newColumn ].
 		dimension := GolapBaseGraph fromServerDataframe: dataframe.
-		edgesAppearancePresenter updateModel: dimension.
 		self silentAddDimension: dimension named: name.
 		[ aReadStream peekFor: Character lf ] whileTrue ]
 		on: Error
@@ -1958,6 +1970,12 @@ Golap >> updateDimensions [
 	frontList
 		items: dimensions keys , self pseudoDimensionNames;
 		selectIndex: 1
+]
+
+{ #category : 'updating' }
+Golap >> updateEvaluators [
+
+	edgesAppearancePresenter updateEvaluators
 ]
 
 { #category : 'drawing' }

@@ -313,20 +313,30 @@ GolapModel >> edgeBetween: aString and: anotherString ifPresent: aBlock ifAbsent
 { #category : 'accessing' }
 GolapModel >> edgeEvaluator [
 
-	^ edgeEvaluator graph: self
+	^ edgeEvaluator
 ]
 
 { #category : 'accessing' }
 GolapModel >> edgeEvaluator: aGolapEdgeEvaluator [
 
-	edgeEvaluator := aGolapEdgeEvaluator
+	(edgeEvaluators detect: [ :e | e = aGolapEdgeEvaluator ] ifNone: [ nil ]) ifNotNil: [ :evaluator |
+			edgeEvaluator ~= evaluator ifTrue: [
+					edgeEvaluator := evaluator.
+					self updateNodesAndEdges ] ]
+]
+
+{ #category : 'accessing' }
+GolapModel >> edgeEvaluators [
+
+	^ edgeEvaluators
 ]
 
 { #category : 'accessing' }
 GolapModel >> edgeEvaluators: aCollectionOfGolapEdgeEvaluator [
 
-	edgeEvaluators := aCollectionOfGolapEdgeEvaluator.
-	self updateNodesAndEdges
+	aCollectionOfGolapEdgeEvaluator ~= edgeEvaluators ifTrue: [
+			edgeEvaluators := aCollectionOfGolapEdgeEvaluator.
+			self updateNodesAndEdges ]
 ]
 
 { #category : 'enumerating' }
@@ -427,24 +437,16 @@ GolapModel >> indexAtReferenceNode: aGolapNode [
 GolapModel >> initialize [
 
 	super initialize.
-	nodeEvaluator := GolapNodeColumnEvaluator column: 'frequency'.
-	edgeEvaluator := GolapEdgeColumnEvaluator column: 'jaccard'.
+	nodeEvaluator := nil.
+	edgeEvaluator := nil.
 	nodeAggregators := { (GolapSumDataAggregator column: 'frequency') }.
 	edgeAggregators := {
 		                   (GolapSumDataAggregator column: 'frequency').
 		                   (GolapSumDataAggregator column: 'total').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'supoort'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'jaccard'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'lift'
-			                    weightColumn: 'frequency').
-		                   (GolapWeightedAverageDataAggregator
-			                    column: 'PMI'
-			                    weightColumn: 'frequency') }.
+		                   (GolapWeightedAverageDataAggregator column: 'supoort' weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator column: 'jaccard' weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator column: 'lift' weightColumn: 'frequency').
+		                   (GolapWeightedAverageDataAggregator column: 'PMI' weightColumn: 'frequency') }.
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
 	referenceNodes := OrderedCollection new.
@@ -516,20 +518,30 @@ GolapModel >> nodeAt: aString ifPresent: aBlock ifAbsent: errorBlock [
 { #category : 'accessing' }
 GolapModel >> nodeEvaluator [
 
-	^ nodeEvaluator graph: self
+	^ nodeEvaluator
 ]
 
 { #category : 'accessing' }
 GolapModel >> nodeEvaluator: aGolapNodeEvaluator [
 
-	nodeEvaluator := aGolapNodeEvaluator
+	(nodeEvaluators detect: [ :e | e = aGolapNodeEvaluator ] ifNone: [ nil ]) ifNotNil: [ :evaluator |
+			nodeEvaluator ~= evaluator ifTrue: [
+					nodeEvaluator := evaluator.
+					self updateNodesAndEdges ] ]
+]
+
+{ #category : 'accessing' }
+GolapModel >> nodeEvaluators [
+
+	^ nodeEvaluators
 ]
 
 { #category : 'accessing' }
 GolapModel >> nodeEvaluators: aCollectionOfGolapNodeEvaluator [
 
-	nodeEvaluators := aCollectionOfGolapNodeEvaluator.
-	self updateNodesAndEdges
+	nodeEvaluators ~= aCollectionOfGolapNodeEvaluator ifTrue: [
+			nodeEvaluators := aCollectionOfGolapNodeEvaluator.
+			self updateNodesAndEdges ]
 ]
 
 { #category : 'accessing-node' }

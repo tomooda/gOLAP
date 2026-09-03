@@ -198,6 +198,12 @@ GolapNetworkClientPresenter >> dumpToFile [
 ]
 
 { #category : 'accessing' }
+GolapNetworkClientPresenter >> edgeEvaluators [
+
+	^ #( 'frequency' 'jaccard' 'lift' 'PMI' ) collect: [ :column | GolapEdgeColumnEvaluator column: column ]
+]
+
+{ #category : 'accessing' }
 GolapNetworkClientPresenter >> flushAuth [
 	username := nil.
 	password := nil
@@ -389,6 +395,17 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 		resetTransactionFilterSpec
 ]
 
+{ #category : 'accessing' }
+GolapNetworkClientPresenter >> nodeEvaluators [
+
+	^ {
+		  (GolapNodeColumnEvaluator column: 'frequency').
+		  GolapNodeMaxEvaluator new.
+		  GolapNodeSumEvaluator new.
+		  GolapNodeAverageEvaluator new.
+		  GolapNodeNumEdgesEvaluator new }
+]
+
 { #category : 'operations' }
 GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
 
@@ -441,6 +458,11 @@ GolapNetworkClientPresenter >> openGolap [
 							       itemFieldQuerySpec: self itemFieldQuerySpec
 							       authenticateBlock: self authenticateBlock.
 						golap := Golap new.
+						golap
+							nodeEvaluators: self nodeEvaluators;
+							edgeEvaluators: self edgeEvaluators;
+							nodeEvaluator: golap nodeEvaluators first;
+							edgeEvaluator: golap edgeEvaluators first.
 						[
 							golap
 								queryRecord: queryRecord;
@@ -474,10 +496,7 @@ GolapNetworkClientPresenter >> openGolap [
 
 																					golap readDimensionFrom: readStream ].
 																			bar label: 'グラフ更新中'.
-																			golap updateDimensions.
-																			golap
-																				nodeEvaluators: golap nodeEvaluators;
-																				edgeEvaluators: golap edgeEvaluators ].
+																			golap updateDimensions ].
 																	golap confirmOpen.
 																	golap open maximize.
 																	golap
