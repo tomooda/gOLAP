@@ -300,7 +300,7 @@ GolapHEBChartPresenter >> renderEdgesIn: aCanvas [
 							(self newShapeForEdge: edge key) ifNotNil: [ :shape |
 									shape
 										color: (color alpha: 0.5);
-										width: (golapModel normalizedValueAtEdge: edge) * 10.
+										width: (golapModel normalizedValueAtEdge: edge) * 10 + 1.
 									aCanvas add: shape.
 									((golap includesSelection: edge node1) or: [ golap includesSelection: edge node2 ]) ifTrue: [ pulls add: shape ] ] ] ].
 			pulls do: [ :shape | shape pushFront ] ]
