@@ -34,6 +34,55 @@ GolapQueryPresenter class >> on: aGolapNetworkClientPresenter [
 		yourself
 ]
 
+{ #category : 'layout' }
+GolapQueryPresenter >> _defaultLayout [
+
+	<script: 'GolapQueryPresenter new open'>
+	<spec>
+	^ SpBoxLayout newVertical
+		  add: (SpPanedLayout newHorizontal
+				   add: (SpBoxLayout newVertical
+						    add: 'トランザクション' height: self labelHeight;
+						    add: transactionFilterPresenter);
+				   add: (SpBoxLayout newVertical
+						    add: 'アイテム' height: self labelHeight;
+						    add: itemFilterPresenter);
+				   positionOfSlider: 0.5)
+		  expand: true;
+		  add: lowerBoundsDialogButton height: self buttonHeight;
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.4;
+				   add: (SpBoxLayout newVertical
+						    add: (SpBoxLayout newHorizontal
+								     add: '集計' expand: false;
+								     add: granularityTransaction;
+								     add: granularityNode)
+						    expand: false;
+						    add: isolatedNodesCheckBox expand: false;
+						    add: (SpBoxLayout newHorizontal
+								     add: 'タイムアウト' expand: false;
+								     add: deadlineTimer expand: true)
+						    expand: false;
+						    add: (SpBoxLayout newHorizontal
+								     add: '最大取得件数' expand: false;
+								     add: sendMax expand: true)
+						    expand: false;
+						    add: (SpBoxLayout newHorizontal
+								     add: 'ソートキー' expand: false;
+								     add: sortKey expand: true)
+						    expand: false);
+				   add: (SpPanedLayout newHorizontal
+						    positionOfSlider: 0.5;
+						    add: (SpBoxLayout newVertical
+								     add: (SpBoxLayout newHorizontal
+										      add: '比較集計' expand: false;
+										      add: dimensionsKey expand: true)
+								     height: self inputTextHeight;
+								     add: dimensionsValues height: self inputTextHeight);
+						    add: dimensionsPreview))
+		  height: 180
+]
+
 { #category : 'accessing' }
 GolapQueryPresenter >> authenticateBlock [
 	^ networkClient ifNotNil: #authenticateBlock
@@ -65,45 +114,48 @@ GolapQueryPresenter >> defaultLayout [
 	^ SpBoxLayout newVertical
 		  add: (SpPanedLayout newHorizontal
 				   add: (SpBoxLayout newVertical
-						    add: 'トランザクション' height: self labelHeight;
+						    add: 'トランザクション' expand: false;
 						    add: transactionFilterPresenter);
 				   add: (SpBoxLayout newVertical
-						    add: 'アイテム' height: self labelHeight;
+						    add: 'アイテム' expand: false;
 						    add: itemFilterPresenter);
 				   positionOfSlider: 0.5)
 		  expand: true;
-		  add: lowerBoundsDialogButton height: self buttonHeight;
+		  add: lowerBoundsDialogButton expand: false;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.4;
-				   add: (SpBoxLayout newVertical
+				   add: (SpGridLayout new
+						    beColumnNotHomogeneous;
+						    borderWidth: 0;
+						    column: 1 expand: false;
+						    column: 2 expand: true;
+						    row: 1 expand: false;
+						    row: 2 expand: false;
+						    row: 3 expand: false;
+						    row: 4 expand: false;
+						    row: 5 expand: false;
+						    add: '集計' atPoint: 1 @ 1;
 						    add: (SpBoxLayout newHorizontal
-								     add: '集計' width: 30;
 								     add: granularityTransaction;
 								     add: granularityNode)
-						    height: self inputTextHeight;
-						    add: isolatedNodesCheckBox;
-						    add: (SpBoxLayout newHorizontal
-								     add: 'タイムアウト' width: 100;
-								     add: deadlineTimer width: 100)
-						    height: self inputTextHeight;
-						    add: (SpBoxLayout newHorizontal
-								     add: '最大取得件数' width: 100;
-								     add: sendMax width: 100)
-						    height: self inputTextHeight;
-						    add: (SpBoxLayout newHorizontal
-								     add: 'ソートキー' width: 100;
-								     add: sortKey width: 100)
-						    height: self inputTextHeight);
+						    atPoint: 2 @ 1;
+						    add: isolatedNodesCheckBox atPoint: 1 @ 2 span: 2 @ 1;
+						    add: 'タイムアウト' at: 1 @ 3;
+						    add: deadlineTimer at: 2 @ 3;
+						    add: '最大取得件数' at: 1 @ 4;
+						    add: sendMax at: 2 @ 4;
+						    add: 'ソートキー' at: 1 @ 5;
+						    add: sortKey at: 2 @ 5);
 				   add: (SpPanedLayout newHorizontal
 						    positionOfSlider: 0.5;
 						    add: (SpBoxLayout newVertical
 								     add: (SpBoxLayout newHorizontal
-										      add: '比較集計' width: 70;
-										      add: dimensionsKey)
-								     height: self inputTextHeight;
-								     add: dimensionsValues height: self inputTextHeight);
+										      add: '比較集計' expand: false;
+										      add: dimensionsKey expand: false)
+								     expand: false;
+								     add: dimensionsValues expand: false);
 						    add: dimensionsPreview))
-		  height: 180
+		  expand: true
 ]
 
 { #category : 'private' }

@@ -13,10 +13,17 @@ Class {
 	#tag : 'Query'
 }
 
-{ #category : 'layout' }
-GolapQueryLowerBoundsPresenter class >> defaultLayout [
+{ #category : 'instance creation' }
+GolapQueryLowerBoundsPresenter class >> for: aGolapQueryPresenter [
+	^ self new
+		query: aGolapQueryPresenter;
+		yourself
+]
 
-	<script: 'GolapQueryLowerBoundsPresenter new openWithSpec'>
+{ #category : 'layout' }
+GolapQueryLowerBoundsPresenter >> defaultLayout [
+
+	<script: 'GolapQueryLowerBoundsPresenter new open'>
 	<spec>
 	^ SpGridLayout new
 		  beColumnHomogeneous;
@@ -29,23 +36,16 @@ GolapQueryLowerBoundsPresenter class >> defaultLayout [
 		  row: 4 withConstraints: [ :c | c beNotExpand ];
 		  row: 5 withConstraints: [ :c | c beNotExpand ];
 		  add: '最小Support' atPoint: 1 @ 1;
-		  add: #minSupport atPoint: 2 @ 1;
+		  add: minSupport atPoint: 2 @ 1;
 		  add: '最小Confidence' atPoint: 1 @ 2;
-		  add: #minConfidence atPoint: 2 @ 2;
+		  add: minConfidence atPoint: 2 @ 2;
 		  add: '最小Lift' atPoint: 1 @ 3;
-		  add: #minLift atPoint: 2 @ 3;
+		  add: minLift atPoint: 2 @ 3;
 		  add: '最小Jaccard' atPoint: 1 @ 4;
-		  add: #minJaccard atPoint: 2 @ 4;
+		  add: minJaccard atPoint: 2 @ 4;
 		  add: '最小PMI' atPoint: 1 @ 5;
-		  add: #minPMI atPoint: 2 @ 5;
+		  add: minPMI atPoint: 2 @ 5;
 		  yourself
-]
-
-{ #category : 'instance creation' }
-GolapQueryLowerBoundsPresenter class >> for: aGolapQueryPresenter [
-	^ self new
-		query: aGolapQueryPresenter;
-		yourself
 ]
 
 { #category : 'initialization' }
