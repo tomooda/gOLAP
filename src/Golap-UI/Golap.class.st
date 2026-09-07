@@ -1747,6 +1747,12 @@ Golap >> selectionColor [
 ]
 
 { #category : 'accessing-selection' }
+Golap >> selectionIds [
+
+	^ selections asArray
+]
+
+{ #category : 'accessing-selection' }
 Golap >> selections [
 	^ Array
 		streamContents: [ :stream | 

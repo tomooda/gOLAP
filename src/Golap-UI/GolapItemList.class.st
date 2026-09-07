@@ -540,6 +540,6 @@ GolapItemList >> updateGlobalImageAfter: aBlock layout: aBoolean [
 GolapItemList >> updateItemsList [
 
 	markerDropList items do: [ :marker | marker updateIn: self ].
-	markerDropList selectedItem ifNotNil: [ :marker |
-		marker activatedIn: self ]
+	markerDropList selectedItem ifNotNil: [ :marker | marker activatedIn: self ].
+	golap ifNotNil: [ nodeList selectItems: (nodeList items intersection: golap selectionIds) ]
 ]
