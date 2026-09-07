@@ -481,27 +481,26 @@ GolapNetworkClientPresenter >> openGolap [
 										readStream isString
 											ifTrue: [ UIManager default alert: readStream ]
 											ifFalse: [
-													Cursor wait showWhile: [
-															UIManager default informUserDuring: [ :bar |
-																	bar
-																		min: 0;
-																		max: readStream size.
-																	golap blockUpdateModelWhile: [
-																			| d |
-																			d := 0.
-																			[
-																				bar value: readStream position.
-																				readStream atEnd ] whileFalse: [
-																					bar label: 'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
+													UIManager default informUserDuring: [ :bar |
+															bar
+																min: 0;
+																max: readStream size.
+															golap blockUpdateModelWhile: [
+																	| d |
+																	d := 0.
+																	[
+																		bar value: readStream position.
+																		readStream atEnd ] whileFalse: [
+																			bar label: 'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
 
-																					golap readDimensionFrom: readStream ].
-																			bar label: 'グラフ更新中'.
-																			golap updateDimensions ].
-																	golap confirmOpen.
-																	golap open maximize.
-																	golap
-																		updateModel;
-																		updateNodePositions ] ] ] ] ] ] ]
+																			golap readDimensionFrom: readStream ].
+																	bar label: 'グラフ更新中'.
+																	golap updateDimensions ].
+															golap confirmOpen.
+															golap open maximize.
+															golap
+																updateModel;
+																updateNodePositions ] ] ] ] ] ]
 			on: GolapAborted
 			do: [ :ex |  ].
 		closeCheckBox state = true ifTrue: [ self close ] ] forkAt: Processor userBackgroundPriority

@@ -332,12 +332,13 @@ GolapGraphOverviewPresenter >> newShapeForEdge: aGolapEdge [
 { #category : 'instance creation' }
 GolapGraphOverviewPresenter >> newShapeForNode: aGolapNode [
 
+	| shapes photoimage |
+	shapes := RSGroup new.
+	photoimage := self showsPhotoimages
+		              ifTrue: [ aGolapNode photoimage ]
+		              ifFalse: [ nil ].
 	self golapModelDo: [ :golapModel |
-			| photoimage shapes color |
-			shapes := RSGroup new.
-			photoimage := self showsPhotoimages
-				              ifTrue: [ aGolapNode photoimage ]
-				              ifFalse: [ nil ].
+			| color |
 			(self colorForNode: aGolapNode) ifNotNil: [ :c |
 					| v r shape |
 					color := c.
@@ -358,8 +359,7 @@ GolapGraphOverviewPresenter >> newShapeForNode: aGolapNode [
 					shapes add: shape.
 					golap markersAtNode: aGolapNode do: [ :marker |
 							shape := RSEllipse new
-								         extent:
-									         (shape extent x max: shape extent y) + 4 asPoint;
+								         extent: (shape extent x max: shape extent y) + 4 asPoint;
 								         borderWidth: 4;
 								         borderColor: marker color;
 								         color: Color transparent;
@@ -374,25 +374,17 @@ GolapGraphOverviewPresenter >> newShapeForNode: aGolapNode [
 									 color: color;
 									 width: 2;
 									 yourself) ].
-					(golap includesPin: aGolapNode) ifTrue: [
-						shapes add: self newPinShape ] ].
-			shapes ifEmpty: [ ^ nil ].
-			shapes := shapes asShapeFor: aGolapNode.
-			(photoimage isNil or: [ golap includesSelection: aGolapNode ])
-				ifTrue: [
-						(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
-								| labelOffset |
-								labelOffset := (self fourDirectionFrom:
-									                (self edgeVectorOf: aGolapNode)) negated
-								               * (shapes extent + label extent * 0.5 + 4).
-								shapes
-									when: RSPositionChangedEvent
-									do: [ label position: shapes position + labelOffset ]
-									for: label.
-								label position: shapes position + labelOffset.
-								self canvas add: label ] ].
-			^ shapes ].
-	^ nil
+					(golap includesPin: aGolapNode) ifTrue: [ shapes add: self newPinShape ] ] ].
+	shapes ifEmpty: [ ^ nil ].
+	shapes := shapes asShapeFor: aGolapNode.
+	(photoimage isNil or: [ golap includesSelection: aGolapNode ]) ifTrue: [
+			(self newLabelForNode: aGolapNode) ifNotNil: [ :label |
+					| labelOffset |
+					labelOffset := (self fourDirectionFrom: (self edgeVectorOf: aGolapNode)) negated * (shapes extent + label extent * 0.5 + 4).
+					shapes when: RSPositionChangedEvent do: [ label position: shapes position + labelOffset ] for: label.
+					label position: shapes position + labelOffset.
+					self canvas add: label ] ].
+	^ shapes
 ]
 
 { #category : 'rendering' }
