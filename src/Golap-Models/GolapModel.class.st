@@ -479,9 +479,9 @@ GolapModel >> merge [
 ]
 
 { #category : 'merging' }
-GolapModel >> mergeNodes: aCollectionOfGolapNode named: aString [
+GolapModel >> mergeNodes: aCollectionOfString named: aString [
 
-	merge merge: (aCollectionOfGolapNode collect: #id) into: aString.
+	merge merge: aCollectionOfString into: aString.
 	self updateNodesAndEdges.
 	^ nodes at: aString ifAbsent: [ nil ]
 ]
@@ -631,11 +631,11 @@ GolapModel >> setMerges: anOrderedCollectionOfAssociations [
 ]
 
 { #category : 'merging' }
-GolapModel >> unmergeNode: aGolapNode [
+GolapModel >> unmergeNode: aString [
 
-	merge unmerge: aGolapNode id.
+	merge unmerge: aString.
 	self updateNodesAndEdges.
-	^ aGolapNode
+	^ aString
 ]
 
 { #category : 'updating' }

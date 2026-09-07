@@ -78,7 +78,7 @@ GolapNodeProductInfoRetriever >> productDataAt: aString forAll: aCollectionOfGol
 
 	| values |
 	values := Dictionary new: aCollectionOfGolapNode size.
-	aCollectionOfGolapNode do: [ :node | values at: node id put: (node at: aString ifAbsent: [ nil ]) ].
+	aCollectionOfGolapNode do: [ :node | values at: node id put: (node at: aString ifAbsent: [ '' ]) ].
 	^ values
 ]
 

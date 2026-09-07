@@ -142,9 +142,10 @@ GolapServerProductInfoRetriever >> newRetrieveApiClient [
 { #category : 'operations' }
 GolapServerProductInfoRetriever >> productDataAt: aString forAll: aCollectionOfGolapNode interim: aBlock [
 
-	| idField ids values due sofar |
+	| idField ids values due sofar remainings |
 	idField := self retrieveApiClient idField.
 	ids := aCollectionOfGolapNode collect: [ :node | node id asString ].
+	remainings := Set withAll: ids.
 	values := Dictionary new: aCollectionOfGolapNode size.
 	due := 0.
 	sofar := 0.
@@ -158,9 +159,12 @@ GolapServerProductInfoRetriever >> productDataAt: aString forAll: aCollectionOfG
 				filters: {
 						(idField -> ids).
 						(aString -> { value }) }
-				do: [ :id | values at: id put: value ].
+				do: [ :id |
+						values at: id put: value.
+						remainings remove: id ifAbsent: [ nil ] ].
 			sofar := sofar + 1.
 			aBlock ifNotNil: [ aBlock cull: sofar asFloat / due ] ].
+	remainings do: [ :id | values at: id put: '' ].
 	^ values
 ]
 

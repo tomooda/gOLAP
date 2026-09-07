@@ -11,10 +11,6 @@ Golap >> asJSON [
 							   assoc key.
 							   assoc value asJSON } ]);
 		  at: 'model' put: model asJSON;
-		  at: 'merges' put: (merges collect: [ :assoc |
-						   {
-							   assoc key.
-							   assoc value } ]);
 		  at: 'pins' put: pins asArray;
 		  at: 'selections' put: selections asArray;
 		  at: 'baseList' put: baseList selectedItem;
@@ -51,10 +47,6 @@ Golap >> fromJSON: aDictionary [
 				ifPresent: [ :string | string ifNotNil: [ (baseList items includes: string) ifTrue: [ baseList selectItem: string ] ] ];
 				at: 'frontList'
 				ifPresent: [ :string | string ifNotNil: [ (frontList items includes: string) ifTrue: [ frontList selectItem: string ] ] ];
-				at: 'merges' ifPresent: [ :array |
-						model ifNotNil: [
-									merges := (array collect: [ :pair | pair first -> pair second ]) asOrderedCollection.
-									model setMerges: merges ] ];
 				at: 'pins' ifPresent: [ :array | pins := array asOrderedCollection ];
 				at: 'selections' ifPresent: [ :array | selections := array asSet ];
 				at: 'edgesAppearance' ifPresent: [ :json | edgesAppearancePresenter fromJSON: json ];

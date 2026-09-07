@@ -51,6 +51,12 @@ GolapNodeMerge >> merge: aCollectionOfString into: aString [
 	^ aString
 ]
 
+{ #category : 'enumerating' }
+GolapNodeMerge >> mergesDo: aBlock [
+
+	merges keysAndValuesDo: [ :compound :components | aBlock cull: compound cull: components sorted ]
+]
+
 { #category : 'accessing' }
 GolapNodeMerge >> rootsAt: aString [
 

@@ -10,12 +10,13 @@ Class {
 GolapJSONTest >> testFromString [
 
 	| array |
-	array := GolapJSON fromString: '[-1,null,NaN,-Infinity,-3.14]'.
+	array := GolapJSON fromString: '[-1,null,NaN,-Infinity,-3.14,"\""]'.
 	self assert: array first equals: -1.
 	self assert: array second isNil.
 	self assert: array third isNaN.
 	self assert: array fourth equals: Float infinity negated.
-	self assert: array fifth equals: -3.14
+	self assert: array fifth equals: -3.14.
+	self assert: array sixth equals: '"'
 ]
 
 { #category : 'tests' }
@@ -27,12 +28,14 @@ GolapJSONTest >> testToString [
 				          nil.
 				          Float nan.
 				          Float infinity negated.
-				          -3.14 }).
+				          -3.14.
+				          '"' }).
 	self assert: array first equals: -1.
 	self assert: array second isNil.
 	self assert: array third isNaN.
 	self assert: array fourth equals: Float infinity negated.
-	self assert: array fifth equals: -3.14
+	self assert: array fifth equals: -3.14.
+	self assert: array sixth equals: '"'
 ]
 
 { #category : 'tests' }
@@ -44,10 +47,12 @@ GolapJSONTest >> testToStringPretty [
 				          nil.
 				          Float nan.
 				          Float infinity negated.
-				          -3.14 }).
+				          -3.14.
+				          '"' }).
 	self assert: array first equals: -1.
 	self assert: array second isNil.
 	self assert: array third isNaN.
 	self assert: array fourth equals: Float infinity negated.
-	self assert: array fifth equals: -3.14
+	self assert: array fifth equals: -3.14.
+	self assert: array sixth equals: '"'
 ]

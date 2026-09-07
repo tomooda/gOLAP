@@ -13,7 +13,6 @@ Class {
 		'itemView',
 		'baseList',
 		'dimensions',
-		'merges',
 		'frontList',
 		'queryViewTree',
 		'itemsAppearancePresenter',
@@ -362,19 +361,6 @@ Golap >> announceGolapViewUpdated [
 	self announcer announce: GolapViewUpdated new
 ]
 
-{ #category : 'merging' }
-Golap >> applyMergesToModel: aGolapModel [
-
-	aGolapModel resetMerges.
-	merges do: [ :assoc |
-			aGolapModel
-				mergeNodes: (assoc value
-						 collect: [ :id | aGolapModel nodes at: id ifAbsent: [ nil ] ]
-						 thenSelect: #notNil)
-				named: assoc key ].
-	^ aGolapModel
-]
-
 { #category : 'accessing' }
 Golap >> authenticateBlock [
 
@@ -690,15 +676,19 @@ Golap >> globalImageMenu: aGolapNode [
 									name: 'Show info';
 									action: [ itemView node: aGolapNode ] ] ] ].
 	menu addGroup: [ :group |
-			group addItem: [ :item |
-					item
-						name: 'merge';
-						subMenu: self mergeMenu ].
-			merges ifNotEmpty: [
+			| mergeMenu unmergeMenu |
+			mergeMenu := self mergeMenu.
+			(mergeMenu menuGroups allSatisfy: #isEmpty) ifFalse: [
+					group addItem: [ :item |
+							item
+								name: 'merge';
+								subMenu: mergeMenu ] ].
+			unmergeMenu := self unmergeMenu.
+			(unmergeMenu menuGroups allSatisfy: #isEmpty) ifFalse: [
 					group addItem: [ :item |
 							item
 								name: 'unmerge';
-								subMenu: self unmergeMenu ] ] ].
+								subMenu: unmergeMenu ] ] ].
 	menu addGroup: [ :group |
 			group addItem: [ :item |
 					item
@@ -795,7 +785,6 @@ Golap >> initialize [
 	pins := Set new.
 	selections := Set new.
 	dimensions := OrderedDictionary new.
-	merges := OrderedCollection new.
 	imageCache := Dictionary new: 1024
 ]
 
@@ -1077,16 +1066,13 @@ Golap >> mergeNodes: aCollectionOfIds [
 
 	aCollectionOfIds size < 2 ifTrue: [ ^ nil ].
 	^ model ifNotNil: [
-			  (UIManager default
-				   request: '統合したノード名'
-				   initialAnswer: ''
-				   title: 'ノードの統合') ifNotNil: [ :nodeName |
+			  (UIManager default request: '統合したノード名' initialAnswer: '' title: 'ノードの統合') ifNotNil: [ :nodeName |
 					  (model nodes includesKey: nodeName)
 						  ifTrue: [
 								  UIManager default alert: '名前が重複しています'.
 								  nil ]
 						  ifFalse: [
-								  merges add: nodeName -> aCollectionOfIds copy.
+								  model mergeNodes: aCollectionOfIds named: nodeName.
 								  self updateModel.
 								  itemList updateItemsList.
 								  nodeName ] ] ]
@@ -1920,26 +1906,26 @@ Golap >> toggleSelection: aGolapNode [
 
 { #category : 'menu' }
 Golap >> unmergeMenu [
+
 	| menu |
 	menu := self newMenu.
-	menu
-		addGroup: [ :group | 
-			merges
-				do: [ :assoc | 
-					group
-						addItem: [ :item | 
-							item
-								name: assoc key;
-								action: [ self unmergeNode: assoc key ] ] ] ].
+	menu addGroup: [ :group |
+			model ifNotNil: [
+					model merge mergesDo: [ :id |
+							group addItem: [ :item |
+									item
+										name: id;
+										action: [ self unmergeNode: id ] ] ] ] ].
 	^ menu
 ]
 
 { #category : 'merging' }
 Golap >> unmergeNode: aString [
 
-	merges removeAllSuchThat: [ :assoc | assoc key = aString ].
-	self updateModel.
-	itemList updateItemsList
+	model ifNotNil: [
+			model unmergeNode: aString.
+			self updateModel.
+			itemList updateItemsList ]
 ]
 
 { #category : 'accessing-selection' }
