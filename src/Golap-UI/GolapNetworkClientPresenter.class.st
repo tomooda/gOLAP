@@ -51,7 +51,11 @@ GolapNetworkClientPresenter class >> flushCurrent [
 { #category : 'instance creation' }
 GolapNetworkClientPresenter class >> fromJSON: aDictionary [
 
-	^ self current fromJSON: aDictionary
+	^ [ current := self new fromJSON: aDictionary ]
+		  on: Exception
+		  do: [ :ex |
+				  current := nil.
+				  ex return: nil ]
 ]
 
 { #category : 'menus' }
