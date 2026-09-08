@@ -1,9 +1,38 @@
 Class {
 	#name : 'GolapApplication',
 	#superclass : 'ClapApplication',
+	#classInstVars : [
+		'sessionState'
+	],
 	#category : 'Golap-Application',
 	#package : 'Golap-Application'
 }
+
+{ #category : 'deployment' }
+GolapApplication class >> deploy [
+
+	<script>
+	GolapMenubar reset.
+	GolapNamedProject flushCurrent.
+	GolapNetworkClientPresenter flushCurrent.
+	MCRepositoryGroup allSubInstancesDo: [ :group | group repositories do: [ :repo | group removeRepository: repo ] ].
+	IceRepository registry removeAll.
+	IceCredentialStore current in: [ :store | store allCredentials do: [ :each | each removeFrom: store ] ].
+	self currentWorld closeAllWindowsDiscardingChanges.
+	Deprecation
+		raiseWarning: false;
+		showWarning: false.
+	NoSourcesManager beCurrent.
+	"NoPharoFilesOpener install."
+	"FFICompilerPlugin install."
+	Stdio useNullStreams.
+	MCCacheRepository uniqueInstance disable.
+	EpMonitor reset.
+	SessionManager default registerSystemClassNamed: #FreeTypeFileInfo.
+	Golap allInstancesDo: [ :g | g becomeForward: Object new ].
+	PasteUpMorph shouldShowWorldMenu: false.
+	5 timesRepeat: [ Smalltalk garbageCollect ]
+]
 
 { #category : 'commandline' }
 GolapApplication class >> gOLAP [
@@ -14,6 +43,121 @@ GolapApplication class >> gOLAP [
 		  commandClass: self;
 		  addHelp;
 		  yourself
+]
+
+{ #category : 'class initialization' }
+GolapApplication class >> initialize [
+
+	SessionManager default registerUserClassNamed: self name
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> resume [
+
+	self sessionState: #resuming do: [
+			[
+				self sessionFile readStreamDo: [ :stream |
+						(GolapJSON fromStream: stream) ifNotNil: [ :json |
+								json
+									at: 'session' ifPresent: [ :session | GolapPhantasmicProject fromJSON: session ];
+									at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
+									at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
+									at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
+				on: Exception
+				do: [ :ex |  ] ]
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> sessionFile [
+
+	^ Golap golapDirectory / '.golap'
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> sessionState: aSymbol do: aBlock [
+
+	sessionState ifNil: [
+			sessionState := aSymbol.
+			aBlock ensure: [ sessionState := nil ] ]
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> sessionTemporaryFile [
+
+	^ Golap golapDirectory / (String streamContents: [ :stream |
+			   | now |
+			   stream nextPutAll: '.golap-'.
+			   now := DateAndTime now.
+			   now year
+				   printOn: stream
+				   base: 10
+				   length: 4
+				   padded: true.
+			   now month
+				   printOn: stream
+				   base: 10
+				   length: 2
+				   padded: true.
+			   now day
+				   printOn: stream
+				   base: 10
+				   length: 2
+				   padded: true.
+			   stream nextPut: $-.
+			   now hour
+				   printOn: stream
+				   base: 10
+				   length: 2
+				   padded: true.
+			   now minute
+				   printOn: stream
+				   base: 10
+				   length: 2
+				   padded: true.
+			   now second
+				   printOn: stream
+				   base: 10
+				   length: 2
+				   padded: true.
+			   stream nextPut: $-.
+			   now nanoSecond
+				   printOn: stream
+				   base: 10
+				   length: 9
+				   padded: true ])
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> shutDown: aBoolean [
+
+	aBoolean ifTrue: [ self suspend ]
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> startUp: aBoolean [
+
+	aBoolean ifTrue: [
+		Smalltalk session addDeferredStartupAction: [ self resume ] ]
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> suspend [
+
+	self sessionState: #suspending do: [
+			[
+				| json |
+				json := Dictionary new.
+				GolapPhantasmicProject asJSON ifNotNil: [ :project | json at: 'session' put: project ].
+				GolapColorPreferences asJSON ifNotNil: [ :colors | json at: 'colors' put: colors ].
+				Golap defaultFontAsJSON ifNotNil: [ :font | json at: 'default-font' put: font ].
+				self sessionTemporaryFile
+					ensureDelete;
+					writeStreamDo: [ :stream | (NeoJSONWriter on: stream) nextPut: json ];
+					renameTo: (self sessionFile
+							 ensureDelete;
+							 basename) ]
+				on: Exception
+				do: [ :ex |  ] ]
 ]
 
 { #category : 'execution' }

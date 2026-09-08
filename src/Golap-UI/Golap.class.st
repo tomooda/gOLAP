@@ -81,32 +81,6 @@ Golap class >> defaultFontFromJSON: aDictionary [
 			 slantValue: (aDictionary at: 'slant' ifAbsent: [ ^ self ]))
 ]
 
-{ #category : 'utilities' }
-Golap class >> deploy [
-
-	<script>
-	GolapMenubar reset.
-	GolapNamedProject flushCurrent.
-	GolapNetworkClientPresenter flushCurrent.
-	MCRepositoryGroup allSubInstancesDo: [ :group | group repositories do: [ :repo | group removeRepository: repo ] ].
-	IceRepository registry removeAll.
-	IceCredentialStore current in: [ :store | store allCredentials do: [ :each | each removeFrom: store ] ].
-	self currentWorld closeAllWindowsDiscardingChanges.
-	Deprecation
-		raiseWarning: false;
-		showWarning: false.
-	NoSourcesManager beCurrent.
-	"NoPharoFilesOpener install."
-	"FFICompilerPlugin install."
-	Stdio useNullStreams.
-	MCCacheRepository uniqueInstance disable.
-	EpMonitor reset.
-	SessionManager default registerSystemClassNamed: #FreeTypeFileInfo.
-	Golap allInstancesDo: [ :g | g becomeForward: Object new ].
-	PasteUpMorph shouldShowWorldMenu: false.
-	5 timesRepeat: [ Smalltalk garbageCollect ]
-]
-
 { #category : 'accessing' }
 Golap class >> golapDirectory [
 
@@ -162,12 +136,6 @@ Golap class >> golapSettingsOn: aBuilder [
 				order: 2;
 				description: 'この記号までを商品名として読み込みます';
 				label: '商品名の終端記号' ]
-]
-
-{ #category : 'class initialization' }
-Golap class >> initialize [
-
-	SessionManager default registerUserClassNamed: self name
 ]
 
 { #category : 'settings' }
@@ -229,32 +197,6 @@ Golap class >> openFile [
 	^ overview
 ]
 
-{ #category : 'startup - shutdown' }
-Golap class >> resume [
-
-	[
-		self sessionFile readStreamDo: [ :stream |
-				(GolapJSON fromStream: stream) ifNotNil: [ :json |
-						json
-							at: 'session'
-							ifPresent: [ :session |
-								GolapPhantasmicProject fromJSON: session ];
-							at: 'default-font'
-							ifPresent: [ :font | Golap defaultFontFromJSON: font ];
-							at: 'name-delimiter'
-							ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
-							at: 'colors'
-							ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
-		on: Exception
-		do: [ :ex |  ]
-]
-
-{ #category : 'startup - shutdown' }
-Golap class >> sessionFile [
-
-	^ self golapDirectory / '.golap'
-]
-
 { #category : 'menus' }
 Golap class >> showSettingBrowser [
 
@@ -264,39 +206,6 @@ Golap class >> showSettingBrowser [
 				(self packageOrganizer packageNamed: #'Network-Kernel').
 				(self packageOrganizer packageNamed: #'Golap-UI') };
 		open
-]
-
-{ #category : 'startup - shutdown' }
-Golap class >> shutDown: aBoolean [
-
-	aBoolean ifTrue: [ self suspend ]
-]
-
-{ #category : 'startup - shutdown' }
-Golap class >> startUp: aBoolean [
-
-	aBoolean ifTrue: [
-		Smalltalk session addDeferredStartupAction: [ self resume ] ]
-]
-
-{ #category : 'startup - shutdown' }
-Golap class >> suspend [
-
-	[
-		| json |
-		json := Dictionary new.
-		GolapPhantasmicProject asJSON ifNotNil: [ :project |
-			json at: 'session' put: project ].
-		GolapColorPreferences asJSON ifNotNil: [ :colors |
-			json at: 'colors' put: colors ].
-		Golap defaultFontAsJSON ifNotNil: [ :font |
-			json at: 'default-font' put: font ].
-		self sessionFile
-			ensureDelete;
-			writeStreamDo: [ :stream |
-				(NeoJSONWriter on: stream) nextPut: json ] ]
-		on: Exception
-		do: [ :ex |  ]
 ]
 
 { #category : 'accessing' }
