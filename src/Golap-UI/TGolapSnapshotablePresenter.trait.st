@@ -8,9 +8,7 @@ Trait {
 { #category : 'instance creation' }
 TGolapSnapshotablePresenter classSide >> fromJSON: aDictionary [
 
-	^ [ self new fromJSON: aDictionary ]
-		  on: Exception
-		  do: [ :ex | ex return: nil ]
+	^ self new fromJSON: aDictionary
 ]
 
 { #category : 'projects' }

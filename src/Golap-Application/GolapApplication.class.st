@@ -34,6 +34,12 @@ GolapApplication class >> deploy [
 	5 timesRepeat: [ Smalltalk garbageCollect ]
 ]
 
+{ #category : 'sessions' }
+GolapApplication class >> errorFile [
+
+	^ Golap golapDirectory / '.error'
+]
+
 { #category : 'commandline' }
 GolapApplication class >> gOLAP [
 
@@ -52,19 +58,37 @@ GolapApplication class >> initialize [
 ]
 
 { #category : 'sessions' }
+GolapApplication class >> json: aDictionary at: aString ifPresent: aBlock [
+
+	^ aDictionary at: aString ifPresent: [ :json |
+			  [ aBlock value: json ]
+				  on: Exception
+				  do: [ :ex |
+						  self errorFile
+							  ensureDelete;
+							  writeStreamDo: [ :stream |
+									  stream
+										  nextPutAll: aString;
+										  cr.
+									  GolapJSON put: json onStreamPretty: stream.
+									  stream cr.
+									  ex printOn: stream.
+									  stream cr.
+									  ex signalerContext printStackTraceOn: stream ] ] ]
+]
+
+{ #category : 'sessions' }
 GolapApplication class >> resume [
 
 	self sessionState: #resuming do: [
-			[
-				self sessionFile readStreamDo: [ :stream |
-						(GolapJSON fromStream: stream) ifNotNil: [ :json |
-								json
-									at: 'session' ifPresent: [ :session | GolapPhantasmicProject fromJSON: session ];
-									at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
-									at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
-									at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
-				on: Exception
-				do: [ :ex |  ] ]
+			self sessionFile isFile ifTrue: [
+					self sessionFile readStreamDo: [ :stream |
+							(GolapJSON fromStream: stream) ifNotNil: [ :json |
+									self
+										json: json at: 'session' ifPresent: [ :session | GolapPhantasmicProject fromJSON: session ];
+										json: json at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
+										json: json at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
+										json: json at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ] ]
 ]
 
 { #category : 'sessions' }

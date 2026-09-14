@@ -116,7 +116,9 @@ GolapAbstractProject >> restoreQuery: aDictionary [
 		informUserDuring: [ :progress |
 				[ GolapNetworkClientPresenter fromJSON: aDictionary ]
 					on: Exception
-					do: [ :ex | GolapNetworkClientPresenter flushCurrent ] ]
+					do: [ :ex |
+							GolapNetworkClientPresenter flushCurrent.
+							ex pass ] ]
 ]
 
 { #category : 'converting' }
@@ -133,8 +135,5 @@ GolapAbstractProject >> restoreWindows: anArray [
 							progress progressPercent: index * 100 // anArray size.
 							json at: 'class' ifPresent: [ :className |
 										(TGolapSnapshotablePresenter users detect: [ :class | class name asString = className ] ifNone: [ nil ]) ifNotNil: [
-													:class |
-													[ class fromJSON: json ]
-														on: Exception
-														do: [ :ex | ex return: nil ] ] ] ] ]
+												:class | class fromJSON: json ] ] ] ]
 ]
