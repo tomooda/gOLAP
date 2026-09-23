@@ -85,7 +85,7 @@ GolapApplication class >> resume [
 					self sessionFile readStreamDo: [ :stream |
 							(GolapJSON fromStream: stream) ifNotNil: [ :json |
 									self
-										json: json at: 'session' ifPresent: [ :session | GolapPhantasmicProject fromJSON: session ];
+										json: json at: 'session' ifPresent: [ :session | GolapProject fromJSON: session ];
 										json: json at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
 										json: json at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
 										json: json at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ] ]
@@ -168,20 +168,21 @@ GolapApplication class >> startUp: aBoolean [
 GolapApplication class >> suspend [
 
 	self sessionState: #suspending do: [
-			[
-				| json |
-				json := Dictionary new.
-				GolapPhantasmicProject asJSON ifNotNil: [ :project | json at: 'session' put: project ].
-				GolapColorPreferences asJSON ifNotNil: [ :colors | json at: 'colors' put: colors ].
-				Golap defaultFontAsJSON ifNotNil: [ :font | json at: 'default-font' put: font ].
-				self sessionTemporaryFile
-					ensureDelete;
-					writeStreamDo: [ :stream | (NeoJSONWriter on: stream) nextPut: json ];
-					renameTo: (self sessionFile
-							 ensureDelete;
-							 basename) ]
-				on: Exception
-				do: [ :ex |  ] ]
+			(GolapDefaultProject current confirm: 'セッションを保存しますか？' title: 'gOLAP') ifTrue: [
+					[
+						| json |
+						json := Dictionary new.
+						GolapProject asJSON ifNotNil: [ :project | json at: 'session' put: project ].
+						GolapColorPreferences asJSON ifNotNil: [ :colors | json at: 'colors' put: colors ].
+						Golap defaultFontAsJSON ifNotNil: [ :font | json at: 'default-font' put: font ].
+						self sessionTemporaryFile
+							ensureDelete;
+							writeStreamDo: [ :stream | (NeoJSONWriter on: stream) nextPut: json ];
+							renameTo: (self sessionFile
+									 ensureDelete;
+									 basename) ]
+						on: Exception
+						do: [ :ex |  ] ] ]
 ]
 
 { #category : 'execution' }

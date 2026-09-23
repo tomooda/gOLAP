@@ -1,6 +1,6 @@
 Class {
 	#name : 'GolapNamedProject',
-	#superclass : 'GolapAbstractProject',
+	#superclass : 'GolapProject',
 	#instVars : [
 		'projectFile'
 	],
@@ -64,49 +64,19 @@ GolapNamedProject class >> save [
 	self current save
 ]
 
-{ #category : 'operations' }
-GolapNamedProject >> closeAll [
+{ #category : 'converting' }
+GolapNamedProject >> asJSON [
 
-	self golapWindows ifEmpty: [ ^ self ].
-	(self
-		 confirmYesNoCancel: 'プロジェクトを保存しますか？'
-		 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ])) ifNotNil: [
-			:ans |
-			ans ifTrue: [ self save ].
-			self golapWindowsDo: [ :window | window presenter forceClose ] ]
+	^ super asJSON
+		  at: 'project' put: self projectName;
+		  yourself
 ]
 
-{ #category : 'operations' }
-GolapNamedProject >> load [
+{ #category : 'converting' }
+GolapNamedProject >> fromJSON: aDictionaryOrNil [
 
-	self projectFile ifNotNil: [ :ref |
-			ref readStreamDo: [ :stream |
-					(GolapJSON fromStream: stream) ifNotNil: [ :json |
-							self closeAll.
-							self fromJSON: json ] ] ]
-]
-
-{ #category : 'operations' }
-GolapNamedProject >> open [
-
-	| dialog |
-	dialog := StOpenFilePresenter new.
-	dialog
-		title: 'プロジェクトを開く';
-		extensions: #( 'golap' ).
-	projectFile
-		ifNotNil: [
-				dialog
-					defaultFolder: projectFile parent;
-					selectFile: projectFile ]
-		ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
-	dialog openModal.
-	^ dialog cancelled
-		  ifTrue: [ nil ]
-		  ifFalse: [
-				  dialog selectedEntry ifNotNil: [ :ref |
-						  self projectFile: ref.
-						  self load ] ]
+	aDictionaryOrNil at: 'project' ifPresent: [ :projectName | self projectName: projectName ].
+	super fromJSON: aDictionaryOrNil
 ]
 
 { #category : 'accessing' }
@@ -135,47 +105,6 @@ GolapNamedProject >> projectName: aString [
 	self projectFile:
 		(self class projectBaseDirectory / aString withExtension:
 			 self class fileExtension)
-]
-
-{ #category : 'operations' }
-GolapNamedProject >> quit [
-
-	Smalltalk snapshot: false andQuit: true
-]
-
-{ #category : 'operations' }
-GolapNamedProject >> save [
-
-	(self golapWindows notEmpty or: [
-		 self confirm: '空のプロジェクトを保存しますか？' title: 'プロジェクト保存' ]) ifTrue: [
-			| dialog |
-			dialog := StSaveFilePresenter new.
-			dialog
-				title: 'プロジェクトを保存する';
-				extensions: #( 'golap' ).
-			projectFile
-				ifNotNil: [
-						dialog
-							defaultFolder: projectFile parent;
-							selectFile: projectFile ]
-				ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
-			dialog openModal.
-			dialog cancelled ifFalse: [
-					dialog selectedEntry ifNotNil: [ :ref |
-							projectFile := ref.
-							self store ] ] ]
-]
-
-{ #category : 'operations' }
-GolapNamedProject >> store [
-
-	projectFile ifNotNil: [
-			self asJSON ifNotNil: [ :json |
-					projectFile writeStreamDo: [ :stream |
-							stream truncate.
-							(NeoJSONWriter on: stream)
-								prettyPrint: true;
-								nextPut: json ] ] ]
 ]
 
 { #category : 'updating' }

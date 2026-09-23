@@ -1,0 +1,270 @@
+Class {
+	#name : 'GolapProject',
+	#superclass : 'Object',
+	#classInstVars : [
+		'Current'
+	],
+	#category : 'Golap-Project',
+	#package : 'Golap-Project'
+}
+
+{ #category : 'instance creation' }
+GolapProject class >> asJSON [
+
+	^ self current ifNotNil: #asJSON
+]
+
+{ #category : 'accessing' }
+GolapProject class >> current [
+
+	^ Current
+]
+
+{ #category : 'accessing' }
+GolapProject class >> current: aGolapProject [
+
+	Current := aGolapProject
+]
+
+{ #category : 'instance creation' }
+GolapProject class >> default [
+
+	^ GolapDefaultProject new
+]
+
+{ #category : 'accessing' }
+GolapProject class >> fileExtension [
+
+	^ 'golap'
+]
+
+{ #category : 'accessing' }
+GolapProject class >> flushCurrent [
+
+	Current := nil
+]
+
+{ #category : 'instance creation' }
+GolapProject class >> fromJSON: aDictionary [
+
+	^ (aDictionary at: 'project' ifPresent: [ :string | self named: string ] ifAbsent: [ self default ])
+		  fromJSON: aDictionary;
+		  beCurrent;
+		  yourself
+]
+
+{ #category : 'accessing' }
+GolapProject class >> golapDirectory [
+
+	^ Golap golapDirectory
+]
+
+{ #category : 'instance creation' }
+GolapProject class >> named: aString [
+
+	^ GolapNamedProject new
+		  projectName: aString;
+		  yourself
+]
+
+{ #category : 'ui requests' }
+GolapProject >> application [
+
+	^ SpApplication defaultApplication
+]
+
+{ #category : 'converting' }
+GolapProject >> asJSON [
+
+	| json |
+	json := Dictionary new.
+	GolapNetworkClientPresenter asJSON ifNotNil: [ :query |
+		json at: 'last-query' put: query ].
+	json at: 'windows' put: (Array streamContents: [ :stream |
+				 self golapWindows do: [ :window |
+					 stream nextPut: window presenter asJSON ] ]).
+	^ json
+]
+
+{ #category : 'operations' }
+GolapProject >> beCurrent [
+
+	self class current: self
+]
+
+{ #category : 'operations' }
+GolapProject >> closeAll [
+
+	self golapWindows ifEmpty: [ ^ self ].
+	(self
+		 confirmYesNoCancel: 'プロジェクトを保存しますか？'
+		 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ])) ifNotNil: [
+			:ans |
+			ans ifTrue: [ self save ].
+			self golapWindowsDo: [ :window | window presenter forceClose ] ]
+]
+
+{ #category : 'ui requests' }
+GolapProject >> confirm: aString title: anotherString [
+
+	^ self application newConfirm
+		  label: aString;
+		  title: anotherString;
+		  openModal
+]
+
+{ #category : 'ui requests' }
+GolapProject >> confirmYesNoCancel: aString title: anotherString [
+
+	^ (GolapConfirmYesNoCancelDialog newApplication: self application)
+		  label: aString;
+		  title: anotherString;
+		  openModal
+]
+
+{ #category : 'converting' }
+GolapProject >> fromJSON: aDictionary [
+
+	aDictionary ifNotNil: [
+			aDictionary isArray ifTrue: [ ^ self restoreWindows: aDictionary ].
+			aDictionary
+				at: 'last-query' ifPresent: [ :query | self restoreQuery: query ];
+				at: 'windows' ifPresent: [ :array | self restoreWindows: array ] ]
+]
+
+{ #category : 'accessing' }
+GolapProject >> golapWindows [
+
+	^ Array streamContents: [ :stream |
+		  self golapWindowsDo: [ :window | stream nextPut: window ] ]
+]
+
+{ #category : 'enumerating' }
+GolapProject >> golapWindowsDo: aBlock [
+
+	| presenterClasses |
+	presenterClasses := TGolapSnapshotablePresenter users.
+	self currentWorld taskbars do: [ :taskbar |
+			taskbar submorphs do: [ :morph |
+					([ morph model model presenter ]
+						 on: MessageNotUnderstood
+						 do: [ :ex | ex return: nil ]) ifNotNil: [ :p |
+						(presenterClasses includes: p class) ifTrue: [
+							aBlock value: p window ] ] ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> load [
+
+	self projectFile ifNotNil: [ :ref |
+			ref readStreamDo: [ :stream |
+					(GolapJSON fromStream: stream) ifNotNil: [ :json |
+							self closeAll.
+							self fromJSON: json ] ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> open [
+
+	| dialog |
+	dialog := StOpenFilePresenter new.
+	dialog
+		title: 'プロジェクトを開く';
+		extensions: #( 'golap' ).
+	self projectFile
+		ifNotNil: [ :ref |
+				dialog
+					defaultFolder: ref parent;
+					selectFile: ref ]
+		ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
+	dialog openModal.
+	^ dialog cancelled
+		  ifTrue: [ nil ]
+		  ifFalse: [
+				  dialog selectedEntry ifNotNil: [ :ref |
+						  self projectFile: ref.
+						  self load ] ]
+]
+
+{ #category : 'accessing' }
+GolapProject >> projectFile [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapProject >> projectName [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'operations' }
+GolapProject >> quit [
+
+	Smalltalk snapshot: false andQuit: true
+]
+
+{ #category : 'converting' }
+GolapProject >> restoreQuery: aDictionary [
+
+	| dialog |
+	dialog := GolapProgressDialog new.
+	dialog
+		title: 'クエリ復元中...';
+		informUserDuring: [ :progress |
+				[ GolapNetworkClientPresenter fromJSON: aDictionary ]
+					on: Exception
+					do: [ :ex |
+							GolapNetworkClientPresenter flushCurrent.
+							ex pass ] ]
+]
+
+{ #category : 'converting' }
+GolapProject >> restoreWindows: anArray [
+
+	| dialog |
+	dialog := GolapProgressDialog new.
+	dialog
+		title: '復元中...';
+		informUserDuring: [ :progress |
+				| widget |
+				widget := dialog adapter widget.
+				anArray withIndexDo: [ :json :index |
+							progress progressPercent: index * 100 // anArray size.
+							json at: 'class' ifPresent: [ :className |
+										(TGolapSnapshotablePresenter users detect: [ :class | class name asString = className ] ifNone: [ nil ]) ifNotNil: [
+												:class | class fromJSON: json ] ] ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> save [
+
+	| dialog |
+	dialog := StSaveFilePresenter new.
+	dialog
+		title: 'プロジェクトを保存する';
+		extensions: #( 'golap' ).
+	self projectFile
+		ifNotNil: [ :ref |
+				dialog
+					defaultFolder: ref parent;
+					selectFile: ref ]
+		ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
+	dialog openModal.
+	dialog cancelled ifFalse: [
+			dialog selectedEntry ifNotNil: [ :ref |
+					self projectFile: ref.
+					self store ] ]
+]
+
+{ #category : 'operations' }
+GolapProject >> store [
+
+	self projectFile ifNotNil: [ :ref |
+			self asJSON ifNotNil: [ :json |
+					ref writeStreamDo: [ :stream |
+							stream truncate.
+							(NeoJSONWriter on: stream)
+								prettyPrint: true;
+								nextPut: json ] ] ]
+]
