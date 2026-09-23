@@ -1,7 +1,7 @@
 Class {
 	#name : 'GolapProject',
 	#superclass : 'Object',
-	#classInstVars : [
+	#classVars : [
 		'Current'
 	],
 	#category : 'Golap-Project',
