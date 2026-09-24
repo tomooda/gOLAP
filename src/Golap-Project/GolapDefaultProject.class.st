@@ -8,11 +8,11 @@ Class {
 { #category : 'accessing' }
 GolapDefaultProject >> projectFile [
 
-	^ self class projectBaseDirectory / '' withExtension: self class fileExtension
+	^ nil
 ]
 
 { #category : 'accessing' }
 GolapDefaultProject >> projectName [
 
-	^ 'gOLAP'
+	^ nil
 ]

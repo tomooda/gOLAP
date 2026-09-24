@@ -112,10 +112,3 @@ GolapNamedProject >> updateMenubar [
 
 	GolapMenubar reset
 ]
-
-{ #category : 'updating' }
-GolapNamedProject >> updateWorldWindowTitle [
-
-	self currentWorld worldState worldRenderer osWindow title:
-		(self projectName ifNil: [ 'gOLAP' ])
-]

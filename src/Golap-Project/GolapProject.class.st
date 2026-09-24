@@ -17,13 +17,25 @@ GolapProject class >> asJSON [
 { #category : 'accessing' }
 GolapProject class >> current [
 
-	^ Current
+	^ Current ifNil: [ Current := self default ]
 ]
 
 { #category : 'accessing' }
 GolapProject class >> current: aGolapProject [
 
 	Current := aGolapProject
+]
+
+{ #category : 'accessing' }
+GolapProject class >> currentProjectFile [
+
+	^ self current projectFile
+]
+
+{ #category : 'accessing' }
+GolapProject class >> currentProjectName [
+
+	^ self current projectName
 ]
 
 { #category : 'instance creation' }
@@ -65,6 +77,12 @@ GolapProject class >> named: aString [
 	^ GolapNamedProject new
 		  projectName: aString;
 		  yourself
+]
+
+{ #category : 'accessing' }
+GolapProject class >> projectFiles [
+
+	^ (self golapDirectory filesMatching: '*.' , self fileExtension) reject: [ :ref | ref basename beginsWith: '.' ]
 ]
 
 { #category : 'ui requests' }
@@ -153,6 +171,13 @@ GolapProject >> golapWindowsDo: aBlock [
 							aBlock value: p window ] ] ] ]
 ]
 
+{ #category : 'testing' }
+GolapProject >> isEmpty [
+
+	self golapWindowsDo: [ :window | ^ false ].
+	^ true
+]
+
 { #category : 'operations' }
 GolapProject >> load [
 
@@ -161,6 +186,12 @@ GolapProject >> load [
 					(GolapJSON fromStream: stream) ifNotNil: [ :json |
 							self closeAll.
 							self fromJSON: json ] ] ]
+]
+
+{ #category : 'testing' }
+GolapProject >> notEmpty [
+
+	^ self isEmpty not
 ]
 
 { #category : 'operations' }
@@ -267,4 +298,11 @@ GolapProject >> store [
 							(NeoJSONWriter on: stream)
 								prettyPrint: true;
 								nextPut: json ] ] ]
+]
+
+{ #category : 'updating' }
+GolapProject >> updateWorldWindowTitle [
+
+	self currentWorld worldState worldRenderer osWindow title:
+		(self projectName ifNil: [ 'gOLAP' ])
 ]
