@@ -74,15 +74,19 @@ GolapProject class >> golapDirectory [
 { #category : 'instance creation' }
 GolapProject class >> named: aString [
 
-	^ GolapNamedProject new
-		  projectName: aString;
-		  yourself
+	^ GolapNamedProject named: aString
+]
+
+{ #category : 'instance creation' }
+GolapProject class >> on: aFileReferenceOrNil [
+
+	^ aFileReferenceOrNil ifNil: [ self default ] ifNotNil: [ GolapNamedProject on: aFileReferenceOrNil ]
 ]
 
 { #category : 'accessing' }
 GolapProject class >> projectFiles [
 
-	^ (self golapDirectory filesMatching: '*.' , self fileExtension) reject: [ :ref | ref basename beginsWith: '.' ]
+	^ ((self golapDirectory filesMatching: '*.' , self fileExtension) reject: [ :ref | ref basename beginsWith: '.' ]) sorted
 ]
 
 { #category : 'ui requests' }
@@ -113,13 +117,7 @@ GolapProject >> beCurrent [
 { #category : 'operations' }
 GolapProject >> closeAll [
 
-	self golapWindows ifEmpty: [ ^ self ].
-	(self
-		 confirmYesNoCancel: 'プロジェクトを保存しますか？'
-		 title: 'プロジェクト ' , (self projectName ifNil: [ 'なし' ])) ifNotNil: [
-			:ans |
-			ans ifTrue: [ self save ].
-			self golapWindowsDo: [ :window | window presenter forceClose ] ]
+	self golapWindowsDo: [ :window | window presenter forceClose ]
 ]
 
 { #category : 'ui requests' }
@@ -138,6 +136,12 @@ GolapProject >> confirmYesNoCancel: aString title: anotherString [
 		  label: aString;
 		  title: anotherString;
 		  openModal
+]
+
+{ #category : 'testing' }
+GolapProject >> exists [
+
+	^ self subclassResponsibility
 ]
 
 { #category : 'converting' }
@@ -181,11 +185,11 @@ GolapProject >> isEmpty [
 { #category : 'operations' }
 GolapProject >> load [
 
-	self projectFile ifNotNil: [ :ref |
-			ref readStreamDo: [ :stream |
-					(GolapJSON fromStream: stream) ifNotNil: [ :json |
-							self closeAll.
-							self fromJSON: json ] ] ]
+	^ self projectFile ifNotNil: [ :ref |
+			  ref readStreamDo: [ :stream |
+					  (GolapJSON fromStream: stream) ifNotNil: [ :json |
+							  self closeAll.
+							  self fromJSON: json ] ] ]
 ]
 
 { #category : 'testing' }
@@ -291,13 +295,11 @@ GolapProject >> save [
 { #category : 'operations' }
 GolapProject >> store [
 
-	self projectFile ifNotNil: [ :ref |
-			self asJSON ifNotNil: [ :json |
-					ref writeStreamDo: [ :stream |
-							stream truncate.
-							(NeoJSONWriter on: stream)
-								prettyPrint: true;
-								nextPut: json ] ] ]
+	^ self projectFile ifNotNil: [ :ref |
+			  self asJSON ifNotNil: [ :json |
+					  ref writeStreamDo: [ :stream |
+							  stream truncate.
+							  GolapJSON put: json onStreamPretty: stream ] ] ]
 ]
 
 { #category : 'updating' }

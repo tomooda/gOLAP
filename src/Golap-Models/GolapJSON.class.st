@@ -21,7 +21,8 @@ GolapJSON class >> fromString: aString [
 { #category : 'operations' }
 GolapJSON class >> put: anObject onStream: aWriteStream [
 
-	(self writer on: aWriteStream) nextPut: anObject
+	(self writer on: aWriteStream) nextPut: anObject.
+	^ anObject
 ]
 
 { #category : 'operations' }
@@ -29,7 +30,8 @@ GolapJSON class >> put: anObject onStreamPretty: aWriteStream [
 
 	(self writer on: aWriteStream)
 		prettyPrint: true;
-		nextPut: anObject
+		nextPut: anObject.
+	^ anObject
 ]
 
 { #category : 'accessing' }

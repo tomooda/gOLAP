@@ -40,6 +40,22 @@ GolapNamedProject class >> golapMenuOn: aBuilder [
 		help: 'gOLAPを終了します。'
 ]
 
+{ #category : 'instance creation' }
+GolapNamedProject class >> named: aString [
+
+	^ self new
+		  projectName: aString;
+		  yourself
+]
+
+{ #category : 'instance creation' }
+GolapNamedProject class >> on: aFileReference [
+
+	^ self new
+		  projectFile: aFileReference;
+		  yourself
+]
+
 { #category : 'operations' }
 GolapNamedProject class >> open [
 
@@ -70,6 +86,12 @@ GolapNamedProject >> asJSON [
 	^ super asJSON
 		  at: 'project' put: self projectName;
 		  yourself
+]
+
+{ #category : 'testing' }
+GolapNamedProject >> exists [
+
+	^ projectFile notNil and: [ projectFile exists ]
 ]
 
 { #category : 'converting' }

@@ -5,6 +5,12 @@ Class {
 	#package : 'Golap-Project'
 }
 
+{ #category : 'testing' }
+GolapDefaultProject >> exists [
+
+	^ true
+]
+
 { #category : 'accessing' }
 GolapDefaultProject >> projectFile [
 

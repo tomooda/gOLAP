@@ -21,16 +21,42 @@ GolapProjectPresenter >> addProject [
 	self saveAsProject
 ]
 
+{ #category : 'services' }
+GolapProjectPresenter >> alert: aString title: anotherString [
+
+	(self application newAlert
+		 message: aString;
+		 title: anotherString;
+		 asModalWindow)
+		initialExtent: 400 @ 120;
+		open
+]
+
+{ #category : 'services' }
+GolapProjectPresenter >> confirm: queryString label: titleString [
+
+	^ self application newConfirm
+		  title: titleString;
+		  message: queryString;
+		  openModal
+]
+
+{ #category : 'accessing' }
+GolapProjectPresenter >> currentProject [
+
+	^ GolapProject current
+]
+
 { #category : 'accessing' }
 GolapProjectPresenter >> currentProjectFile [
 
-	^ GolapProject currentProjectFile
+	^ self currentProject projectFile
 ]
 
 { #category : 'accessing' }
 GolapProjectPresenter >> currentProjectName [
 
-	^ GolapProject currentProjectName
+	^ self currentProject projectName
 ]
 
 { #category : 'layout' }
@@ -129,16 +155,53 @@ GolapProjectPresenter >> renameProject: aFileReference [
 	^ self notYetImplemented
 ]
 
+{ #category : 'services' }
+GolapProjectPresenter >> request: request initialAnswer: initialAnwser title: title [
+
+	| answer |
+	answer := self application newRequest
+		          title: title;
+		          message: request;
+		          text: initialAnwser;
+		          openModal.
+	^ answer
+]
+
 { #category : 'operations-add' }
 GolapProjectPresenter >> saveAsProject [
 
-	^ self notYetImplemented
+	| projectName project |
+	[
+		[
+			projectName := self request: '新規プロジェクト名' initialAnswer: '' title: '新規プロジェクト作成'.
+			projectName ifNil: [ ^ self ].
+			projectName := projectName trim.
+			[ FileSystem disk checkName: projectName fixErrors: false ]
+				on: Error
+				do: [ :ex |
+						self alert: 'ファイル名に使える名前を入力してください。' title: 'プロジェクト名エラー'.
+						projectName := nil ].
+			projectName isNil ] whileTrue.
+		project := GolapProject named: projectName.
+		project exists ifTrue: [
+				self alert: 'そのプロジェクト名は既に使われています。' title: 'プロジェクト名エラー'.
+				project := nil ].
+		project isNil ] whileTrue.
+	project store.
+	self updateProjectList
 ]
 
 { #category : 'operations-save' }
 GolapProjectPresenter >> saveProject [
 
-	^ self notYetImplemented
+	self currentProject store ifNil: [
+			(self application newAlert
+				 title: '保存失敗';
+				 message: self currentProjectName , 'の保存に失敗しました。';
+				 extent: 100 @ 10;
+				 asModalWindow)
+				initialExtent: 500 @ 150;
+				open ]
 ]
 
 { #category : 'updating' }
