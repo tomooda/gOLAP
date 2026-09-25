@@ -16,7 +16,7 @@ GolapModel >> asJSON [
 		  at: 'referenceNodes' put: referenceNodes asArray;
 		  at: 'friend' put: friend;
 		  at: 'merge' put: merge asJSON;
-		  at: 'polishers' put: (polishers collect: #asJSON);
+		  at: 'polishers' put: (polishers asArray collect: #asJSON);
 		  yourself
 ]
 

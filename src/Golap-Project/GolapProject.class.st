@@ -17,13 +17,17 @@ GolapProject class >> asJSON [
 { #category : 'accessing' }
 GolapProject class >> current [
 
-	^ Current ifNil: [ Current := self default ]
+	<script: 'GolapProject current inspect'>
+	^ Current ifNil: [
+			  self current: self default.
+			  Current ]
 ]
 
 { #category : 'accessing' }
 GolapProject class >> current: aGolapProject [
 
-	Current := aGolapProject
+	Current := aGolapProject.
+	aGolapProject updateWorldWindowTitle
 ]
 
 { #category : 'accessing' }
@@ -129,15 +133,6 @@ GolapProject >> confirm: aString title: anotherString [
 		  openModal
 ]
 
-{ #category : 'ui requests' }
-GolapProject >> confirmYesNoCancel: aString title: anotherString [
-
-	^ (GolapConfirmYesNoCancelDialog newApplication: self application)
-		  label: aString;
-		  title: anotherString;
-		  openModal
-]
-
 { #category : 'testing' }
 GolapProject >> exists [
 
@@ -175,6 +170,12 @@ GolapProject >> golapWindowsDo: aBlock [
 							aBlock value: p window ] ] ] ]
 ]
 
+{ #category : 'controlling' }
+GolapProject >> ifDefault: aBlock otherwise: anotherBlock [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'testing' }
 GolapProject >> isEmpty [
 
@@ -186,10 +187,9 @@ GolapProject >> isEmpty [
 GolapProject >> load [
 
 	^ self projectFile ifNotNil: [ :ref |
-			  ref readStreamDo: [ :stream |
-					  (GolapJSON fromStream: stream) ifNotNil: [ :json |
-							  self closeAll.
-							  self fromJSON: json ] ] ]
+			  [ ref readStreamDo: [ :stream | self fromJSON: (GolapJSON fromStream: stream) ] ]
+				  on: Exception
+				  do: [ :ex | ex return: nil ] ]
 ]
 
 { #category : 'testing' }
@@ -231,12 +231,6 @@ GolapProject >> projectFile [
 GolapProject >> projectName [
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'operations' }
-GolapProject >> quit [
-
-	Smalltalk snapshot: false andQuit: true
 ]
 
 { #category : 'converting' }

@@ -489,10 +489,9 @@ Golap >> confirmOpen [
 			model edgesDo: [ :edge | numEdges := numEdges + 1 ].
 			(self
 				 confirm:
-					 '開きますか？' , String cr , '総商品数:' , numNodes printString
-					 , ' 関連付き商品数:' , numConnected printString , ' 関連数:'
-					 , numEdges printString
-				 label: '確認') = true ifFalse: [ GolapAborted signal ] ]
+				 '開きますか？' , String cr , '総商品数:' , numNodes printString , ' 関連付き商品数:' , numConnected printString , ' 関連数:'
+				 , numEdges printString
+				 title: '確認') = true ifFalse: [ GolapAborted signal ] ]
 ]
 
 { #category : 'operations' }

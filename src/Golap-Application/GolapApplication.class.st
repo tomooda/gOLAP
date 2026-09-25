@@ -51,6 +51,21 @@ GolapApplication class >> gOLAP [
 		  yourself
 ]
 
+{ #category : 'menus' }
+GolapApplication class >> golapMenuOn: aBuilder [
+
+	<worldMenu>
+	<golapMenu>
+	(aBuilder item: #GolapCloseProject)
+		label: '終了';
+		iconName: #smallQuit;
+		parent: #GolapFileMenu;
+		order: 99;
+		target: self;
+		selector: #quit;
+		help: 'gOLAPを終了します。'
+]
+
 { #category : 'class initialization' }
 GolapApplication class >> initialize [
 
@@ -75,6 +90,12 @@ GolapApplication class >> json: aDictionary at: aString ifPresent: aBlock [
 									  ex printOn: stream.
 									  stream cr.
 									  ex signalerContext printStackTraceOn: stream ] ] ]
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> quit [
+
+	Smalltalk snapshot: false andQuit: true
 ]
 
 { #category : 'sessions' }

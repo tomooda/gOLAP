@@ -10,7 +10,8 @@ Class {
 GolapJSONWriter >> initialize [
 
 	super initialize.
-	self jsonMode: true
+	self jsonMode: true.
+	referencePolicy := #ignore
 ]
 
 { #category : 'writing' }

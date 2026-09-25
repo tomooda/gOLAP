@@ -44,7 +44,7 @@ GolapCSVImportPresenter >> availableAggregatorsFor: aString [
 { #category : 'accessing' }
 GolapCSVImportPresenter >> availableColumns [
 
-	^ dataframe ifNotNil: [ dataframe columnNames ] ifNil: [ {  } ]
+	^ dataframe ifNotNil: [ dataframe columnNames asArray ] ifNil: [ {  } ]
 ]
 
 { #category : 'accessing' }

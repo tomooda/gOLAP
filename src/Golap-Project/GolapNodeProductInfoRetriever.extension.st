@@ -5,10 +5,8 @@ GolapNodeProductInfoRetriever >> asJSON [
 
 	| json |
 	json := super asJSON.
-	availableColumns ifNotNil: [
-		json at: 'avaiableColumns' put: availableColumns ].
-	photoUrlColumn ifNotNil: [
-		json at: 'photoUrlColumn' put: photoUrlColumn ].
+	availableColumns ifNotNil: [ json at: 'avaiableColumns' put: availableColumns asArray ].
+	photoUrlColumn ifNotNil: [ json at: 'photoUrlColumn' put: photoUrlColumn ].
 	^ json
 ]
 
