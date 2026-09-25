@@ -284,12 +284,14 @@ GolapProjectPresenter >> selectedProjectName [
 GolapProjectPresenter >> switchProject [
 
 	self selectedProjectFile ifNotNil: [ :ref |
-			self confirmToSaveCurrentProject ifNotNil: [
-					self currentProject closeAll.
-					((GolapProject on: ref)
-						 beCurrent;
-						 load) ifNil: [ self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ].
-					self updateProjectList ] ]
+			self selectedProjectName = self currentProjectName
+				ifTrue: [ (self confirm: self currentProjectName , 'を再読み込みしますか？' title: '再読み込みの確認') ifFalse: [ ^ self ] ]
+				ifFalse: [ self confirmToSaveCurrentProject ifNil: [ ^ self ] ].
+			self currentProject closeAll.
+			((GolapProject on: ref)
+				 beCurrent;
+				 load) ifNil: [ self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ].
+			self updateProjectList ]
 ]
 
 { #category : 'updating' }
@@ -301,7 +303,7 @@ GolapProjectPresenter >> updateButtons [
 	removeProjectButton enabled: selected notNil.
 	renameProjectButton enabled: selected notNil.
 	saveProjectButton enabled: (selected notNil and: [ selected = current ]).
-	switchProjectButton enabled: (selected notNil and: [ selected ~= current ])
+	switchProjectButton enabled: selected notNil
 ]
 
 { #category : 'updating' }
