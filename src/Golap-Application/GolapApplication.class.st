@@ -103,13 +103,17 @@ GolapApplication class >> resume [
 
 	self sessionState: #resuming do: [
 			self sessionFile isFile ifTrue: [
-					self sessionFile readStreamDo: [ :stream |
-							(GolapJSON fromStream: stream) ifNotNil: [ :json |
-									self
-										json: json at: 'session' ifPresent: [ :session | GolapProject fromJSON: session ];
-										json: json at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
-										json: json at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
-										json: json at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ] ]
+					(GolapDefaultProject current confirm: '保存されたセッションを回復しますか？' title: 'gOLAP') ifTrue: [
+							[
+								self sessionFile readStreamDo: [ :stream |
+										(GolapJSON fromStream: stream) ifNotNil: [ :json |
+												self
+													json: json at: 'session' ifPresent: [ :session | GolapProject fromJSON: session ];
+													json: json at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
+													json: json at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
+													json: json at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
+								on: Exception
+								do: [ :ex | ex return ] ] ] ]
 ]
 
 { #category : 'sessions' }
