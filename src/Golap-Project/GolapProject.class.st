@@ -8,6 +8,12 @@ Class {
 	#package : 'Golap-Project'
 }
 
+{ #category : 'accessing' }
+GolapProject class >> all [
+
+	^ self projectFiles collect: [ :ref | self on: ref ]
+]
+
 { #category : 'instance creation' }
 GolapProject class >> asJSON [
 
@@ -131,6 +137,12 @@ GolapProject >> confirm: aString title: anotherString [
 		  label: aString;
 		  title: anotherString;
 		  openModal
+]
+
+{ #category : 'operations' }
+GolapProject >> delete [
+
+	self projectFile ifNotNil: #ensureDelete
 ]
 
 { #category : 'testing' }

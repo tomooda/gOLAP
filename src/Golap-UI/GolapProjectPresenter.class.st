@@ -41,12 +41,14 @@ GolapProjectPresenter class >> golapMenuOn: aBuilder [
 { #category : 'operations' }
 GolapProjectPresenter class >> open [
 
+	<script: 'GolapProjectPresenter open'>
 	| window |
+	self current updateProjectList.
 	window := self current window ifNil: [ self current asWindow ].
 	window isOpen
 		ifTrue: [ window activate ]
 		ifFalse: [
-				self current asWindow
+				window
 					initialPosition:
 						0 @ ((self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ]);
 					open ]
@@ -56,12 +58,12 @@ GolapProjectPresenter class >> open [
 GolapProjectPresenter >> addProject [
 
 	self confirmToSaveCurrentProject ifNotNil: [
-			self requestNewProject ifNotNil: [ :project |
+			(self requestNewProject: '') ifNotNil: [ :project |
 					project store.
 					project beCurrent.
 					self
 						updateProjectList;
-						selectProjectNamed: project projectName ] ]
+						selectProject: project ] ]
 ]
 
 { #category : 'ui requests' }
@@ -138,9 +140,9 @@ GolapProjectPresenter >> defaultLayout [
 ]
 
 { #category : 'accessing' }
-GolapProjectPresenter >> iconFor: aFileReference [
+GolapProjectPresenter >> iconFor: aGolapProject [
 
-	^ aFileReference = self currentProjectFile
+	^ aGolapProject = self currentProject
 		  ifTrue: [ self iconNamed: #accept ]
 		  ifFalse: [ nil ]
 ]
@@ -150,8 +152,8 @@ GolapProjectPresenter >> initializePresenters [
 
 	super initializePresenters.
 	projectList := self newTable
-		               addColumn: ((SpImageTableColumn evaluated: [ :ref | self iconFor: ref ]) width: 32);
-		               addColumn: (SpStringTableColumn title: 'プロジェクト名' evaluated: [ :ref | self projectNameFor: ref ]);
+		               addColumn: ((SpImageTableColumn evaluated: [ :project | self iconFor: project ]) width: 32);
+		               addColumn: (SpStringTableColumn title: 'プロジェクト名' evaluated: #projectName);
 		               whenSelectedItemChangedDo: [ self selectedProjectChanged ];
 		               yourself.
 	projectList whenBuiltDo: [ :ann | ann widget allowDeselection ].
@@ -183,34 +185,24 @@ GolapProjectPresenter >> initializePresenters [
 	self updateProjectList
 ]
 
-{ #category : 'accessing' }
-GolapProjectPresenter >> projectNameFor: aFileReference [
-
-	^ aFileReference basenameWithoutExtension: GolapProject fileExtension
-]
-
 { #category : 'operations' }
 GolapProjectPresenter >> removeProject [
 
-	self selectedProjectFile ifNotNil: [ :ref |
-			(self confirm: (self projectNameFor: ref) , 'を削除しますか？' title: 'プロジェクト削除') ifTrue: [
-					ref ensureDelete.
-					self currentProjectFile = ref ifTrue: [ GolapProject default beCurrent ].
+	self selectedProject ifNotNil: [ :project |
+			(self confirm: project projectName , 'を削除しますか？' title: 'プロジェクト削除') ifTrue: [
+					project delete.
+					self currentProject = project ifTrue: [ GolapProject default beCurrent ].
 					self updateProjectList ] ]
 ]
 
 { #category : 'operations' }
 GolapProjectPresenter >> renameProject [
 
-	self selectedProjectFile ifNotNil: [ :ref |
-			self requestNewProject ifNotNil: [ :project |
-					| name |
-					name := self projectNameFor: ref.
-					ref moveTo: project projectFile.
-					name = self currentProjectName ifTrue: [ project beCurrent ].
-					self
-						updateProjectList;
-						selectProjectNamed: project projectName ] ]
+	self selectedProject ifNotNil: [ :project |
+			project = self currentProject ifTrue: [ project beCurrent ].
+			(self requestNewProject: project projectName) ifNotNil: [ :newProject |
+					project renameTo: newProject projectName.
+					self updateProjectList ] ]
 ]
 
 { #category : 'ui requests' }
@@ -226,12 +218,12 @@ GolapProjectPresenter >> request: request initialAnswer: initialAnwser title: ti
 ]
 
 { #category : 'operations' }
-GolapProjectPresenter >> requestNewProject [
+GolapProjectPresenter >> requestNewProject: aString [
 
 	| projectName project |
 	[
 		[
-			projectName := self request: '新規プロジェクト名' initialAnswer: '' title: '新規プロジェクト作成'.
+			projectName := self request: '新規プロジェクト名' initialAnswer: aString title: '新規プロジェクト作成'.
 			projectName ifNil: [ ^ nil ].
 			projectName := projectName trim.
 			[ FileSystem disk checkName: projectName fixErrors: false ]
@@ -254,12 +246,18 @@ GolapProjectPresenter >> saveProject [
 	self currentProject store ifNil: [ self alert: self currentProjectName , 'の保存に失敗しました。' title: '保存失敗' ]
 ]
 
-{ #category : 'selection' }
-GolapProjectPresenter >> selectProjectNamed: aString [
+{ #category : 'accessing' }
+GolapProjectPresenter >> selectProject: aGolapNamedProject [
 
-	(projectList items detect: [ :ref | (self projectNameFor: ref) = aString ] ifNone: [ nil ])
-		ifNotNil: [ :ref | projectList selectItem: ref ]
+	(projectList items includes: aGolapNamedProject)
+		ifNotNil: [ :ref | projectList selectItem: aGolapNamedProject ]
 		ifNil: [ projectList unselectAll ]
+]
+
+{ #category : 'accessing' }
+GolapProjectPresenter >> selectedProject [
+
+	^ projectList selectedItem
 ]
 
 { #category : 'updating' }
@@ -268,28 +266,28 @@ GolapProjectPresenter >> selectedProjectChanged [
 	self updateButtons
 ]
 
-{ #category : 'selection' }
+{ #category : 'accessing' }
 GolapProjectPresenter >> selectedProjectFile [
 
-	^ projectList selectedItem
+	^ self selectedProject ifNotNil: #projectFile
 ]
 
-{ #category : 'selection' }
+{ #category : 'accessing' }
 GolapProjectPresenter >> selectedProjectName [
 
-	^ self selectedProjectFile ifNotNil: [ :ref | self projectNameFor: ref ]
+	^ self selectedProject ifNotNil: #projectName
 ]
 
 { #category : 'operations' }
 GolapProjectPresenter >> switchProject [
 
-	self selectedProjectFile ifNotNil: [ :ref |
-			self selectedProjectName = self currentProjectName
+	self selectedProject ifNotNil: [ :project |
+			project = self currentProject
 				ifTrue: [ (self confirm: self currentProjectName , 'を再読み込みしますか？' title: '再読み込みの確認') ifFalse: [ ^ self ] ]
 				ifFalse: [ self confirmToSaveCurrentProject ifNil: [ ^ self ] ].
-			self currentProject closeAll.
-			((GolapProject on: ref)
+			(project
 				 beCurrent;
+				 closeAll;
 				 load) ifNil: [ self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ].
 			self updateProjectList ]
 ]
@@ -298,8 +296,8 @@ GolapProjectPresenter >> switchProject [
 GolapProjectPresenter >> updateButtons [
 
 	| selected current |
-	selected := self selectedProjectName.
-	current := self currentProjectName.
+	selected := self selectedProject.
+	current := self currentProject.
 	removeProjectButton enabled: selected notNil.
 	renameProjectButton enabled: selected notNil.
 	saveProjectButton enabled: (selected notNil and: [ selected = current ]).
@@ -309,11 +307,10 @@ GolapProjectPresenter >> updateButtons [
 { #category : 'updating' }
 GolapProjectPresenter >> updateProjectList [
 
-	| selectedProjectName items |
-	selectedProjectName := self selectedProjectName.
-	items := GolapProject projectFiles.
-	projectList items: items.
-	self selectProjectNamed: selectedProjectName
+	| selection |
+	selection := projectList selectedItem.
+	projectList items: GolapProject all.
+	self selectProject: selection
 ]
 
 { #category : 'accessing' }
