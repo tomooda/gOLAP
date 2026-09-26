@@ -55,8 +55,8 @@ GolapProjectPresenter class >> open [
 { #category : 'operations' }
 GolapProjectPresenter >> addProject [
 
-	self requestNewProject ifNotNil: [ :project |
-			self confirmToSaveCurrentProject ifNotNil: [
+	self confirmToSaveCurrentProject ifNotNil: [
+			self requestNewProject ifNotNil: [ :project |
 					project store.
 					project beCurrent.
 					self
