@@ -31,8 +31,8 @@ GolapProjectPresenter class >> golapMenuOn: aBuilder [
 	(aBuilder item: #GolapOpenProjectPresenter)
 		label: 'プロジェクト';
 		iconName: #open;
-		parent: #GolapFileMenu;
-		order: 10;
+		parent: #Golap;
+		order: 0;
 		target: self;
 		selector: #open;
 		help: 'プロジェクトリストを開きます。'
@@ -49,6 +49,7 @@ GolapProjectPresenter class >> open [
 		ifTrue: [ window activate ]
 		ifFalse: [
 				window
+					initialExtent: 400 @ 300;
 					initialPosition:
 						0 @ ((self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ]);
 					open ]

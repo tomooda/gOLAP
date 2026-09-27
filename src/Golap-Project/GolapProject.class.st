@@ -134,7 +134,7 @@ GolapProject >> closeAll [
 GolapProject >> confirm: aString title: anotherString [
 
 	^ self application newConfirm
-		  label: aString;
+		  message: aString;
 		  title: anotherString;
 		  openModal
 ]
