@@ -54,7 +54,7 @@ GolapDandelionChartPresenter >> updateCanvas [
 															  ifTrue: [ c ]
 															  ifFalse: [ Color transparent ]);
 													 model: (self markerModelForNode: (golap model nodeAt: shape model id) marker: marker)) ] ] ].
-					sunburstBuilder shapes @ (GolapNodeInteraction on: self).
+					sunburstBuilder shapes @ (GolapClusteringNodeInteraction on: self).
 					bezierBuilder := RSLineBuilder sunburstBezier.
 					bezierBuilder
 						capRound;
@@ -64,6 +64,6 @@ GolapDandelionChartPresenter >> updateCanvas [
 								bezier
 									width: (self edgeWidthForScore: bezier model value score) ceiling;
 									color: (self edgeColorForScore: bezier model value score) ];
-						@ (GolapEdgeInteraction on: self).
+						@ (GolapClusteringEdgeInteraction on: self).
 					self zoomToFit ] ]
 ]

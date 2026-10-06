@@ -132,7 +132,7 @@ GolapHEBChartPresenter >> newLabelForNode: nodeId [
 							  label := RSLabel new
 								           text: node name;
 								           yourself.
-							  delta := label width + self nodeSize * 0.5 + 10.0.
+							  delta := label width + self nodeSize * 0.5 + 14.0.
 							  label
 								  color: (self colorForNode: node);
 								  rotateByRadians: theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
@@ -194,7 +194,7 @@ GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 and: node2 category: cat
 	p1 := (self nodePositionAt: node1) ifNil: [ ^ nil ].
 	p2 := (self categoryPositionAt: category) ifNil: [ ^ nil ].
 	p3 := (self nodePositionAt: node2) ifNil: [ ^ nil ].
-	^ RSUniformCubicBSpline new
+	^ RSBezier new
 		  controlPoints: {
 				  p1.
 				  p2.
@@ -211,7 +211,7 @@ GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 category: category1 and:
 	p2 := (self categoryPositionAt: category1) ifNil: [ ^ nil ].
 	p3 := (self categoryPositionAt: category2) ifNil: [ ^ nil ].
 	p4 := (self nodePositionAt: node2) ifNil: [ ^ nil ].
-	^ RSUniformCubicBSpline new
+	^ RSBezier new
 		  controlPoints: {
 				  p1.
 				  p2.
@@ -250,7 +250,7 @@ GolapHEBChartPresenter >> nodePositionAt: aString offset: aNumber [
 { #category : 'accessing' }
 GolapHEBChartPresenter >> nodeSize [
 
-	^ 10
+	^ 16
 ]
 
 { #category : 'private' }
@@ -291,13 +291,17 @@ GolapHEBChartPresenter >> renderCategoriesIn: aCanvas [
 { #category : 'rendering' }
 GolapHEBChartPresenter >> renderEdgesIn: aCanvas [
 
-	| pulls |
+	| interaction pulls |
+	interaction := GolapOverviewEdgeInteraction new
+		               presenter: self;
+		               yourself.
 	self ensureCategories.
 	pulls := OrderedCollection new.
 	self golapModelDo: [ :golapModel |
 			golapModel edgesDo: [ :edge |
 					(self colorForEdge: edge) ifNotNil: [ :color |
 							(self newShapeForEdge: edge key) ifNotNil: [ :shape |
+									shape @ interaction.
 									shape
 										color: (color alpha: 0.5);
 										width: (golapModel normalizedValueAtEdge: edge) * 10 + 1.
@@ -309,9 +313,16 @@ GolapHEBChartPresenter >> renderEdgesIn: aCanvas [
 { #category : 'rendering' }
 GolapHEBChartPresenter >> renderNodesIn: aCanvas [
 
+	| interaction |
+	interaction := GolapGraphOverviewNodeInteraction new
+		               presenter: self;
+		               yourself.
+
 	self ensureAngles.
 	nodeAngles keysDo: [ :nodeId |
-			(self newShapeForNode: nodeId) ifNotNil: [ :shape | aCanvas add: shape ].
+			(self newShapeForNode: nodeId) ifNotNil: [ :shape |
+					shape @ interaction.
+					aCanvas add: shape ].
 			(self newLabelForNode: nodeId) ifNotNil: [ :shape | aCanvas add: shape ] ]
 ]
 

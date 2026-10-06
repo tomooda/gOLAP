@@ -1,13 +1,13 @@
 Class {
-	#name : 'GolapEdgeInteraction',
-	#superclass : 'GolapChartInteraction',
+	#name : 'GolapClusteringEdgeInteraction',
+	#superclass : 'GolapClusteringChartInteraction',
 	#category : 'Golap-Visualization-Clustering',
 	#package : 'Golap-Visualization',
 	#tag : 'Clustering'
 }
 
 { #category : 'hooks' }
-GolapEdgeInteraction >> clicked: evt [
+GolapClusteringEdgeInteraction >> clicked: evt [
 	"evt shape model value ifNode: [ :node | node openSunburst ]."
 
 	presenter toggleSelectionsAll:
@@ -16,7 +16,7 @@ GolapEdgeInteraction >> clicked: evt [
 ]
 
 { #category : 'hooks' }
-GolapEdgeInteraction >> createPopupFor: aShape event: event [
+GolapClusteringEdgeInteraction >> createPopupFor: aShape event: event [
 
 	| popupShape |
 	popupShape := shapeBuilder shapeFor:
@@ -29,7 +29,7 @@ GolapEdgeInteraction >> createPopupFor: aShape event: event [
 ]
 
 { #category : 'hooks' }
-GolapEdgeInteraction >> edgeMenuFor: aGolapHierarchicalClusteringNode [
+GolapClusteringEdgeInteraction >> edgeMenuFor: aGolapHierarchicalClusteringNode [
 
 	^ presenter newMenu
 		  addGroup: [ :group |
@@ -41,7 +41,7 @@ GolapEdgeInteraction >> edgeMenuFor: aGolapHierarchicalClusteringNode [
 ]
 
 { #category : 'hooks' }
-GolapEdgeInteraction >> rightClicked: event [
+GolapClusteringEdgeInteraction >> rightClicked: event [
 
 	(self edgeMenuFor: event shape model value) openWithSpecAt:
 		(presenter withAdapterDo: [ :a |

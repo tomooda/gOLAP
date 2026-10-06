@@ -55,7 +55,7 @@ GolapHedgeChartPresenter >> updateCanvas [
 										       color: (self colorForNode: graphNode);
 										       model: leaf;
 										       yourself.
-									box @ (GolapNodeInteraction on: self).
+									box @ (GolapClusteringNodeInteraction on: self).
 									terminals add: leaf -> box position.
 									canvas addShape: box ].
 						progress progressPercent: 20.
@@ -115,7 +115,7 @@ GolapHedgeChartPresenter >> updateCanvas [
 														          (self edgeWidthForScore: node score) ceiling;
 													          color: Color gray;
 													          yourself.
-												bezier @ (GolapEdgeInteraction on: self).
+												bezier @ (GolapClusteringEdgeInteraction on: self).
 												canvas addShape: bezier ].
 										terminals add: parent -> parentPosition ] ] ].
 			self zoomToFit ]

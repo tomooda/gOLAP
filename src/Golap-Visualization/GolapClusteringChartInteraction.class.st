@@ -1,5 +1,5 @@
 Class {
-	#name : 'GolapChartInteraction',
+	#name : 'GolapClusteringChartInteraction',
 	#superclass : 'RSPopup',
 	#instVars : [
 		'presenter'
@@ -10,7 +10,7 @@ Class {
 }
 
 { #category : 'instance creation' }
-GolapChartInteraction class >> on: aGolapDandelionChartPresenter [
+GolapClusteringChartInteraction class >> on: aGolapDandelionChartPresenter [
 
 	^ self new
 		  presenter: aGolapDandelionChartPresenter;
@@ -18,13 +18,13 @@ GolapChartInteraction class >> on: aGolapDandelionChartPresenter [
 ]
 
 { #category : 'hooks' }
-GolapChartInteraction >> clicked: evt [
+GolapClusteringChartInteraction >> clicked: evt [
 
 	
 ]
 
 { #category : 'hooks' }
-GolapChartInteraction >> onShape: aShape [
+GolapClusteringChartInteraction >> onShape: aShape [
 
 	super onShape: aShape.
 	aShape
@@ -33,13 +33,13 @@ GolapChartInteraction >> onShape: aShape [
 ]
 
 { #category : 'accessing' }
-GolapChartInteraction >> presenter: aGolapDandelionChartPresenter [
+GolapClusteringChartInteraction >> presenter: aGolapDandelionChartPresenter [
 
 	presenter := aGolapDandelionChartPresenter
 ]
 
 { #category : 'hooks' }
-GolapChartInteraction >> rightClicked: evt [
+GolapClusteringChartInteraction >> rightClicked: evt [
 
 	
 ]

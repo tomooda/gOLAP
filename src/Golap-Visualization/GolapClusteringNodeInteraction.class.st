@@ -1,19 +1,19 @@
 Class {
-	#name : 'GolapNodeInteraction',
-	#superclass : 'GolapChartInteraction',
+	#name : 'GolapClusteringNodeInteraction',
+	#superclass : 'GolapClusteringChartInteraction',
 	#category : 'Golap-Visualization-Clustering',
 	#package : 'Golap-Visualization',
 	#tag : 'Clustering'
 }
 
 { #category : 'hooks' }
-GolapNodeInteraction >> activePopupWith: event [
+GolapClusteringNodeInteraction >> activePopupWith: event [
 
 	event shape model isLeaf ifTrue: [ super activePopupWith: event ]
 ]
 
 { #category : 'hooks' }
-GolapNodeInteraction >> clicked: event [
+GolapClusteringNodeInteraction >> clicked: event [
 
 	(event shape model respondsTo: #id) ifTrue: [
 			presenter toggleSelection:
@@ -21,7 +21,7 @@ GolapNodeInteraction >> clicked: event [
 ]
 
 { #category : 'hooks' }
-GolapNodeInteraction >> createPopupFor: aShape event: event [
+GolapClusteringNodeInteraction >> createPopupFor: aShape event: event [
 
 	| popupShape |
 	presenter showsPhotoimages ifTrue: [
@@ -50,7 +50,7 @@ GolapNodeInteraction >> createPopupFor: aShape event: event [
 ]
 
 { #category : 'hooks' }
-GolapNodeInteraction >> rightClicked: event [
+GolapClusteringNodeInteraction >> rightClicked: event [
 
 	(event shape model respondsTo: #id) ifTrue: [
 		(presenter golap globalImageMenu:
