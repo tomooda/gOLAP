@@ -132,7 +132,7 @@ GolapHEBChartPresenter >> newLabelForNode: nodeId [
 							  label := RSLabel new
 								           text: node name;
 								           yourself.
-							  delta := label width + self nodeSize * 0.5 + 14.0.
+							  delta := label width + self nodeSize * 0.5 + 30.0.
 							  label
 								  color: (self colorForNode: node);
 								  rotateByRadians: theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
@@ -225,14 +225,31 @@ GolapHEBChartPresenter >> newShapeForEdgeBetween: node1 category: category1 and:
 GolapHEBChartPresenter >> newShapeForNode: nodeId [
 
 	^ self golapModelDo: [ :golapModel |
-			  nodeAngles at: nodeId ifPresent: [ :theta |
-					  RSBox new
-						  extent: self nodeSize asPoint;
-						  color: (self colorForNode: nodeId);
-						  model: (golapModel nodeAt: nodeId);
-						  rotateByRadians: theta + (Float pi / 2.0) \\ Float pi - (Float pi / 2.0);
-						  position: (self nodePositionAt: nodeId offset: self nodeSize * 0.5);
-						  yourself ] ]
+			  (golapModel nodeAt: nodeId) ifNotNil: [ :node |
+					  nodeAngles at: nodeId ifPresent: [ :theta |
+							  | markers x d shapes |
+							  markers := golap colorMarkers.
+							  x := self nodeSize / 2.
+							  d := 4.
+							  shapes := RSGroup new.
+							  golap colorMarkers do: [ :marker |
+									  shapes add: (RSBox new
+											   extent: d @ self nodeSize;
+											   color: ((marker includesNodeId: nodeId)
+													    ifTrue: [ marker color ]
+													    ifFalse: [ Color transparent ]);
+											   position: d / 2 + x @ 0;
+											   yourself).
+									  x := x + d ].
+							  shapes add: (RSBox new
+									   extent: self nodeSize @ self nodeSize;
+									   position: 0 @ 0;
+									   color: (self colorForNode: nodeId);
+									   yourself).
+							  (shapes asShapeFor: node)
+								  rotateByRadians: theta "+ (Float pi / 2.0) \\ Float pi - (Float pi / 2.0)";
+								  position: (self nodePositionAt: nodeId offset: self nodeSize * 0.5);
+								  yourself ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -250,7 +267,7 @@ GolapHEBChartPresenter >> nodePositionAt: aString offset: aNumber [
 { #category : 'accessing' }
 GolapHEBChartPresenter >> nodeSize [
 
-	^ 16
+	^ 24
 ]
 
 { #category : 'private' }
