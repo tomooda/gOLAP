@@ -15,12 +15,26 @@ Class {
 		'frontNodes',
 		'baseNodes',
 		'merge',
-		'polishers'
+		'polishers',
+		'excludedNodes'
 	],
 	#category : 'Golap-Models-Graph',
 	#package : 'Golap-Models',
 	#tag : 'Graph'
 }
+
+{ #category : 'accessing-node' }
+GolapModel >> addAllToExclusionList: aCollectionOfString [
+
+	| changed |
+	changed := false.
+	aCollectionOfString do: [ :id |
+			(excludedNodes includes: id) ifFalse: [
+					excludedNodes add: id.
+					changed := true ] ].
+	changed ifTrue: [ self updateNodesAndEdges ].
+	^ aCollectionOfString
+]
 
 { #category : 'accessing' }
 GolapModel >> addPolisher: aGolapPolisher [
@@ -34,6 +48,15 @@ GolapModel >> addPolisher: aGolapPolisher [
 GolapModel >> addReferenceNode: aGolapNode [
 
 	referenceNodes addLast: aGolapNode id
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> addToExclusionList: aString [
+
+	(excludedNodes includes: aString) ifFalse: [
+			excludedNodes add: aString.
+			self updateNodesAndEdges ].
+	^ aString
 ]
 
 { #category : 'announcements' }
@@ -185,49 +208,43 @@ GolapModel >> constructNodesFromBaseGraph: aGolapBaseGraph [
 	baseGraphNodes := Dictionary new: aGolapBaseGraph numberOfNodes.
 	newRoots := Set new.
 	aGolapBaseGraph nodesDo: [ :baseNode |
-			baseGraphNodes at: baseNode id put: baseNode.
-			merge rootsAt: baseNode id do: [ :id | newRoots add: id ] ].
+			(excludedNodes includes: baseNode id) ifFalse: [
+					baseGraphNodes at: baseNode id put: baseNode.
+					merge rootsAt: baseNode id do: [ :root | (excludedNodes includes: root) ifFalse: [ newRoots add: root ] ] ] ].
 	newNodes := Dictionary new.
 	newRoots do: [ :root |
-			((merge leavesAt: root) collect: [ :leaf | baseGraphNodes at: leaf ])
-				ifNotEmpty: [ :leafBaseNodes |
-						newNodes at: root put: (leafBaseNodes size = 1
-								 ifTrue: [ leafBaseNodes first asGolapNode ]
-								 ifFalse: [
-										 | newData |
-										 newData := DataSeries newFrom:
-											            (nodeAggregators collect: [ :aggregation |
-												             aggregation value:
-													             (leafBaseNodes collect: #data) ]).
-										 newData name: root asString.
-										 GolapMergedNode
-											 on: newData
-											 name: root asString
-											 ids: (leafBaseNodes collect: [ :n | n id asString ]) ]) ] ].
+			((merge leavesAt: root) collect: [ :leaf | baseGraphNodes at: leaf ]) ifNotEmpty: [ :leafBaseNodes |
+					newNodes at: root put: (leafBaseNodes size = 1
+							 ifTrue: [ leafBaseNodes first asGolapNode ]
+							 ifFalse: [
+									 | newData |
+									 newData := DataSeries newFrom:
+										            (nodeAggregators collect: [ :aggregation | aggregation value: (leafBaseNodes collect: #data) ]).
+									 newData name: root asString.
+									 GolapMergedNode on: newData name: root asString ids: (leafBaseNodes collect: [ :n | n id asString ]) ]) ] ].
 	newRootEdges := Dictionary new.
 	aGolapBaseGraph edgesDo: [ :baseEdge |
-			merge rootsAt: baseEdge node1 do: [ :root1 |
-					merge rootsAt: baseEdge node2 do: [ :root2 |
-							root1 = root2 ifFalse: [
-									(newRootEdges
-										 at: (root1 < root2
-												  ifTrue: [ Array with: root1 with: root2 ]
-												  ifFalse: [ Array with: root2 with: root1 ])
-										 ifAbsentPut: [ OrderedCollection new ]) add: baseEdge data ] ] ] ].
+			((excludedNodes includes: baseEdge node1) not and: [ (excludedNodes includes: baseEdge node2) not ]) ifTrue: [
+					merge rootsAt: baseEdge node1 do: [ :root1 |
+							(excludedNodes includes: root1) ifFalse: [
+									merge rootsAt: baseEdge node2 do: [ :root2 |
+											((excludedNodes includes: root2) not and: [ root1 ~= root2 ]) ifTrue: [
+													(newRootEdges
+														 at: (root1 < root2
+																  ifTrue: [ Array with: root1 with: root2 ]
+																  ifFalse: [ Array with: root2 with: root1 ])
+														 ifAbsentPut: [ OrderedCollection new ]) add: baseEdge data ] ] ] ] ] ].
 	newRootEdges := newRootEdges collect: [ :dataArray |
 			                (dataArray size = 1
 				                 ifTrue: [ dataArray first copy ]
-				                 ifFalse: [
-						                 DataSeries newFrom:
-								                 (edgeAggregators collect: [ :aggregator |
-										                  aggregator value: dataArray ]) ])
+				                 ifFalse: [ DataSeries newFrom: (edgeAggregators collect: [ :aggregator | aggregator value: dataArray ]) ])
 				                at: 'effective' ifAbsentPut: [ 1 ];
 				                yourself ].
 	newRootEdges keysAndValuesDo: [ :rootPair :data |
 			newNodes at: rootPair first ifPresent: [ :node1 |
-					newNodes at: rootPair second ifPresent: [ :node2 |
-							(data at: 'effective' ifAbsent: [ 1 ]) > 0
-								ifTrue: [ node1 createEdgeTo: node2 data: data copy ] ] ] ].
+					newNodes
+						at: rootPair second
+						ifPresent: [ :node2 | (data at: 'effective' ifAbsent: [ 1 ]) > 0 ifTrue: [ node1 createEdgeTo: node2 data: data copy ] ] ] ].
 	^ newNodes
 ]
 
@@ -456,7 +473,8 @@ GolapModel >> initialize [
 	baseGraph := GolapBaseGraph new.
 	merge := GolapNodeMerge new.
 	referenceNodes := OrderedCollection new.
-	polishers := OrderedCollection new
+	polishers := OrderedCollection new.
+	excludedNodes := Set new
 ]
 
 { #category : 'accessing-reference nodes' }
@@ -599,6 +617,28 @@ GolapModel >> referenceNodes [
 GolapModel >> referenceNodesSize [
 
 	^ referenceNodes size
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> removeAllFromExclusionList: aCollectionOfString [
+
+	| changed |
+	changed := false.
+	aCollectionOfString do: [ :id |
+			(excludedNodes includes: id) ifTrue: [
+					excludedNodes remove: id ifAbsent: [ ].
+					changed := true ] ].
+	changed ifTrue: [ self updateNodesAndEdges ].
+	^ aCollectionOfString
+]
+
+{ #category : 'accessing-node' }
+GolapModel >> removeFromExclusionList: aString [
+
+	(excludedNodes includes: aString) ifTrue: [
+			excludedNodes remove: aString ifAbsent: [ ].
+			self updateNodesAndEdges ].
+	^ aString
 ]
 
 { #category : 'accessing-reference nodes' }

@@ -215,6 +215,13 @@ Golap >> activeVisualizationDo: aBlock [
 		  ifNotNil: aBlock
 ]
 
+{ #category : 'accessing-exclusion list' }
+Golap >> addAllToExclusionList: aCollectionOfGolapNode [
+
+	model addToExclusionList: (aCollectionOfGolapNode collect: #id).
+	self updateModel
+]
+
 { #category : 'accessing-dimensions' }
 Golap >> addDimension: aGolapBaseGraph named: aString [
 
@@ -232,6 +239,21 @@ Golap >> addReferenceNode: aGolapNode [
 
 	model addReferenceNode: aGolapNode.
 	self updateGlobalImage
+]
+
+{ #category : 'accessing-exclusion list' }
+Golap >> addSelectionsToExclusionList [
+
+	model addAllToExclusionList: selections.
+	selections removeAll.
+	self updateModel
+]
+
+{ #category : 'accessing-exclusion list' }
+Golap >> addToExclusionList: aGolapNode [
+
+	model addToExclusionList: aGolapNode id.
+	self updateModel
 ]
 
 { #category : 'accessing-markers' }
@@ -599,52 +621,62 @@ Golap >> globalImageMenu: aGolapNode [
 						ifTrue: [
 								group addItem: [ :item |
 										item
-											name: 'Unselect';
+											name: '選択解除';
 											action: [ self toggleSelection: aGolapNode ] ] ]
 						ifFalse: [
 								group addItem: [ :item |
 										item
-											name: 'Select';
+											name: '選択';
 											action: [ self toggleSelection: aGolapNode ] ] ] ].
 			self selections ifNotEmpty: [
 					group addItem: [ :item |
 							item
-								name: 'Unselect all';
-								action: [ self unselectAll ] ] ] ].
+								name: '全て選択解除';
+								action: [ self unselectAll ] ] ].
+			group addItem: [ :item |
+					item
+						name: '選択を反転';
+						action: [ self invertSelections ] ] ].
 	menu addGroup: [ :group |
 			aGolapNode ifNotNil: [
 					(itemList markMenu: aGolapNode) ifNotNil: [ :submenu |
 							group addItem: [ :item |
 									item
-										name: 'Mark';
+										name: 'マーク';
 										subMenu: submenu ] ].
 					(itemList unmarkMenu: aGolapNode) ifNotNil: [ :submenu |
 							group addItem: [ :item |
 									item
-										name: 'Unmark';
+										name: 'マーク解除';
 										subMenu: submenu ] ] ].
 			self selections ifNotEmpty: [
 					group
 						addItem: [ :item |
 								item
-									name: 'Mark selections';
+									name: '選択アイテムをマーク';
 									subMenu: itemList markSelectionsMenu ];
 						addItem: [ :item |
 								item
-									name: 'Unmark selections';
+									name: '選択アイテムをマーク解除';
 									subMenu: itemList unmarkSelectionsMenu ] ] ].
+	selections ifNotEmpty: [
+			menu addGroup: [ :group |
+					group addItem: [ :item |
+							item
+								name: '選択アイテムを削除';
+								action: [ self addSelectionsToExclusionList ] ] ] ].
 	aGolapNode ifNotNil: [
 			menu addGroup: [ :group |
 					(model isReferenceNode: aGolapNode)
 						ifTrue: [
 								group addItem: [ :item |
 										item
-											name: 'remove from reference';
+											name: '参照解除';
 											action: [ self removeReferenceNode: aGolapNode ] ] ]
 						ifFalse: [
 								group addItem: [ :item |
 										item
-											name: 'add to reference';
+											name: '参照セット';
 											action: [ self addReferenceNode: aGolapNode ] ] ] ].
 			menu
 				addGroup: [ :group |
@@ -652,17 +684,17 @@ Golap >> globalImageMenu: aGolapNode [
 							ifTrue: [
 									group addItem: [ :item |
 												item
-													name: 'Unpin';
+													name: 'ピン解除';
 													action: [ self togglePin: aGolapNode ] ] ]
 							ifFalse: [
 									group addItem: [ :item |
 											item
-												name: 'Pin';
+												name: 'ピン';
 												action: [ self togglePin: aGolapNode ] ] ] ];
 				addGroup: [ :group |
 						group addItem: [ :item |
 								item
-									name: 'Show info';
+									name: 'アイテム情報に表示';
 									action: [ itemView node: aGolapNode ] ] ] ].
 	menu addGroup: [ :group |
 			| mergeMenu unmergeMenu |
@@ -670,18 +702,18 @@ Golap >> globalImageMenu: aGolapNode [
 			(mergeMenu menuGroups allSatisfy: #isEmpty) ifFalse: [
 					group addItem: [ :item |
 							item
-								name: 'merge';
+								name: 'マージ';
 								subMenu: mergeMenu ] ].
 			unmergeMenu := self unmergeMenu.
 			(unmergeMenu menuGroups allSatisfy: #isEmpty) ifFalse: [
 					group addItem: [ :item |
 							item
-								name: 'unmerge';
+								name: 'マージ解除';
 								subMenu: unmergeMenu ] ] ].
 	menu addGroup: [ :group |
 			group addItem: [ :item |
 					item
-						name: 'Inspect';
+						name: '開発者メニュー(Inspect)';
 						action: [ aGolapNode inspect ] ] ].
 	^ menu
 ]
@@ -920,6 +952,20 @@ Golap >> initializeWindow: aWindowPresenter [
 	aWindowPresenter whenClosedDo: [ self saveQueryRecord ]
 ]
 
+{ #category : 'accessing-selection' }
+Golap >> invertSelections [
+
+	| newSelections nodeInNewSelection |
+	newSelections := Set new.
+	model nodesDo: [ :v |
+			(selections anySatisfy: [ :id | v includesId: id ]) ifFalse: [
+					nodeInNewSelection ifNil: [ nodeInNewSelection := v ].
+					v idsDo: [ :id | newSelections add: id ] ] ].
+	selections := newSelections.
+	self showItemView: nodeInNewSelection.
+	self updateSelection
+]
+
 { #category : 'private' }
 Golap >> isUpdateModelBlocked [
 
@@ -1029,24 +1075,20 @@ Golap >> mergeMenu [
 			selections size > 1 ifTrue: [
 					group addItem: [ :item |
 							item
-								name: 'selections';
+								name: '選択アイテム';
 								action: [ self mergeSelectedNodes ] ] ].
-			itemList markerDropList items
-				select: #isColorMarker
-				thenDo: [ :marker |
-						| ids |
-						ids := model nodes
-							       select: [ :node | marker includesNode: node ]
-							       thenCollect: #id.
-						ids size > 1 ifTrue: [
-								group addItem: [ :menuItem |
-										menuItem
-											name: '';
-											icon: marker icon;
-											action: [
-													(self mergeNodes: ids copy) ifNotNil: [ :newId |
-																itemList add: (model nodeAt: newId) toMarker: marker.
-																itemList currentMarker: marker ] ] ] ] ] ].
+			itemList markerDropList items select: #isColorMarker thenDo: [ :marker |
+					| ids |
+					ids := model nodes select: [ :node | marker includesNode: node ] thenCollect: #id.
+					ids size > 1 ifTrue: [
+							group addItem: [ :menuItem |
+									menuItem
+										name: '';
+										icon: marker icon;
+										action: [
+												(self mergeNodes: ids copy) ifNotNil: [ :newId |
+															itemList add: (model nodeAt: newId) toMarker: marker.
+															itemList currentMarker: marker ] ] ] ] ] ].
 	^ menu
 ]
 
@@ -1323,11 +1365,11 @@ Golap >> queryViewTreeMenu [
 			group
 				addItem: [ :item | 
 					item
-						name: 'Copy all' translated;
+						name: '全てコピー' translated;
 						action: [ self copyAllFromQueryViewTree ] ];
 				addItem: [ :item | 
 					item
-						name: 'Copy selected item' translated;
+						name: '選択アイテムをコピー' translated;
 						action: [ self copyFromQueryViewTree ] ] ]
 ]
 
@@ -1372,6 +1414,20 @@ Golap >> release [
 	itemView := nil.
 	imageCache := nil.
 	super release
+]
+
+{ #category : 'accessing-exclusion list' }
+Golap >> removeAllFromExclusionList: aCollectionOfGolapNode [
+
+	model removeAllFromExclusionList: (aCollectionOfGolapNode collect: #id).
+	self updateModel
+]
+
+{ #category : 'accessing-exclusion list' }
+Golap >> removeFromExclusionList: aGolapNode [
+
+	model removeFromExclusionList: aGolapNode id.
+	self updateModel
 ]
 
 { #category : 'accessing-reference nodes' }

@@ -353,66 +353,7 @@ GolapItemList >> nodeList [
 { #category : 'menu' }
 GolapItemList >> nodeListMenu [
 
-	| menu selectedNode |
-	menu := self newMenu.
-	selectedNode := self model
-		                nodeAt:
-		                (nodeList selection selectedItem ifNil: [ ^ menu ])
-		                ifAbsent: [ ^ menu ].
-	menu addGroup: [ :group |
-			(self markMenu: selectedNode) ifNotNil: [ :submenu |
-					group addItem: [ :item |
-							item
-								name: 'mark';
-								subMenu: submenu ] ].
-			(self unmarkMenu: selectedNode) ifNotNil: [ :submenu |
-					group addItem: [ :item |
-							item
-								name: 'unmark';
-								subMenu: submenu ] ].
-			nodeList selectedItems ifNotEmpty: [
-					group
-						addItem: [ :item |
-								item
-									name: 'Mark selections';
-									subMenu: self markSelectionsMenu ];
-						addItem: [ :item |
-								item
-									name: 'Unmark selections';
-									subMenu: self unmarkSelectionsMenu ] ] ].
-
-	selectedNode ifNotNil: [
-			menu addGroup: [ :group |
-					(golap model isReferenceNode: selectedNode)
-						ifTrue: [
-								group addItem: [ :item |
-										item
-											name: 'remove from reference';
-											action: [ golap removeReferenceNode: selectedNode ] ] ]
-						ifFalse: [
-								group addItem: [ :item |
-										item
-											name: 'add to reference';
-											action: [ golap addReferenceNode: selectedNode ] ] ] ] ].
-
-	menu addGroup: [ :group |
-			(golap includesPin: selectedNode)
-				ifTrue: [
-						group addItem: [ :item |
-								item
-									name: 'Unpin';
-									action: [ golap togglePin: selectedNode ] ] ]
-				ifFalse: [
-						group addItem: [ :item |
-								item
-									name: 'Pin';
-									action: [ golap togglePin: selectedNode ] ] ] ].
-	menu addGroup: [ :group |
-			group addItem: [ :item |
-					item
-						name: 'Show info';
-						action: [ golap showItemView: selectedNode ] ] ].
-	^ menu
+	^ self selectedNode ifNotNil: [ :node | golap globalImageMenu: node ] ifNil: [ self newMenu ]
 ]
 
 { #category : 'accessing' }
@@ -466,6 +407,12 @@ GolapItemList >> selectedItem [
 GolapItemList >> selectedItems: aCollectionOfString [
 
 	nodeList selectItems: aCollectionOfString
+]
+
+{ #category : 'accessing' }
+GolapItemList >> selectedNode [
+
+	^ self selectedItem ifNotNil: [ :id | golap model nodeAt: id ifAbsent: [ nil ] ]
 ]
 
 { #category : 'testing' }
