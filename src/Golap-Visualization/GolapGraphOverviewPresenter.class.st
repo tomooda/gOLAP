@@ -129,18 +129,16 @@ GolapGraphOverviewPresenter >> ensureNodePositionAt: aString ifFailed: errorBloc
 GolapGraphOverviewPresenter >> ensureNodePositions [
 
 	self isDisplayed ifTrue: [
-			nodePositions
-				ifEmpty: [ self basicUpdateNodePositions ]
-				ifNotEmpty: [
+			| availableEdges |
+			availableEdges := self availableEdges.
+			(nodePositions notEmpty or: [ availableEdges isEmpty ])
+				ifTrue: [
 						self golapModelDo: [ :golapModel |
-								self availableEdges do: [ :edge |
+								availableEdges do: [ :edge |
 										(golapModel valueAtEdge: edge) notNil ifTrue: [
-												self
-													ensureNodePositionAt: edge node1 id
-													ifFailed: [ 0 @ 0 ].
-												self
-													ensureNodePositionAt: edge node2 id
-													ifFailed: [ 0 @ 0 ] ] ] ] ] ]
+												self ensureNodePositionAt: edge node1 id ifFailed: [ 0 @ 0 ].
+												self ensureNodePositionAt: edge node2 id ifFailed: [ 0 @ 0 ] ] ] ] ]
+				ifFalse: [ self basicUpdateNodePositions ] ]
 ]
 
 { #category : 'updating' }
