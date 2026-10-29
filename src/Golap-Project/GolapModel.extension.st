@@ -16,6 +16,7 @@ GolapModel >> asJSON [
 		  at: 'referenceNodes' put: referenceNodes asArray;
 		  at: 'friend' put: friend;
 		  at: 'merge' put: merge asJSON;
+		  at: 'excludedNodes' put: excludedNodes asArray;
 		  at: 'polishers' put: (polishers asArray collect: #asJSON);
 		  yourself
 ]
@@ -40,6 +41,7 @@ GolapModel >> fromJSON: aDictionary [
 		at: 'edgeAggregators' ifPresent: [ :array | edgeAggregators := array collect: [ :json | GolapDataAggregator fromJSON: json ] ];
 		at: 'friend' ifPresent: [ :numOrNil | friend := numOrNil ];
 		at: 'merge' ifPresent: [ :json | merge fromJSON: json ];
+		at: 'excludedNodes' ifPresent: [ :array | excludedNodes := array asSet ];
 		at: 'polishers'
 		ifPresent: [ :array | polishers := (array collect: [ :json | GolapPolisher fromJSON: json ]) asOrderedCollection ].
 	baseGraph := GolapBaseGraph fromJSON: aDictionary.
