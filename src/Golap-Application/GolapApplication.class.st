@@ -216,7 +216,8 @@ GolapApplication >> execute [
 	self
 		installMenu;
 		installIcon;
-		installQuitSession
+		installQuitSession;
+		resume
 ]
 
 { #category : 'installing' }
@@ -279,4 +280,10 @@ GolapApplication >> installQuitSession [
 		at: #WorldState
 		ifPresent: [ :class |
 		class class compile: 'quitSession GolapApplication quit' ]
+]
+
+{ #category : 'sessions' }
+GolapApplication >> resume [
+
+	^ self class resume
 ]
