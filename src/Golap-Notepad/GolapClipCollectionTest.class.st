@@ -98,6 +98,18 @@ GolapClipCollectionTest >> testRemove [
 ]
 
 { #category : 'testing' }
+GolapClipCollectionTest >> testRemoveIfAbsent [
+
+	collection add: a.
+	collection add: b.
+	self assert: (collection sorted: #id ascending) equals: {
+			a.
+			b }.
+	self assert: (collection remove: a ifAbsent: [ nil ]) identicalTo: a.
+	self assert: (collection remove: a ifAbsent: [ nil ]) equals: nil
+]
+
+{ #category : 'testing' }
 GolapClipCollectionTest >> testRemoveKeyIfAbsent [
 
 	collection add: a.
@@ -108,4 +120,17 @@ GolapClipCollectionTest >> testRemoveKeyIfAbsent [
 	self assert: (collection removeKey: 'a' ifAbsent: [ ]) identicalTo: a.
 	self assert: (collection removeKey: 'a' ifAbsent: [ nil ]) equals: nil.
 	self assert: (collection removeKey: b ifAbsent: [ nil ]) equals: nil
+]
+
+{ #category : 'testing' }
+GolapClipCollectionTest >> testRenameTo [
+
+	collection add: a.
+	collection add: b.
+	self assert: (collection sorted: #id ascending) equals: {
+			a.
+			b }.
+	self assert: (collection rename: 'a' to: 'c') identicalTo: a.
+	self assert: a id equals: 'c'.
+	self assert: (collection at: 'c') identicalTo: a
 ]

@@ -74,6 +74,12 @@ GolapClipCollection >> fixCollisionsFrom: start [
 			(newIndex := self scanFor: element id) = index ifFalse: [ array swap: index with: newIndex ] ]
 ]
 
+{ #category : 'testing' }
+GolapClipCollection >> includesKey: aString [
+
+	^ (array at: (self findElementOrNil: aString)) notNil
+]
+
 { #category : 'private' }
 GolapClipCollection >> noCheckAdd: aGolapClip [
 	"This method should be deprecated"
@@ -112,6 +118,18 @@ GolapClipCollection >> removeKey: aString ifAbsent: aBlock [
 	tally := tally - 1.
 	self fixCollisionsFrom: index.
 	^ old
+]
+
+{ #category : 'accessing' }
+GolapClipCollection >> rename: aString to: anotherString [
+
+	^ self
+		  at: aString
+		  ifPresent: [ :clip |
+				  clip id: anotherString.
+				  self rehash.
+				  clip ]
+		  ifAbsent: [ nil ]
 ]
 
 { #category : 'private' }

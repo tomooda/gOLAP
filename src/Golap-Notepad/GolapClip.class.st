@@ -9,6 +9,15 @@ Class {
 	#tag : 'Clip'
 }
 
+{ #category : 'instance creation' }
+GolapClip class >> fromJSON: aDictionary [
+
+	aDictionary at: 'kind' ifPresent: [ :kind |
+			self allSubclassesDo: [ :subclass |
+				(subclass isAbstract not and: [ subclass kind = kind ]) ifTrue: [ ^ subclass new fromJSON: aDictionary ] ] ].
+	^ nil
+]
+
 { #category : 'testing' }
 GolapClip class >> isAbstract [
 
