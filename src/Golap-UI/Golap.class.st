@@ -48,6 +48,7 @@ Class {
 
 { #category : 'settings' }
 Golap class >> defaultFont [
+
 	^ StandardFonts defaultFont
 ]
 
@@ -412,12 +413,6 @@ Golap >> basicShowsPhotoimages: aBoolean [
 Golap >> blockUpdateModelWhile: aBlock [
 
 	aBlock value
-]
-
-{ #category : 'layouts' }
-Golap >> buttonHeight [
-
-	^ self class buttonHeight
 ]
 
 { #category : 'layouts' }
@@ -1559,9 +1554,9 @@ Golap >> retrievePhotoimages [
 Golap >> rightPaneLayout [
 
 	^ SpBoxLayout newVertical
-		  add: saveAsSvgButton height: self buttonHeight;
-		  add: saveAsPngButton height: self buttonHeight;
-		  add: resendQueryButton height: self buttonHeight;
+		  add: saveAsSvgButton expand: false;
+		  add: saveAsPngButton expand: false;
+		  add: resendQueryButton expand: false;
 		  add: queryViewTree height: 200;
 		  add: itemNotebook
 ]

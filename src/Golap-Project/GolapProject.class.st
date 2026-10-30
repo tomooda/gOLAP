@@ -1,11 +1,15 @@
 Class {
 	#name : 'GolapProject',
 	#superclass : 'Object',
+	#instVars : [
+		'note'
+	],
 	#classVars : [
 		'Current'
 	],
-	#category : 'Golap-Project',
-	#package : 'Golap-Project'
+	#category : 'Golap-Project-Core',
+	#package : 'Golap-Project',
+	#tag : 'Core'
 }
 
 { #category : 'accessing' }
@@ -208,6 +212,18 @@ GolapProject >> load [
 GolapProject >> notEmpty [
 
 	^ self isEmpty not
+]
+
+{ #category : 'accessing' }
+GolapProject >> note [
+
+	^ note ifNil: [ note := String new ]
+]
+
+{ #category : 'accessing' }
+GolapProject >> note: aString [
+
+	note := aString
 ]
 
 { #category : 'operations' }
