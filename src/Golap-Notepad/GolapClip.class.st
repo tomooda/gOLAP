@@ -31,6 +31,24 @@ GolapClip class >> kind [
 ]
 
 { #category : 'converting' }
+GolapClip >> asHtml [
+
+	^ String streamContents: [ :stream | self printHtmlOn: stream ]
+]
+
+{ #category : 'converting' }
+GolapClip >> asMarkDown [
+
+	^ String streamContents: [ :stream | self printMarkDownOn: stream ]
+]
+
+{ #category : 'converting' }
+GolapClip >> asMicrodown [
+
+	^ String streamContents: [ :stream | self printMicrodownOn: stream ]
+]
+
+{ #category : 'converting' }
 GolapClip >> fromJSON: aDictionary [
 
 	aDictionary at: 'id' ifPresent: [ :string | self id: string ]

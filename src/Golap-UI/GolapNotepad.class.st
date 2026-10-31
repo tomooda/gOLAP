@@ -44,11 +44,11 @@ GolapNotepad >> initializePresenters [
 	sourceText := self newText.
 	preview := self instantiate: GolapMicrodownPresenter.
 	previewPage := self newNotebookPage
-		               title: 'プレビュー';
+		               title: '清書';
 		               presenterProvider: [ preview ];
 		               yourself.
 	notebook := self newNotebook
-		            addPageTitle: 'MarkDown' provider: [ sourceText ];
+		            addPageTitle: 'ノート' provider: [ sourceText ];
 		            addPage: previewPage;
 		            whenSelectedPageChangedDo: [ notebook selectedPage = previewPage ifTrue: [ self updatePreview ] ];
 		            yourself.

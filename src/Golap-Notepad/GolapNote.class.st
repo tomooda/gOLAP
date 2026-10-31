@@ -1,6 +1,6 @@
 Class {
 	#name : 'GolapNote',
-	#superclass : 'Object',
+	#superclass : 'Model',
 	#instVars : [
 		'clipCollection',
 		'string',
@@ -34,7 +34,7 @@ GolapNote >> clipCollectionChanged [
 	dirty := true
 ]
 
-{ #category : 'accessing' }
+{ #category : 'private' }
 GolapNote >> findUnusedId [
 
 	| max |
@@ -103,6 +103,20 @@ GolapNote >> string: aString [
 GolapNote >> stringChanged [
 
 	dirty := true
+]
+
+{ #category : 'accessing' }
+GolapNote >> text [
+
+	^ self textFromMicrodown: self string
+]
+
+{ #category : 'private' }
+GolapNote >> textFromMicrodown: aString [
+
+	^ MicRichTextComposer new
+		  textStyler: GolapMicTextStyler new;
+		  asRichText: (MicrodownParser new parse: aString)
 ]
 
 { #category : 'private' }
