@@ -68,7 +68,9 @@ GolapNotepad >> initializeWindow: aSpWindowPresenter [
 		initialExtent: 600 @ self currentWorld extent y;
 		initialPosition: 0 @ 20.
 	aSpWindowPresenter
-		whenOpenedDo: [ self setupSubscription ];
+		whenOpenedDo: [
+				self setupSubscription.
+				self updatePages ];
 		whenClosedDo: [ self releaseSubscription ]
 ]
 

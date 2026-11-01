@@ -15,7 +15,7 @@ MicRichTextComposer >> visitGolapClip: aMicGolapScriptBlock [
 							               actOnClickBlock: [ clip open ];
 							               yourself).
 				canvas
-					<< clip image asText;
+					<< (clip image scaledToSize: 500 @ 500) asText;
 					newLine;
 					<< buttonText;
 					newLine;

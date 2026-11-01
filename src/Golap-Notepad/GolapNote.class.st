@@ -42,7 +42,7 @@ GolapNote >> appendClip: aGolapClip [
 { #category : 'operations' }
 GolapNote >> appendString: aString [
 
-	string := string , aString
+	string := string , String cr , aString
 ]
 
 { #category : 'operations' }
