@@ -8,8 +8,7 @@ Class {
 		'preview',
 		'notebook',
 		'exportButton',
-		'closeButton',
-		'previewPage'
+		'closeButton'
 	],
 	#category : 'Golap-UI-Notepad',
 	#package : 'Golap-UI',
@@ -41,16 +40,14 @@ GolapNotepad >> export [
 GolapNotepad >> initializePresenters [
 
 	super initializePresenters.
-	sourceText := self newText.
+	sourceText := self newText
+		              whenTextChangedDo: [ self sourceTextChanged ];
+		              yourself.
 	preview := self instantiate: GolapMicrodownPresenter.
-	previewPage := self newNotebookPage
-		               title: '清書';
-		               presenterProvider: [ preview ];
-		               yourself.
 	notebook := self newNotebook
-		            addPageTitle: 'ノート' provider: [ sourceText ];
-		            addPage: previewPage;
-		            whenSelectedPageChangedDo: [ notebook selectedPage = previewPage ifTrue: [ self updatePreview ] ];
+		            addPageTitle: 'プレビュー' provider: [ preview ];
+		            addPageTitle: '編集' provider: [ sourceText ];
+		            whenSelectedPageChangedDo: [ self updatePages ];
 		            yourself.
 	closeButton := self newButton
 		               label: '閉じる';
@@ -69,7 +66,23 @@ GolapNotepad >> initializeWindow: aSpWindowPresenter [
 	aSpWindowPresenter
 		title: 'ノート';
 		initialExtent: 600 @ self currentWorld extent y;
-		initialPosition: 0 @ 20
+		initialPosition: 0 @ 20.
+	aSpWindowPresenter
+		whenOpenedDo: [ self setupSubscription ];
+		whenClosedDo: [ self releaseSubscription ]
+]
+
+{ #category : 'accessing' }
+GolapNotepad >> note [
+
+	^ GolapNote current
+]
+
+{ #category : 'subscription' }
+GolapNotepad >> releaseSubscription [
+
+	self note ifNotNil: [ :note | note announcer unsubscribe: self ].
+	GolapProject announcer unsubscribe: self
 ]
 
 { #category : 'operations' }
@@ -78,8 +91,42 @@ GolapNotepad >> save [
 	self alert: '未実装'
 ]
 
+{ #category : 'subscription' }
+GolapNotepad >> setupSubscription [
+
+	self note ifNotNil: [ :note | note announcer when: GolapNoteModified send: #updatePages to: self ].
+	GolapProject announcer when: GolapNoteReplaced send: #updateNoteSubscription: to: self
+]
+
+{ #category : 'updating' }
+GolapNotepad >> sourceTextChanged [
+
+	self note string: sourceText text
+]
+
+{ #category : 'subscription' }
+GolapNotepad >> updateNoteSubscription: aGolapNoteReplaced [
+
+	aGolapNoteReplaced oldNote ifNotNil: [ :note | note announcer unsubscribe: self ].
+	aGolapNoteReplaced newNote ifNotNil: [ :note | note announcer when: GolapNoteModified send: #updatePages to: self ]
+]
+
+{ #category : 'updating' }
+GolapNotepad >> updatePages [
+
+	sourceText isDisplayed ifTrue: [ self updateSourceText ].
+	preview isDisplayed ifTrue: [ self updatePreview ]
+]
+
 { #category : 'updating' }
 GolapNotepad >> updatePreview [
 
-	preview documentFromString: sourceText text
+	preview documentFromString: self note string
+]
+
+{ #category : 'updating' }
+GolapNotepad >> updateSourceText [
+
+	| newSource |
+	(newSource := self note string) ~= sourceText text ifTrue: [ sourceText text: newSource ]
 ]

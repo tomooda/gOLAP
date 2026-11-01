@@ -11,14 +11,47 @@ Class {
 	#tag : 'Core'
 }
 
+{ #category : 'utilities' }
+GolapNote class >> current [
+
+	^ GolapProject current note
+]
+
 { #category : 'operations' }
 GolapNote >> addClip: aGolapClip [
+
+	^ (self basicAddClip: aGolapClip) ifNotNil: [ :clip |
+			  self announceNoteChanged.
+			  clip ]
+]
+
+{ #category : 'announcements' }
+GolapNote >> announceNoteChanged [
+
+	^ self announcer announce: (GolapNoteModified on: self)
+]
+
+{ #category : 'operations' }
+GolapNote >> appendClip: aGolapClip [
+
+	(self basicAddClip: aGolapClip) ifNotNil: [ :clip |
+			self appendString: aGolapClip asMicrodown.
+			self announceNoteChanged ]
+]
+
+{ #category : 'operations' }
+GolapNote >> appendString: aString [
+
+	string := string , aString
+]
+
+{ #category : 'operations' }
+GolapNote >> basicAddClip: aGolapClip [
 
 	(clipCollection includes: aGolapClip) ifTrue: [ ^ nil ].
 	^ (self validateId: aGolapClip id) ifNotNil: [ :id |
 			  aGolapClip id: id.
 			  clipCollection add: aGolapClip.
-			  self clipCollectionChanged.
 			  aGolapClip ]
 ]
 
@@ -28,10 +61,23 @@ GolapNote >> clearDirty [
 	dirty := false
 ]
 
+{ #category : 'accessing' }
+GolapNote >> clipAt: aString ifAbsent: absentBlock [
+
+	^ clipCollection at: aString ifAbsent: absentBlock
+]
+
+{ #category : 'accessing' }
+GolapNote >> clipAt: aString ifPresent: presentBlock ifAbsent: absentBlock [
+
+	^ clipCollection at: aString ifPresent: presentBlock ifAbsent: absentBlock
+]
+
 { #category : 'updating' }
 GolapNote >> clipCollectionChanged [
 
-	dirty := true
+	dirty := true.
+	self announceNoteChanged
 ]
 
 { #category : 'private' }
@@ -41,7 +87,7 @@ GolapNote >> findUnusedId [
 	max := 0.
 	clipCollection do: [ :clip |
 		(clip id beginsWith: 'クリップ') ifTrue: [ max := max max: (clip id copyFrom: 5 to: clip id size) asInteger abs ] ].
-	^ ('クリップ' , max + 1) printString
+	^ 'クリップ' , (max + 1) printString
 ]
 
 { #category : 'initialization' }
@@ -81,7 +127,7 @@ GolapNote >> requestId: aStringOrNil message: anotherString [
 
 	^ SpApplication defaultApplication newRequest
 		  title: '名前入力';
-		  label: anotherString;
+		  message: anotherString;
 		  text: (aStringOrNil ifNil: [ self findUnusedId ]);
 		  openModal
 ]
@@ -95,14 +141,16 @@ GolapNote >> string [
 { #category : 'accessing' }
 GolapNote >> string: aString [
 
-	string := aString.
-	self stringChanged
+	string ~= aString ifTrue: [
+			string := aString.
+			self stringChanged ]
 ]
 
 { #category : 'updating' }
 GolapNote >> stringChanged [
 
-	dirty := true
+	dirty := true.
+	self announceNoteChanged
 ]
 
 { #category : 'accessing' }

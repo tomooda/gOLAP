@@ -30,10 +30,31 @@ GolapClip class >> kind [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'operations' }
+GolapClip >> addToNote [
+
+	GolapProject current note addClip: self
+]
+
+{ #category : 'operations' }
+GolapClip >> appendToNote [
+
+	GolapProject current note appendClip: self
+]
+
 { #category : 'converting' }
 GolapClip >> asHtml [
 
 	^ String streamContents: [ :stream | self printHtmlOn: stream ]
+]
+
+{ #category : 'converting' }
+GolapClip >> asJSON [
+
+	| json |
+	json := Dictionary new.
+	self toJSON: json.
+	^ json
 ]
 
 { #category : 'converting' }
@@ -46,6 +67,12 @@ GolapClip >> asMarkDown [
 GolapClip >> asMicrodown [
 
 	^ String streamContents: [ :stream | self printMicrodownOn: stream ]
+]
+
+{ #category : 'operations' }
+GolapClip >> copyMicrodownToClipboard [
+
+	(GolapProject current note addClip: self) ifNotNil: [ :clip | Clipboard clipboardText: clip asMicrodown ]
 ]
 
 { #category : 'converting' }

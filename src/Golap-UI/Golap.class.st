@@ -19,6 +19,7 @@ Class {
 		'authenticateBlock',
 		'edgesAppearancePresenter',
 		'saveAsPngButton',
+		'clipButton',
 		'itemList',
 		'itemNotebook',
 		'saveAsSvgButton',
@@ -422,6 +423,31 @@ Golap >> centerPaneLayout [
 		  add: leftPaneOpenCloseButton width: 16;
 		  add: visualizationNotebook expand: true;
 		  yourself
+]
+
+{ #category : 'menu' }
+Golap >> clipMenu [
+
+	^ self newMenu
+		  addGroup: [ :group |
+				  group
+					  addItem: [ :item |
+							  item
+								  name: 'クリップする';
+								  action: [ self newClip addToNote ] ];
+					  addItem: [ :item |
+							  item
+								  name: 'クリップをノートに追記';
+								  action: [ self newClip appendToNote ] ];
+					  addItem: [ :item |
+							  item
+								  name: 'クリップをコピー';
+								  action: [ self newClip copyMicrodownToClipboard ] ] ];
+		  addGroup: [ :group |
+				  group addItem: [ :item |
+						  item
+							  name: '開発者メニュー';
+							  action: [ self newClip inspect ] ] ]
 ]
 
 { #category : 'accessing-colors' }
@@ -835,10 +861,13 @@ Golap >> initializePresenters [
 	itemsAppearancePresenter := GolapItemsAppearance on: self.
 	edgesAppearancePresenter := GolapEdgesAppearance on: self.
 	commentText := self newText
-		               whenTextChangedDo: [
-			               self window ifNotNil: [ :window |
-					               window title: self windowTitle ] ];
+		               whenTextChangedDo: [ self window ifNotNil: [ :window | window title: self windowTitle ] ];
 		               yourself.
+	clipButton := self newMenuButton
+		              label: 'クリップ';
+		              menu: [ self clipMenu ];
+		              icon: (self iconNamed: #workspace);
+		              yourself.
 	saveAsPngButton := self newButton
 		                   label: 'save as PNG...';
 		                   action: [ self saveAsPNG ];
@@ -852,19 +881,14 @@ Golap >> initializePresenters [
 		                     action: [ self resendQuery ];
 		                     yourself.
 	queryViewTree := (self instantiate: GolapTreeTablePresenter)
-		                 addColumn:
-			                 (SpStringTableColumn evaluated: [ :assoc |
+		                 addColumn: (SpStringTableColumn evaluated: [ :assoc |
 						                  | string |
-						                  string := assoc key , ' : '
-						                            , (GolapJSON toString: assoc value).
-						                  queryViewTree contentWidth:
-								                  (TextStyle defaultFont widthOfString: string).
+						                  string := assoc key , ' : ' , (GolapJSON toString: assoc value).
+						                  queryViewTree contentWidth: (TextStyle defaultFont widthOfString: string).
 						                  string ]);
 		                 children: [ :assoc |
 				                 assoc value isDictionary
-					                 ifTrue: [
-							                 assoc value keys asSortedCollection collect: [
-									                 :k | k -> (assoc value at: k) ] ]
+					                 ifTrue: [ assoc value keys asSortedCollection collect: [ :k | k -> (assoc value at: k) ] ]
 					                 ifFalse: [ Array new ] ];
 		                 contextMenu: [ self queryViewTreeMenu ];
 		                 yourself.
@@ -885,52 +909,32 @@ Golap >> initializePresenters [
 				                 presenterProvider: [ edgeList ];
 				                 yourself);
 		                yourself.
-	polishOverviewPresenter := self instantiate:
-		                           (GolapPolishOverviewPresenter new golap:
-			                            self).
-	articulationPointOverviewPresenter := self instantiate:
-		                                      (GolapArticulationPointOverviewPresenter
-			                                       new golap: self).
-	elaborationPresenter := self instantiate:
-		                        (GolapElaborationPresenter new golap: self).
-	dandelionPresenter := self instantiate:
-		                      (GolapDandelionChartPresenter new golap: self).
-	hebPresenter := self instantiate:
-		                      (GolapHEBChartPresenter new golap: self).
-	hedgePresenter := self instantiate:
-		                  (GolapHedgeChartPresenter new golap: self).
-	heatmapPresenter := self instantiate:
-		                    (GolapClusteredHeatmapPresenter new golap: self).
+	polishOverviewPresenter := self instantiate: (GolapPolishOverviewPresenter new golap: self).
+	articulationPointOverviewPresenter := self instantiate: (GolapArticulationPointOverviewPresenter new golap: self).
+	elaborationPresenter := self instantiate: (GolapElaborationPresenter new golap: self).
+	dandelionPresenter := self instantiate: (GolapDandelionChartPresenter new golap: self).
+	hebPresenter := self instantiate: (GolapHEBChartPresenter new golap: self).
+	hedgePresenter := self instantiate: (GolapHedgeChartPresenter new golap: self).
+	heatmapPresenter := self instantiate: (GolapClusteredHeatmapPresenter new golap: self).
 	visualizationNotebook := self newNotebook
-		                         addPageTitle: '研磨'
-		                         provider: [ polishOverviewPresenter ];
-		                         addPageTitle: '要衝点図'
-		                         provider: [
-			                         articulationPointOverviewPresenter ];
-		                         addPageTitle: '特化グラフ'
-		                         provider: [ elaborationPresenter ];
-		                         addPageTitle: 'バンドル図'
-		                         provider: [ hebPresenter ];
-		                         addPageTitle: 'たんぽぽ図'
-		                         provider: [ dandelionPresenter ];
-		                         addPageTitle: '生垣図'
-		                         provider: [ hedgePresenter ];
-		                         addPageTitle: 'ヒートマップ'
-		                         provider: [ heatmapPresenter ];
-		                         whenSelectedPageChangedDo: [
-			                         self selectedPageChanged ];
+		                         addPageTitle: '研磨' provider: [ polishOverviewPresenter ];
+		                         addPageTitle: '要衝点図' provider: [ articulationPointOverviewPresenter ];
+		                         addPageTitle: '特化グラフ' provider: [ elaborationPresenter ];
+		                         addPageTitle: 'バンドル図' provider: [ hebPresenter ];
+		                         addPageTitle: 'たんぽぽ図' provider: [ dandelionPresenter ];
+		                         addPageTitle: '生垣図' provider: [ hedgePresenter ];
+		                         addPageTitle: 'ヒートマップ' provider: [ heatmapPresenter ];
+		                         whenSelectedPageChangedDo: [ self selectedPageChanged ];
 		                         yourself.
 	leftPaneOpenCloseButton := self newButton
 		                           state: false;
-		                           action: [
-			                           self leftPaneOpenCloseButtonClicked ];
+		                           action: [ self leftPaneOpenCloseButtonClicked ];
 		                           yourself.
 	self updateLeftPaneOpenCloseButton.
 	self whenBuiltDo: [ :w |
 			| f |
 			f := TextStyle defaultFont.
-			w widget allMorphsDo: [ :m |
-				(m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
+			w widget allMorphsDo: [ :m | (m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
 ]
 
 { #category : 'initialization' }
@@ -1012,7 +1016,7 @@ Golap >> leftPaneLayout [
 		  add: (SpBoxLayout newHorizontal
 				   add: frontList;
 				   add: baseList)
-		  height: self buttonHeight;
+		  expand: false;
 		  add: edgesAppearancePresenter expand: true;
 		  add: itemsAppearancePresenter expand: false;
 		  add: 'コメント' expand: false;
@@ -1554,6 +1558,7 @@ Golap >> retrievePhotoimages [
 Golap >> rightPaneLayout [
 
 	^ SpBoxLayout newVertical
+		  add: clipButton expand: false;
 		  add: saveAsSvgButton expand: false;
 		  add: saveAsPngButton expand: false;
 		  add: resendQueryButton expand: false;

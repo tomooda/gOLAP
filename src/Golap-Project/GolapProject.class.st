@@ -5,7 +5,8 @@ Class {
 		'note'
 	],
 	#classVars : [
-		'Current'
+		'Current',
+		'announcer'
 	],
 	#category : 'Golap-Project-Core',
 	#package : 'Golap-Project',
@@ -16,6 +17,21 @@ Class {
 GolapProject class >> all [
 
 	^ self projectFiles collect: [ :ref | self on: ref ]
+]
+
+{ #category : 'announcements' }
+GolapProject class >> announceNoteReplaced: old with: new [
+
+	self announcer announce: (GolapNoteReplaced new
+			 oldNote: old;
+			 newNote: new;
+			 yourself)
+]
+
+{ #category : 'accessing' }
+GolapProject class >> announcer [
+
+	^ announcer ifNil: [ announcer := Announcer new ]
 ]
 
 { #category : 'instance creation' }
@@ -36,8 +52,11 @@ GolapProject class >> current [
 { #category : 'accessing' }
 GolapProject class >> current: aGolapProject [
 
+	| old |
+	old := Current.
 	Current := aGolapProject.
-	aGolapProject updateWorldWindowTitle
+	aGolapProject updateWorldWindowTitle.
+	old ~~ Current ifTrue: [ self announceNoteReplaced: old with: Current ]
 ]
 
 { #category : 'accessing' }
@@ -217,13 +236,13 @@ GolapProject >> notEmpty [
 { #category : 'accessing' }
 GolapProject >> note [
 
-	^ note ifNil: [ note := String new ]
+	^ note ifNil: [ note := GolapNote new ]
 ]
 
 { #category : 'accessing' }
-GolapProject >> note: aString [
+GolapProject >> note: aGolapNote [
 
-	note := aString
+	note := aGolapNote
 ]
 
 { #category : 'operations' }
