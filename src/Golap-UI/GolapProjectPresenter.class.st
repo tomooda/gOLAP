@@ -287,9 +287,9 @@ GolapProjectPresenter >> switchProject [
 				ifTrue: [ (self confirm: self currentProjectName , 'を再読み込みしますか？' title: '再読み込みの確認') ifFalse: [ ^ self ] ]
 				ifFalse: [ self confirmToSaveCurrentProject ifNil: [ ^ self ] ].
 			(project
-				 beCurrent;
 				 closeAll;
 				 load) ifNil: [ self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ].
+			project beCurrent.
 			self updateProjectList ]
 ]
 

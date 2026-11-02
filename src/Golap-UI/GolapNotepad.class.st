@@ -154,7 +154,8 @@ GolapNotepad >> sourceTextChanged [
 GolapNotepad >> updateNoteSubscription: aGolapNoteReplaced [
 
 	aGolapNoteReplaced oldNote ifNotNil: [ :note | note announcer unsubscribe: self ].
-	aGolapNoteReplaced newNote ifNotNil: [ :note | note announcer when: GolapNoteModified send: #updatePages to: self ]
+	aGolapNoteReplaced newNote ifNotNil: [ :note | note announcer when: GolapNoteModified send: #updatePages to: self ].
+	self updatePages
 ]
 
 { #category : 'updating' }

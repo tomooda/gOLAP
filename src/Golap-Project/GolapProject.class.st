@@ -182,7 +182,7 @@ GolapProject >> fromJSON: aDictionary [
 			aDictionary
 				at: 'last-query' ifPresent: [ :query | self restoreQuery: query ];
 				at: 'windows' ifPresent: [ :array | self restoreWindows: array ];
-				at: 'note' ifPresent: [ :dict | dict ifNotNil: [ GolapNote fromJSON: dict ] ] ]
+				at: 'note' ifPresent: [ :dict | dict ifNotNil: [ self note fromJSON: dict ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -222,10 +222,7 @@ GolapProject >> isEmpty [
 { #category : 'operations' }
 GolapProject >> load [
 
-	^ self projectFile ifNotNil: [ :ref |
-			  [ ref readStreamDo: [ :stream | self fromJSON: (GolapJSON fromStream: stream) ] ]
-				  on: Exception
-				  do: [ :ex | ex return: nil ] ]
+	^ self projectFile ifNotNil: [ :ref | ref readStreamDo: [ :stream | self fromJSON: (GolapJSON fromStream: stream) ] ]
 ]
 
 { #category : 'testing' }
@@ -244,29 +241,6 @@ GolapProject >> note [
 GolapProject >> note: aGolapNote [
 
 	note := aGolapNote
-]
-
-{ #category : 'operations' }
-GolapProject >> open [
-
-	| dialog |
-	dialog := StOpenFilePresenter new.
-	dialog
-		title: 'プロジェクトを開く';
-		extensions: #( 'golap' ).
-	self projectFile
-		ifNotNil: [ :ref |
-				dialog
-					defaultFolder: ref parent;
-					selectFile: ref ]
-		ifNil: [ dialog defaultFolder: self class projectBaseDirectory ].
-	dialog openModal.
-	^ dialog cancelled
-		  ifTrue: [ nil ]
-		  ifFalse: [
-				  dialog selectedEntry ifNotNil: [ :ref |
-						  self projectFile: ref.
-						  self load ] ]
 ]
 
 { #category : 'accessing' }

@@ -37,7 +37,7 @@ GolapGraphClip >> base64image: aString [
 { #category : 'converting' }
 GolapGraphClip >> fromJSON: aDictionary [
 
-	super toJSON: aDictionary.
+	super fromJSON: aDictionary.
 	aDictionary
 		at: 'golap' ifPresent: [ :dict | golap := dict ];
 		at: 'image' ifPresent: [ :string | self base64image: string ]
