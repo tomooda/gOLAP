@@ -56,7 +56,7 @@ GolapProject class >> current: aGolapProject [
 	old := Current.
 	Current := aGolapProject.
 	aGolapProject updateWorldWindowTitle.
-	old ~~ Current ifTrue: [ self announceNoteReplaced: old with: Current ]
+	old ~~ Current ifTrue: [ self announceNoteReplaced: old note with: Current note ]
 ]
 
 { #category : 'accessing' }
@@ -133,11 +133,11 @@ GolapProject >> asJSON [
 
 	| json |
 	json := Dictionary new.
-	GolapNetworkClientPresenter asJSON ifNotNil: [ :query |
-		json at: 'last-query' put: query ].
-	json at: 'windows' put: (Array streamContents: [ :stream |
-				 self golapWindows do: [ :window |
-					 stream nextPut: window presenter asJSON ] ]).
+	GolapNetworkClientPresenter asJSON ifNotNil: [ :query | json at: 'last-query' put: query ].
+	json
+		at: 'windows'
+		put: (Array streamContents: [ :stream | self golapWindows do: [ :window | stream nextPut: window presenter asJSON ] ]).
+	json at: 'note' put: (note ifNotNil: #asJSON).
 	^ json
 ]
 
@@ -181,7 +181,8 @@ GolapProject >> fromJSON: aDictionary [
 			aDictionary isArray ifTrue: [ ^ self restoreWindows: aDictionary ].
 			aDictionary
 				at: 'last-query' ifPresent: [ :query | self restoreQuery: query ];
-				at: 'windows' ifPresent: [ :array | self restoreWindows: array ] ]
+				at: 'windows' ifPresent: [ :array | self restoreWindows: array ];
+				at: 'note' ifPresent: [ :dict | dict ifNotNil: [ GolapNote fromJSON: dict ] ] ]
 ]
 
 { #category : 'accessing' }

@@ -17,6 +17,14 @@ GolapNote class >> current [
 	^ GolapProject current note
 ]
 
+{ #category : 'instance creation' }
+GolapNote class >> fromJSON: aDictionary [
+
+	^ self new
+		  fromJSON: aDictionary;
+		  yourself
+]
+
 { #category : 'operations' }
 GolapNote >> addClip: aGolapClip [
 
@@ -43,6 +51,15 @@ GolapNote >> appendClip: aGolapClip [
 GolapNote >> appendString: aString [
 
 	string := string , String cr , aString
+]
+
+{ #category : 'converting' }
+GolapNote >> asJSON [
+
+	| json |
+	json := Dictionary new.
+	self toJSON: json.
+	^ json
 ]
 
 { #category : 'operations' }
@@ -88,6 +105,16 @@ GolapNote >> findUnusedId [
 	clipCollection do: [ :clip |
 		(clip id beginsWith: 'クリップ') ifTrue: [ max := max max: (clip id copyFrom: 5 to: clip id size) asInteger abs ] ].
 	^ 'クリップ' , (max + 1) printString
+]
+
+{ #category : 'converting' }
+GolapNote >> fromJSON: aDictionary [
+
+	aDictionary
+		at: 'string' ifPresent: [ :str | string := str ];
+		at: 'clips' ifPresent: [ :array |
+				clipCollection := GolapClipCollection new: array size.
+				array do: [ :dict | (GolapClip fromJSON: dict) ifNotNil: [ :clip | clipCollection add: clip ] ] ]
 ]
 
 { #category : 'initialization' }
@@ -165,6 +192,14 @@ GolapNote >> textFromMicrodown: aString [
 	^ MicRichTextComposer new
 		  textStyler: GolapMicTextStyler new;
 		  asRichText: (MicrodownParser new parse: aString)
+]
+
+{ #category : 'converting' }
+GolapNote >> toJSON: aDictionary [
+
+	aDictionary
+		at: 'string' put: string;
+		at: 'clips' put: (clipCollection asArray collect: #asJSON)
 ]
 
 { #category : 'private' }

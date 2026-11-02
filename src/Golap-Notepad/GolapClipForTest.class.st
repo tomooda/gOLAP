@@ -6,6 +6,12 @@ Class {
 	#tag : 'Tests'
 }
 
+{ #category : 'accessing' }
+GolapClipForTest class >> kind [
+
+	^ nil
+]
+
 { #category : 'operations' }
 GolapClipForTest >> open [
 
