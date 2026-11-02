@@ -56,7 +56,7 @@ GolapProject class >> current: aGolapProject [
 	old := Current.
 	Current := aGolapProject.
 	aGolapProject updateWorldWindowTitle.
-	old ~~ Current ifTrue: [ self announceNoteReplaced: old note with: Current note ]
+	old ~~ Current ifTrue: [ self announceNoteReplaced: (old ifNotNil: #note) with: Current note ]
 ]
 
 { #category : 'accessing' }
