@@ -16,6 +16,12 @@ GolapGraphClip class >> kind [
 	^ 'graph'
 ]
 
+{ #category : 'converting' }
+GolapGraphClip >> asPresenter [
+
+	^ GolapGraphClipPresenter on: self
+]
+
 { #category : 'accessing' }
 GolapGraphClip >> base64image [
 
@@ -26,6 +32,15 @@ GolapGraphClip >> base64image [
 GolapGraphClip >> base64image: aString [
 
 	image := aString ifNotNil: [ PNGReadWriter formFromStream: aString base64Decoded readStream ]
+]
+
+{ #category : 'converting' }
+GolapGraphClip >> fromJSON: aDictionary [
+
+	super toJSON: aDictionary.
+	aDictionary
+		at: 'golap' ifPresent: [ :dict | golap := dict ];
+		at: 'image' ifPresent: [ :string | self base64image: string ]
 ]
 
 { #category : 'accessing' }
@@ -66,7 +81,13 @@ GolapGraphClip >> printHtmlOn: aStream [
 		nextPutAll: id;
 		nextPutAll: '" src="';
 		nextPutAll: id;
-		nextPutAll: '.png"></div>'
+		nextPutAll: '.png"></div>';
+		cr;
+		nextPutAll: '<pre>';
+		cr;
+		nextPutAll: caption;
+		nextPutAll: '</pre>';
+		cr
 ]
 
 { #category : 'printing' }
@@ -80,6 +101,7 @@ GolapGraphClip >> printMarkDownOn: aStream [
 		nextPutAll: id;
 		nextPutAll: '.png)';
 		cr;
+		nextPutAll: (caption ifNil: [ '' ]);
 		cr
 ]
 
@@ -87,11 +109,14 @@ GolapGraphClip >> printMarkDownOn: aStream [
 GolapGraphClip >> printMicrodownOn: aStream [
 
 	aStream
+		cr;
 		nextPutAll: '```gOLAP';
 		cr;
 		nextPutAll: id;
 		cr;
 		nextPutAll: '```';
+		cr;
+		nextPutAll: (caption ifNil: [ '' ]);
 		cr
 ]
 

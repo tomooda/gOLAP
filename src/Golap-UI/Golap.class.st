@@ -434,15 +434,15 @@ Golap >> clipMenu [
 					  addItem: [ :item |
 							  item
 								  name: 'クリップする';
-								  action: [ self newClip addToNote ] ];
+								  action: [ self newClip ifNotNil: #addToNote ] ];
 					  addItem: [ :item |
 							  item
 								  name: 'クリップをノートに追記';
-								  action: [ self newClip appendToNote ] ];
+								  action: [ self newClip ifNotNil: #appendToNote ] ];
 					  addItem: [ :item |
 							  item
 								  name: 'クリップをコピー';
-								  action: [ self newClip copyMicrodownToClipboard ] ] ];
+								  action: [ self newClip ifNotNil: #copyMicrodownToClipboard ] ] ];
 		  addGroup: [ :group |
 				  group addItem: [ :item |
 						  item

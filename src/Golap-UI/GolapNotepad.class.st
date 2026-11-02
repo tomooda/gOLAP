@@ -1,8 +1,6 @@
 Class {
 	#name : 'GolapNotepad',
 	#superclass : 'SpPresenter',
-	#traits : 'TGolapSnapshotablePresenter',
-	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'sourceText',
 		'preview',
@@ -10,10 +8,56 @@ Class {
 		'exportButton',
 		'closeButton'
 	],
+	#classVars : [
+		'Current'
+	],
 	#category : 'Golap-UI-Notepad',
 	#package : 'Golap-UI',
 	#tag : 'Notepad'
 }
+
+{ #category : 'sole instance' }
+GolapNotepad class >> current [
+
+	^ Current ifNil: [ Current := self new ]
+]
+
+{ #category : 'menus' }
+GolapNotepad class >> golapMenuOn: aBuilder [
+
+	<worldMenu>
+	<golapMenu>
+	(aBuilder item: #GolapOpenNotepad)
+		label: 'ノート';
+		iconName: #workspace;
+		parent: #Golap;
+		order: 0.1;
+		target: self;
+		selector: #open;
+		help: 'ノートを開きます。'
+]
+
+{ #category : 'operations' }
+GolapNotepad class >> open [
+
+	<script: 'GolapNotepad open'>
+	| window |
+	window := self current window ifNil: [ self current asWindow ].
+	window isOpen
+		ifTrue: [ window activate ]
+		ifFalse: [
+				window
+					title: 'ノート';
+					initialExtent: 600 @ self currentWorld extent y;
+					initialPosition: 0 @ 20;
+					open ]
+]
+
+{ #category : 'initialization' }
+GolapNotepad >> close [
+
+	self window ifNotNil: #close
+]
 
 { #category : 'layout' }
 GolapNotepad >> defaultLayout [

@@ -2,7 +2,8 @@ Class {
 	#name : 'GolapClip',
 	#superclass : 'Object',
 	#instVars : [
-		'id'
+		'id',
+		'caption'
 	],
 	#category : 'Golap-Notepad-Clip',
 	#package : 'Golap-Notepad',
@@ -69,6 +70,18 @@ GolapClip >> asMicrodown [
 	^ String streamContents: [ :stream | self printMicrodownOn: stream ]
 ]
 
+{ #category : 'accessing' }
+GolapClip >> caption [
+
+	^ caption
+]
+
+{ #category : 'accessing' }
+GolapClip >> caption: aString [
+
+	caption := aString
+]
+
 { #category : 'operations' }
 GolapClip >> copyMicrodownToClipboard [
 
@@ -78,7 +91,8 @@ GolapClip >> copyMicrodownToClipboard [
 { #category : 'converting' }
 GolapClip >> fromJSON: aDictionary [
 
-	aDictionary at: 'id' ifPresent: [ :string | self id: string ]
+	aDictionary at: 'id' ifPresent: [ :string | self id: string ].
+	aDictionary at: 'caption' ifPresent: [ :string | self caption: string ]
 ]
 
 { #category : 'comparing' }
@@ -97,6 +111,13 @@ GolapClip >> id [
 GolapClip >> id: aString [
 
 	id := aString
+]
+
+{ #category : 'initialization' }
+GolapClip >> initialize [
+
+	super initialize.
+	caption := String new
 ]
 
 { #category : 'accessing' }
@@ -134,5 +155,6 @@ GolapClip >> toJSON: aDictionary [
 
 	aDictionary
 		at: 'kind' put: self kind;
-		at: 'id' put: id
+		at: 'id' put: id;
+		at: 'caption' put: caption
 ]
