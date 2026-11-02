@@ -66,7 +66,7 @@ BaselineOfGolap >> baseline: spec [
 				package: 'Golap-Networking' with: [ spec requires: #(  ) ];
 				package: 'Golap-Project'
 				with: [ spec requires: #( 'DataFrame' 'Golap-Models' 'Golap-UI' 'Golap-Models' 'Golap-Query' 'Golap-Visualization' ) ];
-				package: 'Golap-Notepad' with: [ spec requires: #(  ) ];
+				package: 'Golap-Notepad' with: [ spec requires: #( 'Golap-UI' ) ];
 				package: 'Golap-Query' with: [ spec requires: #( 'PetitParser2Core' ) ];
 				package: 'Golap-UI' with: [ spec requires: #( 'Selphie' 'RoassalExporters' 'HiDeHo' 'DataFrame' 'Xenq' ) ].
 			spec package: 'Golap-Visualization' with: [ spec requires: #(  ) ].
