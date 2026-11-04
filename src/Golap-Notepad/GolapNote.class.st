@@ -97,6 +97,12 @@ GolapNote >> clipCollectionChanged [
 	self announceNoteChanged
 ]
 
+{ #category : 'accessing' }
+GolapNote >> clips [
+
+	^ clipCollection sorted: #timestamp ascending
+]
+
 { #category : 'private' }
 GolapNote >> findUnusedId [
 

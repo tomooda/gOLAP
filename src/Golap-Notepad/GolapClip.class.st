@@ -3,7 +3,8 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'id',
-		'caption'
+		'caption',
+		'timestamp'
 	],
 	#category : 'Golap-Notepad-Clip',
 	#package : 'Golap-Notepad',
@@ -92,7 +93,8 @@ GolapClip >> copyMicrodownToClipboard [
 GolapClip >> fromJSON: aDictionary [
 
 	aDictionary at: 'id' ifPresent: [ :string | self id: string ].
-	aDictionary at: 'caption' ifPresent: [ :string | self caption: string ]
+	aDictionary at: 'caption' ifPresent: [ :string | self caption: string ].
+	aDictionary at: 'timestamp' ifPresent: [ :string | self timestamp: (DateAndTime fromString: string) ]
 ]
 
 { #category : 'comparing' }
@@ -117,6 +119,7 @@ GolapClip >> id: aString [
 GolapClip >> initialize [
 
 	super initialize.
+	timestamp := DateAndTime now.
 	caption := String new
 ]
 
@@ -150,11 +153,24 @@ GolapClip >> printMicrodownOn: aStream [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'accessing' }
+GolapClip >> timestamp [
+
+	^ timestamp ifNil: [ timestamp := DateAndTime now ]
+]
+
+{ #category : 'accessing' }
+GolapClip >> timestamp: aDateAndTime [
+
+	timestamp := aDateAndTime
+]
+
 { #category : 'converting' }
 GolapClip >> toJSON: aDictionary [
 
 	aDictionary
 		at: 'kind' put: self kind;
 		at: 'id' put: id;
-		at: 'caption' put: caption
+		at: 'caption' put: caption;
+		at: 'timestamp' put: self timestamp printString
 ]
