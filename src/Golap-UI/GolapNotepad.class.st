@@ -10,26 +10,10 @@ Class {
 		'exportButton',
 		'closeButton'
 	],
-	#classVars : [
-		'Current'
-	],
 	#category : 'Golap-UI-Notepad',
 	#package : 'Golap-UI',
 	#tag : 'Notepad'
 }
-
-{ #category : 'sole instance' }
-GolapNotepad class >> current [
-
-	^ Current ifNil: [ Current := self new ]
-]
-
-{ #category : 'sole instance' }
-GolapNotepad class >> flushCurrent [
-
-	<script>
-	Current := nil
-]
 
 { #category : 'menus' }
 GolapNotepad class >> golapMenuOn: aBuilder [

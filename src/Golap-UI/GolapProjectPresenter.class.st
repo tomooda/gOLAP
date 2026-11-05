@@ -3,6 +3,7 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'projectList',
+		'notepad',
 		'addProjectButton',
 		'renameProjectButton',
 		'removeProjectButton',
@@ -21,6 +22,13 @@ Class {
 GolapProjectPresenter class >> current [
 
 	^ Current ifNil: [ Current := self new ]
+]
+
+{ #category : 'sole instance' }
+GolapProjectPresenter class >> flushCurrent [
+
+	<script>
+	Current := nil
 ]
 
 { #category : 'menus' }
@@ -48,10 +56,11 @@ GolapProjectPresenter class >> open [
 	window isOpen
 		ifTrue: [ window activate ]
 		ifFalse: [
+				| y |
+				y := (self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ].
 				window
-					initialExtent: 400 @ 300;
-					initialPosition:
-						0 @ ((self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ]);
+					initialExtent: 500 @ (self currentWorld extent y - y);
+					initialPosition: 0 @ y;
 					open ]
 ]
 
@@ -64,7 +73,8 @@ GolapProjectPresenter >> addProject [
 					project beCurrent.
 					self
 						updateProjectList;
-						selectProject: project ] ]
+						selectProject: project;
+						updateNotepad ] ]
 ]
 
 { #category : 'ui requests' }
@@ -127,16 +137,26 @@ GolapProjectPresenter >> currentProjectName [
 { #category : 'layout' }
 GolapProjectPresenter >> defaultLayout [
 
-	^ SpBoxLayout newVertical
-		  add: projectList expand: true;
-		  add: (SpBoxLayout newHorizontal
-				   add: addProjectButton expand: true;
-				   add: renameProjectButton expand: true;
-				   add: removeProjectButton expand: true;
-				   yourself)
-		  expand: false;
-		  add: saveProjectButton expand: false;
-		  add: switchProjectButton expand: false;
+	^ SpPanedLayout newVertical
+		  positionOfSlider: 0.25;
+		  add: (SpBoxLayout newVertical
+				   add: projectList expand: true;
+				   add: (SpBoxLayout newHorizontal
+						    add: addProjectButton expand: true;
+						    add: renameProjectButton expand: true;
+						    add: removeProjectButton expand: true;
+						    yourself)
+				   expand: false;
+				   add: saveProjectButton expand: false;
+				   add: switchProjectButton expand: false;
+				   yourself);
+		  add: (SpBoxLayout newVertical
+				   add: (SpBoxLayout newHorizontal
+						    hAlignCenter;
+						    add: 'ノート' expand: false)
+				   expand: false;
+				   add: notepad;
+				   yourself);
 		  yourself
 ]
 
@@ -157,6 +177,7 @@ GolapProjectPresenter >> initializePresenters [
 		               addColumn: (SpStringTableColumn title: 'プロジェクト名' evaluated: #projectName);
 		               whenSelectedItemChangedDo: [ self selectedProjectChanged ];
 		               yourself.
+	notepad := self instantiate: GolapNotepad.
 	projectList whenBuiltDo: [ :ann | ann widget allowDeselection ].
 	addProjectButton := self newButton
 		                    icon: (self iconNamed: #add);
@@ -183,7 +204,9 @@ GolapProjectPresenter >> initializePresenters [
 		                       label: '開く';
 		                       action: [ self switchProject ];
 		                       yourself.
-	self updateProjectList
+	self
+		updateProjectList;
+		updateNotepad
 ]
 
 { #category : 'operations' }
@@ -193,7 +216,9 @@ GolapProjectPresenter >> removeProject [
 			(self confirm: project projectName , 'を削除しますか？' title: 'プロジェクト削除') ifTrue: [
 					project delete.
 					self currentProject = project ifTrue: [ GolapProject default beCurrent ].
-					self updateProjectList ] ]
+					self
+						updateProjectList;
+						updateNotepad ] ]
 ]
 
 { #category : 'operations' }
@@ -203,7 +228,9 @@ GolapProjectPresenter >> renameProject [
 			project = self currentProject ifTrue: [ project beCurrent ].
 			(self requestNewProject: project projectName) ifNotNil: [ :newProject |
 					project renameTo: newProject projectName.
-					self updateProjectList ] ]
+					self
+						updateProjectList;
+						updateNotepad ] ]
 ]
 
 { #category : 'ui requests' }
@@ -290,7 +317,9 @@ GolapProjectPresenter >> switchProject [
 				 closeAll;
 				 load) ifNil: [ self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ].
 			project beCurrent.
-			self updateProjectList ]
+			self
+				updateProjectList;
+				updateNotepad ]
 ]
 
 { #category : 'updating' }
@@ -303,6 +332,12 @@ GolapProjectPresenter >> updateButtons [
 	renameProjectButton enabled: selected notNil.
 	saveProjectButton enabled: (selected notNil and: [ selected = current ]).
 	switchProjectButton enabled: selected notNil
+]
+
+{ #category : 'updating' }
+GolapProjectPresenter >> updateNotepad [
+
+	notepad updatePages
 ]
 
 { #category : 'updating' }
