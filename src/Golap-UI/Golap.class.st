@@ -936,10 +936,13 @@ Golap >> initializePresenters [
 { #category : 'initialization' }
 Golap >> initializeWindow: aWindowPresenter [
 
+	| y |
 	super initializeWindow: aWindowPresenter.
+	y := (self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ].
 	aWindowPresenter
 		title: self title;
-		initialExtent: World extent.
+		initialExtent: World extent - (410 @ y);
+		initialPosition: 410 @ y.
 	aWindowPresenter whenWillCloseDo: [ :announcement |
 			self confirmClose
 				ifTrue: [ announcement allowClose ]

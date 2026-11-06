@@ -186,12 +186,11 @@ GolapCSVLauncher >> launch [
 		itemInfoRetriever: (GolapNodeProductInfoRetriever
 				 photoUrlColumn: nodeImporterPresenter photoUrlColumn
 				 availableColumns: nodeImporterPresenter availableColumns).
-	self golapBaseGraphsAndNamesDo: [ :baseGraph :name |
-		golap silentAddDimension: baseGraph named: name ].
+	self golapBaseGraphsAndNamesDo: [ :baseGraph :name | golap silentAddDimension: baseGraph named: name ].
 	golap updateDimensions.
 	[
 		golap confirmOpen.
-		golap open maximize.
+		golap open.
 		golap
 			updateModel;
 			updateNodePositions ]

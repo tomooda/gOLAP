@@ -59,7 +59,7 @@ GolapProjectPresenter class >> open [
 				| y |
 				y := (self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ].
 				window
-					initialExtent: 500 @ (self currentWorld extent y - y);
+					initialExtent: 410 @ (self currentWorld extent y - y);
 					initialPosition: 0 @ y;
 					open ]
 ]

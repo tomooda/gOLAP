@@ -30,29 +30,12 @@ GolapNotepad class >> golapMenuOn: aBuilder [
 		help: 'ノートを開きます。'
 ]
 
-{ #category : 'operations' }
-GolapNotepad class >> open [
-
-	<script: 'GolapNotepad open'>
-	| window |
-	window := self current window ifNil: [ self current asWindow ].
-	window isOpen
-		ifTrue: [ window activate ]
-		ifFalse: [
-				window
-					title: 'ノート';
-					initialExtent: 600 @ self currentWorld extent y;
-					initialPosition: 0 @ 20;
-					open ]
-]
-
 { #category : 'layout' }
 GolapNotepad >> clipsPage [
 
-	^ SpPanedLayout newVertical
-		  positionOfSlider: 0.6;
+	^ SpBoxLayout newVertical
 		  add: clipList;
-		  add: clipPreview;
+		  add: clipPreview height: 400;
 		  yourself
 ]
 
@@ -68,12 +51,6 @@ GolapNotepad >> defaultLayout [
 	<script: 'self new open'>
 	^ SpBoxLayout newVertical
 		  add: notebook;
-		  add: (SpBoxLayout newHorizontal
-				   hAlignEnd;
-				   add: exportButton expand: false;
-				   add: closeButton expand: false;
-				   yourself)
-		  expand: false;
 		  yourself
 ]
 
@@ -103,18 +80,17 @@ GolapNotepad >> initializePresenters [
 		               autoScale: true;
 		               yourself.
 	notebook := self newNotebook
-		            addPageTitle: 'プレビュー' provider: [ preview ];
+		            addPageTitle: 'プレビュー' provider: [
+				            SpPresenter new
+					            layout: self previewPage;
+					            yourself ];
 		            addPageTitle: '編集' provider: [ sourceText ];
 		            addPageTitle: 'クリップ' provider: [
-				            SpPresenter new
-					            layout: self clipsPage;
-					            yourself ];
+			            SpPresenter new
+				            layout: self clipsPage;
+				            yourself ];
 		            whenSelectedPageChangedDo: [ self updatePages ];
 		            yourself.
-	closeButton := self newButton
-		               label: '閉じる';
-		               action: [ self close ];
-		               yourself.
 	exportButton := self newButton
 		                label: 'エキスポート';
 		                action: [ self export ];
@@ -140,6 +116,15 @@ GolapNotepad >> initializeWindow: aSpWindowPresenter [
 GolapNotepad >> note [
 
 	^ GolapNote current
+]
+
+{ #category : 'layout' }
+GolapNotepad >> previewPage [
+
+	^ SpBoxLayout newVertical
+		  add: preview;
+		  add: exportButton expand: false;
+		  yourself
 ]
 
 { #category : 'subscription' }

@@ -497,7 +497,7 @@ GolapNetworkClientPresenter >> openGolap [
 																	bar label: 'グラフ更新中'.
 																	golap updateDimensions ].
 															golap confirmOpen.
-															golap open maximize.
+															golap open.
 															golap
 																updateModel;
 																updateNodePositions ] ] ] ] ] ]

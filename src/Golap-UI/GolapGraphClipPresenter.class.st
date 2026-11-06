@@ -22,9 +22,8 @@ GolapGraphClipPresenter class >> on: aGolapGraphClip [
 { #category : 'layout' }
 GolapGraphClipPresenter >> defaultLayout [
 
-	^ SpPanedLayout newVertical
-		  positionOfSlider: 0.85;
-		  add: image;
+	^ SpBoxLayout newVertical
+		  add: image height: 400;
 		  add: captionText;
 		  yourself
 ]
