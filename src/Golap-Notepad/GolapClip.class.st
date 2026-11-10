@@ -35,13 +35,13 @@ GolapClip class >> kind [
 { #category : 'operations' }
 GolapClip >> addToNote [
 
-	GolapProject current note addClip: self
+	GolapProjectPresenter current addClip: self
 ]
 
 { #category : 'operations' }
 GolapClip >> appendToNote [
 
-	GolapProject current note appendClip: self
+	GolapProjectPresenter current appendClip: self
 ]
 
 { #category : 'converting' }

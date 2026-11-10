@@ -58,7 +58,8 @@ GolapFilterSpec >> addClause: aGolapQueryClauseSpec [
 
 { #category : 'converting' }
 GolapFilterSpec >> asJSON [
-	^ clauses collect: #asJSON
+
+	^ (clauses collect: #asJSON) asArray
 ]
 
 { #category : 'accessing' }

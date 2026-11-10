@@ -128,29 +128,10 @@ GolapProject >> application [
 	^ SpApplication defaultApplication
 ]
 
-{ #category : 'converting' }
-GolapProject >> asJSON [
-
-	| json |
-	json := Dictionary new.
-	GolapNetworkClientPresenter asJSON ifNotNil: [ :query | json at: 'last-query' put: query ].
-	json
-		at: 'windows'
-		put: (Array streamContents: [ :stream | self golapWindows do: [ :window | stream nextPut: window presenter asJSON ] ]).
-	json at: 'note' put: (note ifNotNil: #asJSON).
-	^ json
-]
-
 { #category : 'operations' }
 GolapProject >> beCurrent [
 
 	self class current: self
-]
-
-{ #category : 'operations' }
-GolapProject >> closeAll [
-
-	self golapWindowsDo: [ :window | window presenter forceClose ]
 ]
 
 { #category : 'ui requests' }
@@ -177,33 +158,9 @@ GolapProject >> exists [
 { #category : 'converting' }
 GolapProject >> fromJSON: aDictionary [
 
-	aDictionary ifNotNil: [
-			aDictionary isArray ifTrue: [ ^ self restoreWindows: aDictionary ].
-			aDictionary
-				at: 'last-query' ifPresent: [ :query | self restoreQuery: query ];
-				at: 'windows' ifPresent: [ :array | self restoreWindows: array ];
-				at: 'note' ifPresent: [ :dict | dict ifNotNil: [ self note fromJSON: dict ] ] ]
-]
-
-{ #category : 'accessing' }
-GolapProject >> golapWindows [
-
-	^ Array streamContents: [ :stream |
-		  self golapWindowsDo: [ :window | stream nextPut: window ] ]
-]
-
-{ #category : 'enumerating' }
-GolapProject >> golapWindowsDo: aBlock [
-
-	| presenterClasses |
-	presenterClasses := TGolapSnapshotablePresenter users.
-	self currentWorld taskbars do: [ :taskbar |
-			taskbar submorphs do: [ :morph |
-					([ morph model model presenter ]
-						 on: MessageNotUnderstood
-						 do: [ :ex | ex return: nil ]) ifNotNil: [ :p |
-						(presenterClasses includes: p class) ifTrue: [
-							aBlock value: p window ] ] ] ]
+	aDictionary
+		at: 'last-query' ifPresent: [ :query | self restoreQuery: query ];
+		at: 'note' ifPresent: [ :dict | dict ifNotNil: [ self note fromJSON: dict ] ]
 ]
 
 { #category : 'controlling' }
@@ -212,23 +169,10 @@ GolapProject >> ifDefault: aBlock otherwise: anotherBlock [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'testing' }
-GolapProject >> isEmpty [
-
-	self golapWindowsDo: [ :window | ^ false ].
-	^ true
-]
-
 { #category : 'operations' }
 GolapProject >> load [
 
 	^ self projectFile ifNotNil: [ :ref | ref readStreamDo: [ :stream | self fromJSON: (GolapJSON fromStream: stream) ] ]
-]
-
-{ #category : 'testing' }
-GolapProject >> notEmpty [
-
-	^ self isEmpty not
 ]
 
 { #category : 'accessing' }
@@ -316,6 +260,13 @@ GolapProject >> store [
 					  ref writeStreamDo: [ :stream |
 							  stream truncate.
 							  GolapJSON put: json onStreamPretty: stream ] ] ]
+]
+
+{ #category : 'converting' }
+GolapProject >> toJSON: aDictionary [
+
+	GolapNetworkClientPresenter asJSON ifNotNil: [ :query | aDictionary at: 'last-query' put: query ].
+	aDictionary at: 'note' put: (note ifNotNil: #asJSON)
 ]
 
 { #category : 'updating' }

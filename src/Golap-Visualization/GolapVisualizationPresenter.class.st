@@ -88,6 +88,12 @@ GolapVisualizationPresenter >> golapModelDo: aBlock [
 	^ (golap ifNotNil: #model) ifNotNil: aBlock
 ]
 
+{ #category : 'accessing' }
+GolapVisualizationPresenter >> image [
+
+	^ roassal canvas morph asForm
+]
+
 { #category : 'initialization' }
 GolapVisualizationPresenter >> initialize [
 

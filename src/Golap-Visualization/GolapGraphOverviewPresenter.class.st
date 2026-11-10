@@ -67,10 +67,9 @@ GolapGraphOverviewPresenter >> doZoomToFit [
 		        ifEmpty: [ ^ self ]
 		        ifNotEmpty: [ :points | Rectangle encompassing: points ].
 	self offset: rect floatCenter negated.
-	roassal withAdapterDo: [ :a |
-			a widgetDo: [ :w |
-					ext := w extent.
-					self scale: (ext x / rect width min: ext y / rect height) * 0.9 ] ].
+	ext := self currentWorld extent - (100 @ 10).
+	roassal withAdapterDo: [ :a | a widgetDo: [ :w | w world ifNotNil: [ ext := w extent ] ] ].
+	self scale: (ext x / rect width min: ext y / rect height) * 0.9.
 	self scaleAndOffsetChanged
 ]
 

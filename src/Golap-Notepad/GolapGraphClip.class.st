@@ -64,13 +64,13 @@ GolapGraphClip >> image [
 { #category : 'accessing' }
 GolapGraphClip >> image: aForm [
 
-	image := aForm
+	image := aForm ifNotNil: [ aForm scaledToSize: 400 @ 400 ]
 ]
 
 { #category : 'operations' }
 GolapGraphClip >> open [
 
-	^ Golap fromJSON: golap
+	^ (Golap fromJSON: golap) open
 ]
 
 { #category : 'printing' }

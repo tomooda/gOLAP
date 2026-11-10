@@ -8,7 +8,8 @@ Class {
 		'renameProjectButton',
 		'removeProjectButton',
 		'saveProjectButton',
-		'switchProjectButton'
+		'switchProjectButton',
+		'golapNotebook'
 	],
 	#classVars : [
 		'Current'
@@ -59,9 +60,54 @@ GolapProjectPresenter class >> open [
 				| y |
 				y := (self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ].
 				window
-					initialExtent: 410 @ (self currentWorld extent y - y);
-					initialPosition: 0 @ y;
-					open ]
+					open;
+					maximize ]
+]
+
+{ #category : 'layout' }
+GolapProjectPresenter >> _defaultLayout [
+
+	^ SpPanedLayout newVertical
+		  positionOfSlider: 0.25;
+		  add: (SpBoxLayout newVertical
+				   add: projectList expand: true;
+				   add: (SpBoxLayout newHorizontal
+						    add: addProjectButton expand: true;
+						    add: renameProjectButton expand: true;
+						    add: removeProjectButton expand: true;
+						    yourself)
+				   expand: false;
+				   add: saveProjectButton expand: false;
+				   add: switchProjectButton expand: false;
+				   yourself);
+		  add: (SpBoxLayout newVertical
+				   add: (SpBoxLayout newHorizontal
+						    hAlignCenter;
+						    add: 'ノート' expand: false)
+				   expand: false;
+				   add: notepad;
+				   yourself);
+		  yourself
+]
+
+{ #category : 'operations' }
+GolapProjectPresenter >> addClip: aGolapClip [
+
+	notepad addClip: aGolapClip
+]
+
+{ #category : 'operations' }
+GolapProjectPresenter >> addGolap: aGolap [
+
+	| page |
+	page := self newNotebookPage
+		        title: aGolap windowTitle;
+		        presenterProvider: [ aGolap ];
+		        beCloseable;
+		        yourself.
+	golapNotebook
+		addPage: page;
+		selectPage: page
 ]
 
 { #category : 'operations' }
@@ -69,12 +115,8 @@ GolapProjectPresenter >> addProject [
 
 	self confirmToSaveCurrentProject ifNotNil: [
 			(self requestNewProject: '') ifNotNil: [ :project |
-					project store.
-					project beCurrent.
-					self
-						updateProjectList;
-						selectProject: project;
-						updateNotepad ] ]
+					self saveAsProject: project.
+					self selectProject: project ] ]
 ]
 
 { #category : 'ui requests' }
@@ -86,6 +128,21 @@ GolapProjectPresenter >> alert: aString title: anotherString [
 		 asModalWindow)
 		initialExtent: 500 @ 120;
 		open
+]
+
+{ #category : 'operations' }
+GolapProjectPresenter >> appendClip: aGolapClip [
+
+	notepad appendClip: aGolapClip
+]
+
+{ #category : 'converting' }
+GolapProjectPresenter >> asJSON [
+
+	| json |
+	json := Dictionary new.
+	self toJSON: json.
+	^ json
 ]
 
 { #category : 'ui requests' }
@@ -100,11 +157,15 @@ GolapProjectPresenter >> confirm: queryString title: titleString [
 { #category : 'operations' }
 GolapProjectPresenter >> confirmToSaveCurrentProject [
 
-	^ self currentProject ifDefault: [ false ] otherwise: [ :current |
-			  (self confirmYesNoCancel: current projectName , 'を保存しますか？' title: '保存の確認') ifNotNil: [ :save |
-					  save
-						  ifTrue: [ current store ifNil: [ self alert: current projectName , 'の保存に失敗しました。' title: '保存失敗' ] ];
-						  yourself ] ]
+	^ self currentProject
+		  ifDefault: [
+				  ((self confirmYesNoCancel: '現在のプロジェクトを保存しますか？' title: '保存の確認') = true)
+					  ifTrue: [ (self requestNewProject: '') ifNotNil: [ :project | self saveAsProject: project ] ];
+					  yourself ]
+		  otherwise: [ :current |
+				  ((self confirmYesNoCancel: current projectName , 'を保存しますか？' title: '保存の確認') = true)
+					  ifTrue: [ self saveAsProject: current ];
+					  yourself ]
 ]
 
 { #category : 'ui requests' }
@@ -137,27 +198,56 @@ GolapProjectPresenter >> currentProjectName [
 { #category : 'layout' }
 GolapProjectPresenter >> defaultLayout [
 
-	^ SpPanedLayout newVertical
-		  positionOfSlider: 0.25;
-		  add: (SpBoxLayout newVertical
-				   add: projectList expand: true;
-				   add: (SpBoxLayout newHorizontal
-						    add: addProjectButton expand: true;
-						    add: renameProjectButton expand: true;
-						    add: removeProjectButton expand: true;
-						    yourself)
-				   expand: false;
-				   add: saveProjectButton expand: false;
-				   add: switchProjectButton expand: false;
+	^ SpPanedLayout newHorizontal
+		  positionOfSlider: 0.2;
+		  add: (SpPanedLayout newVertical
+				   positionOfSlider: 0.25;
+				   add: (SpBoxLayout newVertical
+						    add: projectList expand: true;
+						    add: (SpBoxLayout newHorizontal
+								     add: addProjectButton expand: true;
+								     add: renameProjectButton expand: true;
+								     add: removeProjectButton expand: true;
+								     yourself)
+						    expand: false;
+						    add: saveProjectButton expand: false;
+						    add: switchProjectButton expand: false;
+						    yourself);
+				   add: (SpBoxLayout newVertical
+						    add: (SpBoxLayout newHorizontal
+								     hAlignCenter;
+								     add: 'ノート' expand: false)
+						    expand: false;
+						    add: notepad;
+						    yourself);
 				   yourself);
-		  add: (SpBoxLayout newVertical
-				   add: (SpBoxLayout newHorizontal
-						    hAlignCenter;
-						    add: 'ノート' expand: false)
-				   expand: false;
-				   add: notepad;
-				   yourself);
+		  add: golapNotebook;
 		  yourself
+]
+
+{ #category : 'converting' }
+GolapProjectPresenter >> fromJSON: aDictionary [
+
+	aDictionary
+		ifNotNil: [
+				aDictionary isArray
+					ifTrue: [
+							GolapProject default beCurrent.
+							self restoreGolaps: aDictionary ]
+					ifFalse: [
+							| project |
+							project := GolapProject fromJSON: aDictionary.
+							aDictionary
+								at: 'windows' ifPresent: [ :array | self restoreGolaps: array ];
+								at: 'golaps' ifPresent: [ :array | self restoreGolaps: array ];
+								at: 'golap-index' ifPresent: [ :integer | golapNotebook selectPageIndex: integer ] ] ]
+		ifNil: [ GolapProject default beCurrent ]
+]
+
+{ #category : 'enumerating' }
+GolapProjectPresenter >> golapsDo: aBlock [
+
+	golapNotebook pages do: [ :page | (page activePresenter ifNil: [ page retrievePresenter ]) ifNotNil: aBlock ]
 ]
 
 { #category : 'accessing' }
@@ -176,9 +266,9 @@ GolapProjectPresenter >> initializePresenters [
 		               addColumn: ((SpImageTableColumn evaluated: [ :project | self iconFor: project ]) width: 32);
 		               addColumn: (SpStringTableColumn title: 'プロジェクト名' evaluated: #projectName);
 		               whenSelectedItemChangedDo: [ self selectedProjectChanged ];
+		               whenBuiltDo: [ :ann | ann widget allowDeselection ];
 		               yourself.
 	notepad := self instantiate: GolapNotepad.
-	projectList whenBuiltDo: [ :ann | ann widget allowDeselection ].
 	addProjectButton := self newButton
 		                    icon: (self iconNamed: #add);
 		                    label: '作成';
@@ -204,6 +294,9 @@ GolapProjectPresenter >> initializePresenters [
 		                       label: '開く';
 		                       action: [ self switchProject ];
 		                       yourself.
+	golapNotebook := self newNotebook
+		                 whenSelectedPageChangedDo: [ self selectedGolapPageChanged ];
+		                 yourself.
 	self
 		updateProjectList;
 		updateNotepad
@@ -268,10 +361,53 @@ GolapProjectPresenter >> requestNewProject: aString [
 	^ project
 ]
 
+{ #category : 'private' }
+GolapProjectPresenter >> restoreGolaps: anArray [
+
+	| dialog |
+	dialog := GolapProgressDialog new.
+	dialog
+		title: 'グラフ復元中...';
+		informUserDuring: [ :progress |
+				| pages |
+				pages := Array new: anArray size.
+				anArray withIndexDo: [ :json :index |
+							| golap |
+							progress progressPercent: index * 100 // anArray size.
+							golap := Golap fromJSON: json.
+							pages at: index put: (self newNotebookPage
+										 presenterProvider: golap asValueHolder;
+										 beCloseable;
+										 title: golap windowTitle;
+										 yourself) ].
+				golapNotebook pages: pages ]
+]
+
+{ #category : 'operations' }
+GolapProjectPresenter >> saveAsProject: aGolapProject [
+
+	aGolapProject ifNotNil: [
+			aGolapProject projectFile ifNotNil: [ :ref |
+					self asJSON
+						ifNotNil: [ :json |
+								ref writeStreamDo: [ :stream |
+										stream truncate.
+										GolapProgressDialog new
+											title: 'プロジェクトを保存中...';
+											informUserDuring: [ :progress | GolapJSON put: json onStream: stream ] ] ]
+						ifNil: [ self alert: self currentProjectName , 'の保存に失敗しました。' title: '保存失敗' ] ].
+			aGolapProject beCurrent.
+			self
+				updateProjectList;
+				updateNotepad ]
+]
+
 { #category : 'operations' }
 GolapProjectPresenter >> saveProject [
 
-	self currentProject store ifNil: [ self alert: self currentProjectName , 'の保存に失敗しました。' title: '保存失敗' ]
+	| project |
+	project := self currentProject ifDefault: [ self requestNewProject: '' ] otherwise: #yourself.
+	self saveAsProject: project
 ]
 
 { #category : 'accessing' }
@@ -280,6 +416,12 @@ GolapProjectPresenter >> selectProject: aGolapNamedProject [
 	(projectList items includes: aGolapNamedProject)
 		ifNotNil: [ :ref | projectList selectItem: aGolapNamedProject ]
 		ifNil: [ projectList unselectAll ]
+]
+
+{ #category : 'updating' }
+GolapProjectPresenter >> selectedGolapPageChanged [
+
+	golapNotebook selectedPage ifNotNil: [ :page | page activePresenter selectedPageChanged ]
 ]
 
 { #category : 'accessing' }
@@ -313,13 +455,26 @@ GolapProjectPresenter >> switchProject [
 			project = self currentProject
 				ifTrue: [ (self confirm: self currentProjectName , 'を再読み込みしますか？' title: '再読み込みの確認') ifFalse: [ ^ self ] ]
 				ifFalse: [ self confirmToSaveCurrentProject ifNil: [ ^ self ] ].
-			(project
-				 closeAll;
-				 load) ifNil: [ self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ].
 			project beCurrent.
+			golapNotebook pages: Array new.
+			project projectFile ifNotNil: [ :ref |
+					ref readStreamDo: [ :stream |
+							[ self fromJSON: (GolapJSON fromStream: stream) ]
+								on: Error
+								do: [ :ex | self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ] ] ].
 			self
 				updateProjectList;
 				updateNotepad ]
+]
+
+{ #category : 'converting' }
+GolapProjectPresenter >> toJSON: aDictionary [
+
+	self currentProject toJSON: aDictionary.
+	aDictionary
+		at: 'golaps' put: (Array streamContents: [ :stream | self golapsDo: [ :golap | stream nextPut: golap asJSON ] ]);
+		at: 'golap-index' put: golapNotebook selectedPageIndex.
+	^ aDictionary
 ]
 
 { #category : 'updating' }
@@ -330,8 +485,18 @@ GolapProjectPresenter >> updateButtons [
 	current := self currentProject.
 	removeProjectButton enabled: selected notNil.
 	renameProjectButton enabled: selected notNil.
-	saveProjectButton enabled: (selected notNil and: [ selected = current ]).
+	saveProjectButton enabled: (selected isNil or: [ selected = current ]).
 	switchProjectButton enabled: selected notNil
+]
+
+{ #category : 'updating' }
+GolapProjectPresenter >> updateGolapNotebookPageTitles [
+
+	golapNotebook pages do: [ :page |
+			page activePresenter ifNotNil: [ :golap |
+					page
+						title: golap windowTitle;
+						pageTitleChanged ] ]
 ]
 
 { #category : 'updating' }
@@ -352,5 +517,5 @@ GolapProjectPresenter >> updateProjectList [
 { #category : 'accessing' }
 GolapProjectPresenter >> windowTitle [
 
-	^ 'プロジェクト一覧'
+	^ 'gOLAP'
 ]

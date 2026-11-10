@@ -64,14 +64,6 @@ GolapNamedProject >> = anObject [
 	^ self class = anObject class and: [ self projectName = anObject projectName ]
 ]
 
-{ #category : 'converting' }
-GolapNamedProject >> asJSON [
-
-	^ super asJSON
-		  at: 'project' put: self projectName;
-		  yourself
-]
-
 { #category : 'testing' }
 GolapNamedProject >> exists [
 
@@ -127,6 +119,13 @@ GolapNamedProject >> renameTo: aString [
 	self projectFile ifNotNil: [ :oldRef |
 			self projectName: aString.
 			self projectFile ifNotNil: [ :newRef | oldRef moveTo: newRef ] ]
+]
+
+{ #category : 'converting' }
+GolapNamedProject >> toJSON: aDictionary [
+
+	super toJSON: aDictionary.
+	aDictionary at: 'project' put: self projectName
 ]
 
 { #category : 'updating' }

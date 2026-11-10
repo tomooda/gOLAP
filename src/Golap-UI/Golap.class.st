@@ -323,6 +323,25 @@ Golap >> authenticateBlock: aBlock [
 		itemInfoRetriever authenticateBlock: aBlock ]
 ]
 
+{ #category : 'projects' }
+Golap >> basicAsJSON [
+
+	^ { ('class' -> self class name asString) } asOrderedDictionary
+]
+
+{ #category : 'projects' }
+Golap >> basicFromJSON: aDictionary [
+
+	| bounds |
+	aDictionary
+		at: 'bounds' ifPresent: [ :array |
+				bounds := array first @ array second corner:
+						          array third @ array fourth ];
+	at: 'window'
+		ifPresent: [ :string | "self fromWindowJSON: string bounds: bounds"GolapProjectPresenter current addGolap: self ].
+		
+]
+
 { #category : 'private' }
 Golap >> basicReadDimensionFrom: aReadStream [
 
@@ -446,6 +465,12 @@ Golap >> clipMenu [
 							  action: [ self newClip inspect ] ] ]
 ]
 
+{ #category : 'initialization' }
+Golap >> close [
+
+	self window ifNotNil: #close
+]
+
 { #category : 'accessing-colors' }
 Golap >> colorForEdge: aGolapEdge [
 
@@ -512,6 +537,27 @@ Golap >> comment [
 Golap >> comment: aString [
 
 	commentText text: aString
+]
+
+{ #category : 'updating' }
+Golap >> commentChanged [
+
+	GolapProjectPresenter current updateGolapNotebookPageTitles
+]
+
+{ #category : 'ui requests' }
+Golap >> confirm: queryString title: titleString [
+
+	^ self application newConfirm
+		  title: titleString;
+		  message: queryString;
+		  openModal
+]
+
+{ #category : 'ui requests' }
+Golap >> confirmClose [
+
+	^ self isForceClosing or: [ self confirm: self window title , 'を閉じますか？' label: '確認' ]
 ]
 
 { #category : 'ui requests' }
@@ -613,6 +659,12 @@ Golap >> ensurePhotoimageRetrievingProcess [
 	(photoImageRetrievingProcess isNil or: [ 
 		 photoImageRetrievingProcess isTerminating ]) ifTrue: [ 
 		self startPhotoimageRetrievingProcess ]
+]
+
+{ #category : 'initialization' }
+Golap >> forceClose [
+
+	self close
 ]
 
 { #category : 'accessing-colors' }
@@ -857,7 +909,7 @@ Golap >> initializePresenters [
 	itemsAppearancePresenter := GolapItemsAppearance on: self.
 	edgesAppearancePresenter := GolapEdgesAppearance on: self.
 	commentText := self newText
-		               whenTextChangedDo: [ self window ifNotNil: [ :window | window title: self windowTitle ] ];
+		               whenTextChangedDo: [ self commentChanged ];
 		               yourself.
 	clipButton := self newMenuButton
 		              label: 'クリップ';
@@ -1233,13 +1285,17 @@ Golap >> numNodes [
 	^ model nodes size
 ]
 
-{ #category : 'instance creation' }
+{ #category : 'operations' }
 Golap >> open [
 
-	| window |
-	window := super open.
-	self startPhotoimageRetrievingProcess.
-	^ window
+	self openInNotebook
+]
+
+{ #category : 'operations' }
+Golap >> openInNotebook [
+
+	GolapProjectPresenter current addGolap: self.
+	self startPhotoimageRetrievingProcess
 ]
 
 { #category : 'operations' }

@@ -189,9 +189,9 @@ GolapCSVLauncher >> launch [
 	self golapBaseGraphsAndNamesDo: [ :baseGraph :name | golap silentAddDimension: baseGraph named: name ].
 	golap updateDimensions.
 	[
-		golap confirmOpen.
-		golap open.
 		golap
+			confirmOpen;
+			openInNotebook;
 			updateModel;
 			updateNodePositions ]
 		on: GolapAborted

@@ -88,7 +88,7 @@ GolapQueryClauseSpec >> asJSON [
 
 	^ Dictionary new
 		  at: 'field' put: field;
-		  at: 'predicates' put: (predicates collect: #asJSON);
+		  at: 'predicates' put: (predicates collect: #asJSON) asArray;
 		  at: 'isNegative' put: isNegative;
 		  at: 'isDisjunct' put: isDisjunct;
 		  yourself

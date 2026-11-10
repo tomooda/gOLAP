@@ -15,19 +15,18 @@ Class {
 	#tag : 'Notepad'
 }
 
-{ #category : 'menus' }
-GolapNotepad class >> golapMenuOn: aBuilder [
+{ #category : 'operations' }
+GolapNotepad >> addClip: aGolapClip [
 
-	<worldMenu>
-	<golapMenu>
-	(aBuilder item: #GolapOpenNotepad)
-		label: 'ノート';
-		iconName: #workspace;
-		parent: #Golap;
-		order: 0.1;
-		target: self;
-		selector: #open;
-		help: 'ノートを開きます。'
+	self note addClip: aGolapClip.
+	self updatePages
+]
+
+{ #category : 'operations' }
+GolapNotepad >> appendClip: aGolapClip [
+
+	self note appendClip: aGolapClip.
+	self updatePages
 ]
 
 { #category : 'layout' }
@@ -105,11 +104,7 @@ GolapNotepad >> initializeWindow: aSpWindowPresenter [
 		title: 'ノート';
 		initialExtent: 600 @ self currentWorld extent y;
 		initialPosition: 0 @ 20.
-	aSpWindowPresenter
-		whenOpenedDo: [
-				self setupSubscription.
-				self updatePages ];
-		whenClosedDo: [ self releaseSubscription ]
+	aSpWindowPresenter whenOpenedDo: [ self updatePages ]
 ]
 
 { #category : 'accessing' }
@@ -127,24 +122,10 @@ GolapNotepad >> previewPage [
 		  yourself
 ]
 
-{ #category : 'subscription' }
-GolapNotepad >> releaseSubscription [
-
-	self note ifNotNil: [ :note | note announcer unsubscribe: self ].
-	GolapProject announcer unsubscribe: self
-]
-
 { #category : 'operations' }
 GolapNotepad >> save [
 
 	self alert: '未実装'
-]
-
-{ #category : 'subscription' }
-GolapNotepad >> setupSubscription [
-
-	self note ifNotNil: [ :note | note announcer when: GolapNoteModified send: #updatePages to: self ].
-	GolapProject announcer when: GolapNoteReplaced send: #updateNoteSubscription: to: self
 ]
 
 { #category : 'updating' }
@@ -165,15 +146,7 @@ GolapNotepad >> updateClipList [
 { #category : 'updating' }
 GolapNotepad >> updateClipPreview [
 
-	clipPreview image: (clipList selectedItem ifNotNil: [ :clip | clip image scaledToSize: 400 @ 400 ])
-]
-
-{ #category : 'subscription' }
-GolapNotepad >> updateNoteSubscription: aGolapNoteReplaced [
-
-	aGolapNoteReplaced oldNote ifNotNil: [ :note | note announcer unsubscribe: self ].
-	aGolapNoteReplaced newNote ifNotNil: [ :note | note announcer when: GolapNoteModified send: #updatePages to: self ].
-	self updatePages
+	clipPreview image: (clipList selectedItem ifNotNil: [ :clip | clip image ])
 ]
 
 { #category : 'updating' }
