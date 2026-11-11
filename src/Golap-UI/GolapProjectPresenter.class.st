@@ -9,7 +9,9 @@ Class {
 		'removeProjectButton',
 		'saveProjectButton',
 		'switchProjectButton',
-		'golapNotebook'
+		'golapNotebook',
+		'leftToolbar',
+		'rightToolbar'
 	],
 	#classVars : [
 		'Current'
@@ -36,9 +38,8 @@ GolapProjectPresenter class >> flushCurrent [
 GolapProjectPresenter class >> golapMenuOn: aBuilder [
 
 	<worldMenu>
-	<golapMenu>
 	(aBuilder item: #GolapOpenProjectPresenter)
-		label: 'プロジェクト';
+		label: 'gOLAP';
 		iconName: #open;
 		parent: #Golap;
 		order: 0;
@@ -56,12 +57,16 @@ GolapProjectPresenter class >> open [
 	window := self current window ifNil: [ self current asWindow ].
 	window isOpen
 		ifTrue: [ window activate ]
-		ifFalse: [
-				| y |
-				y := (self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ].
-				window
-					open;
-					maximize ]
+		ifFalse: [ window open maximize ]
+]
+
+{ #category : 'menus' }
+GolapProjectPresenter class >> openFullScreen [
+
+	<script>
+	self current asWorldWindow
+		title: 'gOLAP';
+		open
 ]
 
 { #category : 'layout' }
@@ -116,7 +121,11 @@ GolapProjectPresenter >> addProject [
 	self confirmToSaveCurrentProject ifNotNil: [
 			(self requestNewProject: '') ifNotNil: [ :project |
 					self saveAsProject: project.
-					self selectProject: project ] ]
+					self selectProject: project.
+					project beCurrent.
+					self
+						updateProjectList;
+						updateNotepad ] ]
 ]
 
 { #category : 'ui requests' }
@@ -177,6 +186,46 @@ GolapProjectPresenter >> confirmYesNoCancel: aString title: anotherString [
 		  openModal
 ]
 
+{ #category : 'initialization' }
+GolapProjectPresenter >> createLeftToolbar [
+
+	^ self newToolbar
+		  beBoth;
+		  add: (self newToolbarButton
+				   icon: (self iconNamed: #remote);
+				   label: '新規クエリー';
+				   help: 'gOLAPサーバーに接続してクエリを送信してグラフを開きます';
+				   action: [ GolapNetworkClientPresenter open ];
+				   yourself);
+		  add: (self newToolbarButton
+				   icon: (self iconNamed: #open);
+				   label: '表ファイル';
+				   help: '商品CSVファイルと関連CSVファイルを選択してグラフを開きます';
+				   action: [ GolapCSVLauncher open ];
+				   yourself);
+		  yourself
+]
+
+{ #category : 'initialization' }
+GolapProjectPresenter >> createRightToolbar [
+
+	^ self newToolbar
+		  beBoth;
+		  add: (self newToolbarButton
+				   icon: (self iconNamed: #configuration);
+				   label: '設定';
+				   help: 'gOLAPクライアントの設定画面を開きます';
+				   action: [ Golap showSettingBrowser ];
+				   yourself);
+		  add: (self newToolbarButton
+				   icon: (self iconNamed: #smallQuit);
+				   label: '終了';
+				   help: 'gOLAPクライアントを終了します';
+				   action: [ GolapApplication quit ];
+				   yourself);
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapProjectPresenter >> currentProject [
 
@@ -198,50 +247,53 @@ GolapProjectPresenter >> currentProjectName [
 { #category : 'layout' }
 GolapProjectPresenter >> defaultLayout [
 
-	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.2;
-		  add: (SpPanedLayout newVertical
-				   positionOfSlider: 0.25;
-				   add: (SpBoxLayout newVertical
-						    add: projectList expand: true;
-						    add: (SpBoxLayout newHorizontal
-								     add: addProjectButton expand: true;
-								     add: renameProjectButton expand: true;
-								     add: removeProjectButton expand: true;
-								     yourself)
-						    expand: false;
-						    add: saveProjectButton expand: false;
-						    add: switchProjectButton expand: false;
+	^ SpBoxLayout newVertical
+		  add: (SpBoxLayout newHorizontal
+				   add: leftToolbar expand: true;
+				   add: rightToolbar expand: false;
+				   yourself)
+		  expand: false;
+		  add: (SpPanedLayout newHorizontal
+				   positionOfSlider: 0.2;
+				   add: (SpPanedLayout newVertical
+						    positionOfSlider: 0.25;
+						    add: (SpBoxLayout newVertical
+								     add: projectList expand: true;
+								     add: (SpBoxLayout newHorizontal
+										      add: addProjectButton expand: true;
+										      add: renameProjectButton expand: true;
+										      add: removeProjectButton expand: true;
+										      yourself)
+								     expand: false;
+								     add: saveProjectButton expand: false;
+								     add: switchProjectButton expand: false;
+								     yourself);
+						    add: (SpBoxLayout newVertical
+								     add: (SpBoxLayout newHorizontal
+										      hAlignCenter;
+										      add: 'ノート' expand: false)
+								     expand: false;
+								     add: notepad;
+								     yourself);
 						    yourself);
-				   add: (SpBoxLayout newVertical
-						    add: (SpBoxLayout newHorizontal
-								     hAlignCenter;
-								     add: 'ノート' expand: false)
-						    expand: false;
-						    add: notepad;
-						    yourself);
+				   add: golapNotebook;
 				   yourself);
-		  add: golapNotebook;
 		  yourself
 ]
 
 { #category : 'converting' }
 GolapProjectPresenter >> fromJSON: aDictionary [
 
-	aDictionary
-		ifNotNil: [
-				aDictionary isArray
-					ifTrue: [
-							GolapProject default beCurrent.
-							self restoreGolaps: aDictionary ]
-					ifFalse: [
-							| project |
-							project := GolapProject fromJSON: aDictionary.
-							aDictionary
-								at: 'windows' ifPresent: [ :array | self restoreGolaps: array ];
-								at: 'golaps' ifPresent: [ :array | self restoreGolaps: array ];
-								at: 'golap-index' ifPresent: [ :integer | golapNotebook selectPageIndex: integer ] ] ]
-		ifNil: [ GolapProject default beCurrent ]
+	aDictionary ifNotNil: [
+			aDictionary isArray
+				ifTrue: [ self restoreGolaps: aDictionary ]
+				ifFalse: [
+						| project |
+						project := GolapProject fromJSON: aDictionary.
+						aDictionary
+							at: 'windows' ifPresent: [ :array | self restoreGolaps: array ];
+							at: 'golaps' ifPresent: [ :array | self restoreGolaps: array ];
+							at: 'golap-index' ifPresent: [ :integer | golapNotebook selectPageIndex: integer ] ] ]
 ]
 
 { #category : 'enumerating' }
@@ -262,6 +314,8 @@ GolapProjectPresenter >> iconFor: aGolapProject [
 GolapProjectPresenter >> initializePresenters [
 
 	super initializePresenters.
+	leftToolbar := self createLeftToolbar.
+	rightToolbar := self createRightToolbar.
 	projectList := self newTable
 		               addColumn: ((SpImageTableColumn evaluated: [ :project | self iconFor: project ]) width: 32);
 		               addColumn: (SpStringTableColumn title: 'プロジェクト名' evaluated: #projectName);
@@ -395,11 +449,7 @@ GolapProjectPresenter >> saveAsProject: aGolapProject [
 										GolapProgressDialog new
 											title: 'プロジェクトを保存中...';
 											informUserDuring: [ :progress | GolapJSON put: json onStream: stream ] ] ]
-						ifNil: [ self alert: self currentProjectName , 'の保存に失敗しました。' title: '保存失敗' ] ].
-			aGolapProject beCurrent.
-			self
-				updateProjectList;
-				updateNotepad ]
+						ifNil: [ self alert: self currentProjectName , 'の保存に失敗しました。' title: '保存失敗' ] ] ]
 ]
 
 { #category : 'operations' }
@@ -407,7 +457,11 @@ GolapProjectPresenter >> saveProject [
 
 	| project |
 	project := self currentProject ifDefault: [ self requestNewProject: '' ] otherwise: #yourself.
-	self saveAsProject: project
+	self saveAsProject: project.
+	project beCurrent.
+	self
+		updateProjectList;
+		updateNotepad
 ]
 
 { #category : 'accessing' }
@@ -462,6 +516,7 @@ GolapProjectPresenter >> switchProject [
 							[ self fromJSON: (GolapJSON fromStream: stream) ]
 								on: Error
 								do: [ :ex | self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ] ] ].
+			project beCurrent.
 			self
 				updateProjectList;
 				updateNotepad ]
