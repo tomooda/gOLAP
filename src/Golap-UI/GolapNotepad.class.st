@@ -48,7 +48,7 @@ GolapNotepad >> close [
 GolapNotepad >> defaultLayout [
 
 	<script: 'self new open'>
-	^ SpBoxLayout newVertical
+	^ SpBoxLayout newHorizontal
 		  add: notebook;
 		  yourself
 ]

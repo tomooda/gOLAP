@@ -37,7 +37,11 @@ Class {
 		'visualizationNotebook',
 		'imageCache',
 		'leftPaneOpenCloseButton',
-		'hebPresenter'
+		'hebPresenter',
+		'leftPaneLayout',
+		'mainPaneLayout',
+		'fullPanesLayout',
+		'showsLeftPane'
 	],
 	#classVars : [
 		'NameEndOfLineDelimiter'
@@ -435,15 +439,6 @@ Golap >> blockUpdateModelWhile: aBlock [
 	aBlock value
 ]
 
-{ #category : 'layouts' }
-Golap >> centerPaneLayout [
-
-	^ SpBoxLayout newHorizontal
-		  add: leftPaneOpenCloseButton width: 16;
-		  add: visualizationNotebook expand: true;
-		  yourself
-]
-
 { #category : 'menu' }
 Golap >> clipMenu [
 
@@ -606,15 +601,12 @@ Golap >> decliningColor [
 Golap >> defaultLayout [
 
 	<spec>
-	^ SpPanedLayout newHorizontal
-		  positionOfSlider: 0.25;
-		  add: self leftPaneLayout;
-		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.8;
-				   add: self centerPaneLayout;
-				   add: self rightPaneLayout;
-				   yourself);
-		  yourself
+	^ showsLeftPane
+		  ifTrue: [ self fullPanesLayout ]
+		  ifFalse: [
+				  SpBoxLayout newHorizontal
+					  add: leftPaneOpenCloseButton width: 20;
+					  add: mainPaneLayout ]
 ]
 
 { #category : 'accessing' }
@@ -677,6 +669,18 @@ Golap >> freshColor [
 Golap >> friend [
 
 	^ edgesAppearancePresenter friend
+]
+
+{ #category : 'layouts' }
+Golap >> fullPanesLayout [
+
+	<spec>
+	^ fullPanesLayout ifNil: [
+			  fullPanesLayout := SpPanedLayout newHorizontal
+				                     positionOfSlider: 0.25;
+				                     add: self leftPaneLayout;
+				                     add: self mainPaneLayout;
+				                     yourself ]
 ]
 
 { #category : 'menu' }
@@ -868,14 +872,12 @@ Golap >> initialize [
 
 	super initialize.
 	model := GolapModel new.
-	model announcer
-		when: GolapModelChangedAnnouncement
-		send: #updatePhotoimages
-		to: self.
+	model announcer when: GolapModelChangedAnnouncement send: #updatePhotoimages to: self.
 	pins := Set new.
 	selections := Set new.
 	dimensions := OrderedDictionary new.
-	imageCache := Dictionary new: 1024
+	imageCache := Dictionary new: 1024.
+	showsLeftPane := true
 ]
 
 { #category : 'initialization' }
@@ -975,7 +977,7 @@ Golap >> initializePresenters [
 		                         whenSelectedPageChangedDo: [ self selectedPageChanged ];
 		                         yourself.
 	leftPaneOpenCloseButton := self newButton
-		                           state: false;
+		                           label: '<';
 		                           action: [ self leftPaneOpenCloseButtonClicked ];
 		                           yourself.
 	self updateLeftPaneOpenCloseButton.
@@ -1063,34 +1065,30 @@ Golap >> itemViewUrl: aString [
 Golap >> leftPaneLayout [
 
 	<script: 'self new open'>
-	^ SpBoxLayout newVertical
-		  add: (SpBoxLayout newHorizontal
-				   add: frontList;
-				   add: baseList)
-		  expand: false;
-		  add: edgesAppearancePresenter expand: true;
-		  add: itemsAppearancePresenter expand: false;
-		  add: 'コメント' expand: false;
-		  add: commentText;
-		  yourself
+	^ leftPaneLayout ifNil: [
+			  leftPaneLayout := SpBoxLayout newHorizontal
+				                    add: (SpBoxLayout newVertical
+						                     add: (SpBoxLayout newHorizontal
+								                      add: frontList;
+								                      add: baseList)
+						                     expand: false;
+						                     add: edgesAppearancePresenter expand: true;
+						                     add: itemsAppearancePresenter expand: false;
+						                     add: 'コメント' expand: false;
+						                     add: commentText;
+						                     yourself);
+				                    add: leftPaneOpenCloseButton width: 20;
+				                    yourself ]
 ]
 
 { #category : 'updating' }
 Golap >> leftPaneOpenCloseButtonClicked [
 
-	leftPaneOpenCloseButton state: leftPaneOpenCloseButton state not.
-	self updateLeftPaneOpenCloseButton.
-	self layout positionOfSlider: (leftPaneOpenCloseButton state
-			 ifTrue: [ 0.0 ]
-			 ifFalse: [ 0.25 ]).
-	self layout children second withAdapterDo: [ :a |
-			a widgetDo: [ :w |
-					| slider |
-					slider := w submorphs second.
-					self layout children second positionOfSlider:
-						slider target width
-						/ (slider target width + slider targetAfter width) ] ].
-	self layout: self layout
+	showsLeftPane := showsLeftPane not.
+	leftPaneOpenCloseButton label: (showsLeftPane
+			 ifTrue: [ '<' ]
+			 ifFalse: [ '>' ]).
+	self layout: self defaultLayout
 ]
 
 { #category : 'history' }
@@ -1102,6 +1100,25 @@ Golap >> loadFromQueryRecord: aGolapQueryRecord [
 			graph keysAndValuesDo: [ :name :json |
 				dimensions at: name put: (GolapModel fromJSON: json) ].
 			self updateDimensions ]
+]
+
+{ #category : 'layouts' }
+Golap >> mainPaneLayout [
+
+	<spec>
+	^ mainPaneLayout ifNil: [
+			  mainPaneLayout := SpPanedLayout newHorizontal
+				                    positionOfSlider: 0.8;
+				                    add: visualizationNotebook;
+				                    add: (SpBoxLayout newVertical
+						                     add: clipButton expand: false;
+						                     add: saveAsSvgButton expand: false;
+						                     add: saveAsPngButton expand: false;
+						                     add: resendQueryButton expand: false;
+						                     add: queryViewTree height: 200;
+						                     add: itemNotebook;
+						                     yourself);
+				                    yourself ]
 ]
 
 { #category : 'accessing-markers' }
@@ -1607,18 +1624,6 @@ Golap >> retrievePhotoimages [
 			self photoimageRetrievalProgressBar value: 1 message: '画像取得完了 (' , agenda size asString , '個取得不可)'.
 			itemsAppearancePresenter showsPhotoimageRetrievalLog ifTrue: [ itemInfoRetriever ifNotNil: #openImageRetrieversLog ].
 			self updateGlobalImage ]
-]
-
-{ #category : 'layouts' }
-Golap >> rightPaneLayout [
-
-	^ SpBoxLayout newVertical
-		  add: clipButton expand: false;
-		  add: saveAsSvgButton expand: false;
-		  add: saveAsPngButton expand: false;
-		  add: resendQueryButton expand: false;
-		  add: queryViewTree height: 200;
-		  add: itemNotebook
 ]
 
 { #category : 'operations' }

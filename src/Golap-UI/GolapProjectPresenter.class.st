@@ -11,7 +11,9 @@ Class {
 		'switchProjectButton',
 		'golapNotebook',
 		'leftToolbar',
-		'rightToolbar'
+		'rightToolbar',
+		'showsProjectAndNote',
+		'toggleShowProjectAndNoteButton'
 	],
 	#classVars : [
 		'Current'
@@ -63,36 +65,9 @@ GolapProjectPresenter class >> open [
 { #category : 'menus' }
 GolapProjectPresenter class >> openFullScreen [
 
-	<script>
 	self current asWorldWindow
 		title: 'gOLAP';
 		open
-]
-
-{ #category : 'layout' }
-GolapProjectPresenter >> _defaultLayout [
-
-	^ SpPanedLayout newVertical
-		  positionOfSlider: 0.25;
-		  add: (SpBoxLayout newVertical
-				   add: projectList expand: true;
-				   add: (SpBoxLayout newHorizontal
-						    add: addProjectButton expand: true;
-						    add: renameProjectButton expand: true;
-						    add: removeProjectButton expand: true;
-						    yourself)
-				   expand: false;
-				   add: saveProjectButton expand: false;
-				   add: switchProjectButton expand: false;
-				   yourself);
-		  add: (SpBoxLayout newVertical
-				   add: (SpBoxLayout newHorizontal
-						    hAlignCenter;
-						    add: 'ノート' expand: false)
-				   expand: false;
-				   add: notepad;
-				   yourself);
-		  yourself
 ]
 
 { #category : 'operations' }
@@ -253,31 +228,36 @@ GolapProjectPresenter >> defaultLayout [
 				   add: rightToolbar expand: false;
 				   yourself)
 		  expand: false;
-		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.2;
-				   add: (SpPanedLayout newVertical
-						    positionOfSlider: 0.25;
-						    add: (SpBoxLayout newVertical
-								     add: projectList expand: true;
-								     add: (SpBoxLayout newHorizontal
-										      add: addProjectButton expand: true;
-										      add: renameProjectButton expand: true;
-										      add: removeProjectButton expand: true;
-										      yourself)
-								     expand: false;
-								     add: saveProjectButton expand: false;
-								     add: switchProjectButton expand: false;
-								     yourself);
-						    add: (SpBoxLayout newVertical
-								     add: (SpBoxLayout newHorizontal
-										      hAlignCenter;
-										      add: 'ノート' expand: false)
-								     expand: false;
-								     add: notepad;
-								     yourself);
-						    yourself);
-				   add: golapNotebook;
-				   yourself);
+		  add: (showsProjectAndNote
+				   ifTrue: [
+						   SpBoxLayout newHorizontal
+							   add: (SpBoxLayout newHorizontal add: (SpBoxLayout newVertical
+											     add: projectList height: 400;
+											     add: (SpBoxLayout newHorizontal
+													      add: addProjectButton expand: true;
+													      add: renameProjectButton expand: true;
+													      add: removeProjectButton expand: true;
+													      yourself)
+											     expand: false;
+											     add: saveProjectButton expand: false;
+											     add: switchProjectButton expand: false;
+											     add: (SpBoxLayout newHorizontal
+													      hAlignCenter;
+													      add: 'ノート' asPresenter expand: false;
+													      yourself)
+											     expand: false;
+											     add: notepad expand: true;
+											     yourself))
+							   width: 400;
+							   add: toggleShowProjectAndNoteButton width: 20;
+							   add: golapNotebook;
+							   yourself ]
+				   ifFalse: [
+						   SpBoxLayout newHorizontal
+							   add: toggleShowProjectAndNoteButton width: 20;
+							   add: golapNotebook;
+							   yourself ])
+		  expand: true;
 		  yourself
 ]
 
@@ -302,6 +282,13 @@ GolapProjectPresenter >> golapsDo: aBlock [
 	golapNotebook pages do: [ :page | (page activePresenter ifNil: [ page retrievePresenter ]) ifNotNil: aBlock ]
 ]
 
+{ #category : 'operations' }
+GolapProjectPresenter >> hideProjectAndNote [
+
+	showsProjectAndNote := false.
+	self updateToggleShowProjectAndNoteButton
+]
+
 { #category : 'accessing' }
 GolapProjectPresenter >> iconFor: aGolapProject [
 
@@ -311,11 +298,22 @@ GolapProjectPresenter >> iconFor: aGolapProject [
 ]
 
 { #category : 'initialization' }
+GolapProjectPresenter >> initialize [
+
+	super initialize.
+	self showProjectAndNote
+]
+
+{ #category : 'initialization' }
 GolapProjectPresenter >> initializePresenters [
 
 	super initializePresenters.
 	leftToolbar := self createLeftToolbar.
 	rightToolbar := self createRightToolbar.
+	toggleShowProjectAndNoteButton := self newButton
+		                                  label: '<';
+		                                  action: [ self toggleShowProjectAndNote ];
+		                                  yourself.
 	projectList := self newTable
 		               addColumn: ((SpImageTableColumn evaluated: [ :project | self iconFor: project ]) width: 32);
 		               addColumn: (SpStringTableColumn title: 'プロジェクト名' evaluated: #projectName);
@@ -503,6 +501,19 @@ GolapProjectPresenter >> selectedProjectName [
 ]
 
 { #category : 'operations' }
+GolapProjectPresenter >> showProjectAndNote [
+
+	showsProjectAndNote := true.
+	self updateToggleShowProjectAndNoteButton
+]
+
+{ #category : 'testing' }
+GolapProjectPresenter >> showsProjectAndNote [
+
+	^ showsProjectAndNote
+]
+
+{ #category : 'operations' }
 GolapProjectPresenter >> switchProject [
 
 	self selectedProject ifNotNil: [ :project |
@@ -530,6 +541,14 @@ GolapProjectPresenter >> toJSON: aDictionary [
 		at: 'golaps' put: (Array streamContents: [ :stream | self golapsDo: [ :golap | stream nextPut: golap asJSON ] ]);
 		at: 'golap-index' put: golapNotebook selectedPageIndex.
 	^ aDictionary
+]
+
+{ #category : 'operations' }
+GolapProjectPresenter >> toggleShowProjectAndNote [
+
+	showsProjectAndNote := showsProjectAndNote not.
+	self updateToggleShowProjectAndNoteButton.
+	self layout: self defaultLayout
 ]
 
 { #category : 'updating' }
@@ -567,6 +586,14 @@ GolapProjectPresenter >> updateProjectList [
 	selection := projectList selectedItem.
 	projectList items: GolapProject all.
 	self selectProject: selection
+]
+
+{ #category : 'updating' }
+GolapProjectPresenter >> updateToggleShowProjectAndNoteButton [
+
+	toggleShowProjectAndNoteButton label: (showsProjectAndNote
+			 ifTrue: [ '<' ]
+			 ifFalse: [ '>' ])
 ]
 
 { #category : 'accessing' }
