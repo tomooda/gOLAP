@@ -95,9 +95,10 @@ GolapProjectPresenter >> addProject [
 
 	self confirmToSaveCurrentProject ifNotNil: [
 			(self requestNewProject: '') ifNotNil: [ :project |
+					golapNotebook pages: Array new.
+					project beCurrent.
 					self saveAsProject: project.
 					self selectProject: project.
-					project beCurrent.
 					self
 						updateProjectList;
 						updateNotepad ] ]
@@ -141,15 +142,17 @@ GolapProjectPresenter >> confirm: queryString title: titleString [
 { #category : 'operations' }
 GolapProjectPresenter >> confirmToSaveCurrentProject [
 
-	^ self currentProject
-		  ifDefault: [
-				  ((self confirmYesNoCancel: '現在のプロジェクトを保存しますか？' title: '保存の確認') = true)
-					  ifTrue: [ (self requestNewProject: '') ifNotNil: [ :project | self saveAsProject: project ] ];
-					  yourself ]
-		  otherwise: [ :current |
-				  ((self confirmYesNoCancel: current projectName , 'を保存しますか？' title: '保存の確認') = true)
-					  ifTrue: [ self saveAsProject: current ];
-					  yourself ]
+	self currentProject
+		ifDefault: [
+				| ans |
+				ans := self confirmYesNoCancel: '現在のプロジェクトを保存しますか？' title: '保存の確認'.
+				ans = true ifTrue: [ (self requestNewProject: '') ifNotNil: [ :project | self saveAsProject: project ] ].
+				^ ans ]
+		otherwise: [ :current |
+				| ans |
+				ans := self confirmYesNoCancel: current projectName , 'を保存しますか？' title: '保存の確認'.
+				ans = true ifTrue: [ self saveAsProject: current ].
+				^ ans ]
 ]
 
 { #category : 'ui requests' }
@@ -270,10 +273,11 @@ GolapProjectPresenter >> fromJSON: aDictionary [
 				ifFalse: [
 						| project |
 						project := GolapProject fromJSON: aDictionary.
+						project beCurrent.
 						aDictionary
 							at: 'windows' ifPresent: [ :array | self restoreGolaps: array ];
 							at: 'golaps' ifPresent: [ :array | self restoreGolaps: array ];
-							at: 'golap-index' ifPresent: [ :integer | golapNotebook selectPageIndex: integer ] ] ]
+							at: 'golap-index' ifPresent: [ :integer | integer > 0 ifTrue: [ golapNotebook selectPageIndex: integer ] ] ] ]
 ]
 
 { #category : 'enumerating' }
@@ -416,23 +420,17 @@ GolapProjectPresenter >> requestNewProject: aString [
 { #category : 'private' }
 GolapProjectPresenter >> restoreGolaps: anArray [
 
-	| dialog |
-	dialog := GolapProgressDialog new.
-	dialog
-		title: 'グラフ復元中...';
-		informUserDuring: [ :progress |
-				| pages |
-				pages := Array new: anArray size.
-				anArray withIndexDo: [ :json :index |
-							| golap |
-							progress progressPercent: index * 100 // anArray size.
-							golap := Golap fromJSON: json.
-							pages at: index put: (self newNotebookPage
-										 presenterProvider: golap asValueHolder;
-										 beCloseable;
-										 title: golap windowTitle;
-										 yourself) ].
-				golapNotebook pages: pages ]
+	| pages |
+	pages := Array new: anArray size.
+	anArray withIndexDo: [ :json :index |
+			| golap |
+			golap := Golap fromJSON: json.
+			pages at: index put: (self newNotebookPage
+					 presenterProvider: golap asValueHolder;
+					 beCloseable;
+					 title: golap windowTitle;
+					 yourself) ].
+	golapNotebook pages: pages
 ]
 
 { #category : 'operations' }
@@ -446,7 +444,9 @@ GolapProjectPresenter >> saveAsProject: aGolapProject [
 										stream truncate.
 										GolapProgressDialog new
 											title: 'プロジェクトを保存中...';
-											informUserDuring: [ :progress | GolapJSON put: json onStream: stream ] ] ]
+											informUserDuring: [ :progress |
+													GolapJSON put: json onStream: stream.
+													1 second wait ] ] ]
 						ifNil: [ self alert: self currentProjectName , 'の保存に失敗しました。' title: '保存失敗' ] ] ]
 ]
 
@@ -473,7 +473,7 @@ GolapProjectPresenter >> selectProject: aGolapNamedProject [
 { #category : 'updating' }
 GolapProjectPresenter >> selectedGolapPageChanged [
 
-	golapNotebook selectedPage ifNotNil: [ :page | page activePresenter selectedPageChanged ]
+	golapNotebook selectedPage ifNotNil: [ :page | page activePresenter ifNotNil: #selectedPageChanged ]
 ]
 
 { #category : 'accessing' }
@@ -520,14 +520,17 @@ GolapProjectPresenter >> switchProject [
 			project = self currentProject
 				ifTrue: [ (self confirm: self currentProjectName , 'を再読み込みしますか？' title: '再読み込みの確認') ifFalse: [ ^ self ] ]
 				ifFalse: [ self confirmToSaveCurrentProject ifNil: [ ^ self ] ].
-			project beCurrent.
 			golapNotebook pages: Array new.
 			project projectFile ifNotNil: [ :ref |
 					ref readStreamDo: [ :stream |
-							[ self fromJSON: (GolapJSON fromStream: stream) ]
+							[
+								GolapProgressDialog new
+									title: 'プロジェクト読み込み中…';
+									informUserDuring: [ :progress |
+											self fromJSON: (GolapJSON fromStream: stream).
+											self currentProject projectFile: ref ] ]
 								on: Error
 								do: [ :ex | self alert: self currentProjectName , 'の読み込みに失敗しました。' title: '読み込み失敗' ] ] ].
-			project beCurrent.
 			self
 				updateProjectList;
 				updateNotepad ]

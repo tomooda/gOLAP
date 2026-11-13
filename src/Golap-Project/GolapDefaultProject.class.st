@@ -25,7 +25,19 @@ GolapDefaultProject >> projectFile [
 ]
 
 { #category : 'accessing' }
+GolapDefaultProject >> projectFile: aFileReference [
+
+	
+]
+
+{ #category : 'accessing' }
 GolapDefaultProject >> projectName [
 
 	^ nil
+]
+
+{ #category : 'accessing' }
+GolapDefaultProject >> projectName: aFileReference [
+
+	
 ]

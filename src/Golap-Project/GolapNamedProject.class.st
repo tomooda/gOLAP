@@ -70,13 +70,6 @@ GolapNamedProject >> exists [
 	^ projectFile notNil and: [ projectFile exists ]
 ]
 
-{ #category : 'converting' }
-GolapNamedProject >> fromJSON: aDictionaryOrNil [
-
-	aDictionaryOrNil at: 'project' ifPresent: [ :projectName | self projectName: projectName ].
-	super fromJSON: aDictionaryOrNil
-]
-
 { #category : 'comparing' }
 GolapNamedProject >> hash [
 
@@ -119,13 +112,6 @@ GolapNamedProject >> renameTo: aString [
 	self projectFile ifNotNil: [ :oldRef |
 			self projectName: aString.
 			self projectFile ifNotNil: [ :newRef | oldRef moveTo: newRef ] ]
-]
-
-{ #category : 'converting' }
-GolapNamedProject >> toJSON: aDictionary [
-
-	super toJSON: aDictionary.
-	aDictionary at: 'project' put: self projectName
 ]
 
 { #category : 'updating' }

@@ -92,9 +92,8 @@ GolapProject class >> flushCurrent [
 { #category : 'instance creation' }
 GolapProject class >> fromJSON: aDictionary [
 
-	^ (aDictionary at: 'project' ifPresent: [ :string | self named: string ] ifAbsent: [ self default ])
+	^ GolapNamedProject new
 		  fromJSON: aDictionary;
-		  beCurrent;
 		  yourself
 ]
 
@@ -194,7 +193,19 @@ GolapProject >> projectFile [
 ]
 
 { #category : 'accessing' }
+GolapProject >> projectFile: aFileReference [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
 GolapProject >> projectName [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+GolapProject >> projectName: aString [
 
 	^ self subclassResponsibility
 ]
@@ -202,33 +213,20 @@ GolapProject >> projectName [
 { #category : 'converting' }
 GolapProject >> restoreQuery: aDictionary [
 
-	| dialog |
-	dialog := GolapProgressDialog new.
-	dialog
-		title: 'クエリ復元中...';
-		informUserDuring: [ :progress |
-				[ GolapNetworkClientPresenter fromJSON: aDictionary ]
-					on: Exception
-					do: [ :ex |
-							GolapNetworkClientPresenter flushCurrent.
-							ex pass ] ]
+	[ GolapNetworkClientPresenter fromJSON: aDictionary ]
+		on: Exception
+		do: [ :ex |
+				GolapNetworkClientPresenter flushCurrent.
+				ex pass ]
 ]
 
 { #category : 'converting' }
 GolapProject >> restoreWindows: anArray [
 
-	| dialog |
-	dialog := GolapProgressDialog new.
-	dialog
-		title: '復元中...';
-		informUserDuring: [ :progress |
-				| widget |
-				widget := dialog adapter widget.
-				anArray withIndexDo: [ :json :index |
-							progress progressPercent: index * 100 // anArray size.
-							json at: 'class' ifPresent: [ :className |
-										(TGolapSnapshotablePresenter users detect: [ :class | class name asString = className ] ifNone: [ nil ]) ifNotNil: [
-												:class | class fromJSON: json ] ] ] ]
+	anArray do: [ :json |
+			json at: 'class' ifPresent: [ :className |
+					(TGolapSnapshotablePresenter users detect: [ :class | class name asString = className ] ifNone: [ nil ]) ifNotNil: [ :class |
+						class fromJSON: json ] ] ]
 ]
 
 { #category : 'operations' }
@@ -259,14 +257,14 @@ GolapProject >> store [
 			  self asJSON ifNotNil: [ :json |
 					  ref writeStreamDo: [ :stream |
 							  stream truncate.
-							  GolapJSON put: json onStreamPretty: stream ] ] ]
+							  GolapJSON put: json onStream: stream ] ] ]
 ]
 
 { #category : 'converting' }
 GolapProject >> toJSON: aDictionary [
 
 	GolapNetworkClientPresenter asJSON ifNotNil: [ :query | aDictionary at: 'last-query' put: query ].
-	aDictionary at: 'note' put: (note ifNotNil: #asJSON)
+	aDictionary at: 'note' put: self note asJSON
 ]
 
 { #category : 'updating' }

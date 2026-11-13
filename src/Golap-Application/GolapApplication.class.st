@@ -85,7 +85,7 @@ GolapApplication class >> json: aDictionary at: aString ifPresent: aBlock [
 									  stream
 										  nextPutAll: aString;
 										  cr.
-									  GolapJSON put: json onStreamPretty: stream.
+									  GolapJSON put: json onStream: stream.
 									  stream cr.
 									  ex printOn: stream.
 									  stream cr.
@@ -101,19 +101,23 @@ GolapApplication class >> quit [
 { #category : 'sessions' }
 GolapApplication class >> resume [
 
-	self sessionState: #resuming do: [
+	"self sessionState: #resuming do: [
 			self sessionFile isFile ifTrue: [
 					(GolapDefaultProject current confirm: '保存されたセッションを回復しますか？' title: 'gOLAP') ifTrue: [
 							[
 								self sessionFile readStreamDo: [ :stream |
 										(GolapJSON fromStream: stream) ifNotNil: [ :json |
 												self
-													json: json at: 'session' ifPresent: [ :session | GolapProject fromJSON: session ];
+													json: json at: 'session' ifPresent: [ :session |
+															GolapProjectPresenter current
+																fromJSON: session;
+																updateProjectList;
+																updateNotepad ];
 													json: json at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
 													json: json at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
 													json: json at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
 								on: Exception
-								do: [ :ex | ex return ] ] ] ]
+								do: [ :ex | ex return ] ] ] ]"
 ]
 
 { #category : 'sessions' }
@@ -192,7 +196,7 @@ GolapApplication class >> startUp: aBoolean [
 { #category : 'sessions' }
 GolapApplication class >> suspend [
 
-	self sessionState: #suspending do: [
+	"self sessionState: #suspending do: [
 			(GolapDefaultProject current confirm: 'セッションを保存しますか？' title: 'gOLAP') ifTrue: [
 					[
 						| json |
@@ -202,12 +206,12 @@ GolapApplication class >> suspend [
 						Golap defaultFontAsJSON ifNotNil: [ :font | json at: 'default-font' put: font ].
 						self sessionTemporaryFile
 							ensureDelete;
-							writeStreamDo: [ :stream | (NeoJSONWriter on: stream) nextPut: json ];
+							writeStreamDo: [ :stream | GolapJSON put: json onStream: stream ];
 							renameTo: (self sessionFile
 									 ensureDelete;
 									 basename) ]
 						on: Exception
-						do: [ :ex |  ] ] ]
+						do: [ :ex |  ] ] ]"
 ]
 
 { #category : 'execution' }
