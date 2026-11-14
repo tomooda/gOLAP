@@ -977,7 +977,7 @@ Golap >> initializePresenters [
 		                         whenSelectedPageChangedDo: [ self selectedPageChanged ];
 		                         yourself.
 	leftPaneOpenCloseButton := self newButton
-		                           label: '<';
+		                           label: '≪';
 		                           action: [ self leftPaneOpenCloseButtonClicked ];
 		                           yourself.
 	self updateLeftPaneOpenCloseButton.
@@ -2031,8 +2031,8 @@ Golap >> updateItemsList [
 Golap >> updateLeftPaneOpenCloseButton [
 
 	leftPaneOpenCloseButton label: (leftPaneOpenCloseButton state = true
-			 ifTrue: [ '>' ]
-			 ifFalse: [ '<' ])
+			 ifTrue: [ '≫' ]
+			 ifFalse: [ '≪' ])
 ]
 
 { #category : 'updating' }
