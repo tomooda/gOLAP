@@ -1085,9 +1085,7 @@ Golap >> leftPaneLayout [
 Golap >> leftPaneOpenCloseButtonClicked [
 
 	showsLeftPane := showsLeftPane not.
-	leftPaneOpenCloseButton label: (showsLeftPane
-			 ifTrue: [ '<' ]
-			 ifFalse: [ '>' ]).
+	self updateLeftPaneOpenCloseButton.
 	self layout: self defaultLayout
 ]
 
@@ -2030,9 +2028,9 @@ Golap >> updateItemsList [
 { #category : 'updating' }
 Golap >> updateLeftPaneOpenCloseButton [
 
-	leftPaneOpenCloseButton label: (leftPaneOpenCloseButton state = true
-			 ifTrue: [ '≫' ]
-			 ifFalse: [ '≪' ])
+	leftPaneOpenCloseButton label: (showsLeftPane ~= false
+			 ifTrue: [ '≪' ]
+			 ifFalse: [ '≫' ])
 ]
 
 { #category : 'updating' }
