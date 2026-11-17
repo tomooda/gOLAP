@@ -21,7 +21,6 @@ Class {
 		'resetButton',
 		'saveButton',
 		'openButton',
-		'closeCheckBox',
 		'clipButton',
 		'clipCheckBox'
 	],
@@ -114,12 +113,6 @@ GolapNetworkClientPresenter >> clearPreviewFilterField [
 	queryPresenter clearPreviewFilterField
 ]
 
-{ #category : 'initialization' }
-GolapNetworkClientPresenter >> close [
-
-	self window ifNotNil: #close
-]
-
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> comment [
 
@@ -155,7 +148,6 @@ GolapNetworkClientPresenter >> defaultLayout [
 				   hAlignEnd;
 				   add: (SpBoxLayout newHorizontal
 						    add: clipCheckBox expand: false;
-						    add: closeCheckBox expand: false;
 						    add: resetButton expand: false;
 						    add: saveButton expand: false;
 						    add: clipButton expand: false;
@@ -207,19 +199,14 @@ GolapNetworkClientPresenter >> dumpToFile [
 				               comment: self comment
 				               serverConfig: self serverConfig
 				               itemFieldQuerySpec: self itemFieldQuerySpec
-				               authenticateBlock: self authenticateBlock)
-				              readStream.
+				               authenticateBlock: self authenticateBlock) readStream.
 			readStream ifNil: [ ^ UIManager default alert: 'クエリ送信失敗' ].
-			(UIManager default
-				 chooseForSaveFileReference: 'クエリ結果を保存'
-				 extensions: #( 'csv' )
-				 path: Golap golapDirectory) ifNotNil: [ :ref |
+			(UIManager default chooseForSaveFileReference: 'クエリ結果を保存' extensions: #( 'csv' ) path: Golap golapDirectory) ifNotNil: [ :ref |
 					ref writeStreamDo: [ :writeStream |
 							[ readStream atEnd ] whileFalse: [
 									writeStream
 										nextPutAll: (readStream upTo: Character lf);
-										nextPut: Character lf ] ] ] ].
-	closeCheckBox state = true ifTrue: [ self close ]
+										nextPut: Character lf ] ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -326,14 +313,10 @@ GolapNetworkClientPresenter >> initializePresenters [
 				                     ifNotNil: [ serverConfig keys asSortedCollection collect: [ :key | key -> (serverConfig at: key) ] ]);
 		                    yourself.
 	commentText := self newText.
-	closeCheckBox := self newCheckBox
-		                 label: '送信後閉じる';
-		                 state: true;
-		                 yourself.
 	clipCheckBox := self newCheckBox
-		                 label: '送信時にクリップする';
-		                 state: false;
-		                 yourself.
+		                label: '送信時にクリップする';
+		                state: false;
+		                yourself.
 	resetButton := self newButton
 		               label: 'リセット';
 		               action: [ self resetQuery ];
@@ -501,8 +484,7 @@ GolapNetworkClientPresenter >> openGolap [
 																updateModel;
 																updateNodePositions ] ] ] ] ] ]
 			on: GolapAborted
-			do: [ :ex |  ].
-		closeCheckBox state = true ifTrue: [ self close ] ] forkAt: Processor userBackgroundPriority
+			do: [ :ex |  ] ] forkAt: Processor userBackgroundPriority
 ]
 
 { #category : 'operations' }

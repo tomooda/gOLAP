@@ -607,12 +607,6 @@ Golap >> ensurePhotoimageRetrievingProcess [
 		self startPhotoimageRetrievingProcess ]
 ]
 
-{ #category : 'initialization' }
-Golap >> forceClose [
-
-	self close
-]
-
 { #category : 'accessing-colors' }
 Golap >> freshColor [
 
