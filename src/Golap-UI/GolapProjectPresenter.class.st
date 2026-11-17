@@ -16,7 +16,8 @@ Class {
 		'toggleShowProjectAndNoteButton'
 	],
 	#classVars : [
-		'Current'
+		'Current',
+		'Logo'
 	],
 	#category : 'Golap-UI-Project',
 	#package : 'Golap-UI',
@@ -50,11 +51,18 @@ GolapProjectPresenter class >> golapMenuOn: aBuilder [
 		help: 'プロジェクトリストを開きます。'
 ]
 
+{ #category : 'accessing' }
+GolapProjectPresenter class >> logoImage [
+
+	^ Logo ifNil: [ Logo := BaselineOfGolap logoImageWithCodename ]
+]
+
 { #category : 'operations' }
 GolapProjectPresenter class >> open [
 
 	<script: 'GolapProjectPresenter open'>
 	| window |
+	self flushCurrent.
 	self current updateProjectList.
 	window := self current window ifNil: [ self current asWindow ].
 	window isOpen
@@ -95,7 +103,7 @@ GolapProjectPresenter >> addProject [
 
 	self confirmToSaveCurrentProject ifNotNil: [
 			(self requestNewProject: '') ifNotNil: [ :project |
-					golapNotebook pages: Array new.
+					self clearGolapPages.
 					project beCurrent.
 					self saveAsProject: project.
 					self selectProject: project.
@@ -128,6 +136,12 @@ GolapProjectPresenter >> asJSON [
 	json := Dictionary new.
 	self toJSON: json.
 	^ json
+]
+
+{ #category : 'operations' }
+GolapProjectPresenter >> clearGolapPages [
+
+	golapNotebook pages: Array new
 ]
 
 { #category : 'ui requests' }
@@ -309,7 +323,7 @@ GolapProjectPresenter >> initializePresenters [
 	leftToolbar := self createLeftToolbar.
 	rightToolbar := self createRightToolbar.
 	toggleShowProjectAndNoteButton := self newButton
-		                                  label: '<';
+		                                  label: '≪';
 		                                  action: [ self toggleShowProjectAndNote ];
 		                                  yourself.
 	projectList := self newTable
@@ -345,11 +359,24 @@ GolapProjectPresenter >> initializePresenters [
 		                       action: [ self switchProject ];
 		                       yourself.
 	golapNotebook := self newNotebook
+		                 addPageTitle: 'About gOLAP clinet' provider: [
+				                 | image |
+				                 image := self logoImage asPresenter.
+				                 image
+					                 autoScale: false;
+					                 whenBuiltDo: [ image adapter widget color: Color white ].
+				                 image ];
 		                 whenSelectedPageChangedDo: [ self selectedGolapPageChanged ];
 		                 yourself.
 	self
 		updateProjectList;
 		updateNotepad
+]
+
+{ #category : 'accessing' }
+GolapProjectPresenter >> logoImage [
+
+	^ self class logoImage
 ]
 
 { #category : 'enumerating' }
@@ -473,7 +500,8 @@ GolapProjectPresenter >> selectProject: aGolapNamedProject [
 { #category : 'updating' }
 GolapProjectPresenter >> selectedGolapPageChanged [
 
-	golapNotebook selectedPage ifNotNil: [ :page | page activePresenter ifNotNil: #selectedPageChanged ]
+	golapNotebook selectedPage ifNotNil: [ :page |
+		page activePresenter ifNotNil: [ :presenter | (presenter isKindOf: Golap) ifTrue: [ presenter selectedPageChanged ] ] ]
 ]
 
 { #category : 'accessing' }
@@ -520,7 +548,7 @@ GolapProjectPresenter >> switchProject [
 			project = self currentProject
 				ifTrue: [ (self confirm: self currentProjectName , 'を再読み込みしますか？' title: '再読み込みの確認') ifFalse: [ ^ self ] ]
 				ifFalse: [ self confirmToSaveCurrentProject ifNil: [ ^ self ] ].
-			golapNotebook pages: Array new.
+			self clearGolapPages.
 			project projectFile ifNotNil: [ :ref |
 					ref readStreamDo: [ :stream |
 							[
@@ -595,8 +623,8 @@ GolapProjectPresenter >> updateProjectList [
 GolapProjectPresenter >> updateToggleShowProjectAndNoteButton [
 
 	toggleShowProjectAndNoteButton label: (showsProjectAndNote
-			 ifTrue: [ '<' ]
-			 ifFalse: [ '>' ])
+			 ifTrue: [ '≪' ]
+			 ifFalse: [ '≫' ])
 ]
 
 { #category : 'accessing' }
