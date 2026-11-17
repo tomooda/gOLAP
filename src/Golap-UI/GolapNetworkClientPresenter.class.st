@@ -1,6 +1,8 @@
 Class {
 	#name : 'GolapNetworkClientPresenter',
 	#superclass : 'SpPresenter',
+	#traits : 'TGolapSnapshotablePresenter',
+	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'urlInput',
 		'presetUrlButton',
@@ -19,10 +21,13 @@ Class {
 		'resetButton',
 		'saveButton',
 		'openButton',
-		'closeCheckBox'
+		'closeCheckBox',
+		'clipButton',
+		'clipCheckBox'
 	],
 	#classInstVars : [
-		'current'
+		'current',
+		'lastJSON'
 	],
 	#category : 'Golap-UI-Query',
 	#package : 'Golap-UI',
@@ -42,16 +47,16 @@ GolapNetworkClientPresenter class >> current [
 ]
 
 { #category : 'sole instance' }
+GolapNetworkClientPresenter class >> current: aGolapNetworkClientPresenter [
+
+	current := aGolapNetworkClientPresenter
+]
+
+{ #category : 'sole instance' }
 GolapNetworkClientPresenter class >> flushCurrent [
 
 	<script>
 	current := nil
-]
-
-{ #category : 'instance creation' }
-GolapNetworkClientPresenter class >> fromJSON: aDictionary [
-
-	^ current := self new fromJSON: aDictionary
 ]
 
 { #category : 'menus' }
@@ -69,10 +74,26 @@ GolapNetworkClientPresenter class >> golapMenuOn: aBuilder [
 		help: 'サーバクエリを編集して送信するウィンドウを開きます'
 ]
 
+{ #category : 'accessing' }
+GolapNetworkClientPresenter class >> lastJSON: aDictionary [
+
+	lastJSON := aDictionary
+]
+
 { #category : 'menus' }
 GolapNetworkClientPresenter class >> open [
 
-	^ self current open
+	<script>
+	| presenter |
+	presenter := self new.
+	lastJSON ifNotNil: [ presenter fromJSON: lastJSON ].
+	presenter open
+]
+
+{ #category : 'operations' }
+GolapNetworkClientPresenter >> addClipToNote [
+
+	self newClip ifNotNil: #addToNote
 ]
 
 { #category : 'accessing' }
@@ -119,8 +140,8 @@ GolapNetworkClientPresenter >> defaultLayout [
 	^ SpBoxLayout newVertical
 		  add: (SpBoxLayout newHorizontal
 				   add: urlInput;
-				   add: presetUrlButton width: 20)
-		  height: self inputTextHeight;
+				   add: presetUrlButton expand: false)
+		  expand: false;
 		  add: (SpPanedLayout newHorizontal
 				   positionOfSlider: 0.8;
 				   add: queryNotebook;
@@ -128,14 +149,18 @@ GolapNetworkClientPresenter >> defaultLayout [
 						    add: 'サーバパラメータ' expand: false;
 						    add: serverConfigTree;
 						    add: 'コメント' expand: false;
-						    add: commentText height: self inputTextHeight * 4;
+						    add: commentText height: 200;
 						    yourself));
 		  add: (SpBoxLayout newHorizontal
 				   hAlignEnd;
-				   add: closeCheckBox expand: false;
-				   add: resetButton expand: false;
-				   add: saveButton expand: false;
-				   add: openButton expand: false;
+				   add: (SpBoxLayout newHorizontal
+						    add: clipCheckBox expand: false;
+						    add: closeCheckBox expand: false;
+						    add: resetButton expand: false;
+						    add: saveButton expand: false;
+						    add: clipButton expand: false;
+						    add: openButton expand: false;
+						    yourself);
 				   yourself)
 		  expand: false;
 		  yourself
@@ -251,14 +276,13 @@ GolapNetworkClientPresenter >> initialize [
 { #category : 'initialization' }
 GolapNetworkClientPresenter >> initializePresenters [
 
-	<script: 'GolapQueryPresenter new openWithSpec'>
 	urlInput := self newTextInput
 		            text: self defaultUrl;
-		            whenTextChangedDo: [ :old :new |
-			            old ~= new ifTrue: [ self flushAuth ] ];
+		            whenTextChangedDo: [ :old :new | old ~= new ifTrue: [ self flushAuth ] ];
 		            whenSubmitDo: [ :text | self urlInputSubmitted ];
 		            yourself.
 	presetUrlButton := self newButton
+		                   label: 'プリセット';
 		                   icon: (Smalltalk ui icons iconNamed: #back);
 		                   action: [ self openPresetUrlDialog ];
 		                   yourself.
@@ -278,45 +302,37 @@ GolapNetworkClientPresenter >> initializePresenters [
 		                 addPage: (self newNotebookPage
 				                  title: '履歴';
 				                  presenterProvider: [ queryHistoryPresenter ];
-				                  whenRetrievedDo: [
-					                  queryHistoryPresenter updateQueryHistoryList ];
+				                  whenRetrievedDo: [ queryHistoryPresenter updateQueryHistoryList ];
 				                  yourself);
-		                 whenSelectedPageChangedDo: [
-		                 self selectedPageChanged ];
+		                 whenSelectedPageChangedDo: [ self selectedPageChanged ];
 		                 yourself.
-	queryPalettePresenter := (self instantiate:
-			                          GolapQueryPalettePresenter)
+	queryPalettePresenter := (self instantiate: GolapQueryPalettePresenter)
 		                         importQueryBlock: [ self generateQueryText ];
 		                         yourself.
 	usesQueryHistory := false.
 	queryHistoryPresenter := self instantiate: GolapQueryHistoryPresenter.
 	serverConfigTree := (self instantiate: GolapTreeTablePresenter)
-		                    addColumn:
-			                    (SpStringTableColumn evaluated: [ :assoc |
+		                    addColumn: (SpStringTableColumn evaluated: [ :assoc |
 						                     | string |
-						                     string := assoc key , ' : '
-						                               ,
-							                               (GolapJSON toString: assoc value).
-						                     serverConfigTree contentWidth:
-								                     (TextStyle defaultFont widthOfString:
-										                      string).
+						                     string := assoc key , ' : ' , (GolapJSON toString: assoc value).
+						                     serverConfigTree contentWidth: (TextStyle defaultFont widthOfString: string).
 						                     string ]);
 		                    children: [ :assoc |
 				                    assoc value isDictionary
-					                    ifTrue: [
-							                    assoc value keys asSortedCollection
-								                    collect: [ :k | k -> (assoc value at: k) ] ]
+					                    ifTrue: [ assoc value keys asSortedCollection collect: [ :k | k -> (assoc value at: k) ] ]
 					                    ifFalse: [ Array new ] ];
-		                    roots:
-			                    (serverConfig ifNil: [ #(  ) ] ifNotNil: [
-						                     serverConfig keys asSortedCollection
-							                     collect: [ :key |
-								                     key -> (serverConfig at: key) ] ]);
+		                    roots: (serverConfig
+				                     ifNil: [ #(  ) ]
+				                     ifNotNil: [ serverConfig keys asSortedCollection collect: [ :key | key -> (serverConfig at: key) ] ]);
 		                    yourself.
 	commentText := self newText.
 	closeCheckBox := self newCheckBox
 		                 label: '送信後閉じる';
 		                 state: true;
+		                 yourself.
+	clipCheckBox := self newCheckBox
+		                 label: '送信時にクリップする';
+		                 state: false;
 		                 yourself.
 	resetButton := self newButton
 		               label: 'リセット';
@@ -326,6 +342,11 @@ GolapNetworkClientPresenter >> initializePresenters [
 		              label: 'ダウンロード';
 		              action: [ self dumpToFile ];
 		              disable;
+		              yourself.
+	clipButton := self newButton
+		              label: 'クリップ';
+		              icon: (self iconNamed: #workspace);
+		              action: [ self addClipToNote ];
 		              yourself.
 	openButton := self newButton
 		              label: '開く';
@@ -338,8 +359,7 @@ GolapNetworkClientPresenter >> initializePresenters [
 	self whenBuiltDo: [ :w |
 			| font |
 			font := TextStyle defaultFont.
-			w widget allMorphsDo: [ :m |
-				(m respondsTo: #font:) ifTrue: [ m font: font ] ].
+			w widget allMorphsDo: [ :m | (m respondsTo: #font:) ifTrue: [ m font: font ] ].
 			self updateServerConfig ]
 ]
 
@@ -349,12 +369,6 @@ GolapNetworkClientPresenter >> initializeWindow: aWindowPresenter [
 	aWindowPresenter
 		title: 'サーバクエリ';
 		initialExtent: self initialExtent
-]
-
-{ #category : 'layout' }
-GolapNetworkClientPresenter >> inputTextHeight [
-
-	^ self class inputTextHeight
 ]
 
 { #category : 'accessing' }
@@ -395,6 +409,15 @@ GolapNetworkClientPresenter >> loadPreset: aDictionary [
 		resetTransactionFilterSpec
 ]
 
+{ #category : 'private' }
+GolapNetworkClientPresenter >> newClip [
+
+	^ GolapQueryClip new
+		  image: (self withAdapterDo: [ :a | a widgetDo: [ :w | w asForm ] ]);
+		  json: self asJSON;
+		  yourself
+]
+
 { #category : 'accessing' }
 GolapNetworkClientPresenter >> nodeEvaluators [
 
@@ -407,34 +430,10 @@ GolapNetworkClientPresenter >> nodeEvaluators [
 ]
 
 { #category : 'operations' }
-GolapNetworkClientPresenter >> openDialogIfAccepted: aBlock ifCanceled: anotherBlock [
-
-	self clearPreviewFilterField.
-	self openDialog
-		okAction: [
-			usesQueryHistory
-				ifTrue: [
-					queryHistoryPresenter historyRecord ifNotNil: [ :record |
-							aBlock cull: nil cull: record hideDuplicate ] ]
-				ifFalse: [
-					[
-					| queryRecord |
-					queryRecord := self recordHiDeHo.
-					aBlock
-						cull: (GolapQueryApiClient
-								 url: self url
-								 query: self query
-								 comment: self comment
-								 serverConfig: self serverConfig
-								 itemFieldQuerySpec: self itemFieldQuerySpec
-								 authenticateBlock: self authenticateBlock)
-						cull: queryRecord ] forkAt: Processor userBackgroundPriority ] ];
-		cancelAction: anotherBlock
-]
-
-{ #category : 'operations' }
 GolapNetworkClientPresenter >> openGolap [
 
+	self class lastJSON: self asJSON.
+	clipCheckBox state = true ifTrue: [ self addClipToNote ].
 	[
 		self clearPreviewFilterField.
 		[
@@ -723,6 +722,15 @@ GolapNetworkClientPresenter >> valuesAtField: aString [
 				   field: aString
 				   ifError: [ ^ Array new ]) ].
 	^ Array new
+]
+
+{ #category : 'accessing' }
+GolapNetworkClientPresenter >> windowTitle [
+
+	(commentText ifNotNil: #text) ifNotNil: [ :text |
+		text asString trim ifNotEmpty: [ :string |
+			string lines ifNotEmpty: [ :lines | lines first trim ifNotEmpty: [ :line | ^ line ] ] ] ].
+	^ 'クエリー'
 ]
 
 { #category : 'accessing' }

@@ -14,5 +14,6 @@ MicGolapBlock class >> tag [
 
 { #category : 'visiting' }
 MicGolapBlock >> accept: aVisitor [
-	aVisitor visitGolapClip: self 
+
+	aVisitor visitGolapClip: self
 ]

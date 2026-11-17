@@ -228,6 +228,12 @@ Golap >> addAllToExclusionList: aCollectionOfGolapNode [
 	self updateModel
 ]
 
+{ #category : 'operations' }
+Golap >> addClipToNote [
+
+	self newClip ifNotNil: #addToNote
+]
+
 { #category : 'accessing-dimensions' }
 Golap >> addDimension: aGolapBaseGraph named: aString [
 
@@ -327,25 +333,6 @@ Golap >> authenticateBlock: aBlock [
 		itemInfoRetriever authenticateBlock: aBlock ]
 ]
 
-{ #category : 'projects' }
-Golap >> basicAsJSON [
-
-	^ { ('class' -> self class name asString) } asOrderedDictionary
-]
-
-{ #category : 'projects' }
-Golap >> basicFromJSON: aDictionary [
-
-	| bounds |
-	aDictionary
-		at: 'bounds' ifPresent: [ :array |
-				bounds := array first @ array second corner:
-						          array third @ array fourth ];
-	at: 'window'
-		ifPresent: [ :string | "self fromWindowJSON: string bounds: bounds"GolapProjectPresenter current addGolap: self ].
-		
-]
-
 { #category : 'private' }
 Golap >> basicReadDimensionFrom: aReadStream [
 
@@ -439,33 +426,6 @@ Golap >> blockUpdateModelWhile: aBlock [
 	aBlock value
 ]
 
-{ #category : 'menu' }
-Golap >> clipMenu [
-
-	^ self newMenu
-		  addGroup: [ :group |
-				  group
-					  addItem: [ :item |
-							  item
-								  name: 'クリップする';
-								  action: [ self newClip ifNotNil: #addToNote ] ];
-					  addItem: [ :item |
-							  item
-								  name: 'クリップをノートに追記';
-								  action: [ self newClip ifNotNil: #appendToNote ] ] ];
-		  addGroup: [ :group |
-				  group addItem: [ :item |
-						  item
-							  name: '開発者メニュー';
-							  action: [ self newClip inspect ] ] ]
-]
-
-{ #category : 'initialization' }
-Golap >> close [
-
-	self window ifNotNil: #close
-]
-
 { #category : 'accessing-colors' }
 Golap >> colorForEdge: aGolapEdge [
 
@@ -547,12 +507,6 @@ Golap >> confirm: queryString title: titleString [
 		  title: titleString;
 		  message: queryString;
 		  openModal
-]
-
-{ #category : 'ui requests' }
-Golap >> confirmClose [
-
-	^ self isForceClosing or: [ self confirm: self window title , 'を閉じますか？' label: '確認' ]
 ]
 
 { #category : 'ui requests' }
@@ -683,114 +637,6 @@ Golap >> fullPanesLayout [
 				                     yourself ]
 ]
 
-{ #category : 'menu' }
-Golap >> globalImageMenu: aGolapNode [
-
-	| menu |
-	menu := self newMenu.
-	menu addGroup: [ :group |
-			aGolapNode ifNotNil: [
-					(self includesSelection: aGolapNode)
-						ifTrue: [
-								group addItem: [ :item |
-										item
-											name: '選択解除';
-											action: [ self toggleSelection: aGolapNode ] ] ]
-						ifFalse: [
-								group addItem: [ :item |
-										item
-											name: '選択';
-											action: [ self toggleSelection: aGolapNode ] ] ] ].
-			self selections ifNotEmpty: [
-					group addItem: [ :item |
-							item
-								name: '全て選択解除';
-								action: [ self unselectAll ] ] ].
-			group addItem: [ :item |
-					item
-						name: '選択を反転';
-						action: [ self invertSelections ] ] ].
-	menu addGroup: [ :group |
-			aGolapNode ifNotNil: [
-					(itemList markMenu: aGolapNode) ifNotNil: [ :submenu |
-							group addItem: [ :item |
-									item
-										name: 'マーク';
-										subMenu: submenu ] ].
-					(itemList unmarkMenu: aGolapNode) ifNotNil: [ :submenu |
-							group addItem: [ :item |
-									item
-										name: 'マーク解除';
-										subMenu: submenu ] ] ].
-			self selections ifNotEmpty: [
-					group
-						addItem: [ :item |
-								item
-									name: '選択アイテムをマーク';
-									subMenu: itemList markSelectionsMenu ];
-						addItem: [ :item |
-								item
-									name: '選択アイテムをマーク解除';
-									subMenu: itemList unmarkSelectionsMenu ] ] ].
-	selections ifNotEmpty: [
-			menu addGroup: [ :group |
-					group addItem: [ :item |
-							item
-								name: '選択アイテムを削除';
-								action: [ self addSelectionsToExclusionList ] ] ] ].
-	aGolapNode ifNotNil: [
-			menu addGroup: [ :group |
-					(model isReferenceNode: aGolapNode)
-						ifTrue: [
-								group addItem: [ :item |
-										item
-											name: '参照解除';
-											action: [ self removeReferenceNode: aGolapNode ] ] ]
-						ifFalse: [
-								group addItem: [ :item |
-										item
-											name: '参照セット';
-											action: [ self addReferenceNode: aGolapNode ] ] ] ].
-			menu
-				addGroup: [ :group |
-						(self includesPin: aGolapNode)
-							ifTrue: [
-									group addItem: [ :item |
-												item
-													name: 'ピン解除';
-													action: [ self togglePin: aGolapNode ] ] ]
-							ifFalse: [
-									group addItem: [ :item |
-											item
-												name: 'ピン';
-												action: [ self togglePin: aGolapNode ] ] ] ];
-				addGroup: [ :group |
-						group addItem: [ :item |
-								item
-									name: 'アイテム情報に表示';
-									action: [ itemView node: aGolapNode ] ] ] ].
-	menu addGroup: [ :group |
-			| mergeMenu unmergeMenu |
-			mergeMenu := self mergeMenu.
-			(mergeMenu menuGroups allSatisfy: #isEmpty) ifFalse: [
-					group addItem: [ :item |
-							item
-								name: 'マージ';
-								subMenu: mergeMenu ] ].
-			unmergeMenu := self unmergeMenu.
-			(unmergeMenu menuGroups allSatisfy: #isEmpty) ifFalse: [
-					group addItem: [ :item |
-							item
-								name: 'マージ解除';
-								subMenu: unmergeMenu ] ] ].
-	menu addGroup: [ :group |
-			group addItem: [ :item |
-					item
-						name: '開発者メニュー(Inspect)';
-						action: [ aGolapNode inspect ] ] ].
-	^ menu
-]
-
 { #category : 'accessing-presets' }
 Golap >> golapDirectory [
 
@@ -807,12 +653,6 @@ Golap >> golapModelDo: aBlock [
 Golap >> growingColor [
 
 	^ self colorPreferences growingColor
-]
-
-{ #category : 'menu' }
-Golap >> iconForCircleColor: aColor [
-
-	^ itemList iconForCircleColor: aColor
 ]
 
 { #category : 'accessing' }
@@ -913,10 +753,10 @@ Golap >> initializePresenters [
 	commentText := self newText
 		               whenTextChangedDo: [ self commentChanged ];
 		               yourself.
-	clipButton := self newMenuButton
+	clipButton := self newButton
 		              label: 'クリップ';
-		              menu: [ self clipMenu ];
 		              icon: (self iconNamed: #workspace);
+		              action: [ self addClipToNote ];
 		              yourself.
 	saveAsPngButton := self newButton
 		                   label: 'save as PNG...';
@@ -985,23 +825,6 @@ Golap >> initializePresenters [
 			| f |
 			f := TextStyle defaultFont.
 			w widget allMorphsDo: [ :m | (m respondsTo: #font:) ifTrue: [ m font: f ] ] ]
-]
-
-{ #category : 'initialization' }
-Golap >> initializeWindow: aWindowPresenter [
-
-	| y |
-	super initializeWindow: aWindowPresenter.
-	y := (self currentWorld submorphs detect: [ :m | m top <= 1 ] ifNone: [ nil ]) ifNotNil: [ :m | m bottom ] ifNil: [ 0 ].
-	aWindowPresenter
-		title: self title;
-		initialExtent: World extent - (410 @ y);
-		initialPosition: 410 @ y.
-	aWindowPresenter whenWillCloseDo: [ :announcement |
-			self confirmClose
-				ifTrue: [ announcement allowClose ]
-				ifFalse: [ announcement denyClose ] ].
-	aWindowPresenter whenClosedDo: [ self saveQueryRecord ]
 ]
 
 { #category : 'accessing-selection' }
@@ -1133,32 +956,6 @@ Golap >> markersAtNode: aGolapNode do: aBlock [
 	itemList markersAtNode: aGolapNode do: aBlock
 ]
 
-{ #category : 'menu' }
-Golap >> mergeMenu [
-
-	| menu |
-	menu := self newMenu.
-	menu addGroup: [ :group |
-			selections size > 1 ifTrue: [
-					group addItem: [ :item |
-							item
-								name: '選択アイテム';
-								action: [ self mergeSelectedNodes ] ] ].
-			itemList markerDropList items select: #isColorMarker thenDo: [ :marker |
-					| ids |
-					ids := model nodes select: [ :node | marker includesNode: node ] thenCollect: #id.
-					ids size > 1 ifTrue: [
-							group addItem: [ :menuItem |
-									menuItem
-										name: '';
-										icon: marker icon;
-										action: [
-												(self mergeNodes: ids copy) ifNotNil: [ :newId |
-															itemList add: (model nodeAt: newId) toMarker: marker.
-															itemList currentMarker: marker ] ] ] ] ] ].
-	^ menu
-]
-
 { #category : 'merging' }
 Golap >> mergeNodes: aCollectionOfIds [
 
@@ -1201,6 +998,17 @@ Golap >> model [
 Golap >> negativePolishColor [
 
 	^ self colorPreferences negativePolishColor
+]
+
+{ #category : 'private' }
+Golap >> newClip [
+
+	| image |
+	image := (self activeVisualizationDo: #image) ifNil: [ self withAdapterDo: [ :a | a widgetDo: [ :w | w asForm ] ] ].
+	^ GolapGraphClip new
+		  image: image;
+		  json: self asJSON;
+		  yourself
 ]
 
 { #category : 'instance creation' }
@@ -1303,15 +1111,9 @@ Golap >> numNodes [
 ]
 
 { #category : 'operations' }
-Golap >> open [
-
-	self openInNotebook
-]
-
-{ #category : 'operations' }
 Golap >> openInNotebook [
 
-	GolapProjectPresenter current addGolap: self.
+	GolapProjectPresenter current addPresenter: self.
 	self startPhotoimageRetrievingProcess
 ]
 
@@ -1427,21 +1229,6 @@ Golap >> queryRecord [
 Golap >> queryRecord: aGolapQueryRecord [
 
 	queryRecord := aGolapQueryRecord
-]
-
-{ #category : 'menu' }
-Golap >> queryViewTreeMenu [
-	^ self newMenu
-		addGroup: [ :group | 
-			group
-				addItem: [ :item | 
-					item
-						name: '全てコピー' translated;
-						action: [ self copyAllFromQueryViewTree ] ];
-				addItem: [ :item | 
-					item
-						name: '選択アイテムをコピー' translated;
-						action: [ self copyFromQueryViewTree ] ] ]
 ]
 
 { #category : 'private' }
@@ -1921,21 +1708,6 @@ Golap >> toggleSelection: aGolapNode [
 		updateGlobalImageAfter: [ (self includesSelection: aGolapNode)
 				ifTrue: [ self unselect: aGolapNode ]
 				ifFalse: [ self select: aGolapNode ] ]
-]
-
-{ #category : 'menu' }
-Golap >> unmergeMenu [
-
-	| menu |
-	menu := self newMenu.
-	menu addGroup: [ :group |
-			model ifNotNil: [
-					model merge mergesDo: [ :id |
-							group addItem: [ :item |
-									item
-										name: id;
-										action: [ self unmergeNode: id ] ] ] ] ].
-	^ menu
 ]
 
 { #category : 'merging' }

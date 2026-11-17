@@ -20,53 +20,13 @@ TGolapSnapshotablePresenter >> asJSON [
 { #category : 'projects' }
 TGolapSnapshotablePresenter >> basicAsJSON [
 
-	^ {
-		  ('class' -> self class name asString).
-		  ('window' -> self windowJSON).
-		  ('bounds' -> self boundsJSON) } asOrderedDictionary
+	^ { ('class' -> self class name asString) } asOrderedDictionary
 ]
 
 { #category : 'projects' }
 TGolapSnapshotablePresenter >> basicFromJSON: aDictionary [
 
-	| bounds |
-	aDictionary
-		at: 'bounds' ifPresent: [ :array |
-				bounds := array first @ array second corner:
-						          array third @ array fourth ];
-		at: 'window'
-		ifPresent: [ :string | self fromWindowJSON: string bounds: bounds ]
-]
-
-{ #category : 'projects' }
-TGolapSnapshotablePresenter >> boundsJSON [
-
-	self window ifNotNil: [ :window |
-			window withAdapterDo: [ :a |
-					a widgetDo: [ :w |
-							| bounds |
-							bounds := w fullBounds.
-							^ {
-								  bounds origin x.
-								  bounds origin y.
-								  bounds corner x.
-								  bounds corner y } ] ] ].
-	^ nil
-]
-
-{ #category : 'initialization' }
-TGolapSnapshotablePresenter >> close [
-
-	self window ifNotNil: #close
-]
-
-{ #category : 'ui requests' }
-TGolapSnapshotablePresenter >> confirm: queryString label: titleString [
-
-	^ self application newConfirm
-		  title: titleString;
-		  message: queryString;
-		  openModal
+	aDictionary at: 'window' ifPresent: [ :string | GolapProjectPresenter current addPresenter: self ]
 ]
 
 { #category : 'ui requests' }
@@ -78,78 +38,26 @@ TGolapSnapshotablePresenter >> confirm: queryString title: titleString [
 		  openModal
 ]
 
-{ #category : 'ui requests' }
-TGolapSnapshotablePresenter >> confirmClose [
-
-	^ self isForceClosing or: [
-		  self confirm: self window title , 'を閉じますか？' label: '確認' ]
-]
-
-{ #category : 'initialization' }
-TGolapSnapshotablePresenter >> forceClose [
-
-	self close
-]
-
 { #category : 'projects' }
 TGolapSnapshotablePresenter >> fromJSON: aDictionary [
 
 	^ self subclassResponsibility
 ]
 
-{ #category : 'projects' }
-TGolapSnapshotablePresenter >> fromWindowJSON: aString bounds: aRectangle [
+{ #category : 'operations' }
+TGolapSnapshotablePresenter >> open [
 
-	[
-		aString = 'open' ifTrue: [ ^ (self openBounds: aRectangle) open ].
-		aString = 'minimized' ifTrue: [
-				^ self asWindow
-					  open;
-					  minimize ].
-		aString = 'maximized' ifTrue: [
-				^ (self openBounds: aRectangle)
-					  maximize;
-					  open ].
-		aRectangle ifNotNil: [
-				^ self asWindow
-					  initialPosition: aRectangle origin;
-					  initialExtent: aRectangle extent ].
-		^ nil ] ensure: [
-			self currentWorld submorphs do: [ :morph |
-					(morph model isKindOf: SpModalWindowPresenter) ifTrue: [
-						morph comeToFront ] ] ]
+	self openInNotebook
 ]
 
-{ #category : 'ui requests' }
-TGolapSnapshotablePresenter >> isForceClosing [
+{ #category : 'operations' }
+TGolapSnapshotablePresenter >> openInNotebook [
 
-	| context |
-	context := thisContext sender.
-	[ context notNil ] whileTrue: [
-			(context receiver == self and: [ context selector = #forceClose ])
-				ifTrue: [ ^ true ].
-			context := context sender ].
-	^ false
+	GolapProjectPresenter current addPresenter: self
 ]
 
-{ #category : 'snapshot' }
-TGolapSnapshotablePresenter >> openBounds: aRectangle [
+{ #category : 'updating' }
+TGolapSnapshotablePresenter >> selectedPageChanged [
 
-	| window |
-	window := self asWindow.
-	aRectangle ifNotNil: [
-			window
-				initialPosition: aRectangle origin;
-				initialExtent: aRectangle extent ].
-	^ window
-]
-
-{ #category : 'projects' }
-TGolapSnapshotablePresenter >> windowJSON [
-
-	self window ifNotNil: [ :window |
-			window isMinimized ifTrue: [ ^ 'minimized' ].
-			window isMaximized ifTrue: [ ^ 'maximized' ].
-			window isOpen ifTrue: [ ^ 'open' ] ].
-	^ 'closed'
+	^ self subclassResponsibility
 ]

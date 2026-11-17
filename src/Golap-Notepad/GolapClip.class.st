@@ -4,7 +4,9 @@ Class {
 	#instVars : [
 		'id',
 		'caption',
-		'timestamp'
+		'timestamp',
+		'image',
+		'json'
 	],
 	#category : 'Golap-Notepad-Clip',
 	#package : 'Golap-Notepad',
@@ -35,13 +37,7 @@ GolapClip class >> kind [
 { #category : 'operations' }
 GolapClip >> addToNote [
 
-	GolapProjectPresenter current addClip: self
-]
-
-{ #category : 'operations' }
-GolapClip >> appendToNote [
-
-	GolapProjectPresenter current appendClip: self
+	self asPresenter openModal
 ]
 
 { #category : 'converting' }
@@ -71,6 +67,24 @@ GolapClip >> asMicrodown [
 	^ String streamContents: [ :stream | self printMicrodownOn: stream ]
 ]
 
+{ #category : 'converting' }
+GolapClip >> asPresenter [
+
+	^ GolapClipPresenter on: self
+]
+
+{ #category : 'accessing' }
+GolapClip >> base64image [
+
+	^ image ifNotNil: [ (ByteArray streamContents: [ :stream | PNGReadWriter putForm: image onStream: stream ]) base64Encoded ]
+]
+
+{ #category : 'accessing' }
+GolapClip >> base64image: aString [
+
+	image := aString ifNotNil: [ PNGReadWriter formFromStream: aString base64Decoded readStream ]
+]
+
 { #category : 'accessing' }
 GolapClip >> caption [
 
@@ -92,9 +106,13 @@ GolapClip >> copyMicrodownToClipboard [
 { #category : 'converting' }
 GolapClip >> fromJSON: aDictionary [
 
-	aDictionary at: 'id' ifPresent: [ :string | self id: string ].
-	aDictionary at: 'caption' ifPresent: [ :string | self caption: string ].
-	aDictionary at: 'timestamp' ifPresent: [ :string | self timestamp: (DateAndTime fromString: string) ]
+	aDictionary
+		at: 'id' ifPresent: [ :string | self id: string ];
+		at: 'caption' ifPresent: [ :string | self caption: string ];
+		at: 'timestamp' ifPresent: [ :string | self timestamp: (DateAndTime fromString: string) ];
+		at: 'json' ifPresent: [ :dict | json := dict ];
+		at: 'golap' ifPresent: [ :dict | json := dict ];
+		at: 'image' ifPresent: [ :string | self base64image: string ]
 ]
 
 { #category : 'comparing' }
@@ -115,12 +133,36 @@ GolapClip >> id: aString [
 	id := aString
 ]
 
+{ #category : 'accessing' }
+GolapClip >> image [
+
+	^ image
+]
+
+{ #category : 'accessing' }
+GolapClip >> image: aForm [
+
+	image := aForm ifNotNil: [ aForm scaledToSize: 400 @ 400 ]
+]
+
 { #category : 'initialization' }
 GolapClip >> initialize [
 
 	super initialize.
 	timestamp := DateAndTime now.
 	caption := String new
+]
+
+{ #category : 'accessing' }
+GolapClip >> json [
+
+	^ json
+]
+
+{ #category : 'accessing' }
+GolapClip >> json: aDictionary [
+
+	json := aDictionary
 ]
 
 { #category : 'accessing' }
@@ -138,19 +180,48 @@ GolapClip >> open [
 { #category : 'printing' }
 GolapClip >> printHtmlOn: aStream [
 
-	^ self subclassResponsibility
+	aStream
+		nextPutAll: '<div><img alt="';
+		nextPutAll: id;
+		nextPutAll: '" src="';
+		nextPutAll: id;
+		nextPutAll: '.png"></div>';
+		cr;
+		nextPutAll: '<pre>';
+		cr;
+		nextPutAll: caption;
+		nextPutAll: '</pre>';
+		cr
 ]
 
 { #category : 'printing' }
 GolapClip >> printMarkDownOn: aStream [
 
-	^ self subclassResponsibility
+	aStream
+		cr;
+		nextPutAll: '![';
+		nextPutAll: id;
+		nextPutAll: '](';
+		nextPutAll: id;
+		nextPutAll: '.png)';
+		cr;
+		nextPutAll: (caption ifNil: [ '' ]);
+		cr
 ]
 
 { #category : 'printing' }
 GolapClip >> printMicrodownOn: aStream [
 
-	^ self subclassResponsibility
+	aStream
+		cr;
+		nextPutAll: '```gOLAP';
+		cr;
+		nextPutAll: id;
+		cr;
+		nextPutAll: '```';
+		cr;
+		nextPutAll: (caption ifNil: [ '' ]);
+		cr
 ]
 
 { #category : 'accessing' }
@@ -172,5 +243,7 @@ GolapClip >> toJSON: aDictionary [
 		at: 'kind' put: self kind;
 		at: 'id' put: id;
 		at: 'caption' put: caption;
-		at: 'timestamp' put: self timestamp printString
+		at: 'timestamp' put: self timestamp printString;
+		at: 'json' put: json;
+		at: 'image' put: self base64image
 ]

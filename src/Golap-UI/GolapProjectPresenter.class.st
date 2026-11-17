@@ -77,7 +77,7 @@ GolapProjectPresenter >> addClip: aGolapClip [
 ]
 
 { #category : 'operations' }
-GolapProjectPresenter >> addGolap: aGolap [
+GolapProjectPresenter >> addPresenter: aGolap [
 
 	| page |
 	page := self newNotebookPage
@@ -280,12 +280,6 @@ GolapProjectPresenter >> fromJSON: aDictionary [
 							at: 'golap-index' ifPresent: [ :integer | integer > 0 ifTrue: [ golapNotebook selectPageIndex: integer ] ] ] ]
 ]
 
-{ #category : 'enumerating' }
-GolapProjectPresenter >> golapsDo: aBlock [
-
-	golapNotebook pages do: [ :page | (page activePresenter ifNil: [ page retrievePresenter ]) ifNotNil: aBlock ]
-]
-
 { #category : 'operations' }
 GolapProjectPresenter >> hideProjectAndNote [
 
@@ -356,6 +350,12 @@ GolapProjectPresenter >> initializePresenters [
 	self
 		updateProjectList;
 		updateNotepad
+]
+
+{ #category : 'enumerating' }
+GolapProjectPresenter >> presentersDo: aBlock [
+
+	golapNotebook pages do: [ :page | (page activePresenter ifNil: [ page retrievePresenter ]) ifNotNil: aBlock ]
 ]
 
 { #category : 'operations' }
@@ -541,7 +541,7 @@ GolapProjectPresenter >> toJSON: aDictionary [
 
 	self currentProject toJSON: aDictionary.
 	aDictionary
-		at: 'golaps' put: (Array streamContents: [ :stream | self golapsDo: [ :golap | stream nextPut: golap asJSON ] ]);
+		at: 'windows' put: (Array streamContents: [ :stream | self presentersDo: [ :presenter | stream nextPut: presenter asJSON ] ]);
 		at: 'golap-index' put: golapNotebook selectedPageIndex.
 	^ aDictionary
 ]

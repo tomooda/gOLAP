@@ -16,8 +16,11 @@ Class {
 		'transactionFilterPresenter',
 		'transactionFields',
 		'transactionFilterSpec',
-		'lowerBoundsDialogButton',
-		'lowerBoundsPresenter',
+		'minSupport',
+		'minConfidence',
+		'minLift',
+		'minJaccard',
+		'minPMI',
 		'granularityFields',
 		'isolatedNodesCheckBox',
 		'dimensionsPreview'
@@ -34,64 +37,9 @@ GolapQueryPresenter class >> on: aGolapNetworkClientPresenter [
 		yourself
 ]
 
-{ #category : 'layout' }
-GolapQueryPresenter >> _defaultLayout [
-
-	<script: 'GolapQueryPresenter new open'>
-	<spec>
-	^ SpBoxLayout newVertical
-		  add: (SpPanedLayout newHorizontal
-				   add: (SpBoxLayout newVertical
-						    add: 'トランザクション' height: self labelHeight;
-						    add: transactionFilterPresenter);
-				   add: (SpBoxLayout newVertical
-						    add: 'アイテム' height: self labelHeight;
-						    add: itemFilterPresenter);
-				   positionOfSlider: 0.5)
-		  expand: true;
-		  add: lowerBoundsDialogButton height: self buttonHeight;
-		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.4;
-				   add: (SpBoxLayout newVertical
-						    add: (SpBoxLayout newHorizontal
-								     add: '集計' expand: false;
-								     add: granularityTransaction;
-								     add: granularityNode)
-						    expand: false;
-						    add: isolatedNodesCheckBox expand: false;
-						    add: (SpBoxLayout newHorizontal
-								     add: 'タイムアウト' expand: false;
-								     add: deadlineTimer expand: true)
-						    expand: false;
-						    add: (SpBoxLayout newHorizontal
-								     add: '最大取得件数' expand: false;
-								     add: sendMax expand: true)
-						    expand: false;
-						    add: (SpBoxLayout newHorizontal
-								     add: 'ソートキー' expand: false;
-								     add: sortKey expand: true)
-						    expand: false);
-				   add: (SpPanedLayout newHorizontal
-						    positionOfSlider: 0.5;
-						    add: (SpBoxLayout newVertical
-								     add: (SpBoxLayout newHorizontal
-										      add: '比較集計' expand: false;
-										      add: dimensionsKey expand: true)
-								     height: self inputTextHeight;
-								     add: dimensionsValues height: self inputTextHeight);
-						    add: dimensionsPreview))
-		  height: 180
-]
-
 { #category : 'accessing' }
 GolapQueryPresenter >> authenticateBlock [
 	^ networkClient ifNotNil: #authenticateBlock
-]
-
-{ #category : 'layout' }
-GolapQueryPresenter >> buttonHeight [
-
-	^ self class buttonHeight
 ]
 
 { #category : 'operations' }
@@ -109,9 +57,10 @@ GolapQueryPresenter >> defaultInitialExtent [
 { #category : 'layout' }
 GolapQueryPresenter >> defaultLayout [
 
-	<script: 'GolapQueryPresenter new open'>
+	<script: 'self new open'>
 	<spec>
-	^ SpBoxLayout newVertical
+	^ SpPanedLayout newVertical
+		  positionOfSlider: 0.6;
 		  add: (SpPanedLayout newHorizontal
 				   add: (SpBoxLayout newVertical
 						    add: 'トランザクション' expand: false;
@@ -119,43 +68,65 @@ GolapQueryPresenter >> defaultLayout [
 				   add: (SpBoxLayout newVertical
 						    add: 'アイテム' expand: false;
 						    add: itemFilterPresenter);
-				   positionOfSlider: 0.5)
-		  expand: true;
-		  add: lowerBoundsDialogButton expand: false;
+				   positionOfSlider: 0.5);
 		  add: (SpPanedLayout newHorizontal
-				   positionOfSlider: 0.4;
-				   add: (SpGridLayout new
-						    beColumnNotHomogeneous;
-						    borderWidth: 0;
-						    column: 1 expand: false;
-						    column: 2 expand: true;
-						    row: 1 expand: false;
-						    row: 2 expand: false;
-						    row: 3 expand: false;
-						    row: 4 expand: false;
-						    row: 5 expand: false;
-						    add: '集計' atPoint: 1 @ 1;
-						    add: (SpBoxLayout newHorizontal
-								     add: granularityTransaction;
-								     add: granularityNode)
-						    atPoint: 2 @ 1;
-						    add: isolatedNodesCheckBox atPoint: 1 @ 2 span: 2 @ 1;
-						    add: 'タイムアウト' atPoint: 1 @ 3;
-						    add: deadlineTimer atPoint: 2 @ 3;
-						    add: '最大取得件数' atPoint: 1 @ 4;
-						    add: sendMax atPoint: 2 @ 4;
-						    add: 'ソートキー' atPoint: 1 @ 5;
-						    add: sortKey atPoint: 2 @ 5);
-				   add: (SpPanedLayout newHorizontal
-						    positionOfSlider: 0.5;
-						    add: (SpBoxLayout newVertical
+				   add: (SpBoxLayout newVertical
+						    add: (SpGridLayout new
+								     beColumnNotHomogeneous;
+								     beRowHomogeneous;
+								     column: 1 expand: false;
+								     column: 2 expand: true;
+								     row: 1 expand: false;
+								     row: 2 expand: false;
+								     row: 3 expand: false;
+								     row: 4 expand: false;
+								     row: 5 expand: false;
+								     row: 6 expand: false;
+								     row: 7 expand: false;
+								     row: 8 expand: false;
+								     borderWidth: 0;
+								     add: '最小Support' atPoint: 1 @ 1;
+								     add: minSupport atPoint: 2 @ 1;
+								     add: '最小Confidence' atPoint: 1 @ 2;
+								     add: minConfidence atPoint: 2 @ 2;
+								     add: '最小Lift' atPoint: 1 @ 3;
+								     add: minLift atPoint: 2 @ 3;
+								     add: '最小Jaccard' atPoint: 1 @ 4;
+								     add: minJaccard atPoint: 2 @ 4;
+								     add: '最小PMI' atPoint: 1 @ 5;
+								     add: minPMI atPoint: 2 @ 5;
+								     add: 'タイムアウト' atPoint: 1 @ 6;
+								     add: deadlineTimer atPoint: 2 @ 6;
+								     add: '最大取得件数' atPoint: 1 @ 7;
+								     add: sendMax atPoint: 2 @ 7;
+								     add: 'ソートキー' atPoint: 1 @ 8;
+								     add: sortKey atPoint: 2 @ 8;
+								     yourself);
+						    add: isolatedNodesCheckBox expand: false;
+						    add: '' asPresenter expand: true;
+						    yourself);
+				   add: (SpBoxLayout newVertical
+						    add: (SpGridLayout new
+								     beColumnNotHomogeneous;
+								     beRowHomogeneous;
+								     borderWidth: 0;
+								     column: 1 expand: false;
+								     column: 2 expand: true;
+								     row: 1 expand: false;
+								     row: 2 expand: false;
+								     row: 3 expand: false;
+								     add: '集計' atPoint: 1 @ 1;
 								     add: (SpBoxLayout newHorizontal
-										      add: '比較集計' expand: false;
-										      add: dimensionsKey expand: false)
-								     expand: false;
-								     add: dimensionsValues expand: false);
-						    add: dimensionsPreview))
-		  expand: true
+										      add: granularityTransaction;
+										      add: granularityNode)
+								     atPoint: 2 @ 1;
+								     add: '比較集計変数' atPoint: 1 @ 2;
+								     add: dimensionsKey atPoint: 2 @ 2;
+								     add: '比較集計値' atPoint: 1 @ 3;
+								     add: dimensionsValues atPoint: 2 @ 3;
+								     yourself) height: 80;
+						    add: dimensionsPreview expand: true));
+		  yourself
 ]
 
 { #category : 'private' }
@@ -181,82 +152,77 @@ GolapQueryPresenter >> granularityFields [
 
 { #category : 'initialization' }
 GolapQueryPresenter >> initializePresenters [
+
 	<script: 'GolapQueryPresenter new openWithSpec'>
-	transactionFilterPresenter := GolapTransactionFilterPresenter
-		for: self.
+	transactionFilterPresenter := GolapTransactionFilterPresenter for: self.
 	itemFilterPresenter := GolapItemFilterPresenter for: self.
-	lowerBoundsDialogButton := self newButton
-		label: 'しきい値設定';
-		action: [ self openLowerBoundsDialog ];
-		yourself.
-	lowerBoundsPresenter := GolapQueryLowerBoundsPresenter new.
+	minSupport := self newNumberInput
+		              beFloat;
+		              number: 0.0;
+		              autoAccept: true;
+		              yourself.
+	minConfidence := self newNumberInput
+		                 beFloat;
+		                 number: 0.0;
+		                 autoAccept: true;
+		                 yourself.
+	minLift := self newNumberInput
+		           beFloat;
+		           number: 0.0;
+		           autoAccept: true;
+		           yourself.
+	minJaccard := self newNumberInput
+		              beFloat;
+		              number: 0.0;
+		              autoAccept: true;
+		              yourself.
+	minPMI := self newNumberInput
+		          beFloat;
+		          number: 0.0;
+		          autoAccept: true;
+		          yourself.
 	sortKey := self newTextInput
-		text: 'sup';
-		autoAccept: true;
-		yourself.
+		           text: 'sup';
+		           autoAccept: true;
+		           yourself.
 	granularityTransaction := self newDropList
-		display: [ :item | item ifNil: [ '-' ] ];
-		yourself.
+		                          display: [ :item | item ifNil: [ '-' ] ];
+		                          yourself.
 	granularityNode := self newDropList
-		display: [ :item | item ifNil: [ '-' ] ];
-		yourself.
+		                   display: [ :item | item ifNil: [ '-' ] ];
+		                   yourself.
 	dimensionsKey := self newDropList
-		display: [ :item | item ifNil: [ '-' ] ];
-		whenSelectionChangedDo: [ self updateDimensionsPreview ];
-		yourself.
+		                 display: [ :item | item ifNil: [ '-' ] ];
+		                 whenSelectionChangedDo: [ self updateDimensionsPreview ];
+		                 yourself.
 	dimensionsValues := self newTextInput
-		text: '';
-		autoAccept: true;
-		dropEnabled: true;
-		acceptDrop: [ :transfer | 
-			dimensionsValues
-				text:
-					(dimensionsValues text asString trim ifNotEmpty: [ :str | str , ',' ])
-						, (',' join: transfer passenger) ];
-		yourself.
+		                    text: '';
+		                    autoAccept: true;
+		                    dropEnabled: true;
+		                    acceptDrop: [ :transfer |
+			                    dimensionsValues text:
+					                    (dimensionsValues text asString trim ifNotEmpty: [ :str | str , ',' ]) , (',' join: transfer passenger) ];
+		                    yourself.
 	dimensionsPreview := self newList
-		beMultipleSelection;
-		dragEnabled: true;
-		yourself.
+		                     beMultipleSelection;
+		                     dragEnabled: true;
+		                     yourself.
 	sendMax := self newNumberInput
-		beInteger;
-		number: 1000;
-		yourself.
+		           beInteger;
+		           number: 1000;
+		           yourself.
 	deadlineTimer := self newNumberInput
-		beInteger;
-		number: 600;
-		yourself.
+		                 beInteger;
+		                 number: 600;
+		                 yourself.
 	isolatedNodesCheckBox := self newCheckBox
-		label: '孤立ノードも取得';
-		state: true;
-		yourself.
-	self focusOrder
-		addAll: transactionFilterPresenter focusOrder;
-		addAll: itemFilterPresenter focusOrder;
-		add: lowerBoundsDialogButton;
-		add: sortKey;
-		add: granularityTransaction;
-		add: granularityNode;
-		add: dimensionsKey;
-		add: dimensionsValues;
-		add: dimensionsPreview;
-		add: sendMax;
-		add: deadlineTimer;
-		add: isolatedNodesCheckBox.
-	self
-		whenBuiltDo: [ :w | 
+		                         label: '孤立ノードも取得';
+		                         state: true;
+		                         yourself.
+	self whenBuiltDo: [ :w |
 			| font |
 			font := TextStyle defaultFont.
-			w widget
-				allMorphsDo: [ :m | 
-					(m respondsTo: #font:)
-						ifTrue: [ m font: font ] ] ]
-]
-
-{ #category : 'layout' }
-GolapQueryPresenter >> inputTextHeight [
-
-	^ self class inputTextHeight
+			w widget allMorphsDo: [ :m | (m respondsTo: #font:) ifTrue: [ m font: font ] ] ]
 ]
 
 { #category : 'accessing-query' }
@@ -301,60 +267,64 @@ GolapQueryPresenter >> itemFilterSpec: aGolapItemFilterSpec [
 	itemFilterPresenter updateClauseList
 ]
 
-{ #category : 'layout' }
-GolapQueryPresenter >> labelHeight [
-
-	^ self class labelHeight
-]
-
 { #category : 'accessing' }
 GolapQueryPresenter >> minConfidence [
-	^ lowerBoundsPresenter minConfidence
+
+	^ minConfidence number
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minConfidence: aNumber [
-	lowerBoundsPresenter minConfidence: aNumber
+
+	minConfidence number: aNumber
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minJaccard [
-	^ lowerBoundsPresenter minJaccard
+
+	^ minJaccard number
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minJaccard: aNumber [
-	lowerBoundsPresenter minJaccard: aNumber
+
+	minJaccard number: aNumber
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minLift [
-	^ lowerBoundsPresenter minLift
+
+	^ minLift number
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minLift: aNumber [
-	lowerBoundsPresenter minLift: aNumber
+
+	minLift number: aNumber
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minPMI [
-	^ lowerBoundsPresenter minPMI
+
+	^ minPMI number
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minPMI: aNumber [
-	lowerBoundsPresenter minPMI: aNumber
+
+	minPMI number: aNumber
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minSupport [
-	^ lowerBoundsPresenter minSupport
+
+	^ minSupport number
 ]
 
 { #category : 'accessing' }
 GolapQueryPresenter >> minSupport: aNumber [
-	lowerBoundsPresenter minSupport: aNumber
+
+	minSupport number: aNumber
 ]
 
 { #category : 'accessing' }
@@ -365,12 +335,6 @@ GolapQueryPresenter >> networkClient [
 { #category : 'accessing' }
 GolapQueryPresenter >> networkClient: aGolapNetworkClientPresenter [
 	networkClient := aGolapNetworkClientPresenter
-]
-
-{ #category : 'operations' }
-GolapQueryPresenter >> openLowerBoundsDialog [
-
-	^ lowerBoundsPresenter openDialog
 ]
 
 { #category : 'accessing-query' }
