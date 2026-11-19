@@ -86,6 +86,7 @@ GolapProject class >> fileExtension [
 { #category : 'accessing' }
 GolapProject class >> flushCurrent [
 
+	<script>
 	Current := nil
 ]
 
