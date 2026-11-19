@@ -251,30 +251,8 @@ GolapApplication >> installIcon [
 { #category : 'installing' }
 GolapApplication >> installMenu [
 
-	GolapMenubar reset.
 	OSWindowDriver current startUp: true.
-	"OSPlatform current isMacOSX ifTrue: [
-			| main |
-			main := CocoaMenu new.
-			main
-				title: 'MainMenu';
-				addSubmenu: 'ファイル' with: [ :m |
-						m
-							addItemWithTitle: '設定...' action: [ Golap showSettingBrowser ];
-							addItemWithTitle: 'サーバクエリ...'
-							action: [ GolapNetworkClientPresenter open ];
-							addItemWithTitle: 'CSVファイルを開く...'
-							action: [ GolapCSVLauncher open ];
-							addItemWithTitle: '終了'
-							action: [ Smalltalk snapshot: false andQuit: true ]
-							shortcut: 'q' ];
-				addSubmenu: 'ヘルプ' with: [ :m |
-					m
-						addItemWithTitle: 'ヘルプを表示'
-						action: [ self inform: 'Help' ]
-						shortcut: '' ].
-			main setAsMainMenu.
-			MenubarMorph showMenubar: false]"
+	GolapProjectPresenter openFullScreen
 ]
 
 { #category : 'installing' }
