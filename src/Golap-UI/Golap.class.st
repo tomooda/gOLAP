@@ -5,7 +5,6 @@ Class {
 	#classTraits : 'TGolapSnapshotablePresenter classTrait',
 	#instVars : [
 		'model',
-		'queryRecord',
 		'url',
 		'query',
 		'pins',
@@ -906,17 +905,6 @@ Golap >> leftPaneOpenCloseButtonClicked [
 	self layout: self defaultLayout
 ]
 
-{ #category : 'history' }
-Golap >> loadFromQueryRecord: aGolapQueryRecord [
-
-	queryRecord := aGolapQueryRecord.
-	aGolapQueryRecord graph ifNotNil: [ :graph |
-			dimensions removeAll.
-			graph keysAndValuesDo: [ :name :json |
-				dimensions at: name put: (GolapModel fromJSON: json) ].
-			self updateDimensions ]
-]
-
 { #category : 'layouts' }
 Golap >> mainPaneLayout [
 
@@ -1211,18 +1199,6 @@ Golap >> query: aDictionary [
 	self setQuery: aDictionary
 ]
 
-{ #category : 'accessing' }
-Golap >> queryRecord [
-
-	^ queryRecord
-]
-
-{ #category : 'accessing' }
-Golap >> queryRecord: aGolapQueryRecord [
-
-	queryRecord := aGolapQueryRecord
-]
-
 { #category : 'private' }
 Golap >> readDimensionFrom: aReadStream [
 
@@ -1305,7 +1281,7 @@ Golap >> requestFileToSave: aString extensions: anArrayOfString [
 { #category : 'operations' }
 Golap >> resendQuery [
 
-	| api golap |
+	| api |
 	(self url isNil or: [ self query isNil ]) ifTrue: [ ^ self ].
 	api := GolapQueryApiClient
 		       url: self url
@@ -1314,45 +1290,7 @@ Golap >> resendQuery [
 		       serverConfig: itemInfoRetriever serverConfig
 		       itemFieldQuerySpec: itemInfoRetriever itemFieldQuerySpec
 		       authenticateBlock: self authenticateBlock.
-	golap := Golap new.
-	[
-		golap
-			queryRecord: queryRecord hideDuplicate;
-			itemInfoRetriever:
-				(GolapServerProductInfoRetriever fromApiClient: api);
-			authenticateBlock: api authenticateBlock;
-			query: (GolapJSON fromString: api query);
-			url: api url;
-			comment: api comment;
-			imageRepositoryUrl: api imageUrl;
-			itemFieldQuerySpec: api itemFieldQuerySpec;
-			itemViewUrl: api url ]
-		on: Error
-		do: [ :ex | UIManager default alert: 'クエリ送信失敗' , api url asString ].
-	api readStream ifNotNil: [ :readStream |
-			readStream ifNil: [ golap delete ] ifNotNil: [
-					readStream isString
-						ifTrue: [ UIManager default alert: readStream ]
-						ifFalse: [
-								Cursor wait showWhile: [
-										UIManager default informUserDuring: [ :bar |
-												bar
-													min: 0;
-													max: readStream size.
-												golap blockUpdateModelWhile: [
-														| d |
-														d := 0.
-														bar label:
-															'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
-														[
-															bar value: readStream position.
-															readStream atEnd ] whileFalse: [
-															golap readDimensionFrom: readStream ].
-														bar label: 'グラフ更新中 (' , d asString , ')'.
-														golap updateDimensions ].
-												golap confirmOpen.
-												golap open maximize.
-												golap updateModel ] ] ] ] ]
+	[ api openGolap ] forkAt: Processor userBackgroundPriority
 ]
 
 { #category : 'accessing-colors' }
@@ -1474,17 +1412,6 @@ Golap >> saveFullImage [
 
 	(self requestFileToSave: 'PNG ファイルに保存します' extensions: #( 'png' ))
 		ifNotNil: [ :ref | self saveAsPNG: ref ]
-]
-
-{ #category : 'history' }
-Golap >> saveQueryRecord [
-
-	queryRecord ifNotNil: [
-		queryRecord comment:
-			(commentText text asString trim ifEmpty: [ nil ]).
-		queryRecord graph: (dimensions associations collect: [ :assoc |
-				 assoc key -> assoc value asJSON ]) asOrderedDictionary.
-		queryRecord hideSave ]
 ]
 
 { #category : 'accessing-selection' }

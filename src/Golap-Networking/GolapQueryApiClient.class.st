@@ -84,6 +84,12 @@ GolapQueryApiClient >> createRunId [
 ]
 
 { #category : 'accessing' }
+GolapQueryApiClient >> edgeEvaluators [
+
+	^ #( 'frequency' 'jaccard' 'lift' 'PMI' ) collect: [ :column | GolapEdgeColumnEvaluator column: column ]
+]
+
+{ #category : 'accessing' }
 GolapQueryApiClient >> imageUrl [
 	^ self serverConfig at: 'imageUrl' ifAbsent: [ nil ]
 ]
@@ -109,6 +115,66 @@ GolapQueryApiClient >> itemFieldQuerySpec: aDictionary [
 { #category : 'private' }
 GolapQueryApiClient >> jobProgressBar [
 	^ (World findDeeplyA: JobProgressBarMorph) findA: ImageMorph
+]
+
+{ #category : 'accessing' }
+GolapQueryApiClient >> nodeEvaluators [
+
+	^ {
+		  (GolapNodeColumnEvaluator column: 'frequency').
+		  GolapNodeMaxEvaluator new.
+		  GolapNodeSumEvaluator new.
+		  GolapNodeAverageEvaluator new.
+		  GolapNodeNumEdgesEvaluator new }
+]
+
+{ #category : 'operations' }
+GolapQueryApiClient >> openGolap [
+
+	| golap |
+	golap := Golap new.
+	golap
+		nodeEvaluators: self nodeEvaluators;
+		edgeEvaluators: self edgeEvaluators;
+		nodeEvaluator: golap nodeEvaluators first;
+		edgeEvaluator: golap edgeEvaluators first.
+	[
+		golap
+			itemInfoRetriever: (GolapServerProductInfoRetriever fromApiClient: self);
+			authenticateBlock: self authenticateBlock;
+			query: (GolapJSON fromString: self query);
+			url: self url;
+			comment: self comment;
+			imageRepositoryUrl: self imageUrl;
+			itemFieldQuerySpec: self itemFieldQuerySpec;
+			itemViewUrl: self url.
+		self readStream ifNotNil: [ :readStream |
+				readStream ifNil: [ golap delete ] ifNotNil: [
+						readStream isString
+							ifTrue: [ UIManager default alert: readStream ]
+							ifFalse: [
+									UIManager default informUserDuring: [ :bar |
+											bar
+												min: 0;
+												max: readStream size.
+											golap blockUpdateModelWhile: [
+													| d |
+													d := 0.
+													[
+														bar value: readStream position.
+														readStream atEnd ] whileFalse: [
+															bar label: 'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
+
+															golap readDimensionFrom: readStream ].
+													bar label: 'グラフ更新中'.
+													golap updateDimensions ].
+											golap confirmOpen.
+											golap open.
+											golap
+												updateModel;
+												updateNodePositions ] ] ] ] ]
+		on: Error
+		do: [ :ex | UIManager default alert: 'クエリ送信失敗' , self url asString ]
 ]
 
 { #category : 'accessing' }

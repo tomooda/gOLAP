@@ -415,76 +415,27 @@ GolapNetworkClientPresenter >> nodeEvaluators [
 { #category : 'operations' }
 GolapNetworkClientPresenter >> openGolap [
 
+	| query api |
 	self class lastJSON: self asJSON.
 	clipCheckBox state = true ifTrue: [ self addClipToNote ].
-	[
-		self clearPreviewFilterField.
-		[
-			usesQueryHistory
-				ifTrue: [
-						queryHistoryPresenter historyRecord ifNotNil: [ :record |
-								| golap |
-								golap := Golap new.
-								golap blockUpdateModelWhile: [ golap loadFromQueryRecord: record hideDuplicate ].
-								golap confirmOpen.
-								golap open maximize.
-								golap updateModel ] ]
-				ifFalse: [
-						| queryRecord api golap |
-						queryRecord := self recordHiDeHo.
-						api := GolapQueryApiClient
-							       url: self url
-							       query: self query
-							       comment: self comment
-							       serverConfig: self serverConfig
-							       itemFieldQuerySpec: self itemFieldQuerySpec
-							       authenticateBlock: self authenticateBlock.
-						golap := Golap new.
-						golap
-							nodeEvaluators: self nodeEvaluators;
-							edgeEvaluators: self edgeEvaluators;
-							nodeEvaluator: golap nodeEvaluators first;
-							edgeEvaluator: golap edgeEvaluators first.
-						[
-							golap
-								queryRecord: queryRecord;
-								itemInfoRetriever: (GolapServerProductInfoRetriever fromApiClient: api);
-								authenticateBlock: api authenticateBlock;
-								query: (GolapJSON fromString: api query);
-								url: api url;
-								comment: api comment;
-								imageRepositoryUrl: api imageUrl;
-								itemFieldQuerySpec: api itemFieldQuerySpec;
-								itemViewUrl: api url ]
-							on: Error
-							do: [ :ex | UIManager default alert: 'クエリ送信失敗' , api url asString ].
-						api readStream ifNotNil: [ :readStream |
-								readStream ifNil: [ golap delete ] ifNotNil: [
-										readStream isString
-											ifTrue: [ UIManager default alert: readStream ]
-											ifFalse: [
-													UIManager default informUserDuring: [ :bar |
-															bar
-																min: 0;
-																max: readStream size.
-															golap blockUpdateModelWhile: [
-																	| d |
-																	d := 0.
-																	[
-																		bar value: readStream position.
-																		readStream atEnd ] whileFalse: [
-																			bar label: 'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
-
-																			golap readDimensionFrom: readStream ].
-																	bar label: 'グラフ更新中'.
-																	golap updateDimensions ].
-															golap confirmOpen.
-															golap open.
-															golap
-																updateModel;
-																updateNodePositions ] ] ] ] ] ]
-			on: GolapAborted
-			do: [ :ex |  ] ] forkAt: Processor userBackgroundPriority
+	self clearPreviewFilterField.
+	usesQueryHistory
+		ifTrue: [
+				| record |
+				record := queryHistoryPresenter historyRecord.
+				record hideDuplicate.
+				query := record asJSONString ]
+		ifFalse: [
+				self recordHiDeHo.
+				query := self query ].
+	api := GolapQueryApiClient
+		       url: self url
+		       query: query
+		       comment: self comment
+		       serverConfig: self serverConfig
+		       itemFieldQuerySpec: self itemFieldQuerySpec
+		       authenticateBlock: self authenticateBlock.
+	[ api openGolap ] forkAt: Processor userBackgroundPriority
 ]
 
 { #category : 'operations' }
