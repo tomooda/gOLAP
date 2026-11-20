@@ -101,6 +101,7 @@ GolapApplication class >> quit [
 { #category : 'sessions' }
 GolapApplication class >> resume [
 
+	self currentWorld worldState worldRenderer osWindow maximize
 	"self sessionState: #resuming do: [
 			self sessionFile isFile ifTrue: [
 					(GolapDefaultProject current confirm: '保存されたセッションを回復しますか？' title: 'gOLAP') ifTrue: [
