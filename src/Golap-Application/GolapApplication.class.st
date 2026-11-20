@@ -1,6 +1,9 @@
 Class {
 	#name : 'GolapApplication',
 	#superclass : 'ClapApplication',
+	#pools : [
+		'SDL2Constants'
+	],
 	#classInstVars : [
 		'sessionState'
 	],
@@ -93,6 +96,14 @@ GolapApplication class >> json: aDictionary at: aString ifPresent: aBlock [
 ]
 
 { #category : 'sessions' }
+GolapApplication class >> maximizeWorld [
+
+	| osWindow |
+	osWindow := self currentWorld worldState worldRenderer osWindow.
+	(osWindow getFlags bitAnd: SDL_WINDOW_MAXIMIZED) = 0 ifTrue: [ osWindow maximize ]
+]
+
+{ #category : 'sessions' }
 GolapApplication class >> quit [
 
 	Smalltalk snapshot: false andQuit: true
@@ -101,7 +112,7 @@ GolapApplication class >> quit [
 { #category : 'sessions' }
 GolapApplication class >> resume [
 
-	self currentWorld worldState worldRenderer osWindow maximize
+	self maximizeWorld.
 	"self sessionState: #resuming do: [
 			self sessionFile isFile ifTrue: [
 					(GolapDefaultProject current confirm: '保存されたセッションを回復しますか？' title: 'gOLAP') ifTrue: [
