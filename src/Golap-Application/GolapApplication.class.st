@@ -98,9 +98,12 @@ GolapApplication class >> json: aDictionary at: aString ifPresent: aBlock [
 { #category : 'sessions' }
 GolapApplication class >> maximizeWorld [
 
-	| osWindow |
-	osWindow := self currentWorld worldState worldRenderer osWindow.
-	(osWindow getFlags bitAnd: SDL_WINDOW_MAXIMIZED) = 0 ifTrue: [ osWindow maximize ]
+	[
+		| osWindow |
+		osWindow := self currentWorld worldState worldRenderer osWindow.
+		(osWindow getFlags bitAnd: SDL_WINDOW_MAXIMIZED) = 0 ifTrue: [ osWindow maximize ] ]
+		on: Exception
+		do: [ :ex | ex return: nil ]
 ]
 
 { #category : 'sessions' }
