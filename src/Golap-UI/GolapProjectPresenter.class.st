@@ -359,7 +359,7 @@ GolapProjectPresenter >> initializePresenters [
 		                       action: [ self switchProject ];
 		                       yourself.
 	golapNotebook := self newNotebook
-		                 addPageTitle: 'About gOLAP clinet' provider: [
+		                 addPageTitle: 'About gOLAP client' provider: [
 				                 | image |
 				                 image := self logoImage asPresenter.
 				                 image
@@ -598,10 +598,11 @@ GolapProjectPresenter >> updateButtons [
 GolapProjectPresenter >> updateGolapNotebookPageTitles [
 
 	golapNotebook pages do: [ :page |
-			page activePresenter ifNotNil: [ :golap |
-					page
-						title: golap windowTitle;
-						pageTitleChanged ] ]
+			page activePresenter ifNotNil: [ :presenter |
+					(presenter class usesTrait: TGolapSnapshotablePresenter) ifTrue: [
+							page
+								title: presenter windowTitle;
+								pageTitleChanged ] ] ]
 ]
 
 { #category : 'updating' }

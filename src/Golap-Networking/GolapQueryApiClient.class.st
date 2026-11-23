@@ -139,42 +139,45 @@ GolapQueryApiClient >> openGolap [
 		nodeEvaluator: golap nodeEvaluators first;
 		edgeEvaluator: golap edgeEvaluators first.
 	[
-		golap
-			itemInfoRetriever: (GolapServerProductInfoRetriever fromApiClient: self);
-			authenticateBlock: self authenticateBlock;
-			query: (GolapJSON fromString: self query);
-			url: self url;
-			comment: self comment;
-			imageRepositoryUrl: self imageUrl;
-			itemFieldQuerySpec: self itemFieldQuerySpec;
-			itemViewUrl: self url.
-		self readStream ifNotNil: [ :readStream |
-				readStream ifNil: [ golap delete ] ifNotNil: [
-						readStream isString
-							ifTrue: [ UIManager default alert: readStream ]
-							ifFalse: [
-									UIManager default informUserDuring: [ :bar |
-											bar
-												min: 0;
-												max: readStream size.
-											golap blockUpdateModelWhile: [
-													| d |
-													d := 0.
-													[
-														bar value: readStream position.
-														readStream atEnd ] whileFalse: [
-															bar label: 'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
+		[
+			golap
+				itemInfoRetriever: (GolapServerProductInfoRetriever fromApiClient: self);
+				authenticateBlock: self authenticateBlock;
+				query: (GolapJSON fromString: self query);
+				url: self url;
+				comment: self comment;
+				imageRepositoryUrl: self imageUrl;
+				itemFieldQuerySpec: self itemFieldQuerySpec;
+				itemViewUrl: self url.
+			self readStream ifNotNil: [ :readStream |
+					readStream ifNil: [ golap delete ] ifNotNil: [
+							readStream isString
+								ifTrue: [ UIManager default alert: readStream ]
+								ifFalse: [
+										UIManager default informUserDuring: [ :bar |
+												bar
+													min: 0;
+													max: readStream size.
+												golap blockUpdateModelWhile: [
+														| d |
+														d := 0.
+														[
+															bar value: readStream position.
+															readStream atEnd ] whileFalse: [
+																bar label: 'ディメンジョン (' , (d := d + 1) asString , ') 読み込み中'.
 
-															golap readDimensionFrom: readStream ].
-													bar label: 'グラフ更新中'.
-													golap updateDimensions ].
-											golap confirmOpen.
-											golap open.
-											golap
-												updateModel;
-												updateNodePositions ] ] ] ] ]
-		on: Error
-		do: [ :ex | UIManager default alert: 'クエリ送信失敗' , self url asString ]
+																golap readDimensionFrom: readStream ].
+														bar label: 'グラフ更新中'.
+														golap updateDimensions ].
+												golap confirmOpen.
+												golap open.
+												golap
+													updateModel;
+													updateNodePositions ] ] ] ] ]
+			on: Error
+			do: [ :ex | UIManager default alert: 'クエリ送信失敗' , self url asString ] ]
+		on: GolapAborted
+		do: [ :ex |  ]
 ]
 
 { #category : 'accessing' }
@@ -196,47 +199,53 @@ GolapQueryApiClient >> random [
 GolapQueryApiClient >> readStream [
 	"GolapApiClient new entity"
 
-	[
-		| response |
-		UIManager default
-			displayProgress: 'サーバにクエリを送信中' , self url asString
-			from: 0.0
-			to: 1.0
-			during: [ :bar |
-					| runId queryJSON client |
-					runId := self createRunId.
-					queryJSON := GolapJSON fromString: self query.
-					(queryJSON at: 'query' ifAbsentPut: [ Dictionary new ])
-						at: 'runID'
-						put: runId.
-					query := GolapJSON toString: queryJSON.
-					self jobProgressBar
-						clearEvent: #mouseUp;
-						on: #mouseUp send: #value to: [ self cancel: runId ].
-					client := GolapHttpClient new
-						          timeout: (([ GolapJSON fromString: self query ]
-								            on: Error
-								            do: [ :ex | ex return: Dictionary new ])
-								           at: 'deadlineTimer'
-								           ifAbsent: [ 600 ]) + 5;
-						          url: self url;
-						          authenticateBlock: self authenticateBlock;
-						          yourself.
-					bar value: 0.1.
-					client entity: (ZnStringEntity text: self query).
-					bar value: 0.2.
-					client post.
-					bar value: 0.5.
-					response := client response.
-					bar value: 1.0.
-					response isSuccess ifFalse: [ ^ response statusLine asString ].
-					^ response entity readStream ] ]
-		on:
-			NetworkError , ZnParseError , ZnHttpUnsuccessful , ZnMissingHost
-			, ZnTooManyRedirects , ZnUnexpectedContentType
-		do: [ :ex |
-			^ (ex messageText ifEmpty: [ '送信失敗' ]) , ': '
-			  , url asString ]
+	| returnValue semaphore process |
+	returnValue := nil.
+	semaphore := Semaphore new.
+	process := [
+		           [
+			           | response |
+			           UIManager default
+				           displayProgress: 'サーバにクエリを送信中' , self url asString
+				           from: 0.0
+				           to: 1.0
+				           during: [ :bar |
+						           | runId queryJSON client |
+						           runId := self createRunId.
+						           queryJSON := GolapJSON fromString: self query.
+						           (queryJSON at: 'query' ifAbsentPut: [ Dictionary new ]) at: 'runID' put: runId.
+						           query := GolapJSON toString: queryJSON.
+						           self jobProgressBar
+							           clearEvent: #mouseUp;
+							           on: #mouseUp send: #value to: [
+									           self cancel: runId.
+									           returnValue := '中断しました'.
+									           process terminate.
+									           semaphore signal ].
+						           client := GolapHttpClient new
+							                     timeout: (([ GolapJSON fromString: self query ]
+									                       on: Error
+									                       do: [ :ex | ex return: Dictionary new ]) at: 'deadlineTimer' ifAbsent: [ 600 ]) + 5;
+							                     url: self url;
+							                     authenticateBlock: self authenticateBlock;
+							                     yourself.
+						           bar value: 0.1.
+						           client entity: (ZnStringEntity text: self query).
+						           bar value: 0.2.
+						           client post.
+						           bar value: 0.5.
+						           response := client response.
+						           bar value: 1.0.
+						           returnValue := response isSuccess
+							                          ifTrue: [ response entity readStream ]
+							                          ifFalse: [ response statusLine asString ].
+						           semaphore signal ] ]
+			           on: NetworkError , ZnParseError , ZnHttpUnsuccessful , ZnMissingHost , ZnTooManyRedirects , ZnUnexpectedContentType
+			           do: [ :ex |
+					           returnValue := (ex messageText ifEmpty: [ '送信失敗' ]) , ': ' , url asString.
+					           semaphore signal ] ] forkAt: Processor userBackgroundPriority.
+	semaphore wait.
+	^ returnValue
 ]
 
 { #category : 'accessing' }

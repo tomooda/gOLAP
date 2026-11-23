@@ -191,7 +191,7 @@ GolapCSVLauncher >> launch [
 	[
 		golap
 			confirmOpen;
-			openInNotebook;
+			open;
 			updateModel;
 			updateNodePositions ]
 		on: GolapAborted
