@@ -198,7 +198,8 @@ GolapProject >> fromJSON: aDictionary [
 
 	aDictionary
 		at: 'last-query' ifPresent: [ :query | self restoreQuery: query ];
-		at: 'note' ifPresent: [ :dict | dict ifNotNil: [ self note fromJSON: dict ] ]
+		at: 'note' ifPresent: [ :dict | dict ifNotNil: [ self note fromJSON: dict ] ];
+		at: 'project' ifPresent: [ :string | self projectName: string ]
 ]
 
 { #category : 'comparing' }
@@ -317,7 +318,8 @@ GolapProject >> store [
 GolapProject >> toJSON: aDictionary [
 
 	GolapNetworkClientPresenter asJSON ifNotNil: [ :query | aDictionary at: 'last-query' put: query ].
-	aDictionary at: 'note' put: self note asJSON
+	aDictionary at: 'note' put: self note asJSON.
+	self projectName ifNotNil: [ :string | aDictionary at: 'project' put: string ]
 ]
 
 { #category : 'updating' }

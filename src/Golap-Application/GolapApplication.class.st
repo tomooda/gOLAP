@@ -115,7 +115,7 @@ GolapApplication class >> quit [
 { #category : 'sessions' }
 GolapApplication class >> resume [
 
-	<script>
+	<script: 'GolapProject flushCurrent. GolapProjectPresenter flushCurrent; open. GolapApplication resume'>
 	self sessionState: #resuming do: [
 			| ref |
 			ref := self sessionFile ifAbsent: [ self sessionBackupFile ].
@@ -221,7 +221,7 @@ GolapApplication class >> startUp: aBoolean [
 { #category : 'sessions' }
 GolapApplication class >> suspend [
 
-	<script: 'TimeProfiler spyOn: [GolapApplication suspend]'>
+	<script>
 	self sessionState: #suspending do: [
 			[
 				| json sessionFile |
