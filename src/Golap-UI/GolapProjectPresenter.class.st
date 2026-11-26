@@ -498,10 +498,9 @@ GolapProjectPresenter >> saveAsProject: aGolapProject [
 { #category : 'operations' }
 GolapProjectPresenter >> saveProject [
 
-	| project |
-	project := self currentProject ifDefault: [ self requestNewProject: '' ] otherwise: #yourself.
-	self saveAsProject: project.
-	project beCurrent.
+	(self currentProject ifDefault: [ self requestNewProject: '' ] otherwise: #yourself) ifNotNil: [ :project |
+			self saveAsProject: project.
+			project beCurrent ].
 	self
 		updateProjectList;
 		updateNotepad

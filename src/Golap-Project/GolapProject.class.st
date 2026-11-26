@@ -210,7 +210,7 @@ GolapProject >> hash [
 { #category : 'controlling' }
 GolapProject >> ifDefault: aBlock otherwise: anotherBlock [
 
-	^ projectFile ifNil: [ aBlock cull: self ] ifNotNil: [ aBlock cull: self ]
+	^ projectFile ifNil: [ aBlock cull: self ] ifNotNil: [ anotherBlock cull: self ]
 ]
 
 { #category : 'operations' }
