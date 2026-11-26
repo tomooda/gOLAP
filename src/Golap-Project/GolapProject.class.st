@@ -1,7 +1,10 @@
 Class {
 	#name : 'GolapProject',
 	#superclass : 'Object',
+	#traits : 'TComparable',
+	#classTraits : 'TComparable classTrait',
 	#instVars : [
+		'projectFile',
 		'note'
 	],
 	#classVars : [
@@ -34,7 +37,7 @@ GolapProject class >> announcer [
 	^ announcer ifNil: [ announcer := Announcer new ]
 ]
 
-{ #category : 'instance creation' }
+{ #category : 'accessing' }
 GolapProject class >> asJSON [
 
 	^ self current ifNotNil: #asJSON
@@ -74,7 +77,7 @@ GolapProject class >> currentProjectName [
 { #category : 'instance creation' }
 GolapProject class >> default [
 
-	^ GolapDefaultProject new
+	^ self new
 ]
 
 { #category : 'accessing' }
@@ -93,7 +96,7 @@ GolapProject class >> flushCurrent [
 { #category : 'instance creation' }
 GolapProject class >> fromJSON: aDictionary [
 
-	^ GolapNamedProject new
+	^ self new
 		  fromJSON: aDictionary;
 		  yourself
 ]
@@ -107,19 +110,54 @@ GolapProject class >> golapDirectory [
 { #category : 'instance creation' }
 GolapProject class >> named: aString [
 
-	^ GolapNamedProject named: aString
+	^ self new
+		  projectName: aString;
+		  yourself
 ]
 
 { #category : 'instance creation' }
-GolapProject class >> on: aFileReferenceOrNil [
+GolapProject class >> on: aFileReference [
 
-	^ aFileReferenceOrNil ifNil: [ self default ] ifNotNil: [ GolapNamedProject on: aFileReferenceOrNil ]
+	^ self new
+		  projectFile: aFileReference;
+		  yourself
+]
+
+{ #category : 'operations' }
+GolapProject class >> open [
+
+	self current open
+]
+
+{ #category : 'accessing' }
+GolapProject class >> projectBaseDirectory [
+
+	^ self golapDirectory
 ]
 
 { #category : 'accessing' }
 GolapProject class >> projectFiles [
 
 	^ ((self golapDirectory filesMatching: '*.' , self fileExtension) reject: [ :ref | ref basename beginsWith: '.' ]) sorted
+]
+
+{ #category : 'operations' }
+GolapProject class >> save [
+
+	self current save
+]
+
+{ #category : 'comparing' }
+GolapProject >> < aComparable [
+	"Answer whether the receiver is less than the argument."
+
+	^ self projectName < aComparable projectName
+]
+
+{ #category : 'comparing' }
+GolapProject >> = anObject [
+
+	^ self class = anObject class and: [ self projectName = anObject projectName ]
 ]
 
 { #category : 'ui requests' }
@@ -152,7 +190,7 @@ GolapProject >> delete [
 { #category : 'testing' }
 GolapProject >> exists [
 
-	^ self subclassResponsibility
+	^ projectFile notNil and: [ projectFile exists ]
 ]
 
 { #category : 'converting' }
@@ -163,10 +201,16 @@ GolapProject >> fromJSON: aDictionary [
 		at: 'note' ifPresent: [ :dict | dict ifNotNil: [ self note fromJSON: dict ] ]
 ]
 
+{ #category : 'comparing' }
+GolapProject >> hash [
+
+	^ self class hash bitXor: self projectName hash
+]
+
 { #category : 'controlling' }
 GolapProject >> ifDefault: aBlock otherwise: anotherBlock [
 
-	^ self subclassResponsibility
+	^ projectFile ifNil: [ aBlock cull: self ] ifNotNil: [ aBlock cull: self ]
 ]
 
 { #category : 'operations' }
@@ -190,25 +234,33 @@ GolapProject >> note: aGolapNote [
 { #category : 'accessing' }
 GolapProject >> projectFile [
 
-	^ self subclassResponsibility
+	^ projectFile
 ]
 
 { #category : 'accessing' }
 GolapProject >> projectFile: aFileReference [
 
-	^ self subclassResponsibility
+	projectFile := aFileReference
 ]
 
 { #category : 'accessing' }
 GolapProject >> projectName [
 
-	^ self subclassResponsibility
+	^ projectFile ifNotNil: [ projectFile basenameWithoutExtension: self class fileExtension ]
 ]
 
 { #category : 'accessing' }
 GolapProject >> projectName: aString [
 
-	^ self subclassResponsibility
+	self projectFile: (self class projectBaseDirectory / aString withExtension: self class fileExtension)
+]
+
+{ #category : 'operations' }
+GolapProject >> renameTo: aString [
+
+	self projectFile ifNotNil: [ :oldRef |
+			self projectName: aString.
+			self projectFile ifNotNil: [ :newRef | oldRef moveTo: newRef ] ]
 ]
 
 { #category : 'converting' }
