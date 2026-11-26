@@ -24,6 +24,12 @@ Class {
 	#tag : 'Project'
 }
 
+{ #category : 'accessing' }
+GolapProjectPresenter class >> autosavedJSON [
+
+	^ self autosaveFileReference ifExists: [ :ref | ref readStreamDo: [ :stream | GolapJSON fromStream: stream ] ]
+]
+
 { #category : 'sole instance' }
 GolapProjectPresenter class >> current [
 
@@ -136,6 +142,18 @@ GolapProjectPresenter >> asJSON [
 	json := Dictionary new.
 	self toJSON: json.
 	^ json
+]
+
+{ #category : 'autosaving' }
+GolapProjectPresenter >> autosaveFileReference [
+
+	^ GolapProject golapDirectory / '.golap'
+]
+
+{ #category : 'autosaving' }
+GolapProjectPresenter >> autosavedJSON [
+
+	^ self autosaveFileReference ifExists: [ :ref | ref readStreamDo: [ :stream | GolapJSON fromStream: stream ] ]
 ]
 
 { #category : 'operations' }

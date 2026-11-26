@@ -4,7 +4,7 @@ Extension { #name : 'GolapPolisher' }
 GolapPolisher >> asJSON [
 
 	| json |
-	json := OrderedDictionary new.
+	json := Dictionary new.
 	self toJSON: json.
 	^ json
 ]

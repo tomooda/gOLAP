@@ -4,7 +4,7 @@ Extension { #name : 'GolapModel' }
 GolapModel >> asJSON [
 
 	| json |
-	json := OrderedDictionary new.
+	json := Dictionary new.
 	baseGraph toJSON: json.
 	^ json
 		  at: 'nodeEvaluators' put: (nodeEvaluators collect: #asJSON);

@@ -95,7 +95,7 @@ GolapApplication class >> json: aDictionary at: aString ifPresent: aBlock [
 									  ex signalerContext printStackTraceOn: stream ] ] ]
 ]
 
-{ #category : 'sessions' }
+{ #category : 'operations' }
 GolapApplication class >> maximizeWorld [
 
 	[
@@ -115,24 +115,31 @@ GolapApplication class >> quit [
 { #category : 'sessions' }
 GolapApplication class >> resume [
 
-	self maximizeWorld.
-	"self sessionState: #resuming do: [
-			self sessionFile isFile ifTrue: [
-					(GolapDefaultProject current confirm: '保存されたセッションを回復しますか？' title: 'gOLAP') ifTrue: [
+	<script>
+	self sessionState: #resuming do: [
+			| ref |
+			ref := self sessionFile ifAbsent: [ self sessionBackupFile ].
+			ref isFile ifTrue: [
+					ref readStreamDo: [ :stream |
 							[
-								self sessionFile readStreamDo: [ :stream |
-										(GolapJSON fromStream: stream) ifNotNil: [ :json |
-												self
-													json: json at: 'session' ifPresent: [ :session |
-															GolapProjectPresenter current
-																fromJSON: session;
-																updateProjectList;
-																updateNotepad ];
-													json: json at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
-													json: json at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
-													json: json at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ] ]
+								(GolapJSON fromStream: stream) ifNotNil: [ :json |
+										self
+											json: json at: 'session' ifPresent: [ :session |
+													GolapProjectPresenter current
+														fromJSON: session;
+														updateProjectList;
+														updateNotepad ];
+											json: json at: 'default-font' ifPresent: [ :font | Golap defaultFontFromJSON: font ];
+											json: json at: 'name-delimiter' ifPresent: [ :string | Golap nameEndOfLineDelimiter: string ];
+											json: json at: 'colors' ifPresent: [ :colors | GolapColorPreferences fromJSON: colors ] ] ]
 								on: Exception
-								do: [ :ex | ex return ] ] ] ]"
+								do: [ :ex | ex return ] ] ] ]
+]
+
+{ #category : 'sessions' }
+GolapApplication class >> sessionBackupFile [
+
+	^ Golap golapDirectory / '.golap.backup'
 ]
 
 { #category : 'sessions' }
@@ -205,28 +212,33 @@ GolapApplication class >> shutDown: aBoolean [
 GolapApplication class >> startUp: aBoolean [
 
 	aBoolean ifTrue: [
-		Smalltalk session addDeferredStartupAction: [ self resume ] ]
+			Smalltalk session addDeferredStartupAction: [
+					self
+						maximizeWorld;
+						resume ] ]
 ]
 
 { #category : 'sessions' }
 GolapApplication class >> suspend [
 
-	"self sessionState: #suspending do: [
-			(GolapDefaultProject current confirm: 'セッションを保存しますか？' title: 'gOLAP') ifTrue: [
-					[
-						| json |
-						json := Dictionary new.
-						GolapProject asJSON ifNotNil: [ :project | json at: 'session' put: project ].
-						GolapColorPreferences asJSON ifNotNil: [ :colors | json at: 'colors' put: colors ].
-						Golap defaultFontAsJSON ifNotNil: [ :font | json at: 'default-font' put: font ].
-						self sessionTemporaryFile
-							ensureDelete;
-							writeStreamDo: [ :stream | GolapJSON put: json onStream: stream ];
-							renameTo: (self sessionFile
-									 ensureDelete;
-									 basename) ]
-						on: Exception
-						do: [ :ex |  ] ] ]"
+	<script: 'TimeProfiler spyOn: [GolapApplication suspend]'>
+	self sessionState: #suspending do: [
+			[
+				| json sessionFile |
+				json := Dictionary new.
+				GolapProjectPresenter current asJSON ifNotNil: [ :project | json at: 'session' put: project ].
+				GolapColorPreferences asJSON ifNotNil: [ :colors | json at: 'colors' put: colors ].
+				Golap defaultFontAsJSON ifNotNil: [ :font | json at: 'default-font' put: font ].
+				sessionFile := self sessionTemporaryFile.
+				sessionFile writeStreamDo: [ :stream |
+						stream truncate.
+						GolapJSON put: json onStream: stream ].
+				self sessionFile renameTo: (self sessionBackupFile
+						 ensureDelete;
+						 basename).
+				sessionFile renameTo: self sessionFile basename ]
+				on: Exception
+				do: [ :ex |  ] ]
 ]
 
 { #category : 'execution' }
